@@ -20,55 +20,65 @@ import SuperAdminTenantsPage from "./pages/superadmin/TenantsPage";
 import SuperAdminUsersPage from "./pages/superadmin/UsersPage";
 import NewReadingPage from "./pages/dashboard/NewReadingPage";
 
-const queryClient = new QueryClient();
+// Create QueryClient instance outside of component to prevent recreation
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<LoginPage />} />
-            
-            {/* SuperAdmin Routes */}
-            <Route path="/superadmin" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <DashboardLayout />
-              </RequireAuth>
-            }>
-              <Route path="tenants" element={<SuperAdminTenantsPage />} />
-              <Route path="users" element={<SuperAdminUsersPage />} />
-            </Route>
-
-            {/* Dashboard Routes */}
-            <Route path="/dashboard" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout />
-              </RequireAuth>
-            }>
-              <Route index element={<StationsPage />} />
-              <Route path="stations" element={<StationsPage />} />
-              <Route path="readings" element={<ReadingsPage />} />
-              <Route path="readings/new" element={<NewReadingPage />} />
-              <Route path="creditors" element={<CreditorsPage />} />
-              <Route path="fuel-prices" element={<FuelPricesPage />} />
-              <Route path="users" element={
-                <RequireAuth allowedRoles={['owner', 'manager']}>
-                  <UsersPage />
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<LoginPage />} />
+              
+              {/* SuperAdmin Routes */}
+              <Route path="/superadmin" element={
+                <RequireAuth allowedRoles={['superadmin']}>
+                  <DashboardLayout />
                 </RequireAuth>
-              } />
-              <Route path="settings" element={<SettingsPage />} />
-            </Route>
+              }>
+                <Route path="tenants" element={<SuperAdminTenantsPage />} />
+                <Route path="users" element={<SuperAdminUsersPage />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+              {/* Dashboard Routes */}
+              <Route path="/dashboard" element={
+                <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                  <DashboardLayout />
+                </RequireAuth>
+              }>
+                <Route index element={<StationsPage />} />
+                <Route path="stations" element={<StationsPage />} />
+                <Route path="readings" element={<ReadingsPage />} />
+                <Route path="readings/new" element={<NewReadingPage />} />
+                <Route path="creditors" element={<CreditorsPage />} />
+                <Route path="fuel-prices" element={<FuelPricesPage />} />
+                <Route path="users" element={
+                  <RequireAuth allowedRoles={['owner', 'manager']}>
+                    <UsersPage />
+                  </RequireAuth>
+                } />
+                <Route path="settings" element={<SettingsPage />} />
+              </Route>
+
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

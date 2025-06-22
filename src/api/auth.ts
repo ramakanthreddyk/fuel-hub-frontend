@@ -1,5 +1,6 @@
 
 import { apiClient } from './client';
+import { UserRole } from '@/contexts/AuthContext';
 
 export interface LoginRequest {
   email: string;
@@ -12,7 +13,7 @@ export interface LoginResponse {
     id: string;
     name: string;
     email: string;
-    role: string;
+    role: UserRole;
     tenantId?: string;
     tenantName?: string;
   };
