@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,7 @@ import StationsPage from "./pages/dashboard/StationsPage";
 import PumpsPage from "./pages/dashboard/PumpsPage";
 import NozzlesPage from "./pages/dashboard/NozzlesPage";
 import ReadingsPage from "./pages/dashboard/ReadingsPage";
+import SalesPage from "./pages/dashboard/SalesPage";
 import CreditorsPage from "./pages/dashboard/CreditorsPage";
 import FuelPricesPage from "./pages/dashboard/FuelPricesPage";
 import UsersPage from "./pages/dashboard/UsersPage";
@@ -66,6 +66,7 @@ const App = () => {
                 <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
                 <Route path="readings" element={<ReadingsPage />} />
                 <Route path="readings/new" element={<NewReadingPage />} />
+                <Route path="sales" element={<SalesPage />} />
                 <Route path="creditors" element={<CreditorsPage />} />
                 <Route path="fuel-prices" element={<FuelPricesPage />} />
                 <Route path="users" element={
