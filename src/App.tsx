@@ -70,7 +70,10 @@ const App = () => {
                 <Route path="readings/new" element={<NewReadingPage />} />
                 <Route path="sales" element={<SalesPage />} />
                 <Route path="creditors" element={<CreditorsPage />} />
+                <Route path="creditors/:id/payments" element={<CreditorPaymentsPage />} />
                 <Route path="fuel-prices" element={<FuelPricesPage />} />
+                <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
+                <Route path="inventory" element={<InventoryPage />} />
                 <Route path="users" element={
                   <RequireAuth allowedRoles={['owner', 'manager']}>
                     <UsersPage />

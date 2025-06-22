@@ -39,6 +39,11 @@ const getMenuItems = (role: string) => {
       icon: Gauge,
     },
     {
+      title: "Sales",
+      url: "/dashboard/sales",
+      icon: BarChart3,
+    },
+    {
       title: "Creditors",
       url: "/dashboard/creditors",
       icon: DollarSign,
@@ -46,6 +51,16 @@ const getMenuItems = (role: string) => {
     {
       title: "Fuel Prices",
       url: "/dashboard/fuel-prices",
+      icon: Fuel,
+    },
+    {
+      title: "Deliveries",
+      url: "/dashboard/fuel-deliveries",
+      icon: Fuel,
+    },
+    {
+      title: "Inventory",
+      url: "/dashboard/inventory",
       icon: Fuel,
     },
     {
