@@ -65,6 +65,11 @@ const getMenuItems = (role: string) => {
       icon: Fuel,
     },
     {
+      title: "Reports",
+      url: "/dashboard/reports",
+      icon: FileText,
+    },
+    {
       title: "Settings",
       url: "/dashboard/settings",
       icon: Settings,
@@ -91,6 +96,11 @@ const getMenuItems = (role: string) => {
       title: "Plans",
       url: "/superadmin/plans",
       icon: Package,
+    },
+    {
+      title: "Analytics",
+      url: "/superadmin/analytics",
+      icon: BarChart3,
     }
   ];
 

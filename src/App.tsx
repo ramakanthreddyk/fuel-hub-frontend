@@ -21,6 +21,7 @@ import FuelDeliveriesPage from "./pages/dashboard/FuelDeliveriesPage";
 import InventoryPage from "./pages/dashboard/InventoryPage";
 import UsersPage from "./pages/dashboard/UsersPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
+import ReportsPage from "./pages/dashboard/ReportsPage";
 import SuperAdminTenantsPage from "./pages/superadmin/TenantsPage";
 import SuperAdminUsersPage from "./pages/superadmin/UsersPage";
 import NewReadingPage from "./pages/dashboard/NewReadingPage";
@@ -29,6 +30,7 @@ import SummaryPage from "./pages/dashboard/SummaryPage";
 import SuperAdminOverviewPage from "./pages/superadmin/OverviewPage";
 import CreateTenantPage from "./pages/superadmin/CreateTenantPage";
 import PlansPage from "./pages/superadmin/PlansPage";
+import AnalyticsPage from "./pages/superadmin/AnalyticsPage";
 
 // Create QueryClient instance outside of component to prevent recreation
 const queryClient = new QueryClient({
@@ -96,6 +98,7 @@ const App = () => {
                   </RequireAuth>
                 } />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="reports" element={<ReportsPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
