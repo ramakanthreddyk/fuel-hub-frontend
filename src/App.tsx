@@ -18,6 +18,8 @@ import SalesPage from "./pages/dashboard/SalesPage";
 import CreditorsPage from "./pages/dashboard/CreditorsPage";
 import CreditorPaymentsPage from "./pages/dashboard/CreditorPaymentsPage";
 import FuelPricesPage from "./pages/dashboard/FuelPricesPage";
+import FuelDeliveriesPage from "./pages/dashboard/FuelDeliveriesPage";
+import InventoryPage from "./pages/dashboard/InventoryPage";
 import UsersPage from "./pages/dashboard/UsersPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import SuperAdminTenantsPage from "./pages/superadmin/TenantsPage";
