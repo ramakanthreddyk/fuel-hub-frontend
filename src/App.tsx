@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +24,8 @@ import SettingsPage from "./pages/dashboard/SettingsPage";
 import SuperAdminTenantsPage from "./pages/superadmin/TenantsPage";
 import SuperAdminUsersPage from "./pages/superadmin/UsersPage";
 import NewReadingPage from "./pages/dashboard/NewReadingPage";
+import ReconciliationPage from "./pages/dashboard/ReconciliationPage";
+import SummaryPage from "./pages/dashboard/SummaryPage";
 
 // Create QueryClient instance outside of component to prevent recreation
 const queryClient = new QueryClient({
@@ -65,11 +66,17 @@ const App = () => {
                 </RequireAuth>
               }>
                 <Route index element={<StationsPage />} />
+                <Route path="summary" element={<SummaryPage />} />
                 <Route path="stations" element={<StationsPage />} />
                 <Route path="stations/:stationId/pumps" element={<PumpsPage />} />
                 <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
                 <Route path="readings" element={<ReadingsPage />} />
                 <Route path="readings/new" element={<NewReadingPage />} />
+                <Route path="reconciliation" element={
+                  <RequireAuth allowedRoles={['owner', 'manager']}>
+                    <ReconciliationPage />
+                  </RequireAuth>
+                } />
                 <Route path="sales" element={<SalesPage />} />
                 <Route path="creditors" element={<CreditorsPage />} />
                 <Route path="creditors/:id/payments" element={<CreditorPaymentsPage />} />
