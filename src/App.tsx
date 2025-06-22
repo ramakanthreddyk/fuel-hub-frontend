@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,7 @@ import NozzlesPage from "./pages/dashboard/NozzlesPage";
 import ReadingsPage from "./pages/dashboard/ReadingsPage";
 import SalesPage from "./pages/dashboard/SalesPage";
 import CreditorsPage from "./pages/dashboard/CreditorsPage";
+import CreditorPaymentsPage from "./pages/dashboard/CreditorPaymentsPage";
 import FuelPricesPage from "./pages/dashboard/FuelPricesPage";
 import UsersPage from "./pages/dashboard/UsersPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
