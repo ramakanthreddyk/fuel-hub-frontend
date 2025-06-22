@@ -5,13 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { Fuel, AlertCircle } from 'lucide-react';
+import { Fuel, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
@@ -35,6 +36,18 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const demoCredentials = [
+    { role: 'SuperAdmin', email: 'admin@fuelsync.com', password: 'admin123' },
+    { role: 'Owner', email: 'owner@station.com', password: 'owner123' },
+    { role: 'Manager', email: 'manager@station.com', password: 'manager123' },
+    { role: 'Attendant', email: 'attendant@station.com', password: 'attendant123' }
+  ];
+
+  const quickLogin = (email: string, password: string) => {
+    setEmail(email);
+    setPassword(password);
   };
 
   return (
@@ -71,14 +84,29 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Signing in..." : "Sign In"}
@@ -90,13 +118,24 @@ export default function LoginPage() {
               <div className="flex items-start space-x-2">
                 <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-blue-900 mb-1">Demo Credentials:</p>
-                  <p className="text-blue-700">
-                    <strong>SuperAdmin:</strong> admin@fuelsync.com / admin123<br />
-                    <strong>Owner:</strong> owner@station.com / owner123<br />
-                    <strong>Manager:</strong> manager@station.com / manager123<br />
-                    <strong>Attendant:</strong> attendant@station.com / attendant123
-                  </p>
+                  <p className="font-medium text-blue-900 mb-2">Demo Credentials:</p>
+                  <div className="space-y-1">
+                    {demoCredentials.map((cred) => (
+                      <div key={cred.role} className="flex items-center justify-between">
+                        <span className="text-blue-700">
+                          <strong>{cred.role}:</strong> {cred.email}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-1 text-blue-600 hover:text-blue-800"
+                          onClick={() => quickLogin(cred.email, cred.password)}
+                        >
+                          Use
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

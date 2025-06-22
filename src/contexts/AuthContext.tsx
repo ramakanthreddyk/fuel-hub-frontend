@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authApi } from '@/api/auth';
 
 export type UserRole = 'superadmin' | 'owner' | 'manager' | 'attendant';
 
@@ -57,36 +58,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      // const response = await api.post('/v1/auth/login', { email, password });
+      const response = await authApi.login({ email, password });
       
-      // Mock login for now
-      const mockUser: User = {
-        id: '1',
-        name: 'John Doe',
-        email: email,
-        role: email.includes('admin') ? 'superadmin' : 'owner',
-        tenantId: email.includes('admin') ? undefined : 'tenant-1',
-        tenantName: email.includes('admin') ? undefined : 'Reddy Fuels'
-      };
-      
-      const mockToken = 'mock-jwt-token-123';
-      
-      setUser(mockUser);
-      setToken(mockToken);
-      localStorage.setItem('fuelsync_token', mockToken);
-      localStorage.setItem('fuelsync_user', JSON.stringify(mockUser));
+      setUser(response.user);
+      setToken(response.token);
+      localStorage.setItem('fuelsync_token', response.token);
+      localStorage.setItem('fuelsync_user', JSON.stringify(response.user));
       
       // Role-based redirect
-      switch (mockUser.role) {
+      switch (response.user.role) {
         case 'superadmin':
           navigate('/superadmin/tenants');
           break;
         case 'attendant':
-          navigate('/dashboard/readings');
+          navigate('/dashboard/readings/new');
           break;
         default:
-          navigate('/dashboard/stations');
+          navigate('/dashboard');
       }
     } catch (error) {
       console.error('Login failed:', error);
@@ -101,7 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(null);
     localStorage.removeItem('fuelsync_token');
     localStorage.removeItem('fuelsync_user');
-    navigate('/');
+    navigate('/login');
   };
 
   const value = {
