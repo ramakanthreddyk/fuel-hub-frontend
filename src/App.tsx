@@ -26,6 +26,9 @@ import SuperAdminUsersPage from "./pages/superadmin/UsersPage";
 import NewReadingPage from "./pages/dashboard/NewReadingPage";
 import ReconciliationPage from "./pages/dashboard/ReconciliationPage";
 import SummaryPage from "./pages/dashboard/SummaryPage";
+import SuperAdminOverviewPage from "./pages/superadmin/OverviewPage";
+import CreateTenantPage from "./pages/superadmin/CreateTenantPage";
+import PlansPage from "./pages/superadmin/PlansPage";
 
 // Create QueryClient instance outside of component to prevent recreation
 const queryClient = new QueryClient({
@@ -55,8 +58,12 @@ const App = () => {
                   <DashboardLayout />
                 </RequireAuth>
               }>
+                <Route index element={<SuperAdminOverviewPage />} />
+                <Route path="overview" element={<SuperAdminOverviewPage />} />
                 <Route path="tenants" element={<SuperAdminTenantsPage />} />
+                <Route path="tenants/new" element={<CreateTenantPage />} />
                 <Route path="users" element={<SuperAdminUsersPage />} />
+                <Route path="plans" element={<PlansPage />} />
               </Route>
 
               {/* Dashboard Routes */}

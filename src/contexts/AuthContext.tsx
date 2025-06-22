@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Role-based redirect
       switch (response.user.role) {
         case 'superadmin':
-          navigate('/superadmin/tenants');
+          navigate('/superadmin/overview');
           break;
         case 'attendant':
           navigate('/dashboard/readings/new');

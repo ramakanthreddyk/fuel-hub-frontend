@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +10,9 @@ import {
   FileText,
   Building2,
   UserCheck,
-  BarChart3
+  BarChart3,
+  Package,
+  Plus
 } from 'lucide-react';
 import {
   Sidebar,
@@ -72,6 +73,11 @@ const getMenuItems = (role: string) => {
 
   const adminItems = [
     {
+      title: "Overview",
+      url: "/superadmin/overview",
+      icon: BarChart3,
+    },
+    {
       title: "Tenants",
       url: "/superadmin/tenants",
       icon: Building2,
@@ -80,6 +86,11 @@ const getMenuItems = (role: string) => {
       title: "Users",
       url: "/superadmin/users",
       icon: Users,
+    },
+    {
+      title: "Plans",
+      url: "/superadmin/plans",
+      icon: Package,
     }
   ];
 
