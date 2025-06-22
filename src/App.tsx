@@ -11,6 +11,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 import StationsPage from "./pages/dashboard/StationsPage";
+import PumpsPage from "./pages/dashboard/PumpsPage";
+import NozzlesPage from "./pages/dashboard/NozzlesPage";
 import ReadingsPage from "./pages/dashboard/ReadingsPage";
 import CreditorsPage from "./pages/dashboard/CreditorsPage";
 import FuelPricesPage from "./pages/dashboard/FuelPricesPage";
@@ -60,6 +62,8 @@ const App = () => {
               }>
                 <Route index element={<StationsPage />} />
                 <Route path="stations" element={<StationsPage />} />
+                <Route path="stations/:stationId/pumps" element={<PumpsPage />} />
+                <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
                 <Route path="readings" element={<ReadingsPage />} />
                 <Route path="readings/new" element={<NewReadingPage />} />
                 <Route path="creditors" element={<CreditorsPage />} />

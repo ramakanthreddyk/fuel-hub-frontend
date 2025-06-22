@@ -2,8 +2,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Building2, MapPin, Fuel, Plus } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Building2, MapPin, Fuel, Plus, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const mockStations = [
   {
@@ -135,10 +135,14 @@ export default function StationsPage() {
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1">
-                  View Details
+                <Button asChild variant="outline" size="sm" className="flex-1">
+                  <Link to={`/dashboard/stations/${station.id}/pumps`}>
+                    <Fuel className="mr-1 h-3 w-3" />
+                    Pumps
+                  </Link>
                 </Button>
                 <Button variant="outline" size="sm" className="flex-1">
+                  <Settings className="mr-1 h-3 w-3" />
                   Manage
                 </Button>
               </div>
