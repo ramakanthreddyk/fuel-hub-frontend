@@ -4,17 +4,15 @@ import { apiClient } from './client';
 export interface FuelInventory {
   id: string;
   stationId: string;
+  stationName: string;
   fuelType: 'petrol' | 'diesel';
-  availableVolume: number;
+  currentVolume: number;
   lastUpdated: string;
-  station?: {
-    name: string;
-  };
 }
 
 export const fuelInventoryApi = {
-  // Get fuel inventory data
-  getFuelInventory: async (stationId?: string, fuelType?: string): Promise<FuelInventory[]> => {
+  // Get fuel inventory status
+  getFuelInventory: async (stationId?: string, fuelType?: 'petrol' | 'diesel'): Promise<FuelInventory[]> => {
     const params: any = {};
     if (stationId) params.stationId = stationId;
     if (fuelType) params.fuelType = fuelType;

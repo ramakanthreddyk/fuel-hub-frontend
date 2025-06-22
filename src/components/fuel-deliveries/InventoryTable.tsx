@@ -1,96 +1,73 @@
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useFuelInventory } from '@/hooks/useFuelInventory';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FuelInventory } from '@/api/fuel-inventory';
 import { format } from 'date-fns';
-import { AlertTriangle } from 'lucide-react';
 
-const LOW_STOCK_THRESHOLD = 500; // litres
+interface InventoryTableProps {
+  inventory: FuelInventory[];
+  isLoading: boolean;
+}
 
-export function InventoryTable() {
-  const { data: inventory, isLoading, error } = useFuelInventory();
-
+export function InventoryTable({ inventory, isLoading }: InventoryTableProps) {
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">Failed to load inventory data</p>
-      </div>
-    );
-  }
-
-  if (!inventory || inventory.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground">No inventory data available</p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Fuel Inventory Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Station</TableHead>
-            <TableHead>Fuel Type</TableHead>
-            <TableHead>Available Volume</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Last Updated</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {inventory.map((item) => {
-            const isLowStock = item.availableVolume < LOW_STOCK_THRESHOLD;
-            
-            return (
-              <TableRow key={item.id} className={isLowStock ? 'bg-red-50' : ''}>
-                <TableCell>{item.station?.name || 'Unknown Station'}</TableCell>
-                <TableCell>
-                  <Badge variant={item.fuelType === 'petrol' ? 'default' : 'secondary'}>
-                    {item.fuelType === 'petrol' ? 'Petrol' : 'Diesel'}
-                  </Badge>
-                </TableCell>
-                <TableCell className="font-mono">
-                  {item.availableVolume.toLocaleString()} L
-                </TableCell>
-                <TableCell>
-                  {isLowStock ? (
-                    <div className="flex items-center gap-2 text-red-600">
-                      <AlertTriangle className="h-4 w-4" />
-                      <span className="text-sm font-medium">Low Stock</span>
-                    </div>
-                  ) : (
-                    <Badge variant="outline" className="text-green-600">
-                      In Stock
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {format(new Date(item.lastUpdated), 'MMM dd, yyyy HH:mm')}
-                </TableCell>
+    <Card>
+      <CardHeader>
+        <CardTitle>Fuel Inventory Status</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {inventory.length === 0 ? (
+          <p className="text-muted-foreground text-center py-4">No inventory data available.</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Station</TableHead>
+                <TableHead>Fuel Type</TableHead>
+                <TableHead>Current Volume (L)</TableHead>
+                <TableHead>Last Updated</TableHead>
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+            </TableHeader>
+            <TableBody>
+              {inventory.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.stationName}</TableCell>
+                  <TableCell>
+                    <Badge variant={item.fuelType === 'petrol' ? 'default' : 'secondary'}>
+                      {item.fuelType.charAt(0).toUpperCase() + item.fuelType.slice(1)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`font-medium ${item.currentVolume < 1000 ? 'text-red-600' : 'text-green-600'}`}>
+                      {item.currentVolume.toLocaleString()}
+                    </span>
+                  </TableCell>
+                  <TableCell>{format(new Date(item.lastUpdated), 'MMM dd, yyyy HH:mm')}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
   );
 }

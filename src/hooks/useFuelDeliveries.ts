@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 export const useFuelDeliveries = (stationId?: string) => {
   return useQuery({
     queryKey: ['fuel-deliveries', stationId],
-    queryFn: () => fuelDeliveriesApi.getFuelDeliveries(stationId),
+    queryFn: () => fuelDeliveriesApi.getFuelDeliveries(stationId)
   });
 };
 
@@ -15,21 +15,22 @@ export const useCreateFuelDelivery = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: CreateFuelDeliveryRequest) => fuelDeliveriesApi.createFuelDelivery(data),
+    mutationFn: (deliveryData: CreateFuelDeliveryRequest) => 
+      fuelDeliveriesApi.createFuelDelivery(deliveryData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fuel-deliveries'] });
       queryClient.invalidateQueries({ queryKey: ['fuel-inventory'] });
       toast({
-        title: "Success",
-        description: "Fuel delivery logged successfully",
+        title: 'Success',
+        description: 'Fuel delivery recorded successfully'
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: "Failed to log fuel delivery",
-        variant: "destructive",
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to record fuel delivery',
+        variant: 'destructive'
       });
-    },
+    }
   });
 };
