@@ -111,8 +111,8 @@ const getMenuItems = (role: string) => {
       icon: UserCheck,
     },
     {
-      title: "Reports",
-      url: "/dashboard/reports",
+      title: "Manager Reports",
+      url: "/dashboard/manager-reports",
       icon: BarChart3,
     }
   ];
@@ -167,7 +167,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={`${item.title}-${item.url}`}>
                   <SidebarMenuButton asChild>
                     <Link 
                       to={item.url}
