@@ -1,5 +1,6 @@
 
 import { apiClient } from './client';
+import { ensureArray } from '@/utils/apiHelpers';
 
 export interface FuelPrice {
   id: string;
@@ -23,8 +24,13 @@ export interface CreateFuelPriceRequest {
 export const fuelPricesApi = {
   // Get all fuel prices
   getFuelPrices: async (): Promise<FuelPrice[]> => {
-    const response = await apiClient.get('/fuel-prices');
-    return response.data;
+    try {
+      const response = await apiClient.get('/fuel-prices');
+      return ensureArray<FuelPrice>(response.data);
+    } catch (error) {
+      console.error('Error fetching fuel prices:', error);
+      return [];
+    }
   },
 
   // Create new fuel price
