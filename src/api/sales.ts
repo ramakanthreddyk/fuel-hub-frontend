@@ -1,5 +1,6 @@
 
 import { apiClient } from './client';
+import { ensureArray } from '@/utils/apiHelpers';
 
 export interface Sale {
   id: string;
@@ -25,8 +26,8 @@ export interface Sale {
 
 export interface SalesFilters {
   stationId?: string;
-  fromDate?: string;
-  toDate?: string;
+  startDate?: string;
+  endDate?: string;
   paymentMethod?: string;
 }
 
@@ -41,7 +42,14 @@ export const salesApi = {
       }
     });
     
-    const response = await apiClient.get(`/sales?${params.toString()}`);
-    return response.data;
+    try {
+      const queryString = params.toString();
+      const url = `/sales${queryString ? `?${queryString}` : ''}`;
+      const response = await apiClient.get(url);
+      return ensureArray<Sale>(response.data.sales || []);
+    } catch (error) {
+      console.error('Error fetching sales:', error);
+      return [];
+    }
   }
 };
