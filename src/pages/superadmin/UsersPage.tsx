@@ -160,7 +160,7 @@ export default function SuperAdminUsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users?.map((user) => (
+                {Array.isArray(users) && users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
@@ -178,6 +178,13 @@ export default function SuperAdminUsersPage() {
                     </TableCell>
                   </TableRow>
                 ))}
+                {!Array.isArray(users) && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
+                      No users found or failed to load data
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           )}
