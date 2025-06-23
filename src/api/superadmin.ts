@@ -1,4 +1,3 @@
-
 import { apiClient } from './client';
 
 export interface SuperAdminSummary {
@@ -29,7 +28,7 @@ export interface CreateTenantRequest {
 export const superAdminApi = {
   // Get platform summary
   getSummary: async (): Promise<SuperAdminSummary> => {
-    const response = await apiClient.get('/admin/tenants/summary');
+    const response = await apiClient.get('/admin/analytics');
     return response.data;
   },
 

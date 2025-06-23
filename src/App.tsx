@@ -68,6 +68,7 @@ const App = () => {
                 <Route path="tenants/new" element={<CreateTenantPage />} />
                 <Route path="users" element={<SuperAdminUsersPage />} />
                 <Route path="plans" element={<PlansPage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
               </Route>
 
               {/* Dashboard Routes */}

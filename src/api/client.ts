@@ -9,9 +9,8 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  // Add CORS configuration
   withCredentials: false,
-  timeout: 10000, // 10 second timeout
+  timeout: 10000,
 });
 
 // Request interceptor to add auth token
@@ -32,11 +31,6 @@ apiClient.interceptors.request.use(
         config.headers['x-tenant-id'] = userData.tenantId;
       }
     }
-    
-    // Add CORS headers
-    config.headers['Access-Control-Allow-Origin'] = '*';
-    config.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
-    config.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, x-tenant-id';
     
     return config;
   },
@@ -64,22 +58,15 @@ apiClient.interceptors.response.use(
       data: error.response?.data
     });
     
-    // Handle CORS errors specifically
-    if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
-      console.error('[API-CLIENT] CORS or network error detected');
-      // You could show a toast here about backend connectivity issues
-    }
-    
     // Don't redirect on login page
     const isLoginRequest = error.config?.url?.includes('/auth/login');
     
     if (error.response?.status === 401 && !isLoginRequest) {
-      console.log('[API-CLIENT] 401 error detected, but not redirecting on login page');
+      console.log('[API-CLIENT] 401 error detected, redirecting to login');
       localStorage.removeItem('fuelsync_token');
       localStorage.removeItem('fuelsync_user');
       
       if (!window.location.pathname.includes('/login')) {
-        console.log('[API-CLIENT] Redirecting to login page');
         window.location.href = '/login';
       }
     }

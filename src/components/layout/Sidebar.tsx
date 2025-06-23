@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +13,7 @@ import {
   UserCheck,
   BarChart3,
   Package,
-  Plus
+  Calculator
 } from 'lucide-react';
 import {
   Sidebar,
@@ -28,103 +29,171 @@ import {
 } from '@/components/ui/sidebar';
 
 const getMenuItems = (role: string) => {
-  const commonItems = [
-    {
-      title: "Stations",
-      url: "/dashboard/stations",
-      icon: Building2,
-    },
-    {
-      title: "Readings",
-      url: "/dashboard/readings", 
-      icon: Gauge,
-    },
-    {
-      title: "Sales",
-      url: "/dashboard/sales",
-      icon: BarChart3,
-    },
-    {
-      title: "Creditors",
-      url: "/dashboard/creditors",
-      icon: DollarSign,
-    },
-    {
-      title: "Fuel Prices",
-      url: "/dashboard/fuel-prices",
-      icon: Fuel,
-    },
-    {
-      title: "Deliveries",
-      url: "/dashboard/fuel-deliveries",
-      icon: Fuel,
-    },
-    {
-      title: "Inventory",
-      url: "/dashboard/inventory",
-      icon: Fuel,
-    },
-    {
-      title: "Reports",
-      url: "/dashboard/reports",
-      icon: FileText,
-    },
-    {
-      title: "Settings",
-      url: "/dashboard/settings",
-      icon: Settings,
-    }
-  ];
-
-  const adminItems = [
-    {
-      title: "Overview",
-      url: "/superadmin/overview",
-      icon: BarChart3,
-    },
-    {
-      title: "Tenants",
-      url: "/superadmin/tenants",
-      icon: Building2,
-    },
-    {
-      title: "Users",
-      url: "/superadmin/users",
-      icon: Users,
-    },
-    {
-      title: "Plans",
-      url: "/superadmin/plans",
-      icon: Package,
-    },
-    {
-      title: "Analytics",
-      url: "/superadmin/analytics",
-      icon: BarChart3,
-    }
-  ];
-
-  const managerItems = [
-    {
-      title: "Employees",
-      url: "/dashboard/employees",
-      icon: UserCheck,
-    },
-    {
-      title: "Manager Reports",
-      url: "/dashboard/manager-reports",
-      icon: BarChart3,
-    }
-  ];
-
   switch (role) {
     case 'superadmin':
-      return [...adminItems, ...commonItems];
+      return [
+        {
+          title: "Overview",
+          url: "/superadmin/overview",
+          icon: BarChart3,
+        },
+        {
+          title: "Tenants",
+          url: "/superadmin/tenants",
+          icon: Building2,
+        },
+        {
+          title: "Users",
+          url: "/superadmin/users",
+          icon: Users,
+        },
+        {
+          title: "Plans",
+          url: "/superadmin/plans",
+          icon: Package,
+        },
+        {
+          title: "Analytics",
+          url: "/superadmin/analytics",
+          icon: BarChart3,
+        }
+      ];
+    
     case 'owner':
+      return [
+        {
+          title: "Summary",
+          url: "/dashboard/summary",
+          icon: BarChart3,
+        },
+        {
+          title: "Stations",
+          url: "/dashboard/stations",
+          icon: Building2,
+        },
+        {
+          title: "Readings",
+          url: "/dashboard/readings", 
+          icon: Gauge,
+        },
+        {
+          title: "Reconciliation",
+          url: "/dashboard/reconciliation",
+          icon: Calculator,
+        },
+        {
+          title: "Sales",
+          url: "/dashboard/sales",
+          icon: DollarSign,
+        },
+        {
+          title: "Creditors",
+          url: "/dashboard/creditors",
+          icon: DollarSign,
+        },
+        {
+          title: "Fuel Prices",
+          url: "/dashboard/fuel-prices",
+          icon: Fuel,
+        },
+        {
+          title: "Deliveries",
+          url: "/dashboard/fuel-deliveries",
+          icon: Fuel,
+        },
+        {
+          title: "Inventory",
+          url: "/dashboard/inventory",
+          icon: Package,
+        },
+        {
+          title: "Users",
+          url: "/dashboard/users",
+          icon: Users,
+        },
+        {
+          title: "Reports",
+          url: "/dashboard/reports",
+          icon: FileText,
+        },
+        {
+          title: "Settings",
+          url: "/dashboard/settings",
+          icon: Settings,
+        }
+      ];
+    
     case 'manager':
-      return [...commonItems, ...managerItems];
+      return [
+        {
+          title: "Summary",
+          url: "/dashboard/summary",
+          icon: BarChart3,
+        },
+        {
+          title: "Stations",
+          url: "/dashboard/stations",
+          icon: Building2,
+        },
+        {
+          title: "Readings",
+          url: "/dashboard/readings", 
+          icon: Gauge,
+        },
+        {
+          title: "Reconciliation",
+          url: "/dashboard/reconciliation",
+          icon: Calculator,
+        },
+        {
+          title: "Sales",
+          url: "/dashboard/sales",
+          icon: DollarSign,
+        },
+        {
+          title: "Creditors",
+          url: "/dashboard/creditors",
+          icon: DollarSign,
+        },
+        {
+          title: "Fuel Prices",
+          url: "/dashboard/fuel-prices",
+          icon: Fuel,
+        },
+        {
+          title: "Deliveries",
+          url: "/dashboard/fuel-deliveries",
+          icon: Fuel,
+        },
+        {
+          title: "Inventory",
+          url: "/dashboard/inventory",
+          icon: Package,
+        },
+        {
+          title: "Users",
+          url: "/dashboard/users",
+          icon: Users,
+        },
+        {
+          title: "Reports",
+          url: "/dashboard/reports",
+          icon: FileText,
+        },
+        {
+          title: "Settings",
+          url: "/dashboard/settings",
+          icon: Settings,
+        }
+      ];
+    
     case 'attendant':
       return [
+        {
+          title: "New Reading",
+          url: "/dashboard/readings/new",
+          icon: Gauge,
+        },
         {
           title: "Readings",
           url: "/dashboard/readings",
@@ -136,8 +205,9 @@ const getMenuItems = (role: string) => {
           icon: DollarSign,
         }
       ];
+    
     default:
-      return commonItems;
+      return [];
   }
 };
 
@@ -151,8 +221,12 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4">
         <div className="flex items-center space-x-2">
-          <Fuel className="h-6 w-6 text-blue-600" />
-          <span className="font-bold text-lg">FuelSync Hub</span>
+          <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg">
+            <Fuel className="h-4 w-4 text-white" />
+          </div>
+          <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            FuelSync Hub
+          </span>
         </div>
         {user?.tenantName && (
           <div className="text-xs text-muted-foreground">
@@ -188,7 +262,7 @@ export function AppSidebar() {
       
       <SidebarFooter className="p-4">
         <div className="text-xs text-muted-foreground">
-          Role: {user?.role}
+          Role: <span className="font-medium text-purple-600">{user?.role}</span>
         </div>
       </SidebarFooter>
     </Sidebar>
