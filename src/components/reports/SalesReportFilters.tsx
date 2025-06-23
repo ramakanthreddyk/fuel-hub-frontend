@@ -19,7 +19,9 @@ export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFilt
   });
 
   const handleFilterChange = (key: keyof SalesReportFilters, value: string) => {
-    onFiltersChange({ ...filters, [key]: value || undefined });
+    // If value is 'all', treat it as undefined (no filter)
+    const effectiveValue = value === 'all' ? undefined : value;
+    onFiltersChange({ ...filters, [key]: effectiveValue });
   };
 
   return (
@@ -52,14 +54,14 @@ export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFilt
           <div className="space-y-2">
             <Label>Station</Label>
             <Select
-              value={filters.stationId || ''}
+              value={filters.stationId || 'all'}
               onValueChange={(value) => handleFilterChange('stationId', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All stations" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All stations</SelectItem>
+                <SelectItem value="all">All stations</SelectItem>
                 {stations?.map((station) => (
                   <SelectItem key={station.id} value={station.id}>
                     {station.name}
@@ -72,14 +74,14 @@ export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFilt
           <div className="space-y-2">
             <Label>Payment Method</Label>
             <Select
-              value={filters.paymentMethod || ''}
+              value={filters.paymentMethod || 'all'}
               onValueChange={(value) => handleFilterChange('paymentMethod', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All methods" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All methods</SelectItem>
+                <SelectItem value="all">All methods</SelectItem>
                 <SelectItem value="cash">Cash</SelectItem>
                 <SelectItem value="card">Card</SelectItem>
                 <SelectItem value="upi">UPI</SelectItem>
