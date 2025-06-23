@@ -7,12 +7,18 @@ export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  // Add CORS configuration
+  withCredentials: false,
+  timeout: 10000, // 10 second timeout
 });
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
+    console.log(`[API-CLIENT] Making request to: ${config.baseURL}${config.url}`);
+    
     const token = localStorage.getItem('fuelsync_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -27,9 +33,15 @@ apiClient.interceptors.request.use(
       }
     }
     
+    // Add CORS headers
+    config.headers['Access-Control-Allow-Origin'] = '*';
+    config.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+    config.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, x-tenant-id';
+    
     return config;
   },
   (error) => {
+    console.error('[API-CLIENT] Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
@@ -52,16 +64,20 @@ apiClient.interceptors.response.use(
       data: error.response?.data
     });
     
+    // Handle CORS errors specifically
+    if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
+      console.error('[API-CLIENT] CORS or network error detected');
+      // You could show a toast here about backend connectivity issues
+    }
+    
     // Don't redirect on login page
     const isLoginRequest = error.config?.url?.includes('/auth/login');
     
     if (error.response?.status === 401 && !isLoginRequest) {
       console.log('[API-CLIENT] 401 error detected, but not redirecting on login page');
-      // Token expired or invalid - only redirect if not already on login page
       localStorage.removeItem('fuelsync_token');
       localStorage.removeItem('fuelsync_user');
       
-      // Use history instead of direct location change to avoid full page reload
       if (!window.location.pathname.includes('/login')) {
         console.log('[API-CLIENT] Redirecting to login page');
         window.location.href = '/login';
