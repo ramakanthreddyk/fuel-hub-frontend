@@ -16,13 +16,15 @@ interface SalesFilterBarProps {
 export function SalesFilterBar({ onFiltersChange }: SalesFilterBarProps) {
   const [filters, setFilters] = useState<SalesFilters>({});
 
-  const { data: stations } = useQuery({
+  const { data: stations = [] } = useQuery({
     queryKey: ['stations'],
     queryFn: stationsApi.getStations,
   });
 
   const handleFilterChange = (key: keyof SalesFilters, value: string) => {
-    const newFilters = { ...filters, [key]: value || undefined };
+    // If value is 'all', treat it as undefined (no filter)
+    const effectiveValue = value === 'all' ? undefined : value;
+    const newFilters = { ...filters, [key]: effectiveValue };
     setFilters(newFilters);
     onFiltersChange(newFilters);
   };
@@ -39,15 +41,15 @@ export function SalesFilterBar({ onFiltersChange }: SalesFilterBarProps) {
           <div className="grid gap-2">
             <Label htmlFor="station">Station</Label>
             <Select
-              value={filters.stationId || ''}
+              value={filters.stationId || 'all'}
               onValueChange={(value) => handleFilterChange('stationId', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All stations" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All stations</SelectItem>
-                {stations?.map((station) => (
+                <SelectItem value="all">All stations</SelectItem>
+                {Array.isArray(stations) && stations.map((station) => (
                   <SelectItem key={station.id} value={station.id}>
                     {station.name}
                   </SelectItem>
@@ -57,34 +59,34 @@ export function SalesFilterBar({ onFiltersChange }: SalesFilterBarProps) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="fromDate">From Date</Label>
+            <Label htmlFor="startDate">From Date</Label>
             <Input
               type="date"
-              value={filters.fromDate || ''}
-              onChange={(e) => handleFilterChange('fromDate', e.target.value)}
+              value={filters.startDate || ''}
+              onChange={(e) => handleFilterChange('startDate', e.target.value)}
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="toDate">To Date</Label>
+            <Label htmlFor="endDate">To Date</Label>
             <Input
               type="date"
-              value={filters.toDate || ''}
-              onChange={(e) => handleFilterChange('toDate', e.target.value)}
+              value={filters.endDate || ''}
+              onChange={(e) => handleFilterChange('endDate', e.target.value)}
             />
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="paymentMethod">Payment Method</Label>
             <Select
-              value={filters.paymentMethod || ''}
+              value={filters.paymentMethod || 'all'}
               onValueChange={(value) => handleFilterChange('paymentMethod', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All methods" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All methods</SelectItem>
+                <SelectItem value="all">All methods</SelectItem>
                 <SelectItem value="cash">Cash</SelectItem>
                 <SelectItem value="card">Card</SelectItem>
                 <SelectItem value="upi">UPI</SelectItem>
