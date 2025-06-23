@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +9,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Unauthorized from "./pages/Unauthorized";
 import LoginPage from "./pages/LoginPage";
 import StationsPage from "./pages/dashboard/StationsPage";
 import PumpsPage from "./pages/dashboard/PumpsPage";
