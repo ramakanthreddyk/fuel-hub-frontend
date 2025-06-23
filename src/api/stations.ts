@@ -1,5 +1,6 @@
 
 import { apiClient } from './client';
+import { ensureArray } from '@/utils/apiHelpers';
 
 export interface Station {
   id: string;
@@ -15,8 +16,13 @@ export interface Station {
 export const stationsApi = {
   // Get all stations for current tenant
   getStations: async (): Promise<Station[]> => {
-    const response = await apiClient.get('/stations');
-    return response.data;
+    try {
+      const response = await apiClient.get('/stations');
+      return ensureArray<Station>(response.data);
+    } catch (error) {
+      console.error('Error fetching stations:', error);
+      return [];
+    }
   },
   
   // Get station by ID
