@@ -7,13 +7,13 @@ import { format } from 'date-fns';
 import { Edit, Fuel } from 'lucide-react';
 
 export function FuelPriceTable() {
-  const { data: fuelPrices, isLoading } = useFuelPrices();
+  const { data: fuelPrices = [], isLoading } = useFuelPrices();
 
   if (isLoading) {
     return <div>Loading fuel prices...</div>;
   }
 
-  if (!fuelPrices || fuelPrices.length === 0) {
+  if (!fuelPrices || !Array.isArray(fuelPrices) || fuelPrices.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -42,7 +42,7 @@ export function FuelPriceTable() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {fuelPrices.map((price) => (
+          {Array.isArray(fuelPrices) && fuelPrices.map((price) => (
             <div key={price.id} className="flex items-center justify-between p-4 border rounded-lg">
               <div className="flex items-center space-x-4">
                 <Fuel className="h-8 w-8 text-blue-600" />
