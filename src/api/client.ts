@@ -36,13 +36,36 @@ apiClient.interceptors.request.use(
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('[API-CLIENT] Response received:', { 
+      url: response.config.url,
+      status: response.status,
+      hasData: !!response.data
+    });
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
+    console.error('[API-CLIENT] Request failed:', { 
+      url: error.config?.url,
+      status: error.response?.status,
+      message: error.message,
+      data: error.response?.data
+    });
+    
+    // Don't redirect on login page
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+    
+    if (error.response?.status === 401 && !isLoginRequest) {
+      console.log('[API-CLIENT] 401 error detected, but not redirecting on login page');
+      // Token expired or invalid - only redirect if not already on login page
       localStorage.removeItem('fuelsync_token');
       localStorage.removeItem('fuelsync_user');
-      window.location.href = '/login';
+      
+      // Use history instead of direct location change to avoid full page reload
+      if (!window.location.pathname.includes('/login')) {
+        console.log('[API-CLIENT] Redirecting to login page');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
