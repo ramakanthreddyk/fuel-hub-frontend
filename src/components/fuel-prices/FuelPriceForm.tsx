@@ -15,7 +15,7 @@ export function FuelPriceForm() {
   const [validFrom, setValidFrom] = useState(new Date().toISOString().slice(0, 16));
   
   const createFuelPrice = useCreateFuelPrice();
-  const { data: stations } = useStations();
+  const { data: stations = [] } = useStations();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +48,7 @@ export function FuelPriceForm() {
                 <SelectValue placeholder="Select station" />
               </SelectTrigger>
               <SelectContent>
-                {stations?.map((station) => (
+                {Array.isArray(stations) && stations.map((station) => (
                   <SelectItem key={station.id} value={station.id}>
                     {station.name}
                   </SelectItem>
