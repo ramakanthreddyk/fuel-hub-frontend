@@ -21,6 +21,8 @@ interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  setToken: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,8 +59,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
+    console.log(`[FRONTEND-AUTH] Login attempt for email: ${email}`);
+    
     try {
+      console.log('[FRONTEND-AUTH] Sending login request to API');
       const response = await authApi.login({ email, password });
+      
+      console.log('[FRONTEND-AUTH] Login response received:', {
+        token: response.token ? '✓ Present' : '✗ Missing',
+        user: response.user ? '✓ Present' : '✗ Missing',
+        role: response.user?.role
+      });
       
       setUser(response.user);
       setToken(response.token);
@@ -66,6 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('fuelsync_user', JSON.stringify(response.user));
       
       // Role-based redirect
+      console.log(`[FRONTEND-AUTH] Redirecting user with role: ${response.user.role}`);
       switch (response.user.role) {
         case 'superadmin':
           navigate('/superadmin/overview');
@@ -77,7 +89,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           navigate('/dashboard');
       }
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('[FRONTEND-AUTH] Login failed:', error);
+      console.log('[FRONTEND-AUTH] Error details:', error.response?.data || error.message);
       throw error;
     } finally {
       setIsLoading(false);
@@ -98,7 +111,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     isLoading,
-    isAuthenticated: !!user && !!token
+    isAuthenticated: !!user && !!token,
+    setUser,
+    setToken
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
