@@ -35,7 +35,7 @@
     --input: 220 13% 91%;
     --ring: 262.1 83.3% 57.8%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -92,11 +92,23 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Enhanced mobile responsiveness */
+  @media (max-width: 768px) {
+    .sidebar-mobile-overlay {
+      @apply fixed inset-0 bg-black/20 backdrop-blur-sm z-40;
+    }
   }
 }
 
-/* Add some colorful animations */
+/* Enhanced colorful animations and effects */
 @keyframes gradient-x {
   0%, 100% {
     transform: translateX(0%);
@@ -115,10 +127,141 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
 .animate-gradient-x {
   animation: gradient-x 15s ease infinite;
 }
 
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-bounce-soft {
+  animation: bounce-soft 2s ease-in-out infinite;
+}
+
+/* Enhanced glassmorphism effects */
+.glass {
+  @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
+}
+
+.glass-dark {
+  @apply bg-gray-900/80 backdrop-blur-sm border border-gray-800/20 shadow-lg;
+}
+
+/* Better focus styles */
+.focus-visible\:ring-brand:focus-visible {
+  @apply ring-2 ring-purple-500 ring-offset-2 ring-offset-background;
+}
+
+/* Enhanced button styles */
+.btn-gradient {
+  @apply bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 
+         text-white font-semibold shadow-lg hover:shadow-xl 
+         transition-all duration-200 active:scale-95;
+}
+
+.btn-gradient-success {
+  @apply bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 
+         text-white font-semibold shadow-lg hover:shadow-xl 
+         transition-all duration-200 active:scale-95;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-gradient-to-b from-purple-400 to-blue-500 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply from-purple-500 to-blue-600;
+}
+
+/* Better mobile touch targets */
+@media (max-width: 768px) {
+  button, .btn, [role="button"] {
+    min-height: 44px;
+  }
+  
+  input, select, textarea {
+    min-height: 44px;
+  }
+}
+
+/* Enhanced loading states */
+.loading-skeleton {
+  @apply animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%];
+  animation: shimmer 1.5s infinite;
+}
+
+/* Better form styling */
+.form-field {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg 
+         focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+         transition-colors duration-200;
+}
+
+.form-error {
+  @apply text-sm text-red-600 font-medium;
+}
+
+/* Enhanced card styles */
+.card-interactive {
+  @apply hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer;
+}
+
+.card-gradient {
+  @apply bg-gradient-to-br from-white via-blue-50 to-purple-50 
+         border border-white/20 shadow-lg backdrop-blur-sm;
 }
