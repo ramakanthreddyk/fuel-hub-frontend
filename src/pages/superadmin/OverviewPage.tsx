@@ -87,6 +87,70 @@ export default function SuperAdminOverviewPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* Recent Tenants */}
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-purple-600" />
+                Recent Tenants
+              </CardTitle>
+              <CardDescription>Latest tenant registrations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {summary?.recentTenants?.slice(0, 4).map((tenant) => (
+                  <div key={tenant.id} className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{tenant.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(tenant.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <Badge 
+                      className={
+                        tenant.status === 'active' 
+                          ? 'bg-green-100 text-green-800 border-green-200'
+                          : tenant.status === 'suspended'
+                          ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                          : 'bg-red-100 text-red-800 border-red-200'
+                      }
+                    >
+                      {tenant.status}
+                    </Badge>
+                  </div>
+                )) || (
+                  <div className="text-sm text-muted-foreground">No recent tenants</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Plan Distribution */}
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-blue-600" />
+                Plan Distribution
+              </CardTitle>
+              <CardDescription>Tenants by subscription plan</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {summary?.tenantsByPlan?.map((plan) => (
+                  <div key={plan.planName} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">{plan.planName}</span>
+                      <span className="text-muted-foreground">{plan.count} ({plan.percentage}%)</span>
+                    </div>
+                    <Progress value={plan.percentage} className="h-2" />
+                  </div>
+                )) || (
+                  <div className="text-sm text-muted-foreground">No plan data available</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Platform Health */}
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
@@ -122,82 +186,6 @@ export default function SuperAdminOverviewPage() {
                     <span className="font-medium">99.9%</span>
                   </div>
                   <Progress value={99.9} className="h-2" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tenant Growth */}
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
-                Tenant Growth
-              </CardTitle>
-              <CardDescription>Monthly tenant acquisition</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {summary?.signupsThisMonth || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    New tenants this month
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Growth Rate</span>
-                    <span className="font-medium text-green-600">+12%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Retention Rate</span>
-                    <span className="font-medium text-green-600">94%</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Activity */}
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-purple-600" />
-                Recent Activity
-              </CardTitle>
-              <CardDescription>Latest platform events</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">New tenant registered</div>
-                    <div className="text-xs text-muted-foreground">Downtown Fuel Co. - 2 hours ago</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">Plan upgraded</div>
-                    <div className="text-xs text-muted-foreground">Metro Stations to Premium - 4 hours ago</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">New admin user</div>
-                    <div className="text-xs text-muted-foreground">john.doe@admin.com - 6 hours ago</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">System maintenance</div>
-                    <div className="text-xs text-muted-foreground">Scheduled update completed - 1 day ago</div>
-                  </div>
                 </div>
               </div>
             </CardContent>
