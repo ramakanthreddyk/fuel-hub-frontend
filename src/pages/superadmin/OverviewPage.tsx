@@ -1,18 +1,39 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, Gauge, TrendingUp, CheckCircle, Package, BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Building2, Users, Gauge, TrendingUp, CheckCircle, Package, BarChart3, Plus, Settings, Eye } from 'lucide-react';
 import { superAdminApi } from '@/api/superadmin';
-import { MetricsCard } from '@/components/ui/metrics-card';
+import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { formatDate } from '@/utils/formatters';
+import { useNavigate } from 'react-router-dom';
 
 export default function SuperAdminOverviewPage() {
+  const navigate = useNavigate();
+  
   const { data: summary, isLoading } = useQuery({
     queryKey: ['superadmin-summary'],
     queryFn: superAdminApi.getSummary
   });
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'add-tenant':
+        navigate('/superadmin/tenants');
+        break;
+      case 'manage-users':
+        navigate('/superadmin/users');
+        break;
+      case 'update-plans':
+        navigate('/superadmin/plans');
+        break;
+      case 'view-analytics':
+        navigate('/superadmin/analytics');
+        break;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -56,34 +77,38 @@ export default function SuperAdminOverviewPage() {
           </p>
         </div>
 
-        {/* Key Metrics */}
+        {/* Enhanced Key Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <MetricsCard
+          <EnhancedMetricsCard
             title="Total Tenants"
             value={summary?.totalTenants || 0}
             icon={<Building2 className="h-5 w-5" />}
-            description={`${summary?.activeTenants || 0} active`}
+            description={`${summary?.activeTenants || 0} active organizations`}
+            gradient="from-purple-500 to-indigo-600"
           />
 
-          <MetricsCard
+          <EnhancedMetricsCard
             title="Total Users"
             value={summary?.totalUsers || 0}
             icon={<Users className="h-5 w-5" />}
             description="Across all tenants"
+            gradient="from-blue-500 to-cyan-600"
           />
 
-          <MetricsCard
+          <EnhancedMetricsCard
             title="Total Stations"
             value={summary?.totalStations || 0}
             icon={<Gauge className="h-5 w-5" />}
             description="Fuel stations registered"
+            gradient="from-green-500 to-emerald-600"
           />
 
-          <MetricsCard
+          <EnhancedMetricsCard
             title="New This Month"
             value={summary?.signupsThisMonth || 0}
             icon={<TrendingUp className="h-5 w-5" />}
             description="New tenant signups"
+            gradient="from-orange-500 to-red-600"
           />
         </div>
 
@@ -201,34 +226,61 @@ export default function SuperAdminOverviewPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <button className="flex items-center gap-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left">
-                <Building2 className="h-8 w-8 text-purple-600" />
+              <Button 
+                variant="ghost"
+                className="flex items-center gap-3 p-6 h-auto rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left justify-start"
+                onClick={() => handleQuickAction('add-tenant')}
+              >
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Plus className="h-6 w-6 text-purple-600" />
+                </div>
                 <div>
                   <div className="font-medium">Add Tenant</div>
                   <div className="text-xs text-muted-foreground">Create new organization</div>
                 </div>
-              </button>
-              <button className="flex items-center gap-3 p-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors text-left">
-                <Users className="h-8 w-8 text-blue-600" />
+              </Button>
+              
+              <Button 
+                variant="ghost"
+                className="flex items-center gap-3 p-6 h-auto rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors text-left justify-start"
+                onClick={() => handleQuickAction('manage-users')}
+              >
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
                 <div>
                   <div className="font-medium">Manage Users</div>
                   <div className="text-xs text-muted-foreground">Admin user management</div>
                 </div>
-              </button>
-              <button className="flex items-center gap-3 p-4 rounded-lg bg-green-50 hover:bg-green-100 transition-colors text-left">
-                <Package className="h-8 w-8 text-green-600" />
+              </Button>
+              
+              <Button 
+                variant="ghost"
+                className="flex items-center gap-3 p-6 h-auto rounded-lg bg-green-50 hover:bg-green-100 transition-colors text-left justify-start"
+                onClick={() => handleQuickAction('update-plans')}
+              >
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Settings className="h-6 w-6 text-green-600" />
+                </div>
                 <div>
                   <div className="font-medium">Update Plans</div>
                   <div className="text-xs text-muted-foreground">Modify subscription plans</div>
                 </div>
-              </button>
-              <button className="flex items-center gap-3 p-4 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors text-left">
-                <BarChart3 className="h-8 w-8 text-orange-600" />
+              </Button>
+              
+              <Button 
+                variant="ghost"
+                className="flex items-center gap-3 p-6 h-auto rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors text-left justify-start"
+                onClick={() => handleQuickAction('view-analytics')}
+              >
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Eye className="h-6 w-6 text-orange-600" />
+                </div>
                 <div>
                   <div className="font-medium">View Analytics</div>
                   <div className="text-xs text-muted-foreground">Platform insights</div>
                 </div>
-              </button>
+              </Button>
             </div>
           </CardContent>
         </Card>

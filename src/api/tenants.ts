@@ -7,7 +7,7 @@ export interface Tenant {
   schemaName: string;
   planId: string;
   planName: string;
-  status: 'active' | 'inactive' | 'suspended';
+  status: 'active' | 'suspended' | 'cancelled';
   createdAt: string;
   stationCount?: number;
   userCount?: number;
@@ -15,31 +15,33 @@ export interface Tenant {
 
 export interface CreateTenantRequest {
   name: string;
-  schema: string;
-  planType: 'basic' | 'premium' | 'enterprise';
+  schemaName?: string;
+  planId: string;
+  adminEmail?: string;
+  adminPassword?: string;
 }
 
 export const tenantsApi = {
   // Get all tenants (SuperAdmin only)
   getTenants: async (): Promise<Tenant[]> => {
-    const response = await apiClient.get('/tenants');
+    const response = await apiClient.get('/admin/tenants');
     return response.data;
   },
   
   // Create new tenant
   createTenant: async (tenantData: CreateTenantRequest): Promise<Tenant> => {
-    const response = await apiClient.post('/tenants', tenantData);
+    const response = await apiClient.post('/admin/tenants', tenantData);
     return response.data;
   },
   
   // Update tenant status
-  updateTenantStatus: async (tenantId: string, status: 'active' | 'inactive' | 'suspended'): Promise<Tenant> => {
-    const response = await apiClient.patch(`/tenants/${tenantId}/status`, { status });
+  updateTenantStatus: async (tenantId: string, status: 'active' | 'suspended' | 'cancelled'): Promise<Tenant> => {
+    const response = await apiClient.patch(`/admin/tenants/${tenantId}/status`, { status });
     return response.data;
   },
   
   // Delete tenant
   deleteTenant: async (tenantId: string): Promise<void> => {
-    await apiClient.delete(`/tenants/${tenantId}`);
+    await apiClient.delete(`/admin/tenants/${tenantId}`);
   }
 };

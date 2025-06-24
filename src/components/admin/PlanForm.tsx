@@ -10,6 +10,8 @@ interface PlanFormProps {
   onSubmit: (data: {
     name?: string;
     maxStations?: number;
+    maxPumpsPerStation?: number;
+    maxNozzlesPerPump?: number;
     priceMonthly?: number;
     priceYearly?: number;
     features?: string[];
@@ -24,6 +26,8 @@ export function PlanForm({ onSubmit, initialData, isLoading }: PlanFormProps) {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     maxStations: initialData?.maxStations || 5,
+    maxPumpsPerStation: initialData?.maxPumpsPerStation || 10,
+    maxNozzlesPerPump: initialData?.maxNozzlesPerPump || 4,
     priceMonthly: initialData?.priceMonthly || 0,
     priceYearly: initialData?.priceYearly || 0
   });
@@ -58,7 +62,8 @@ export function PlanForm({ onSubmit, initialData, isLoading }: PlanFormProps) {
           required
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      
+      <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="maxStations">Max Stations</Label>
           <Input
@@ -71,6 +76,31 @@ export function PlanForm({ onSubmit, initialData, isLoading }: PlanFormProps) {
           />
         </div>
         <div className="space-y-2">
+          <Label htmlFor="maxPumpsPerStation">Max Pumps/Station</Label>
+          <Input
+            id="maxPumpsPerStation"
+            type="number"
+            min="1"
+            value={formData.maxPumpsPerStation}
+            onChange={(e) => setFormData({ ...formData, maxPumpsPerStation: parseInt(e.target.value) })}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="maxNozzlesPerPump">Max Nozzles/Pump</Label>
+          <Input
+            id="maxNozzlesPerPump"
+            type="number"
+            min="1"
+            value={formData.maxNozzlesPerPump}
+            onChange={(e) => setFormData({ ...formData, maxNozzlesPerPump: parseInt(e.target.value) })}
+            required
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
           <Label htmlFor="priceMonthly">Monthly Price (₹)</Label>
           <Input
             id="priceMonthly"
@@ -82,19 +112,20 @@ export function PlanForm({ onSubmit, initialData, isLoading }: PlanFormProps) {
             required
           />
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="priceYearly">Yearly Price (₹)</Label>
+          <Input
+            id="priceYearly"
+            type="number"
+            min="0"
+            step="0.01"
+            value={formData.priceYearly}
+            onChange={(e) => setFormData({ ...formData, priceYearly: parseFloat(e.target.value) })}
+            required
+          />
+        </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="priceYearly">Yearly Price (₹)</Label>
-        <Input
-          id="priceYearly"
-          type="number"
-          min="0"
-          step="0.01"
-          value={formData.priceYearly}
-          onChange={(e) => setFormData({ ...formData, priceYearly: parseFloat(e.target.value) })}
-          required
-        />
-      </div>
+      
       <div className="space-y-2">
         <Label>Features</Label>
         <div className="flex space-x-2">
@@ -107,23 +138,25 @@ export function PlanForm({ onSubmit, initialData, isLoading }: PlanFormProps) {
             Add
           </Button>
         </div>
-        <ul className="mt-2 space-y-1">
+        <ul className="mt-2 space-y-1 max-h-32 overflow-y-auto">
           {features.map((feature, index) => (
             <li key={index} className="flex items-center justify-between bg-muted p-2 rounded-md">
-              <span>{feature}</span>
+              <span className="text-sm">{feature}</span>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => handleRemoveFeature(index)}
+                className="h-6 w-6 p-0"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3" />
               </Button>
             </li>
           ))}
         </ul>
       </div>
-      <Button type="submit" disabled={isLoading}>
+      
+      <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? "Saving..." : initialData ? "Update Plan" : "Create Plan"}
       </Button>
     </form>

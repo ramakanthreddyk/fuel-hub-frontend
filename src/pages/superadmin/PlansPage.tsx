@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Edit, Package, Plus } from 'lucide-react';
+import { Edit, Package, Plus, Trash2 } from 'lucide-react';
 import { superAdminApi, Plan } from '@/api/superadmin';
 import { useToast } from '@/hooks/use-toast';
 import { PlanForm } from '@/components/admin/PlanForm';
+import { formatCurrency } from '@/utils/formatters';
 
 export default function PlansPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -24,7 +25,7 @@ export default function PlansPage() {
   });
 
   const createPlanMutation = useMutation({
-    mutationFn: (data: any) => superAdminApi.updatePlan('new', data), // Assuming create uses same endpoint
+    mutationFn: superAdminApi.createPlan,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-plans'] });
       setIsCreateDialogOpen(false);
@@ -63,6 +64,24 @@ export default function PlansPage() {
     }
   });
 
+  const deletePlanMutation = useMutation({
+    mutationFn: superAdminApi.deletePlan,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-plans'] });
+      toast({
+        title: "Success",
+        description: "Plan deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete plan",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleEditPlan = (plan: Plan) => {
     setEditingPlan({ ...plan });
     setIsEditDialogOpen(true);
@@ -79,6 +98,12 @@ export default function PlansPage() {
 
   const handleCreatePlan = (data: any) => {
     createPlanMutation.mutate(data);
+  };
+
+  const handleDeletePlan = (planId: string) => {
+    if (confirm('Are you sure you want to delete this plan?')) {
+      deletePlanMutation.mutate(planId);
+    }
   };
 
   const getPlanColor = (planName: string) => {
@@ -164,21 +189,31 @@ export default function PlansPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-medium">{plan.maxStations}</TableCell>
-                    <TableCell>₹{plan.priceMonthly}</TableCell>
-                    <TableCell>₹{plan.priceYearly}</TableCell>
+                    <TableCell>{formatCurrency(plan.priceMonthly)}</TableCell>
+                    <TableCell>{formatCurrency(plan.priceYearly)}</TableCell>
                     <TableCell>
                       <div className="text-sm text-muted-foreground">
                         {plan.features.length} features
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleEditPlan(plan)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditPlan(plan)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeletePlan(plan.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
