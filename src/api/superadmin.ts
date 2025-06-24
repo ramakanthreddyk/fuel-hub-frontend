@@ -53,7 +53,7 @@ export interface AdminUser {
 export const superAdminApi = {
   // Get platform dashboard metrics
   getSummary: async (): Promise<SuperAdminSummary> => {
-    const response = await apiClient.get('/admin/dashboard');
+    const response = await apiClient.get('/analytics/dashboard');
     return response.data;
   },
 
