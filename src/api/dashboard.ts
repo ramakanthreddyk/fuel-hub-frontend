@@ -5,6 +5,8 @@ export interface SalesSummary {
   totalSales: number;
   totalVolume: number;
   transactionCount: number;
+  totalProfit: number;
+  profitMargin: number;
   period: string;
 }
 
