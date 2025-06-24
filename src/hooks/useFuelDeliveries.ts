@@ -6,7 +6,16 @@ import { useToast } from '@/hooks/use-toast';
 export const useFuelDeliveries = (stationId?: string) => {
   return useQuery({
     queryKey: ['fuel-deliveries', stationId],
-    queryFn: () => fuelDeliveriesApi.getFuelDeliveries(stationId)
+    queryFn: async () => {
+      try {
+        const response = await fuelDeliveriesApi.getFuelDeliveries(stationId);
+        // Ensure we always return an array
+        return Array.isArray(response) ? response : [];
+      } catch (error) {
+        console.error('Error fetching fuel deliveries:', error);
+        throw error;
+      }
+    }
   });
 };
 

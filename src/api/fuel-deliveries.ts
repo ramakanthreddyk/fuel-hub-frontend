@@ -25,7 +25,20 @@ export const fuelDeliveriesApi = {
   getFuelDeliveries: async (stationId?: string): Promise<FuelDelivery[]> => {
     const params = stationId ? { stationId } : {};
     const response = await apiClient.get('/fuel-deliveries', { params });
-    return response.data;
+    
+    console.log('Fuel deliveries API response:', response.data);
+    
+    // Handle different response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    } else if (response.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    } else if (response.data && Array.isArray(response.data.deliveries)) {
+      return response.data.deliveries;
+    } else {
+      console.warn('Unexpected fuel deliveries response format:', response.data);
+      return [];
+    }
   },
 
   // Create new fuel delivery
