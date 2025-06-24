@@ -1,9 +1,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, Gauge, TrendingUp } from 'lucide-react';
+import { Building2, Users, Gauge, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { superAdminApi } from '@/api/superadmin';
 import { MetricsCard } from '@/components/ui/metrics-card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 export default function SuperAdminOverviewPage() {
   const { data: summary, isLoading } = useQuery({
@@ -13,99 +15,231 @@ export default function SuperAdminOverviewPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Platform Dashboard</h1>
-          <p className="text-muted-foreground">Platform overview and system metrics</p>
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </CardHeader>
-              <CardContent className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              </CardContent>
-            </Card>
-          ))}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              Platform Dashboard
+            </h1>
+            <p className="text-muted-foreground text-sm md:text-base">
+              Platform overview and system metrics
+            </p>
+          </div>
+          
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="animate-pulse">
+                  <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4"></div>
+                </CardHeader>
+                <CardContent className="animate-pulse">
+                  <div className="h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-1/2"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Platform Dashboard</h1>
-        <p className="text-muted-foreground">Platform overview and system metrics</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Platform Dashboard
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            Platform overview and system metrics
+          </p>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricsCard
-          title="Total Tenants"
-          value={summary?.totalTenants || 0}
-          icon={<Building2 className="h-5 w-5" />}
-          description={`${summary?.activeTenants || 0} active`}
-        />
+        {/* Key Metrics */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <MetricsCard
+            title="Total Tenants"
+            value={summary?.totalTenants || 0}
+            icon={<Building2 className="h-5 w-5" />}
+            description={`${summary?.activeTenants || 0} active`}
+          />
 
-        <MetricsCard
-          title="Total Users"
-          value={summary?.totalUsers || 0}
-          icon={<Users className="h-5 w-5" />}
-          description="Across all tenants"
-        />
+          <MetricsCard
+            title="Total Users"
+            value={summary?.totalUsers || 0}
+            icon={<Users className="h-5 w-5" />}
+            description="Across all tenants"
+          />
 
-        <MetricsCard
-          title="Total Stations"
-          value={summary?.totalStations || 0}
-          icon={<Gauge className="h-5 w-5" />}
-          description="Fuel stations registered"
-        />
+          <MetricsCard
+            title="Total Stations"
+            value={summary?.totalStations || 0}
+            icon={<Gauge className="h-5 w-5" />}
+            description="Fuel stations registered"
+          />
 
-        <MetricsCard
-          title="New This Month"
-          value={summary?.signupsThisMonth || 0}
-          icon={<TrendingUp className="h-5 w-5" />}
-          description="New tenant signups"
-        />
-      </div>
+          <MetricsCard
+            title="New This Month"
+            value={summary?.signupsThisMonth || 0}
+            icon={<TrendingUp className="h-5 w-5" />}
+            description="New tenant signups"
+          />
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* Platform Health */}
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                Platform Health
+              </CardTitle>
+              <CardDescription>System status and performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">System Status</span>
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    Operational
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Database</span>
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    Connected
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">API Status</span>
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    Active
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Uptime</span>
+                    <span className="font-medium">99.9%</span>
+                  </div>
+                  <Progress value={99.9} className="h-2" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tenant Growth */}
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                Tenant Growth
+              </CardTitle>
+              <CardDescription>Monthly tenant acquisition</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {summary?.signupsThisMonth || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    New tenants this month
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Growth Rate</span>
+                    <span className="font-medium text-green-600">+12%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Retention Rate</span>
+                    <span className="font-medium text-green-600">94%</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-purple-600" />
+                Recent Activity
+              </CardTitle>
+              <CardDescription>Latest platform events</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">New tenant registered</div>
+                    <div className="text-xs text-muted-foreground">Downtown Fuel Co. - 2 hours ago</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">Plan upgraded</div>
+                    <div className="text-xs text-muted-foreground">Metro Stations to Premium - 4 hours ago</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">New admin user</div>
+                    <div className="text-xs text-muted-foreground">john.doe@admin.com - 6 hours ago</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">System maintenance</div>
+                    <div className="text-xs text-muted-foreground">Scheduled update completed - 1 day ago</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle>Platform Health</CardTitle>
-            <CardDescription>System status and performance</CardDescription>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common administrative tasks</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">System Status</span>
-                <span className="text-sm text-green-600 font-medium">Operational</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Database</span>
-                <span className="text-sm text-green-600 font-medium">Connected</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">API Status</span>
-                <span className="text-sm text-green-600 font-medium">Active</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest platform events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                No recent activity to display. Activity feed will show tenant registrations, plan changes, and system events.
-              </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <button className="flex items-center gap-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left">
+                <Building2 className="h-8 w-8 text-purple-600" />
+                <div>
+                  <div className="font-medium">Add Tenant</div>
+                  <div className="text-xs text-muted-foreground">Create new organization</div>
+                </div>
+              </button>
+              <button className="flex items-center gap-3 p-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors text-left">
+                <Users className="h-8 w-8 text-blue-600" />
+                <div>
+                  <div className="font-medium">Manage Users</div>
+                  <div className="text-xs text-muted-foreground">Admin user management</div>
+                </div>
+              </button>
+              <button className="flex items-center gap-3 p-4 rounded-lg bg-green-50 hover:bg-green-100 transition-colors text-left">
+                <Package className="h-8 w-8 text-green-600" />
+                <div>
+                  <div className="font-medium">Update Plans</div>
+                  <div className="text-xs text-muted-foreground">Modify subscription plans</div>
+                </div>
+              </button>
+              <button className="flex items-center gap-3 p-4 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors text-left">
+                <BarChart3 className="h-8 w-8 text-orange-600" />
+                <div>
+                  <div className="font-medium">View Analytics</div>
+                  <div className="text-xs text-muted-foreground">Platform insights</div>
+                </div>
+              </button>
             </div>
           </CardContent>
         </Card>

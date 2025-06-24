@@ -32,9 +32,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
-  SidebarFooter
+  SidebarFooter,
+  useSidebar
 } from '@/components/ui/sidebar';
-import { Badge } from '@/components/ui/badge';
 
 const getMenuItems = (role: string) => {
   switch (role) {
@@ -286,45 +286,16 @@ const getMenuItems = (role: string) => {
 export function AppSidebar() {
   const { user } = useAuth();
   const location = useLocation();
+  const { setOpenMobile, isMobile } = useSidebar();
   
   const menuItems = getMenuItems(user?.role || '');
 
-  const getRoleDetails = (role: string) => {
-    switch (role) {
-      case 'superadmin':
-        return { 
-          label: 'Super Administrator', 
-          color: 'bg-gradient-to-r from-purple-600 to-pink-600',
-          icon: '👑'
-        };
-      case 'owner':
-        return { 
-          label: 'Business Owner', 
-          color: 'bg-gradient-to-r from-blue-600 to-indigo-600',
-          icon: '🏢'
-        };
-      case 'manager':
-        return { 
-          label: 'Station Manager', 
-          color: 'bg-gradient-to-r from-green-600 to-emerald-600',
-          icon: '👨‍💼'
-        };
-      case 'attendant':
-        return { 
-          label: 'Fuel Attendant', 
-          color: 'bg-gradient-to-r from-orange-600 to-red-600',
-          icon: '⛽'
-        };
-      default:
-        return { 
-          label: 'User', 
-          color: 'bg-gradient-to-r from-gray-600 to-slate-600',
-          icon: '👤'
-        };
+  // Close mobile sidebar when a menu item is clicked
+  const handleMenuItemClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
     }
   };
-
-  const roleDetails = getRoleDetails(user?.role || '');
 
   return (
     <Sidebar className="border-r-0 shadow-xl">
@@ -343,29 +314,14 @@ export function AppSidebar() {
           </div>
         </div>
         
-        {user && (
-          <div className="space-y-3">
-            {user.tenantName && (
-              <div className="p-3 bg-white/80 backdrop-blur-sm rounded-lg border border-white/20 shadow-sm">
-                <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">
-                  Organization
-                </div>
-                <div className="font-semibold text-sm text-gray-800 truncate">
-                  {user.tenantName}
-                </div>
-              </div>
-            )}
-            
-            <div className="flex items-center gap-3 p-3 bg-white/80 backdrop-blur-sm rounded-lg border border-white/20 shadow-sm">
-              <div className="text-lg">{roleDetails.icon}</div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                  Role
-                </div>
-                <Badge className={`${roleDetails.color} text-white border-0 text-xs font-medium mt-1`}>
-                  {roleDetails.label}
-                </Badge>
-              </div>
+        {/* Tenant info moved to smaller section */}
+        {user?.tenantName && user.role !== 'superadmin' && (
+          <div className="p-3 bg-white/80 backdrop-blur-sm rounded-lg border border-white/20 shadow-sm">
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">
+              Organization
+            </div>
+            <div className="font-semibold text-sm text-gray-800 truncate">
+              {user.tenantName}
             </div>
           </div>
         )}
@@ -374,7 +330,7 @@ export function AppSidebar() {
       <SidebarContent className="px-3 py-4">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
-            Navigation
+            {user?.role === 'superadmin' ? 'Platform Management' : 'Navigation'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
@@ -383,6 +339,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <Link 
                       to={item.url}
+                      onClick={handleMenuItemClick}
                       className={cn(
                         "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group hover:shadow-md",
                         location.pathname === item.url 
