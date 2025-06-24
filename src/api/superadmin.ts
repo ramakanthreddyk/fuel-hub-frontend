@@ -1,17 +1,32 @@
+
 import { apiClient } from './client';
 
 export interface SuperAdminSummary {
   totalTenants: number;
   activeTenants: number;
-  totalStations: number;
+  totalPlans: number;
+  totalAdminUsers: number;
   totalUsers: number;
-  signupsThisMonth: number;
+  totalStations: number;
+  recentTenants: Array<{
+    id: string;
+    name: string;
+    createdAt: string;
+    status: "active" | "suspended" | "cancelled";
+  }>;
+  tenantsByPlan: Array<{
+    planName: string;
+    count: number;
+    percentage: number;
+  }>;
 }
 
 export interface Plan {
   id: string;
   name: string;
   maxStations: number;
+  maxPumpsPerStation: number;
+  maxNozzlesPerPump: number;
   priceMonthly: number;
   priceYearly: number;
   features: string[];
@@ -19,16 +34,16 @@ export interface Plan {
 
 export interface CreateTenantRequest {
   name: string;
-  plan: string;
-  email: string;
-  password: string;
-  schema: string;
+  planId: string;
+  adminEmail: string;
+  adminPassword: string;
+  schemaName: string;
 }
 
 export const superAdminApi = {
-  // Get platform summary
+  // Get platform dashboard metrics
   getSummary: async (): Promise<SuperAdminSummary> => {
-    const response = await apiClient.get('/admin/analytics');
+    const response = await apiClient.get('/analytics/dashboard');
     return response.data;
   },
 

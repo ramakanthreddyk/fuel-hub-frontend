@@ -17,7 +17,105 @@ All endpoints are prefixed with `/api/v1`
 
 ---
 
-## 1. DASHBOARD ENDPOINTS
+## 1. AUTHENTICATION ENDPOINTS
+
+### POST /auth/login
+**Purpose:** Authenticate user and get JWT token
+**Request Body:**
+```typescript
+{
+  email: string; // Supports formats: user@domain.com, user@tenant_name.com
+  password: string;
+}
+```
+
+**Expected Response:**
+```typescript
+{
+  token: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: "superadmin" | "owner" | "manager" | "attendant";
+    tenantId?: string;
+    tenantName?: string;
+  };
+}
+```
+
+---
+
+## 2. SUPERADMIN ANALYTICS ENDPOINTS
+
+### GET /analytics/dashboard
+**Purpose:** Get SuperAdmin dashboard metrics
+**Role Required:** superadmin
+
+**Expected Response:**
+```typescript
+{
+  totalTenants: number;
+  activeTenants: number;
+  totalPlans: number;
+  totalAdminUsers: number;
+  totalUsers: number; // Users across all tenants
+  totalStations: number; // Stations across all tenants
+  recentTenants: Array<{
+    id: string;
+    name: string;
+    createdAt: string;
+    status: "active" | "suspended" | "cancelled";
+  }>;
+  tenantsByPlan: Array<{
+    planName: string;
+    count: number;
+    percentage: number;
+  }>;
+}
+```
+
+### GET /analytics/tenant/:id
+**Purpose:** Get detailed analytics for a specific tenant
+**Role Required:** superadmin
+
+**Expected Response:**
+```typescript
+{
+  tenant: {
+    id: string;
+    name: string;
+    status: string;
+    planName: string;
+    createdAt: string;
+  };
+  metrics: {
+    totalUsers: number;
+    totalStations: number;
+    totalSales: number;
+    totalVolume: number;
+    monthlyGrowth: number;
+  };
+  stationMetrics: Array<{
+    stationId: string;
+    stationName: string;
+    sales: number;
+    volume: number;
+    transactions: number;
+  }>;
+  userActivity: Array<{
+    userId: string;
+    userName: string;
+    lastLogin: string;
+    role: string;
+    isActive: boolean;
+  }>;
+}
+```
+
+---
+
+## 3. DASHBOARD ENDPOINTS
 
 ### GET /dashboard/sales-summary
 **Purpose:** Get sales overview with profit metrics
@@ -85,7 +183,7 @@ Array<{
 
 ---
 
-## 2. STATION MANAGEMENT
+## 4. STATION MANAGEMENT
 
 ### GET /stations
 **Query Parameters:**
@@ -111,7 +209,158 @@ Array<{
 }>
 ```
 
-### GET /stations/compare
+### GET /stations/:id
+**Expected Response:**
+```typescript
+{
+  id: string;
+  name: string;
+  address: string;
+  status: "active" | "inactive" | "maintenance";
+  manager?: string;
+  attendantCount: number;
+  pumpCount: number;
+  createdAt: string;
+}
+```
+
+### GET /pumps
+**Query Parameters:**
+- `stationId?: string`
+
+**Expected Response:**
+```typescript
+Array<{
+  id: string;
+  label: string;
+  serialNumber: string;
+  status: "active" | "inactive" | "maintenance";
+  stationId: string;
+}>
+```
+
+### GET /nozzles
+**Query Parameters:**
+- `pumpId?: string`
+
+**Expected Response:**
+```typescript
+Array<{
+  id: string;
+  nozzleNumber: number;
+  fuelType: "petrol" | "diesel" | "premium";
+  status: "active" | "inactive" | "maintenance";
+  pumpId: string;
+}>
+```
+
+---
+
+## 5. SUPERADMIN MANAGEMENT
+
+### GET /admin/tenants
+**Purpose:** List all tenant organizations
+**Role Required:** superadmin
+
+**Expected Response:**
+```typescript
+Array<{
+  id: string;
+  name: string;
+  schemaName: string;
+  planName: string;
+  status: "active" | "suspended" | "cancelled";
+  createdAt: string;
+  adminUser?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}>
+```
+
+### POST /admin/tenants
+**Purpose:** Create new tenant organization
+**Role Required:** superadmin
+
+**Request Body:**
+```typescript
+{
+  name: string;
+  planId: string;
+  adminEmail: string;
+  adminPassword: string;
+  schemaName: string; // Auto-generated from name
+}
+```
+
+### PUT /admin/tenants/:id/status
+**Purpose:** Update tenant status
+**Role Required:** superadmin
+
+**Request Body:**
+```typescript
+{
+  status: "active" | "suspended" | "cancelled";
+}
+```
+
+### GET /admin/plans
+**Purpose:** List all subscription plans
+**Role Required:** superadmin
+
+**Expected Response:**
+```typescript
+Array<{
+  id: string;
+  name: string;
+  maxStations: number;
+  maxPumpsPerStation: number;
+  maxNozzlesPerPump: number;
+  priceMonthly: number;
+  priceYearly: number;
+  features: string[];
+}>
+```
+
+### POST /admin/plans
+**Purpose:** Create new subscription plan
+**Role Required:** superadmin
+
+**Request Body:**
+```typescript
+{
+  name: string;
+  maxStations: number;
+  maxPumpsPerStation: number;
+  maxNozzlesPerPump: number;
+  priceMonthly: number;
+  priceYearly: number;
+  features: string[];
+}
+```
+
+### GET /admin/users
+**Purpose:** List all admin users
+**Role Required:** superadmin
+
+**Expected Response:**
+```typescript
+Array<{
+  id: string;
+  name: string;
+  email: string;
+  role: "superadmin" | "admin";
+  createdAt: string;
+  lastLogin?: string;
+}>
+```
+
+---
+
+## 6. ANALYTICS ENDPOINTS
+
+### GET /analytics/station-comparison
 **Query Parameters:**
 - `stationIds`: comma-separated UUIDs
 - `period`: "today" | "week" | "month"
@@ -127,28 +376,6 @@ Array<{
   growth: number;
 }>
 ```
-
-### GET /stations/ranking
-**Query Parameters:**
-- `metric`: "sales" | "volume" | "growth"
-- `period`: "today" | "week" | "month"
-
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  name: string;
-  sales: number;
-  volume: number;
-  growth: number;
-  efficiency: number;
-  rank: number;
-}>
-```
-
----
-
-## 3. ANALYTICS ENDPOINTS
 
 ### GET /analytics/hourly-sales
 **Query Parameters:**
@@ -166,17 +393,6 @@ Array<{
 }>
 ```
 
-### GET /analytics/peak-hours
-**Query Parameters:** `stationId?`: string
-**Expected Response:**
-```typescript
-Array<{
-  timeRange: string; // "09:00-10:00"
-  avgSales: number;
-  avgVolume: number;
-}>
-```
-
 ### GET /analytics/fuel-performance
 **Expected Response:**
 ```typescript
@@ -191,6 +407,8 @@ Array<{
 
 ### GET /analytics/superadmin
 **Purpose:** Platform-wide analytics for superadmin
+**Role Required:** superadmin
+
 **Expected Response:**
 ```typescript
 {
@@ -215,24 +433,7 @@ Array<{
 
 ---
 
-## 4. INVENTORY MANAGEMENT
-
-### GET /fuel-inventory
-**Query Parameters:**
-- `stationId?`: string
-- `fuelType?`: "petrol" | "diesel"
-
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  stationId: string;
-  stationName: string;
-  fuelType: "petrol" | "diesel";
-  currentVolume: number;
-  lastUpdated: string; // ISO date
-}>
-```
+## 7. INVENTORY & ALERTS
 
 ### GET /inventory/alerts
 **Query Parameters:** `unreadOnly?: boolean`
@@ -253,96 +454,16 @@ Array<{
 }>
 ```
 
-### PATCH /alerts/{alertId}/read
-**Purpose:** Mark alert as read
-**Expected Response:** `204 No Content`
-
-### DELETE /alerts/{alertId}
-**Purpose:** Dismiss alert
-**Expected Response:** `204 No Content`
-
 ---
 
-## 5. REPORTS & EXPORT
-
-### GET /reports/sales
-**Query Parameters:**
-- `startDate?`: ISO date
-- `endDate?`: ISO date
-- `paymentMethod?`: string
-- `nozzleId?`: string
-- `stationId?`: string
-
-**Expected Response:**
-```typescript
-{
-  data: Array<{
-    id: string;
-    date: string;
-    fuelType: "petrol" | "diesel" | "premium";
-    volume: number;
-    pricePerLitre: number;
-    amount: number;
-    paymentMethod: "cash" | "card" | "upi" | "credit";
-    attendant: string;
-    stationName: string;
-    nozzleNumber: number;
-  }>;
-  summary: {
-    totalVolume: number;
-    totalRevenue: number;
-    fuelTypeBreakdown: {
-      petrol: { volume: number; revenue: number };
-      diesel: { volume: number; revenue: number };
-      premium: { volume: number; revenue: number };
-    };
-    paymentMethodBreakdown: {
-      cash: number;
-      card: number;
-      upi: number;
-      credit: number;
-    };
-  };
-}
-```
-
-### GET /reports/sales/export
-**Query Parameters:** Same as sales report
-**Expected Response:** CSV file blob
-
-### POST /reports/export
-**Request Body:**
-```typescript
-{
-  type: "sales" | "inventory" | "creditors" | "performance" | "reconciliation";
-  format: "pdf" | "excel" | "csv";
-  stationId?: string;
-  dateRange?: { from: Date; to: Date };
-}
-```
-**Expected Response:** File blob
-
-### POST /reports/schedule
-**Request Body:**
-```typescript
-{
-  type: string;
-  stationId?: string;
-  frequency: "daily" | "weekly" | "monthly";
-}
-```
-**Expected Response:** `201 Created`
-
----
-
-## 6. ERROR HANDLING
+## 8. ERROR HANDLING
 
 All endpoints should return consistent error responses:
 
 ### 400 Bad Request
 ```typescript
 {
-  error: "VALIDATION_ERROR";
+  success: false;
   message: string;
   details?: Array<{
     field: string;
@@ -354,15 +475,15 @@ All endpoints should return consistent error responses:
 ### 401 Unauthorized
 ```typescript
 {
-  error: "UNAUTHORIZED";
-  message: "Invalid or expired token";
+  success: false;
+  message: "Invalid or expired token" | "User not found: email@domain.com";
 }
 ```
 
 ### 403 Forbidden
 ```typescript
 {
-  error: "FORBIDDEN";
+  success: false;
   message: "Insufficient permissions";
 }
 ```
@@ -370,7 +491,7 @@ All endpoints should return consistent error responses:
 ### 404 Not Found
 ```typescript
 {
-  error: "NOT_FOUND";
+  success: false;
   message: "Resource not found";
 }
 ```
@@ -378,70 +499,46 @@ All endpoints should return consistent error responses:
 ### 500 Internal Server Error
 ```typescript
 {
-  error: "INTERNAL_ERROR";
+  success: false;
   message: "An unexpected error occurred";
 }
 ```
 
 ---
 
-## 7. PAGINATION
+## 9. SUPPORTED EMAIL FORMATS
 
-For large datasets, use cursor-based pagination:
-
-**Query Parameters:**
-- `limit?`: number (default: 50, max: 500)
-- `cursor?`: string
-
-**Response Format:**
-```typescript
-{
-  data: Array<T>;
-  pagination: {
-    hasNext: boolean;
-    nextCursor?: string;
-    total?: number;
-  };
-}
-```
+The authentication system supports these email formats:
+- Standard: `user@domain.com`
+- Tenant-specific: `user@tenant_name.com` (e.g., `owner@production_tenant.com`)
+- Demo accounts: `admin@fuelsync.dev`, `owner@demo.com`, etc.
 
 ---
 
-## 8. REAL-TIME UPDATES
+## 10. MULTI-TENANCY & SECURITY
 
-Frontend expects WebSocket support for:
-- Alert notifications
-- Live sales updates
-- Inventory level changes
-
-**WebSocket Events:**
-```typescript
-// Alerts
-{
-  type: "ALERT_CREATED";
-  data: Alert;
-}
-
-// Sales updates
-{
-  type: "SALE_COMPLETED";
-  data: {
-    stationId: string;
-    amount: number;
-    timestamp: string;
-  };
-}
-```
+- **Tenant Isolation:** All data is scoped by `x-tenant-id` header
+- **Role-based Access:** Endpoints respect user roles (superadmin, owner, manager, attendant)
+- **SuperAdmin Access:** SuperAdmin can access cross-tenant data for platform management
+- **Data Validation:** All inputs validated with detailed error responses
+- **Audit Logs:** All data modifications tracked for compliance
 
 ---
 
-## Notes for Backend Implementation
+## 11. PERFORMANCE & CACHING
 
-1. **Multi-tenancy:** All data must be scoped by `x-tenant-id` header
-2. **Role-based access:** Endpoints should respect user roles (superadmin, owner, manager, attendant)
-3. **Data validation:** Validate all inputs and return 400 with details for validation errors
-4. **Performance:** Implement caching for dashboard endpoints
-5. **Audit logs:** Track all data modifications for compliance
-6. **Rate limiting:** Implement appropriate rate limits per tenant/user
-7. **File uploads:** Support multipart/form-data for bulk imports
-8. **Date handling:** Always use ISO 8601 format for dates
+- **Caching:** Dashboard endpoints implement appropriate caching
+- **Rate Limiting:** Per tenant/user rate limits applied
+- **Pagination:** Large datasets use cursor-based pagination
+- **Compression:** All responses use gzip compression
+
+---
+
+## Notes for Frontend Implementation
+
+1. **Error Handling:** Always check `success` field in responses
+2. **Loading States:** Implement proper loading skeletons
+3. **Retry Logic:** Implement exponential backoff for failed requests
+4. **Type Safety:** Use TypeScript interfaces for all API responses
+5. **Multi-tenant Context:** Always include `x-tenant-id` except for SuperAdmin endpoints
+6. **Date Handling:** Use ISO 8601 format consistently

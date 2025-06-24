@@ -3,7 +3,7 @@ import { apiClient } from './client';
 import { UserRole } from '@/contexts/AuthContext';
 
 export interface LoginRequest {
-  email: string;
+  email: string; // Supports formats: user@domain.com, user@tenant_name.com
   password: string;
 }
 
@@ -39,27 +39,39 @@ export const authApi = {
       // Validate response structure
       if (!response.data.token) {
         console.error('[AUTH-API] Missing token in response');
-        alert('Login failed: Missing token in response');
         throw new Error('Missing token in response');
       }
       
       if (!response.data.user) {
         console.error('[AUTH-API] Missing user data in response');
-        alert('Login failed: Missing user data in response');
         throw new Error('Missing user data in response');
       }
       
-      // Ensure tenant ID is set for non-superadmin users
+      // Extract tenant from email if it follows tenant-specific format (user@tenant_name.com)
       if (response.data.user.role !== 'superadmin' && !response.data.user.tenantId) {
-        console.log('[AUTH-API] Setting default tenant ID for non-superadmin user');
-        response.data.user.tenantId = 'production_tenant';
+        const emailParts = credentials.email.split('@');
+        if (emailParts.length === 2) {
+          const domain = emailParts[1];
+          // Check if domain looks like a tenant name (not a standard domain)
+          if (!domain.includes('.') || domain.endsWith('.com')) {
+            const tenantName = domain.replace('.com', '');
+            response.data.user.tenantId = tenantName;
+            response.data.user.tenantName = tenantName;
+            console.log('[AUTH-API] Extracted tenant from email:', tenantName);
+          }
+        }
+        
+        // Fallback to default tenant
+        if (!response.data.user.tenantId) {
+          response.data.user.tenantId = 'production_tenant';
+          response.data.user.tenantName = 'Production Tenant';
+        }
       }
       
       return response.data;
     } catch (error) {
       console.error('[AUTH-API] Login request failed:', error.message);
       console.log('[AUTH-API] Error details:', error.response?.data || 'No response data');
-      alert('API error: ' + (error.message || 'Unknown error'));
       throw error;
     }
   },
