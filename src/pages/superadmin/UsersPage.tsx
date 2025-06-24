@@ -3,23 +3,16 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UserPlus, Shield, Trash2 } from 'lucide-react';
+import { UserPlus, Shield, Trash2, Plus } from 'lucide-react';
 import { usersApi, CreateSuperAdminRequest } from '@/api/users';
 import { useToast } from '@/hooks/use-toast';
+import { AdminUserForm } from '@/components/admin/AdminUserForm';
 
 export default function SuperAdminUsersPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [newUser, setNewUser] = useState<CreateSuperAdminRequest>({
-    name: '',
-    email: '',
-    password: '',
-    role: 'superadmin'
-  });
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -34,7 +27,6 @@ export default function SuperAdminUsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
       setIsCreateDialogOpen(false);
-      setNewUser({ name: '', email: '', password: '', role: 'superadmin' });
       toast({
         title: "Success",
         description: "SuperAdmin user created successfully",
@@ -49,16 +41,26 @@ export default function SuperAdminUsersPage() {
     }
   });
 
-  const handleCreateUser = () => {
-    if (!newUser.name || !newUser.email || !newUser.password) {
+  const deleteUserMutation = useMutation({
+    mutationFn: usersApi.deleteUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    },
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Failed to delete user",
         variant: "destructive",
       });
-      return;
     }
-    createUserMutation.mutate(newUser);
+  });
+
+  const handleCreateUser = (data: CreateSuperAdminRequest) => {
+    createUserMutation.mutate(data);
   };
 
   return (
@@ -72,7 +74,7 @@ export default function SuperAdminUsersPage() {
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" />
               Add SuperAdmin
             </Button>
           </DialogTrigger>
@@ -83,45 +85,10 @@ export default function SuperAdminUsersPage() {
                 Add a new system administrator with full access
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  value={newUser.name}
-                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                  placeholder="Enter full name"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                  placeholder="Enter email address"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={newUser.password}
-                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                  placeholder="Enter password"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateUser} disabled={createUserMutation.isPending}>
-                {createUserMutation.isPending ? "Creating..." : "Create User"}
-              </Button>
-            </DialogFooter>
+            <AdminUserForm
+              isLoading={createUserMutation.isPending}
+              onSubmit={handleCreateUser}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -172,7 +139,12 @@ export default function SuperAdminUsersPage() {
                     </TableCell>
                     <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-800">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-600 hover:text-red-800"
+                        onClick={() => deleteUserMutation.mutate(user.id)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

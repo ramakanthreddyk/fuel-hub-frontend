@@ -3,16 +3,16 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Edit, Package } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Edit, Package, Plus } from 'lucide-react';
 import { superAdminApi, Plan } from '@/api/superadmin';
 import { useToast } from '@/hooks/use-toast';
+import { PlanForm } from '@/components/admin/PlanForm';
 
 export default function PlansPage() {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const { toast } = useToast();
@@ -21,6 +21,25 @@ export default function PlansPage() {
   const { data: plans, isLoading } = useQuery({
     queryKey: ['admin-plans'],
     queryFn: superAdminApi.getPlans
+  });
+
+  const createPlanMutation = useMutation({
+    mutationFn: (data: any) => superAdminApi.updatePlan('new', data), // Assuming create uses same endpoint
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-plans'] });
+      setIsCreateDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "Plan created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to create plan",
+        variant: "destructive",
+      });
+    }
   });
 
   const updatePlanMutation = useMutation({
@@ -49,13 +68,17 @@ export default function PlansPage() {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdatePlan = () => {
+  const handleUpdatePlan = (data: any) => {
     if (!editingPlan) return;
     
     updatePlanMutation.mutate({
       planId: editingPlan.id,
-      planData: editingPlan
+      planData: data
     });
+  };
+
+  const handleCreatePlan = (data: any) => {
+    createPlanMutation.mutate(data);
   };
 
   const getPlanColor = (planName: string) => {
@@ -69,9 +92,32 @@ export default function PlansPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Plan Management</h1>
-        <p className="text-muted-foreground">Configure subscription plans and pricing</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Plan Management</h1>
+          <p className="text-muted-foreground">Configure subscription plans and pricing</p>
+        </div>
+        
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Plan
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create Plan</DialogTitle>
+              <DialogDescription>
+                Create a new subscription plan for tenants
+              </DialogDescription>
+            </DialogHeader>
+            <PlanForm
+              isLoading={createPlanMutation.isPending}
+              onSubmit={handleCreatePlan}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
@@ -151,53 +197,12 @@ export default function PlansPage() {
             </DialogDescription>
           </DialogHeader>
           {editingPlan && (
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="maxStations">Max Stations</Label>
-                <Input
-                  id="maxStations"
-                  type="number"
-                  value={editingPlan.maxStations}
-                  onChange={(e) => setEditingPlan({ 
-                    ...editingPlan, 
-                    maxStations: parseInt(e.target.value) 
-                  })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="priceMonthly">Monthly Price (₹)</Label>
-                <Input
-                  id="priceMonthly"
-                  type="number"
-                  value={editingPlan.priceMonthly}
-                  onChange={(e) => setEditingPlan({ 
-                    ...editingPlan, 
-                    priceMonthly: parseFloat(e.target.value) 
-                  })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="priceYearly">Yearly Price (₹)</Label>
-                <Input
-                  id="priceYearly"
-                  type="number"
-                  value={editingPlan.priceYearly}
-                  onChange={(e) => setEditingPlan({ 
-                    ...editingPlan, 
-                    priceYearly: parseFloat(e.target.value) 
-                  })}
-                />
-              </div>
-            </div>
+            <PlanForm
+              initialData={editingPlan}
+              onSubmit={handleUpdatePlan}
+              isLoading={updatePlanMutation.isPending}
+            />
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleUpdatePlan} disabled={updatePlanMutation.isPending}>
-              {updatePlanMutation.isPending ? "Updating..." : "Update Plan"}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

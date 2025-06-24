@@ -3,23 +3,19 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Building2, Users, Plus, AlertCircle } from 'lucide-react';
+import { Building2, Users, Plus, AlertCircle, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { tenantsApi, CreateTenantRequest } from '@/api/tenants';
+import { superAdminApi } from '@/api/superadmin';
 import { useToast } from '@/hooks/use-toast';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
+import { TenantForm } from '@/components/admin/TenantForm';
+import { StatusBadge } from '@/components/ui/status-badge';
 
 export default function SuperAdminTenantsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [newTenant, setNewTenant] = useState<CreateTenantRequest>({
-    name: '',
-    schema: '',
-    planType: 'basic'
-  });
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -30,12 +26,16 @@ export default function SuperAdminTenantsPage() {
     retry: 2
   });
 
+  const { data: plans } = useQuery({
+    queryKey: ['admin-plans'],
+    queryFn: superAdminApi.getPlans
+  });
+
   const createTenantMutation = useMutation({
     mutationFn: tenantsApi.createTenant,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
       setIsCreateDialogOpen(false);
-      setNewTenant({ name: '', schema: '', planType: 'basic' });
       toast({
         title: "Success",
         description: "Tenant created successfully",
@@ -50,25 +50,45 @@ export default function SuperAdminTenantsPage() {
     }
   });
 
-  const handleCreateTenant = () => {
-    if (!newTenant.name || !newTenant.schema) {
+  const updateTenantStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' | 'suspended' }) => 
+      tenantsApi.updateTenantStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      toast({
+        title: "Success",
+        description: "Tenant status updated",
+      });
+    },
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Failed to update tenant status",
         variant: "destructive",
       });
-      return;
     }
-    createTenantMutation.mutate(newTenant);
-  };
+  });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 border-green-200';
-      case 'inactive': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'suspended': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+  const deleteTenantMutation = useMutation({
+    mutationFn: tenantsApi.deleteTenant,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      toast({
+        title: "Success",
+        description: "Tenant deleted",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete tenant",
+        variant: "destructive",
+      });
     }
+  });
+
+  const handleCreateTenant = (data: CreateTenantRequest) => {
+    createTenantMutation.mutate(data);
   };
 
   const getPlanColor = (plan: string) => {
@@ -110,53 +130,11 @@ export default function SuperAdminTenantsPage() {
                   Add a new tenant organization to the system
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name" className="text-sm font-medium">Tenant Name</Label>
-                  <Input
-                    id="name"
-                    value={newTenant.name}
-                    onChange={(e) => setNewTenant({ ...newTenant, name: e.target.value })}
-                    placeholder="Enter tenant name"
-                    className="focus:ring-purple-500 focus:border-purple-500"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="schema" className="text-sm font-medium">Schema Name</Label>
-                  <Input
-                    id="schema"
-                    value={newTenant.schema}
-                    onChange={(e) => setNewTenant({ ...newTenant, schema: e.target.value })}
-                    placeholder="Enter schema name (lowercase, no spaces)"
-                    className="focus:ring-purple-500 focus:border-purple-500"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="planType" className="text-sm font-medium">Plan Type</Label>
-                  <Select value={newTenant.planType} onValueChange={(value: any) => setNewTenant({ ...newTenant, planType: value })}>
-                    <SelectTrigger className="focus:ring-purple-500 focus:border-purple-500">
-                      <SelectValue placeholder="Select plan type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="basic">Basic</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                      <SelectItem value="enterprise">Enterprise</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleCreateTenant} 
-                  disabled={createTenantMutation.isPending}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                >
-                  {createTenantMutation.isPending ? "Creating..." : "Create Tenant"}
-                </Button>
-              </DialogFooter>
+              <TenantForm
+                plans={plans || []}
+                isLoading={createTenantMutation.isPending}
+                onSubmit={handleCreateTenant}
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -228,13 +206,33 @@ export default function SuperAdminTenantsPage() {
                     <div className="flex items-center justify-between pt-2 border-t">
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">Status:</span>
-                        <Badge className={`${getStatusColor(tenant.status)} border text-xs font-medium`}>
-                          {tenant.status}
-                        </Badge>
+                        <StatusBadge status={tenant.status} />
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(tenant.createdAt).toLocaleDateString()}
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'active' })}>
+                            Activate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'suspended' })}>
+                            Suspend
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => deleteTenantMutation.mutate(tenant.id)}
+                            className="text-red-600"
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className="text-xs text-muted-foreground text-center">
+                      Created: {new Date(tenant.createdAt).toLocaleDateString()}
                     </div>
                   </CardContent>
                 </Card>
