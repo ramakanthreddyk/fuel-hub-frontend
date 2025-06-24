@@ -4,8 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Building2, Users, Plus, AlertCircle, MoreHorizontal } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Building2, Plus, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { tenantsApi, CreateTenantRequest } from '@/api/tenants';
 import { superAdminApi } from '@/api/superadmin';
@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { TenantForm } from '@/components/admin/TenantForm';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { formatDate } from '@/utils/formatters';
 
 export default function SuperAdminTenantsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -91,13 +92,11 @@ export default function SuperAdminTenantsPage() {
     createTenantMutation.mutate(data);
   };
 
-  const getPlanColor = (plan: string) => {
-    switch (plan) {
-      case 'basic': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'premium': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'enterprise': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const getPlanColor = (planName: string) => {
+    if (planName.toLowerCase().includes('basic')) return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (planName.toLowerCase().includes('premium')) return 'bg-purple-100 text-purple-800 border-purple-200';
+    if (planName.toLowerCase().includes('enterprise')) return 'bg-orange-100 text-orange-800 border-orange-200';
+    return 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
   // Ensure tenants is always an array
@@ -184,22 +183,22 @@ export default function SuperAdminTenantsPage() {
                         </div>
                         <span className="truncate">{tenant.name}</span>
                       </CardTitle>
-                      <Badge className={`${getPlanColor(tenant.planType)} border font-medium`}>
-                        {tenant.planType}
+                      <Badge className={`${getPlanColor(tenant.planName)} border font-medium`}>
+                        {tenant.planName}
                       </Badge>
                     </div>
                     <CardDescription className="text-sm">
-                      Schema: <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{tenant.schema}</span>
+                      Schema: <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{tenant.schemaName}</span>
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">{tenant.stationCount}</div>
+                        <div className="text-2xl font-bold text-green-600">{tenant.stationCount || 0}</div>
                         <div className="text-xs text-muted-foreground font-medium">Stations</div>
                       </div>
                       <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">{tenant.userCount}</div>
+                        <div className="text-2xl font-bold text-blue-600">{tenant.userCount || 0}</div>
                         <div className="text-xs text-muted-foreground font-medium">Users</div>
                       </div>
                     </div>
@@ -232,7 +231,7 @@ export default function SuperAdminTenantsPage() {
                       </DropdownMenu>
                     </div>
                     <div className="text-xs text-muted-foreground text-center">
-                      Created: {new Date(tenant.createdAt).toLocaleDateString()}
+                      Created: {formatDate(tenant.createdAt)}
                     </div>
                   </CardContent>
                 </Card>

@@ -1,11 +1,12 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, Gauge, TrendingUp, AlertCircle, CheckCircle, Clock, Package, BarChart3 } from 'lucide-react';
+import { Building2, Users, Gauge, TrendingUp, CheckCircle, Package, BarChart3 } from 'lucide-react';
 import { superAdminApi } from '@/api/superadmin';
 import { MetricsCard } from '@/components/ui/metrics-card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { formatDate } from '@/utils/formatters';
 
 export default function SuperAdminOverviewPage() {
   const { data: summary, isLoading } = useQuery({
@@ -103,7 +104,7 @@ export default function SuperAdminOverviewPage() {
                     <div className="flex-1">
                       <div className="text-sm font-medium">{tenant.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {new Date(tenant.createdAt).toLocaleDateString()}
+                        {formatDate(tenant.createdAt)}
                       </div>
                     </div>
                     <Badge 

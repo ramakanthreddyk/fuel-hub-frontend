@@ -4,12 +4,13 @@ import { apiClient } from './client';
 export interface Tenant {
   id: string;
   name: string;
-  schema: string;
-  planType: 'basic' | 'premium' | 'enterprise';
+  schemaName: string;
+  planId: string;
+  planName: string;
   status: 'active' | 'inactive' | 'suspended';
   createdAt: string;
-  stationCount: number;
-  userCount: number;
+  stationCount?: number;
+  userCount?: number;
 }
 
 export interface CreateTenantRequest {
