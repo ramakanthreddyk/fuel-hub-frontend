@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, Gauge, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Building2, Users, Gauge, TrendingUp, AlertCircle, CheckCircle, Clock, Package, BarChart3 } from 'lucide-react';
 import { superAdminApi } from '@/api/superadmin';
 import { MetricsCard } from '@/components/ui/metrics-card';
 import { Badge } from '@/components/ui/badge';
