@@ -38,6 +38,19 @@ export interface SalesReportSummary {
   };
 }
 
+export interface ExportReportRequest {
+  type: string;
+  format: string;
+  stationId?: string;
+  dateRange?: { from: Date; to: Date };
+}
+
+export interface ScheduleReportRequest {
+  type: string;
+  stationId?: string;
+  frequency: string;
+}
+
 export const reportsApi = {
   getSalesReport: async (filters: SalesReportFilters): Promise<{
     data: SalesReportData[];
@@ -62,5 +75,16 @@ export const reportsApi = {
       responseType: 'blob',
     });
     return response.data;
-  }
+  },
+
+  exportReport: async (request: ExportReportRequest): Promise<Blob> => {
+    const response = await apiClient.post('/reports/export', request, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  scheduleReport: async (request: ScheduleReportRequest): Promise<void> => {
+    await apiClient.post('/reports/schedule', request);
+  },
 };

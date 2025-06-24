@@ -41,6 +41,25 @@ export interface StationRanking {
   rank: number;
 }
 
+export interface SuperAdminAnalytics {
+  totalTenants: number;
+  activeTenants: number;
+  totalStations: number;
+  salesVolume: number;
+  totalRevenue: number;
+  monthlyGrowth: {
+    month: string;
+    tenants: number;
+    revenue: number;
+  }[];
+  topTenants: {
+    id: string;
+    name: string;
+    stationsCount: number;
+    revenue: number;
+  }[];
+}
+
 export const analyticsApi = {
   getStationComparison: async (stationIds: string[], period: string): Promise<StationComparison[]> => {
     const params = new URLSearchParams({
@@ -82,6 +101,11 @@ export const analyticsApi = {
 
   getStationRanking: async (period: string): Promise<StationRanking[]> => {
     const response = await apiClient.get(`/analytics/station-ranking?period=${period}`);
+    return response.data;
+  },
+
+  getSuperAdminAnalytics: async (): Promise<SuperAdminAnalytics> => {
+    const response = await apiClient.get('/analytics/superadmin');
     return response.data;
   },
 };

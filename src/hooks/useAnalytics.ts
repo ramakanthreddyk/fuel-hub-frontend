@@ -37,3 +37,10 @@ export const useStationRanking = (period: string) => {
     queryFn: () => analyticsApi.getStationRanking(period),
   });
 };
+
+export const useSuperAdminAnalytics = () => {
+  return useQuery({
+    queryKey: ['analytics', 'superadmin'],
+    queryFn: () => analyticsApi.getSuperAdminAnalytics(),
+  });
+};
