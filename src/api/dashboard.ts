@@ -76,7 +76,8 @@ export const dashboardApi = {
   getFuelTypeBreakdown: async (filters: DashboardFilters = {}): Promise<FuelTypeBreakdown[]> => {
     const params = new URLSearchParams();
     if (filters.stationId) params.append('stationId', filters.stationId);
-    if (filters.period) params.append('period', 'monthly');
+    if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+    if (filters.dateTo) params.append('dateTo', filters.dateTo);
     
     const response = await apiClient.get(`/dashboard/fuel-breakdown?${params}`);
     return response.data;
