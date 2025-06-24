@@ -29,7 +29,13 @@ apiClient.interceptors.request.use(
       const userData = JSON.parse(user);
       if (userData.tenantId) {
         config.headers['x-tenant-id'] = userData.tenantId;
+      } else if (!config.url?.includes('/auth/login')) {
+        // Default to production_tenant for all non-login requests if no tenant ID is found
+        config.headers['x-tenant-id'] = 'production_tenant';
       }
+    } else if (!config.url?.includes('/auth/login')) {
+      // Default to production_tenant for all non-login requests if no user is found
+      config.headers['x-tenant-id'] = 'production_tenant';
     }
     
     return config;
