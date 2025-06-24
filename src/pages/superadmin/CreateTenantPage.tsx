@@ -18,10 +18,10 @@ export default function CreateTenantPage() {
 
   const [formData, setFormData] = useState<CreateTenantRequest>({
     name: '',
-    plan: 'basic',
-    email: '',
-    password: '',
-    schema: ''
+    planId: 'basic',
+    adminEmail: '',
+    adminPassword: '',
+    schemaName: ''
   });
 
   const createTenantMutation = useMutation({
@@ -46,7 +46,7 @@ export default function CreateTenantPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.password || !formData.schema) {
+    if (!formData.name || !formData.adminEmail || !formData.adminPassword || !formData.schemaName) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -63,7 +63,7 @@ export default function CreateTenantPage() {
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '')
       .slice(0, 20);
-    setFormData({ ...formData, schema });
+    setFormData({ ...formData, schemaName: schema });
   };
 
   return (
@@ -103,12 +103,12 @@ export default function CreateTenantPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="schema">Schema Name *</Label>
+              <Label htmlFor="schemaName">Schema Name *</Label>
               <div className="flex gap-2">
                 <Input
-                  id="schema"
-                  value={formData.schema}
-                  onChange={(e) => setFormData({ ...formData, schema: e.target.value })}
+                  id="schemaName"
+                  value={formData.schemaName}
+                  onChange={(e) => setFormData({ ...formData, schemaName: e.target.value })}
                   placeholder="e.g., shellsouth"
                   required
                 />
@@ -122,8 +122,8 @@ export default function CreateTenantPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="plan">Plan Type</Label>
-              <Select value={formData.plan} onValueChange={(value) => setFormData({ ...formData, plan: value })}>
+              <Label htmlFor="planId">Plan Type</Label>
+              <Select value={formData.planId} onValueChange={(value) => setFormData({ ...formData, planId: value })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -136,24 +136,24 @@ export default function CreateTenantPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="email">Admin Email *</Label>
+              <Label htmlFor="adminEmail">Admin Email *</Label>
               <Input
-                id="email"
+                id="adminEmail"
                 type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                value={formData.adminEmail}
+                onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
                 placeholder="admin@example.com"
                 required
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="password">Admin Password *</Label>
+              <Label htmlFor="adminPassword">Admin Password *</Label>
               <Input
-                id="password"
+                id="adminPassword"
                 type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                value={formData.adminPassword}
+                onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
                 placeholder="Enter secure password"
                 required
               />

@@ -8,6 +8,7 @@ export interface SuperAdminSummary {
   totalAdminUsers: number;
   totalUsers: number;
   totalStations: number;
+  signupsThisMonth: number;
   recentTenants: Array<{
     id: string;
     name: string;
