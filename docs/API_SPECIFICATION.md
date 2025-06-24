@@ -24,7 +24,7 @@ All endpoints are prefixed with `/api/v1`
 **Request Body:**
 ```typescript
 {
-  email: string; // Supports formats: user@domain.com, user@tenant_name.com
+  email: string; // Supports formats: user@domain.com, owner@tenant-schema-name.com
   password: string;
 }
 ```
@@ -46,7 +46,113 @@ All endpoints are prefixed with `/api/v1`
 
 ---
 
-## 2. SUPERADMIN ANALYTICS ENDPOINTS
+## 2. USER MANAGEMENT ENDPOINTS
+
+### GET /users
+**Purpose:** List all users in tenant
+**Roles Required:** owner, manager
+
+**Expected Response:**
+```typescript
+{
+  users: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: "owner" | "manager" | "attendant";
+    createdAt: string;
+    stationId?: string;
+    stationName?: string;
+  }>;
+}
+```
+
+### GET /users/:id
+**Purpose:** Get specific user details
+**Roles Required:** owner, manager
+
+**Expected Response:**
+```typescript
+{
+  id: string;
+  name: string;
+  email: string;
+  role: "owner" | "manager" | "attendant";
+  createdAt: string;
+  stationId?: string;
+  stationName?: string;
+}
+```
+
+### POST /users
+**Purpose:** Create new user
+**Roles Required:** owner only
+
+**Request Body:**
+```typescript
+{
+  name: string;
+  email: string;
+  password: string;
+  role: "manager" | "attendant";
+  stationId?: string;
+}
+```
+
+**Expected Response:**
+```typescript
+{
+  id: string;
+  name: string;
+  email: string;
+  role: "manager" | "attendant";
+  createdAt: string;
+}
+```
+
+### PUT /users/:id
+**Purpose:** Update user details
+**Roles Required:** owner only
+
+**Request Body:**
+```typescript
+{
+  name?: string;
+  role?: "manager" | "attendant";
+  stationId?: string;
+}
+```
+
+### POST /users/:id/change-password
+**Purpose:** Change user's own password
+**Roles Required:** any authenticated user (for own account)
+
+**Request Body:**
+```typescript
+{
+  currentPassword: string;
+  newPassword: string;
+}
+```
+
+### POST /users/:id/reset-password
+**Purpose:** Reset user password (admin action)
+**Roles Required:** owner only
+
+**Request Body:**
+```typescript
+{
+  newPassword: string;
+}
+```
+
+### DELETE /users/:id
+**Purpose:** Delete user
+**Roles Required:** owner only
+
+---
+
+## 3. SUPERADMIN ANALYTICS ENDPOINTS
 
 ### GET /analytics/dashboard
 **Purpose:** Get SuperAdmin dashboard metrics
@@ -59,8 +165,9 @@ All endpoints are prefixed with `/api/v1`
   activeTenants: number;
   totalPlans: number;
   totalAdminUsers: number;
-  totalUsers: number; // Users across all tenants
-  totalStations: number; // Stations across all tenants
+  totalUsers: number;
+  totalStations: number;
+  signupsThisMonth: number;
   recentTenants: Array<{
     id: string;
     name: string;
@@ -115,7 +222,7 @@ All endpoints are prefixed with `/api/v1`
 
 ---
 
-## 3. DASHBOARD ENDPOINTS
+## 4. DASHBOARD ENDPOINTS
 
 ### GET /dashboard/sales-summary
 **Purpose:** Get sales overview with profit metrics
@@ -183,7 +290,7 @@ Array<{
 
 ---
 
-## 4. STATION MANAGEMENT
+## 5. STATION MANAGEMENT
 
 ### GET /stations
 **Query Parameters:**
@@ -256,7 +363,7 @@ Array<{
 
 ---
 
-## 5. SUPERADMIN MANAGEMENT
+## 6. SUPERADMIN MANAGEMENT
 
 ### GET /admin/tenants
 **Purpose:** List all tenant organizations
@@ -290,7 +397,7 @@ Array<{
   planId: string;
   adminEmail: string;
   adminPassword: string;
-  schemaName: string; // Auto-generated from name
+  schemaName: string;
 }
 ```
 
@@ -350,7 +457,7 @@ Array<{
   id: string;
   name: string;
   email: string;
-  role: "superadmin" | "admin";
+  role: "superadmin";
   createdAt: string;
   lastLogin?: string;
 }>
@@ -358,105 +465,7 @@ Array<{
 
 ---
 
-## 6. ANALYTICS ENDPOINTS
-
-### GET /analytics/station-comparison
-**Query Parameters:**
-- `stationIds`: comma-separated UUIDs
-- `period`: "today" | "week" | "month"
-
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  stationName: string;
-  sales: number;
-  volume: number;
-  transactions: number;
-  growth: number;
-}>
-```
-
-### GET /analytics/hourly-sales
-**Query Parameters:**
-- `stationId?`: string
-- `dateFrom?`: ISO date
-- `dateTo?`: ISO date
-
-**Expected Response:**
-```typescript
-Array<{
-  hour: string; // "00", "01", ..., "23"
-  sales: number;
-  volume: number;
-  transactions: number;
-}>
-```
-
-### GET /analytics/fuel-performance
-**Expected Response:**
-```typescript
-Array<{
-  fuelType: "petrol" | "diesel" | "premium";
-  volume: number;
-  sales: number;
-  margin: number;
-  growth: number;
-}>
-```
-
-### GET /analytics/superadmin
-**Purpose:** Platform-wide analytics for superadmin
-**Role Required:** superadmin
-
-**Expected Response:**
-```typescript
-{
-  totalTenants: number;
-  activeTenants: number;
-  totalStations: number;
-  salesVolume: number;
-  totalRevenue: number;
-  monthlyGrowth: Array<{
-    month: string;
-    tenants: number;
-    revenue: number;
-  }>;
-  topTenants: Array<{
-    id: string;
-    name: string;
-    stationsCount: number;
-    revenue: number;
-  }>;
-}
-```
-
----
-
-## 7. INVENTORY & ALERTS
-
-### GET /inventory/alerts
-**Query Parameters:** `unreadOnly?: boolean`
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  type: "inventory" | "credit" | "maintenance" | "sales" | "system";
-  severity: "info" | "warning" | "critical";
-  title: string;
-  message: string;
-  stationId: string;
-  stationName: string;
-  isRead: boolean;
-  isActive: boolean;
-  createdAt: string;
-  metadata?: Record<string, any>;
-}>
-```
-
----
-
-## 8. ERROR HANDLING
+## 7. ERROR HANDLING
 
 All endpoints should return consistent error responses:
 
@@ -506,39 +515,49 @@ All endpoints should return consistent error responses:
 
 ---
 
-## 9. SUPPORTED EMAIL FORMATS
+## 8. SUPPORTED EMAIL FORMATS
 
 The authentication system supports these email formats:
 - Standard: `user@domain.com`
-- Tenant-specific: `user@tenant_name.com` (e.g., `owner@production_tenant.com`)
-- Demo accounts: `admin@fuelsync.dev`, `owner@demo.com`, etc.
+- Tenant-specific: `owner@tenant-schema-name.com` (e.g., `owner@acme-fuels.com`)
+- Auto-created owners use format: `owner@tenant-schema-name.com` with password `tenant123`
 
 ---
 
-## 10. MULTI-TENANCY & SECURITY
+## 9. ROLE-BASED ACCESS CONTROL
 
-- **Tenant Isolation:** All data is scoped by `x-tenant-id` header
-- **Role-based Access:** Endpoints respect user roles (superadmin, owner, manager, attendant)
-- **SuperAdmin Access:** SuperAdmin can access cross-tenant data for platform management
-- **Data Validation:** All inputs validated with detailed error responses
-- **Audit Logs:** All data modifications tracked for compliance
+### User Roles Hierarchy:
+1. **SuperAdmin**: Platform-wide access, can manage tenants and plans
+2. **Owner**: Full tenant access, can manage all users and data
+3. **Manager**: Can view users, manage stations and operations
+4. **Attendant**: Limited access, can record readings and sales
+
+### Permission Matrix:
+- **User Management**: Owner only (create/edit/delete users)
+- **View Users**: Owner, Manager
+- **Password Management**: Users can change own password, Owner can reset any password
+- **Station Management**: Owner, Manager
+- **Sales/Readings**: Owner, Manager, Attendant
 
 ---
 
-## 11. PERFORMANCE & CACHING
+## 10. AUTOMATIC USER CREATION
 
-- **Caching:** Dashboard endpoints implement appropriate caching
-- **Rate Limiting:** Per tenant/user rate limits applied
-- **Pagination:** Large datasets use cursor-based pagination
-- **Compression:** All responses use gzip compression
+When a tenant is created:
+- An owner user is automatically created
+- Email format: `owner@tenant-schema-name.com` (underscores become hyphens)
+- Default password: `tenant123`
+- Role: `owner`
+
+Example: Tenant with schema `acme_fuels` gets owner email `owner@acme-fuels.com`
 
 ---
 
 ## Notes for Frontend Implementation
 
-1. **Error Handling:** Always check `success` field in responses
-2. **Loading States:** Implement proper loading skeletons
-3. **Retry Logic:** Implement exponential backoff for failed requests
-4. **Type Safety:** Use TypeScript interfaces for all API responses
-5. **Multi-tenant Context:** Always include `x-tenant-id` except for SuperAdmin endpoints
-6. **Date Handling:** Use ISO 8601 format consistently
+1. **Role-based UI**: Show/hide features based on user role
+2. **Permission Checks**: Validate user permissions before API calls
+3. **Password Management**: Provide change password functionality in settings
+4. **Error Handling**: Handle 403 Forbidden responses gracefully
+5. **User Creation**: Only show create user option to owners
+6. **Auto-generated Credentials**: Display auto-generated credentials when creating tenants

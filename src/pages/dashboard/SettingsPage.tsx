@@ -1,199 +1,148 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Settings, Bell, Shield, Palette, Database } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Settings, User, Shield, Mail, Calendar, MapPin } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { ChangePasswordForm } from '@/components/settings/ChangePasswordForm';
 
 export default function SettingsPage() {
   const { user } = useAuth();
 
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'superadmin': return 'bg-red-100 text-red-800 border-red-200';
+      case 'owner': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'manager': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'attendant': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'superadmin': return <Shield className="w-4 h-4 mr-1" />;
+      case 'owner': return <Shield className="w-4 h-4 mr-1" />;
+      case 'manager': return <User className="w-4 h-4 mr-1" />;
+      case 'attendant': return <User className="w-4 h-4 mr-1" />;
+      default: return <User className="w-4 h-4 mr-1" />;
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Loading user information...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and application preferences</p>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <Settings className="h-8 w-8" />
+          Settings
+        </h1>
+        <p className="text-muted-foreground">Manage your account settings and preferences</p>
       </div>
 
-      <div className="grid gap-6">
-        {/* Profile Settings */}
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        {/* User Profile */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Profile Settings
+              <User className="h-5 w-5" />
+              Profile Information
             </CardTitle>
             <CardDescription>
-              Update your personal information and preferences
+              Your account details and role information
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue={user?.name} />
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg">
+                {getRoleIcon(user.role)}
+              </div>
+              <div>
+                <div className="font-medium">{user.name}</div>
+                <div className="text-sm text-muted-foreground">Full Name</div>
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue={user?.email} disabled />
-              <p className="text-sm text-muted-foreground">Contact support to change your email address</p>
+            
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg">
+                <Mail className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="font-medium">{user.email}</div>
+                <div className="text-sm text-muted-foreground">Email Address</div>
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="role">Role</Label>
-              <Input id="role" defaultValue={user?.role} disabled />
+            
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg">
+                <Shield className="w-4 h-4" />
+              </div>
+              <div>
+                <Badge className={getRoleBadgeColor(user.role)}>
+                  {getRoleIcon(user.role)}
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </Badge>
+                <div className="text-sm text-muted-foreground">Role</div>
+              </div>
             </div>
-            {user?.tenantName && (
-              <div className="grid gap-2">
-                <Label htmlFor="organization">Organization</Label>
-                <Input id="organization" defaultValue={user.tenantName} disabled />
+
+            {user.tenantName && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-lg">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-medium">{user.tenantName}</div>
+                  <div className="text-sm text-muted-foreground">Organization</div>
+                </div>
               </div>
             )}
-            <Button>Save Changes</Button>
           </CardContent>
         </Card>
 
-        {/* Notifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notifications
-            </CardTitle>
-            <CardDescription>
-              Configure how you receive notifications
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Email Notifications</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive email notifications for important updates
-                </p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Reading Alerts</Label>
-                <p className="text-sm text-muted-foreground">
-                  Get notified when readings are due or overdue
-                </p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Low Stock Alerts</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive alerts when fuel levels are low
-                </p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Security
-            </CardTitle>
-            <CardDescription>
-              Manage your password and security settings
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="current-password">Current Password</Label>
-              <Input id="current-password" type="password" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input id="new-password" type="password" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input id="confirm-password" type="password" />
-            </div>
-            <Button>Update Password</Button>
-          </CardContent>
-        </Card>
-
-        {/* Appearance */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              Appearance
-            </CardTitle>
-            <CardDescription>
-              Customize the look and feel of your dashboard
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Dark Mode</Label>
-                <p className="text-sm text-muted-foreground">
-                  Use dark theme for better visibility in low light
-                </p>
-              </div>
-              <Switch />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Compact Layout</Label>
-                <p className="text-sm text-muted-foreground">
-                  Show more information in less space
-                </p>
-              </div>
-              <Switch />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Data & Storage */}
-        {(user?.role === 'owner' || user?.role === 'superadmin') && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                Data & Storage
-              </CardTitle>
-              <CardDescription>
-                Manage your data backup and export options
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Auto Backup</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Automatically backup your data daily
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="space-y-2">
-                <Label>Export Data</Label>
-                <p className="text-sm text-muted-foreground">
-                  Download all your data in CSV format
-                </p>
-                <Button variant="outline">Export All Data</Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Change Password */}
+        <ChangePasswordForm />
       </div>
+
+      {/* Account Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Account Security
+          </CardTitle>
+          <CardDescription>
+            Security information and account status
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Account Status</div>
+              <Badge className="bg-green-100 text-green-800 border-green-200">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Active
+              </Badge>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Role Permissions</div>
+              <div className="text-sm text-muted-foreground">
+                {user.role === 'owner' && "Full access to all features and user management"}
+                {user.role === 'manager' && "Access to stations, sales, and operational features"}
+                {user.role === 'attendant' && "Access to sales recording and basic features"}
+                {user.role === 'superadmin' && "Platform-wide administrative access"}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
