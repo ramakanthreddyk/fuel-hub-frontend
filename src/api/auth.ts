@@ -22,7 +22,6 @@ export interface LoginResponse {
 export const authApi = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     console.log('[AUTH-API] Sending login request:', { email: credentials.email });
-    alert('API login request starting'); // Debug alert
     
     try {
       // Log the API URL being used
@@ -48,6 +47,12 @@ export const authApi = {
         console.error('[AUTH-API] Missing user data in response');
         alert('Login failed: Missing user data in response');
         throw new Error('Missing user data in response');
+      }
+      
+      // Ensure tenant ID is set for non-superadmin users
+      if (response.data.user.role !== 'superadmin' && !response.data.user.tenantId) {
+        console.log('[AUTH-API] Setting default tenant ID for non-superadmin user');
+        response.data.user.tenantId = 'production_tenant';
       }
       
       return response.data;
