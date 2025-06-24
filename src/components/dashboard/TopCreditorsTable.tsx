@@ -4,8 +4,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useTopCreditors } from '@/hooks/useDashboard';
 
-export function TopCreditorsTable() {
-  const { data: creditors = [], isLoading } = useTopCreditors(5);
+interface DashboardFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+interface TopCreditorsTableProps {
+  filters?: DashboardFilters;
+}
+
+export function TopCreditorsTable({ filters = {} }: TopCreditorsTableProps) {
+  const { data: creditors = [], isLoading } = useTopCreditors(5, filters);
 
   if (isLoading) {
     return (
@@ -26,9 +36,9 @@ export function TopCreditorsTable() {
 
   if (!creditors.length) {
     return (
-      <Card>
+      <Card className="bg-gradient-to-br from-white to-orange-50 border-orange-200">
         <CardHeader>
-          <CardTitle>Top Creditors</CardTitle>
+          <CardTitle className="text-orange-700">Top Creditors</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
@@ -40,9 +50,9 @@ export function TopCreditorsTable() {
   }
 
   return (
-    <Card>
+    <Card className="bg-gradient-to-br from-white to-orange-50 border-orange-200">
       <CardHeader>
-        <CardTitle>Top Creditors by Outstanding</CardTitle>
+        <CardTitle className="text-orange-700">Top Creditors by Outstanding</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>

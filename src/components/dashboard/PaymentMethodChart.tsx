@@ -11,8 +11,18 @@ const COLORS = {
   credit: '#f59e0b',
 };
 
-export function PaymentMethodChart() {
-  const { data: breakdown = [], isLoading } = usePaymentMethodBreakdown();
+interface DashboardFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+interface PaymentMethodChartProps {
+  filters?: DashboardFilters;
+}
+
+export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
+  const { data: breakdown = [], isLoading } = usePaymentMethodBreakdown(filters);
 
   if (isLoading) {
     return (
@@ -41,9 +51,9 @@ export function PaymentMethodChart() {
   };
 
   return (
-    <Card>
+    <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200">
       <CardHeader>
-        <CardTitle>Payment Method Breakdown</CardTitle>
+        <CardTitle className="text-blue-700">Payment Method Breakdown</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px]">

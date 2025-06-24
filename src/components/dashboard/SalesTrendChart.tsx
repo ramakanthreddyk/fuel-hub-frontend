@@ -5,8 +5,18 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { useDailySalesTrend } from '@/hooks/useDashboard';
 import { format } from 'date-fns';
 
-export function SalesTrendChart() {
-  const { data: trend = [], isLoading } = useDailySalesTrend(7);
+interface DashboardFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+interface SalesTrendChartProps {
+  filters?: DashboardFilters;
+}
+
+export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
+  const { data: trend = [], isLoading } = useDailySalesTrend(7, filters);
 
   if (isLoading) {
     return (
@@ -28,13 +38,13 @@ export function SalesTrendChart() {
   }));
 
   const chartConfig = {
-    amount: { label: 'Sales (₹)', color: '#3b82f6' },
+    amount: { label: 'Sales (₹)', color: '#8b5cf6' },
   };
 
   return (
-    <Card>
+    <Card className="bg-gradient-to-br from-white to-purple-50 border-purple-200">
       <CardHeader>
-        <CardTitle>Daily Sales Trend</CardTitle>
+        <CardTitle className="text-purple-700">Daily Sales Trend</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px]">
@@ -50,8 +60,8 @@ export function SalesTrendChart() {
                 type="monotone" 
                 dataKey="amount" 
                 stroke={chartConfig.amount.color} 
-                strokeWidth={2}
-                dot={{ fill: chartConfig.amount.color, strokeWidth: 2 }}
+                strokeWidth={3}
+                dot={{ fill: chartConfig.amount.color, strokeWidth: 2, r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>

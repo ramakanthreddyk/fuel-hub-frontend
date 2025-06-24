@@ -4,8 +4,18 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { useFuelTypeBreakdown } from '@/hooks/useDashboard';
 
-export function FuelBreakdownChart() {
-  const { data: breakdown = [], isLoading } = useFuelTypeBreakdown();
+interface DashboardFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+interface FuelBreakdownChartProps {
+  filters?: DashboardFilters;
+}
+
+export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
+  const { data: breakdown = [], isLoading } = useFuelTypeBreakdown(filters);
 
   if (isLoading) {
     return (
@@ -32,9 +42,9 @@ export function FuelBreakdownChart() {
   };
 
   return (
-    <Card>
+    <Card className="bg-gradient-to-br from-white to-green-50 border-green-200">
       <CardHeader>
-        <CardTitle>Fuel Sales by Type</CardTitle>
+        <CardTitle className="text-green-700">Fuel Sales by Type</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px]">
