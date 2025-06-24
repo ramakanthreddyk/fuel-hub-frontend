@@ -52,7 +52,7 @@ export default function SuperAdminTenantsPage() {
   });
 
   const updateTenantStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' | 'suspended' }) => 
+    mutationFn: ({ id, status }: { id: string; status: 'active' | 'suspended' | 'cancelled' }) => 
       tenantsApi.updateTenantStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
@@ -219,6 +219,9 @@ export default function SuperAdminTenantsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'suspended' })}>
                             Suspend
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'cancelled' })}>
+                            Cancel
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
