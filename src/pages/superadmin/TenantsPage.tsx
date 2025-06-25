@@ -225,10 +225,14 @@ export default function SuperAdminTenantsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
-                            onClick={() => deleteTenantMutation.mutate(tenant.id)}
+                            onClick={() => {
+                              if (confirm('Are you sure you want to delete this tenant? This will disable their access but preserve all data.')) {
+                                deleteTenantMutation.mutate(tenant.id);
+                              }
+                            }}
                             className="text-red-600"
                           >
-                            Delete
+                            Delete (Soft)
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
