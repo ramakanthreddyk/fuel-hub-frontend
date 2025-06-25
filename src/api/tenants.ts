@@ -1,6 +1,39 @@
 
 import { apiClient } from './client';
 
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'owner' | 'manager' | 'attendant';
+  createdAt: string;
+}
+
+export interface Nozzle {
+  id: string;
+  nozzleNumber: number;
+  fuelType: string;
+  status: string;
+}
+
+export interface Pump {
+  id: string;
+  label: string;
+  serialNumber?: string;
+  status: string;
+  nozzleCount: number;
+  nozzles?: Nozzle[];
+}
+
+export interface Station {
+  id: string;
+  name: string;
+  address?: string;
+  status: string;
+  pumpCount: number;
+  pumps?: Pump[];
+}
+
 export interface Tenant {
   id: string;
   name: string;
@@ -11,6 +44,8 @@ export interface Tenant {
   createdAt: string;
   stationCount?: number;
   userCount?: number;
+  users?: User[];
+  stations?: Station[];
 }
 
 export interface CreateTenantRequest {
@@ -25,6 +60,12 @@ export const tenantsApi = {
   // Get all tenants (SuperAdmin only)
   getTenants: async (): Promise<Tenant[]> => {
     const response = await apiClient.get('/admin/tenants');
+    return response.data;
+  },
+  
+  // Get tenant details with hierarchy
+  getTenantDetails: async (tenantId: string): Promise<Tenant> => {
+    const response = await apiClient.get(`/admin/tenants/${tenantId}`);
     return response.data;
   },
   
