@@ -29,6 +29,12 @@ export const pumpsApi = {
     return response.data;
   },
   
+  // Get single pump
+  getPump: async (pumpId: string): Promise<Pump> => {
+    const response = await apiClient.get(`/pumps/${pumpId}`);
+    return response.data;
+  },
+  
   // Delete pump
   deletePump: async (pumpId: string): Promise<void> => {
     await apiClient.delete(`/pumps/${pumpId}`);
