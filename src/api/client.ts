@@ -23,28 +23,7 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Add tenant ID header if available
-    const user = localStorage.getItem('fuelsync_user');
-    if (user) {
-      const userData = JSON.parse(user);
-      
-      // For superadmin users, only send tenant header if explicitly set or for non-admin routes
-      if (userData.role === 'superadmin') {
-        // Don't send tenant header for admin routes or login
-        if (!config.url?.includes('/admin/') && !config.url?.includes('/auth/login')) {
-          // For non-admin routes, superadmin needs a tenant context - use stored tenantId or default
-          config.headers['x-tenant-id'] = userData.tenantId || 'production_tenant';
-        }
-      } else {
-        // For regular tenant users, always send their tenant ID (except login)
-        if (userData.tenantId && !config.url?.includes('/auth/login')) {
-          config.headers['x-tenant-id'] = userData.tenantId;
-        }
-      }
-    } else if (!config.url?.includes('/auth/login')) {
-      // Default to production_tenant for non-login requests if no user is found
-      config.headers['x-tenant-id'] = 'production_tenant';
-    }
+    // Tenant context is now handled via JWT token, no need for x-tenant-id header
     
     return config;
   },
