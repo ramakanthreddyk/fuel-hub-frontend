@@ -5,19 +5,25 @@ import { ensureArray } from '@/utils/apiHelpers';
 export interface Station {
   id: string;
   name: string;
-  address: string;
+  address?: string;
   status: 'active' | 'inactive' | 'maintenance';
   manager?: string;
   attendantCount: number;
   pumpCount: number;
   createdAt: string;
+  metrics?: {
+    totalSales: number;
+    totalVolume: number;
+    transactionCount: number;
+  };
 }
 
 export const stationsApi = {
   // Get all stations for current tenant
-  getStations: async (): Promise<Station[]> => {
+  getStations: async (includeMetrics = false): Promise<Station[]> => {
     try {
-      const response = await apiClient.get('/stations');
+      const params = includeMetrics ? '?includeMetrics=true' : '';
+      const response = await apiClient.get(`/stations${params}`);
       return ensureArray<Station>(response.data);
     } catch (error) {
       console.error('Error fetching stations:', error);
