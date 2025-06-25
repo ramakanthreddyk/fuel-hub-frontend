@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import LoginPage from './pages/LoginPage'
-import Unauthorized from './pages/Unauthorized'
+import UnauthorizedPage from './pages/UnauthorizedPage'
 import { RequireAuth } from '@/components/auth/RequireAuth'
 import StationsPage from './pages/dashboard/StationsPage'
 import PumpsPage from './pages/dashboard/PumpsPage'
@@ -16,6 +16,7 @@ import FuelDeliveriesPage from './pages/dashboard/FuelDeliveriesPage'
 import FuelPricesPage from './pages/dashboard/FuelPricesPage'
 import ReconciliationPage from './pages/dashboard/ReconciliationPage'
 import CreditorsPage from './pages/dashboard/CreditorsPage'
+import AlertsPage from './pages/dashboard/AlertsPage'
 import { Toaster } from '@/components/ui/toaster'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { ErrorProvider } from '@/contexts/ErrorContext';
@@ -34,13 +35,13 @@ function App() {
     <ErrorBoundary>
       <ErrorProvider>
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <Router>
+          <Router>
+            <AuthProvider>
               <div className="min-h-screen bg-gray-50">
                 <Toaster />
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
-                  <Route path="/unauthorized" element={<Unauthorized />} />
+                  <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
                   <Route
                     path="/dashboard"
@@ -61,13 +62,14 @@ function App() {
                     <Route path="fuel-prices" element={<FuelPricesPage />} />
                     <Route path="reconciliation" element={<ReconciliationPage />} />
                     <Route path="creditors" element={<CreditorsPage />} />
+                    <Route path="alerts" element={<AlertsPage />} />
                   </Route>
 
                   <Route path="*" element={<LoginPage />} />
                 </Routes>
               </div>
-            </Router>
-          </AuthProvider>
+            </AuthProvider>
+          </Router>
         </QueryClientProvider>
       </ErrorProvider>
     </ErrorBoundary>
