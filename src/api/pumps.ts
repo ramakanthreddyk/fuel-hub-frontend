@@ -16,7 +16,17 @@ export const pumpsApi = {
   getPumps: async (stationId: string): Promise<Pump[]> => {
     try {
       const response = await apiClient.get(`/pumps?stationId=${stationId}`);
-      return ensureArray<Pump>(response.data.pumps || response.data);
+      const rawPumps = ensureArray(response.data.pumps || response.data);
+      // Convert snake_case to camelCase
+      return rawPumps.map((pump: any) => ({
+        id: pump.id,
+        stationId: pump.station_id,
+        label: pump.label,
+        serialNumber: pump.serial_number,
+        status: pump.status,
+        nozzleCount: pump.nozzle_count,
+        createdAt: pump.created_at
+      }));
     } catch (error) {
       console.error('Error fetching pumps:', error);
       return [];
@@ -32,7 +42,17 @@ export const pumpsApi = {
   // Get single pump
   getPump: async (pumpId: string): Promise<Pump> => {
     const response = await apiClient.get(`/pumps/${pumpId}`);
-    return response.data;
+    const pump = response.data;
+    // Convert snake_case to camelCase
+    return {
+      id: pump.id,
+      stationId: pump.station_id,
+      label: pump.label,
+      serialNumber: pump.serial_number,
+      status: pump.status,
+      nozzleCount: pump.nozzle_count,
+      createdAt: pump.created_at
+    };
   },
   
   // Delete pump
