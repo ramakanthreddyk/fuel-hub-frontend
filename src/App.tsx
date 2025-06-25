@@ -25,6 +25,7 @@ import UsersPage from "./pages/dashboard/UsersPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import ReportsPage from "./pages/dashboard/ReportsPage";
 import SuperAdminTenantsPage from "./pages/superadmin/TenantsPage";
+import TenantDetailsPage from "./pages/superadmin/TenantDetailsPage";
 import SuperAdminUsersPage from "./pages/superadmin/UsersPage";
 import NewReadingPage from "./pages/dashboard/NewReadingPage";
 import ReconciliationPage from "./pages/dashboard/ReconciliationPage";
@@ -66,6 +67,7 @@ const App = () => {
                 <Route path="overview" element={<SuperAdminOverviewPage />} />
                 <Route path="tenants" element={<SuperAdminTenantsPage />} />
                 <Route path="tenants/new" element={<CreateTenantPage />} />
+                <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
                 <Route path="users" element={<SuperAdminUsersPage />} />
                 <Route path="plans" element={<PlansPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
