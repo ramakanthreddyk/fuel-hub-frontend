@@ -107,6 +107,16 @@ export const dashboardApi = {
   // Get station metrics
   getStationMetrics: async (): Promise<StationMetric[]> => {
     const response = await apiClient.get('/stations?includeMetrics=true');
-    return response.data;
+    // Transform backend response to match StationMetric interface
+    return response.data.map((station: any) => ({
+      id: station.id,
+      name: station.name,
+      todaySales: station.metrics?.totalSales || 0,
+      monthlySales: station.metrics?.totalSales || 0, // Backend doesn't separate today/monthly yet
+      salesGrowth: 0, // Backend doesn't provide growth calculation yet
+      activePumps: station.pumpCount || 0,
+      totalPumps: station.pumpCount || 0,
+      status: station.status || 'active'
+    }));
   }
 };
