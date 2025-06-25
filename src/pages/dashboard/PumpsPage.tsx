@@ -14,6 +14,7 @@ import { pumpsApi } from '@/api/pumps';
 import { stationsApi } from '@/api/stations';
 import { Link } from 'react-router-dom';
 import { EnhancedFuelPumpCard } from '@/components/pumps/EnhancedFuelPumpCard';
+import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
 
 export default function PumpsPage() {
   const { stationId } = useParams<{ stationId: string }>();
@@ -79,20 +80,30 @@ export default function PumpsPage() {
     return <div>Station ID not found</div>;
   }
 
+  const mobileStats = [
+    { title: 'Total', value: pumps?.length || 0, icon: Fuel, color: 'text-blue-600' },
+    { title: 'Active', value: pumps?.filter(p => p.status === 'active').length || 0, icon: Activity, color: 'text-green-600' },
+    { title: 'Nozzles', value: pumps?.reduce((sum, pump) => sum + pump.nozzleCount, 0) || 0, icon: Settings, color: 'text-purple-600' },
+    { title: 'Maintenance', value: pumps?.filter(p => p.status === 'maintenance').length || 0, icon: Settings, color: 'text-orange-600' }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Pumps</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Pumps</h1>
+          <p className="text-muted-foreground text-sm md:text-base hidden md:block">
             Manage pumps for {station?.name || 'Station'}
+          </p>
+          <p className="text-muted-foreground text-sm md:hidden">
+            {station?.name || 'Station'} pumps
           </p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button size="sm" className="md:size-default">
               <Plus className="mr-2 h-4 w-4" />
-              Add Pump
+              <span className="hidden md:inline">Add Pump</span>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -141,8 +152,11 @@ export default function PumpsPage() {
         </Dialog>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Mobile Stats Card */}
+      <MobileStatsCard stats={mobileStats} />
+
+      {/* Desktop Stats Cards */}
+      <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Pumps</CardTitle>

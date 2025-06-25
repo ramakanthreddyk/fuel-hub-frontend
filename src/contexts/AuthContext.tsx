@@ -47,14 +47,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Check for existing auth on app load
-    const storedToken = localStorage.getItem('fuelsync_token');
-    const storedUser = localStorage.getItem('fuelsync_user');
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const initializeAuth = async () => {
+      try {
+        const storedToken = localStorage.getItem('fuelsync_token');
+        const storedUser = localStorage.getItem('fuelsync_user');
+        
+        if (storedToken && storedUser) {
+          // Validate token by checking if it's not expired
+          try {
+            const payload = JSON.parse(atob(storedToken.split('.')[1]));
+            const currentTime = Date.now() / 1000;
+            
+            if (payload.exp && payload.exp > currentTime) {
+              // Token is still valid
+              setToken(storedToken);
+              setUser(JSON.parse(storedUser));
+              console.log('[AUTH] Restored valid session');
+            } else {
+              // Token expired, clear storage
+              console.log('[AUTH] Token expired, clearing session');
+              localStorage.removeItem('fuelsync_token');
+              localStorage.removeItem('fuelsync_user');
+            }
+          } catch (error) {
+            // Invalid token format, clear storage
+            console.log('[AUTH] Invalid token format, clearing session');
+            localStorage.removeItem('fuelsync_token');
+            localStorage.removeItem('fuelsync_user');
+          }
+        }
+      } catch (error) {
+        console.error('[AUTH] Error initializing auth:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string) => {

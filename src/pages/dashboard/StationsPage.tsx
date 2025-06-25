@@ -6,6 +6,7 @@ import { Building2, MapPin, Fuel, Plus, Settings, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useStationsWithMetrics } from '@/hooks/useStations';
 import { CreateStationDialog } from '@/components/dashboard/CreateStationDialog';
+import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
 
 export default function StationsPage() {
   const { data: stations, isLoading, error } = useStationsWithMetrics();
@@ -30,20 +31,40 @@ export default function StationsPage() {
   const totalPumps = stationsList.reduce((sum, station) => sum + (station.pumpCount || 0), 0);
   const totalSales = stationsList.reduce((sum, station) => sum + (station.metrics?.totalSales || 0), 0);
 
+  const mobileStats = [
+    { title: 'Stations', value: stationsList.length, icon: Building2, color: 'text-blue-600' },
+    { title: 'Pumps', value: totalPumps, icon: Fuel, color: 'text-green-600' },
+    { title: 'Sales', value: `₹${totalSales.toLocaleString()}`, icon: Building2, color: 'text-purple-600' },
+    { title: 'Active', value: stationsList.filter(s => s.status === 'active').length, icon: Building2, color: 'text-emerald-600' }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Stations</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Stations</h1>
+          <p className="text-muted-foreground text-sm md:text-base hidden md:block">
             Manage your fuel stations and monitor their performance
           </p>
+          <p className="text-muted-foreground text-sm md:hidden">
+            Manage stations
+          </p>
         </div>
-        <CreateStationDialog />
+        <div className="flex gap-2">
+          <CreateStationDialog>
+            <Button size="sm" className="md:hidden">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </CreateStationDialog>
+          <CreateStationDialog className="hidden md:block" />
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Mobile Stats Card */}
+      <MobileStatsCard stats={mobileStats} />
+
+      {/* Desktop Stats Cards */}
+      <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Stations</CardTitle>

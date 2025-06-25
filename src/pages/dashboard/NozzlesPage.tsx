@@ -16,6 +16,7 @@ import { nozzlesApi, CreateNozzleRequest } from '@/api/nozzles';
 import { pumpsApi } from '@/api/pumps';
 import { Link } from 'react-router-dom';
 import { EnhancedNozzleCard } from '@/components/nozzles/EnhancedNozzleCard';
+import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
 
 export default function NozzlesPage() {
   const { stationId, pumpId } = useParams<{ stationId: string; pumpId: string }>();
@@ -90,6 +91,13 @@ export default function NozzlesPage() {
 
   const canAddNozzles = pump?.status === 'active';
 
+  const mobileStats = [
+    { title: 'Total', value: nozzles?.length || 0, icon: Settings, color: 'text-blue-600' },
+    { title: 'Active', value: nozzles?.filter(n => n.status === 'active').length || 0, icon: Activity, color: 'text-green-600' },
+    { title: 'Petrol', value: nozzles?.filter(n => n.fuelType === 'petrol').length || 0, icon: Settings, color: 'text-purple-600' },
+    { title: 'Diesel', value: nozzles?.filter(n => n.fuelType === 'diesel').length || 0, icon: Settings, color: 'text-orange-600' }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -98,20 +106,23 @@ export default function NozzlesPage() {
             <Button asChild variant="ghost" size="sm">
               <Link to={`/dashboard/stations/${stationId}/pumps`}>
                 <ArrowLeft className="h-4 w-4 mr-1" />
-                Back to Pumps
+                Back
               </Link>
             </Button>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Nozzles</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Nozzles</h1>
+          <p className="text-muted-foreground text-sm md:text-base hidden md:block">
             Manage nozzles for {pump?.label || 'Pump'}
+          </p>
+          <p className="text-muted-foreground text-sm md:hidden">
+            {pump?.label || 'Pump'} nozzles
           </p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button disabled={!canAddNozzles}>
+            <Button disabled={!canAddNozzles} size="sm" className="md:size-default">
               <Plus className="mr-2 h-4 w-4" />
-              Add Nozzle
+              <span className="hidden md:inline">Add Nozzle</span>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -186,8 +197,11 @@ export default function NozzlesPage() {
         </Card>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Mobile Stats Card */}
+      <MobileStatsCard stats={mobileStats} />
+
+      {/* Desktop Stats Cards */}
+      <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Nozzles</CardTitle>

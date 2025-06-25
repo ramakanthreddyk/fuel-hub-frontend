@@ -13,29 +13,8 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
   children, 
   allowedRoles 
 }) => {
-  const { isAuthenticated, user, isLoading, token, logout } = useAuth();
+  const { isAuthenticated, user, isLoading, token } = useAuth();
   const location = useLocation();
-  
-  // Check if token exists but might be expired
-  const checkTokenValidity = () => {
-    if (token) {
-      try {
-        // Simple check - if token exists in localStorage
-        const storedToken = localStorage.getItem('fuelsync_token');
-        if (!storedToken || storedToken !== token) {
-          console.log('[AUTH] Token mismatch, logging out');
-          logout();
-          return false;
-        }
-        return true;
-      } catch (error) {
-        console.error('[AUTH] Token validation error:', error);
-        logout();
-        return false;
-      }
-    }
-    return false;
-  };
 
   if (isLoading) {
     return (
@@ -49,12 +28,15 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
     );
   }
 
-  // Check both isAuthenticated flag and token validity
-  if (!isAuthenticated || !checkTokenValidity()) {
+  // Check authentication
+  if (!isAuthenticated || !token || !user) {
+    console.log('[AUTH] Not authenticated, redirecting to login');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  // Check role authorization
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    console.log('[AUTH] User role not authorized:', user.role);
     return <Navigate to="/unauthorized" replace />;
   }
 
