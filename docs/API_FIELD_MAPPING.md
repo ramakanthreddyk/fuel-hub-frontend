@@ -1,9 +1,20 @@
+
 # API Field Name Mapping
 
 ## Overview
 The backend returns data in snake_case format, but the frontend uses camelCase. This document outlines the field mappings for each entity.
 
 ## Field Mappings
+
+### Stations
+| Backend (snake_case) | Frontend (camelCase) | Type | Description |
+|---------------------|---------------------|------|-------------|
+| `id` | `id` | string | Station ID |
+| `name` | `name` | string | Station name |
+| `address` | `address` | string | Station address |
+| `status` | `status` | string | Station status |
+| `pump_count` | `pumpCount` | number | Number of pumps |
+| `created_at` | `createdAt` | string | Creation timestamp |
 
 ### Pumps
 | Backend (snake_case) | Frontend (camelCase) | Type | Description |
@@ -26,15 +37,27 @@ The backend returns data in snake_case format, but the frontend uses camelCase. 
 | `status` | `status` | string | Nozzle status |
 | `created_at` | `createdAt` | string | Creation timestamp |
 
-### Stations
+### Nozzle Readings
 | Backend (snake_case) | Frontend (camelCase) | Type | Description |
 |---------------------|---------------------|------|-------------|
-| `id` | `id` | string | Station ID |
-| `name` | `name` | string | Station name |
-| `address` | `address` | string | Station address |
-| `status` | `status` | string | Station status |
-| `pump_count` | `pumpCount` | number | Number of pumps |
+| `id` | `id` | string | Reading ID |
+| `nozzle_id` | `nozzleId` | string | Nozzle ID |
+| `reading` | `reading` | number | Reading value |
+| `recorded_at` | `recordedAt` | string | Recording timestamp |
+| `payment_method` | `paymentMethod` | string | Payment method |
+| `creditor_id` | `creditorId` | string? | Creditor ID (optional) |
 | `created_at` | `createdAt` | string | Creation timestamp |
+
+### Tenants (for hierarchy)
+| Backend (snake_case) | Frontend (camelCase) | Type | Description |
+|---------------------|---------------------|------|-------------|
+| `id` | `id` | string | Tenant ID |
+| `name` | `name` | string | Tenant name |
+| `status` | `status` | string | Tenant status |
+| `user_count` | `userCount` | number | Number of users |
+| `station_count` | `stationCount` | number | Number of stations |
+| `users` | `users` | User[] | Array of users |
+| `stations` | `stations` | Station[] | Array of stations with pumps/nozzles |
 
 ## Implementation
 
@@ -68,6 +91,19 @@ export interface Nozzle {
 }
 ```
 
+## API Endpoints
+
+### Nozzles
+- `GET /nozzles?pumpId={id}` - Get nozzles for a pump
+- `GET /nozzles/{id}` - Get single nozzle
+- `POST /nozzles` - Create new nozzle
+- `PUT /nozzles/{id}` - Update nozzle
+- `DELETE /nozzles/{id}` - Delete nozzle
+
+### Nozzle Readings
+- `POST /nozzle-readings` - Create new reading
+- `GET /nozzle-readings?nozzleId={id}&limit=1` - Get latest reading for nozzle
+
 ## Status Values
 All entities use consistent status values:
 - `'active'` - Entity is operational
@@ -79,3 +115,5 @@ All entities use consistent status values:
 - Field conversion happens at the API layer to maintain clean separation
 - Backend maintains snake_case for database consistency
 - Frontend uses camelCase for JavaScript/TypeScript conventions
+- Nozzle editing is now supported via PUT /nozzles/{id}
+- Reading functionality supports preselected nozzles for better UX

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,19 +9,20 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useForm } from 'react-hook-form';
-import { Plus, Settings, ArrowLeft } from 'lucide-react';
+import { Plus, Settings, ArrowLeft, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { nozzlesApi, CreateNozzleRequest } from '@/api/nozzles';
 import { pumpsApi } from '@/api/pumps';
 import { Link } from 'react-router-dom';
+import { EnhancedNozzleCard } from '@/components/nozzles/EnhancedNozzleCard';
 
 export default function NozzlesPage() {
   const { stationId, pumpId } = useParams<{ stationId: string; pumpId: string }>();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const form = useForm<CreateNozzleRequest>({
     defaultValues: {
@@ -71,6 +72,18 @@ export default function NozzlesPage() {
     createNozzleMutation.mutate(data);
   };
 
+  const handleTakeReading = (nozzleId: string) => {
+    navigate('/dashboard/readings/new', { 
+      state: { 
+        preselected: { 
+          stationId, 
+          pumpId, 
+          nozzleId 
+        } 
+      } 
+    });
+  };
+
   if (!stationId || !pumpId) {
     return <div>Station ID or Pump ID not found</div>;
   }
@@ -91,7 +104,7 @@ export default function NozzlesPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Nozzles</h1>
           <p className="text-muted-foreground">
-            Manage nozzles for {pump?.name || 'Pump'}
+            Manage nozzles for {pump?.label || 'Pump'}
           </p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -105,7 +118,7 @@ export default function NozzlesPage() {
             <DialogHeader>
               <DialogTitle>Add New Nozzle</DialogTitle>
               <DialogDescription>
-                Add a new nozzle to {pump?.name}
+                Add a new nozzle to {pump?.label}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -187,7 +200,7 @@ export default function NozzlesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Nozzles</CardTitle>
-            <Settings className="h-4 w-4 text-muted-foreground" />
+            <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -219,69 +232,34 @@ export default function NozzlesPage() {
         </Card>
       </div>
 
-      {/* Nozzles Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Nozzles</CardTitle>
-          <CardDescription>
-            All nozzles for {pump?.name}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nozzle Number</TableHead>
-                <TableHead>Fuel Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {nozzles?.map((nozzle) => (
-                <TableRow key={nozzle.id}>
-                  <TableCell className="font-medium">#{nozzle.nozzleNumber}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {nozzle.fuelType}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={nozzle.status === 'active' ? 'default' : 'secondary'}>
-                      {nozzle.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(nozzle.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          
-          {nozzles?.length === 0 && !isLoading && (
-            <div className="flex flex-col items-center justify-center py-8">
-              <Settings className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No nozzles found</h3>
-              <p className="text-muted-foreground text-center mb-4">
-                Get started by adding your first nozzle to this pump.
-              </p>
-              {canAddNozzles && (
-                <Button onClick={() => setIsAddDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add First Nozzle
-                </Button>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Nozzles Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {nozzles?.map((nozzle) => (
+          <EnhancedNozzleCard 
+            key={nozzle.id} 
+            nozzle={nozzle} 
+            onTakeReading={handleTakeReading}
+          />
+        ))}
+      </div>
+      
+      {nozzles?.length === 0 && !isLoading && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <Settings className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No nozzles found</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Get started by adding your first nozzle to this pump.
+            </p>
+            {canAddNozzles && (
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add First Nozzle
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

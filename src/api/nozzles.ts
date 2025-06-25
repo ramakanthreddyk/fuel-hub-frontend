@@ -1,3 +1,4 @@
+
 import { apiClient } from './client';
 import { ensureArray } from '@/utils/apiHelpers';
 
@@ -65,7 +66,6 @@ export const nozzlesApi = {
   createNozzle: async (data: CreateNozzleRequest): Promise<Nozzle> => {
     const response = await apiClient.post('/nozzles', data);
     const nozzle = response.data;
-    // Convert snake_case to camelCase
     return {
       id: nozzle.id,
       pumpId: nozzle.pump_id || data.pumpId,

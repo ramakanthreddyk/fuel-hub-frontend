@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,16 +28,19 @@ interface ReadingFormData {
 }
 
 export function ReadingEntryForm() {
-  const [selectedStation, setSelectedStation] = useState('');
-  const [selectedPump, setSelectedPump] = useState('');
-  const [selectedNozzle, setSelectedNozzle] = useState('');
+  const location = useLocation();
+  const preselected = location.state?.preselected;
+  
+  const [selectedStation, setSelectedStation] = useState(preselected?.stationId || '');
+  const [selectedPump, setSelectedPump] = useState(preselected?.pumpId || '');
+  const [selectedNozzle, setSelectedNozzle] = useState(preselected?.nozzleId || '');
   const navigate = useNavigate();
 
   const form = useForm<ReadingFormData>({
     defaultValues: {
-      stationId: '',
-      pumpId: '',
-      nozzleId: '',
+      stationId: preselected?.stationId || '',
+      pumpId: preselected?.pumpId || '',
+      nozzleId: preselected?.nozzleId || '',
       reading: 0,
       recordedAt: new Date().toISOString().slice(0, 16),
       paymentMethod: 'cash',
@@ -74,19 +78,23 @@ export function ReadingEntryForm() {
 
   useEffect(() => {
     if (selectedStation) {
-      setSelectedPump('');
-      setSelectedNozzle('');
-      form.setValue('pumpId', '');
-      form.setValue('nozzleId', '');
+      if (!preselected?.pumpId) {
+        setSelectedPump('');
+        setSelectedNozzle('');
+        form.setValue('pumpId', '');
+        form.setValue('nozzleId', '');
+      }
     }
-  }, [selectedStation, form]);
+  }, [selectedStation, form, preselected]);
 
   useEffect(() => {
     if (selectedPump) {
-      setSelectedNozzle('');
-      form.setValue('nozzleId', '');
+      if (!preselected?.nozzleId) {
+        setSelectedNozzle('');
+        form.setValue('nozzleId', '');
+      }
     }
-  }, [selectedPump, form]);
+  }, [selectedPump, form, preselected]);
 
   const onSubmit = async (data: ReadingFormData) => {
     const readingData: CreateReadingRequest = {
