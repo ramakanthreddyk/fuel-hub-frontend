@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -43,7 +42,7 @@ export default function UsersPage() {
 
   const { data: stations } = useQuery({
     queryKey: ['stations'],
-    queryFn: stationsApi.getStations
+    queryFn: () => stationsApi.getStations()
   });
 
   const createUserMutation = useMutation({
