@@ -103,7 +103,7 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
           <li>• <strong>Attendant:</strong> attendant@{formData.schemaName || 'tenant-name'}.com</li>
         </ul>
         <p className="text-xs text-blue-500 mt-2">
-          Passwords: {formData.name.split(' ')[0].toLowerCase() || 'firstname'}@schema123
+          Passwords: {formData.name.split(' ')[0].toLowerCase() || 'firstname'}@{formData.schemaName || 'schema'}123
         </p>
       </div>
       
