@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,20 @@ interface TenantHierarchyProps {
 export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
   const [expandedStations, setExpandedStations] = useState<Set<string>>(new Set());
   const [expandedPumps, setExpandedPumps] = useState<Set<string>>(new Set());
+
+  if (!tenant) {
+    return (
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">No Tenant Data</h3>
+          <p className="text-muted-foreground">
+            Unable to load tenant information.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const toggleStation = (stationId: string) => {
     const newExpanded = new Set(expandedStations);
@@ -63,6 +78,13 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
     }
   };
 
+  // Safely access arrays with fallbacks
+  const users = tenant.users || [];
+  const stations = tenant.stations || [];
+  const userCount = tenant.userCount || users.length;
+  const stationCount = tenant.stationCount || stations.length;
+  const totalPumps = stations.reduce((sum, s) => sum + (s.pumpCount || 0), 0);
+
   return (
     <div className="space-y-6">
       {/* Tenant Overview */}
@@ -79,17 +101,15 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-blue-600">{tenant.userCount || 0}</div>
+              <div className="text-2xl font-bold text-blue-600">{userCount}</div>
               <div className="text-sm text-muted-foreground">Users</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-600">{tenant.stationCount || 0}</div>
+              <div className="text-2xl font-bold text-green-600">{stationCount}</div>
               <div className="text-sm text-muted-foreground">Stations</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-orange-600">
-                {tenant.stations?.reduce((sum, s) => sum + (s.pumpCount || 0), 0) || 0}
-              </div>
+              <div className="text-2xl font-bold text-orange-600">{totalPumps}</div>
               <div className="text-sm text-muted-foreground">Pumps</div>
             </div>
           </div>
@@ -97,17 +117,17 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
       </Card>
 
       {/* Users Section */}
-      {tenant.users && tenant.users.length > 0 && (
+      {users.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-blue-600" />
-              Users ({tenant.users.length})
+              Users ({users.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {tenant.users.map((user) => (
+              {users.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     {getRoleIcon(user.role)}
@@ -127,17 +147,17 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
       )}
 
       {/* Stations Hierarchy */}
-      {tenant.stations && tenant.stations.length > 0 && (
+      {stations.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-green-600" />
-              Stations ({tenant.stations.length})
+              Stations ({stations.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {tenant.stations.map((station) => (
+              {stations.map((station) => (
                 <div key={station.id} className="border rounded-lg">
                   <Collapsible
                     open={expandedStations.has(station.id)}
@@ -153,7 +173,7 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
                           <div className="text-left">
                             <div className="font-medium">{station.name}</div>
                             <div className="text-sm text-muted-foreground">
-                              {station.pumpCount} pumps • {station.address || 'No address'}
+                              {station.pumpCount || 0} pumps • {station.address || 'No address'}
                             </div>
                           </div>
                         </div>
@@ -188,7 +208,7 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
                                       <div className="text-left">
                                         <div className="font-medium">{pump.label}</div>
                                         <div className="text-sm text-muted-foreground">
-                                          {pump.nozzleCount} nozzles
+                                          {pump.nozzleCount || 0} nozzles
                                           {pump.serialNumber && ` • SN: ${pump.serialNumber}`}
                                         </div>
                                       </div>
@@ -253,7 +273,7 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
       )}
 
       {/* Empty State */}
-      {(!tenant.stations || tenant.stations.length === 0) && (!tenant.users || tenant.users.length === 0) && (
+      {stations.length === 0 && users.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />

@@ -48,6 +48,13 @@ export interface Tenant {
   stations?: Station[];
 }
 
+// New interface for the API response structure
+export interface TenantDetailsResponse {
+  tenant: Tenant;
+  users: User[];
+  stations: Station[];
+}
+
 export interface CreateTenantRequest {
   name: string;
   schemaName?: string;
@@ -66,7 +73,16 @@ export const tenantsApi = {
   // Get tenant details with hierarchy
   getTenantDetails: async (tenantId: string): Promise<Tenant> => {
     const response = await apiClient.get(`/admin/tenants/${tenantId}`);
-    return response.data;
+    const data: TenantDetailsResponse = response.data;
+    
+    // Merge the separate arrays into the tenant object for backward compatibility
+    return {
+      ...data.tenant,
+      users: data.users,
+      stations: data.stations,
+      userCount: data.users?.length || 0,
+      stationCount: data.stations?.length || 0
+    };
   },
   
   // Create new tenant
