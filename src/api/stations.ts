@@ -31,6 +31,12 @@ export const stationsApi = {
     }
   },
   
+  // Create new station
+  createStation: async (data: { name: string; address?: string }): Promise<Station> => {
+    const response = await apiClient.post('/stations', data);
+    return response.data;
+  },
+  
   // Get station by ID
   getStation: async (stationId: string): Promise<Station> => {
     const response = await apiClient.get(`/stations/${stationId}`);
