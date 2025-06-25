@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Building2, Plus, MoreHorizontal } from 'lucide-react';
+import { Building2, Plus, MoreHorizontal, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { tenantsApi, CreateTenantRequest } from '@/api/tenants';
 import { superAdminApi } from '@/api/superadmin';
@@ -17,6 +18,7 @@ import { formatDate } from '@/utils/formatters';
 
 export default function SuperAdminTenantsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const navigate = useNavigate();
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -214,15 +216,26 @@ export default function SuperAdminTenantsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'active' })}>
-                            Activate
+                          <DropdownMenuItem onClick={() => navigate(`/superadmin/tenants/${tenant.id}`)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'suspended' })}>
-                            Suspend
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'cancelled' })}>
-                            Cancel
-                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {tenant.status !== 'active' && (
+                            <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'active' })}>
+                              ✅ Activate
+                            </DropdownMenuItem>
+                          )}
+                          {tenant.status !== 'suspended' && (
+                            <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'suspended' })}>
+                              ⏸️ Suspend
+                            </DropdownMenuItem>
+                          )}
+                          {tenant.status !== 'cancelled' && (
+                            <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'cancelled' })}>
+                              ❌ Cancel Subscription
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
                             onClick={() => {
@@ -232,7 +245,7 @@ export default function SuperAdminTenantsPage() {
                             }}
                             className="text-red-600"
                           >
-                            Delete (Soft)
+                            🗑️ Delete (Soft)
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
