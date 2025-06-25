@@ -214,7 +214,7 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <Badge className={getStatusColor(pump.status)} size="sm">
+                                      <Badge className={getStatusColor(pump.status)}>
                                         {pump.status}
                                       </Badge>
                                       {expandedPumps.has(pump.id) ? (
@@ -242,7 +242,7 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
                                               {nozzle.fuelType}
                                             </span>
                                           </div>
-                                          <Badge className={getStatusColor(nozzle.status)} size="sm">
+                                          <Badge className={getStatusColor(nozzle.status)}>
                                             {nozzle.status}
                                           </Badge>
                                         </div>

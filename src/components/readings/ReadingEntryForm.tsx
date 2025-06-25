@@ -48,7 +48,7 @@ export function ReadingEntryForm() {
   // Fetch data for dropdowns
   const { data: stations } = useQuery({
     queryKey: ['stations'],
-    queryFn: stationsApi.getStations,
+    queryFn: () => stationsApi.getStations(),
   });
 
   const { data: pumps } = useQuery({

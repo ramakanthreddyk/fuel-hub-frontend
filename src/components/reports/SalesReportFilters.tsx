@@ -15,7 +15,7 @@ interface SalesReportFiltersProps {
 export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFiltersProps) {
   const { data: stations } = useQuery({
     queryKey: ['stations'],
-    queryFn: stationsApi.getStations,
+    queryFn: () => stationsApi.getStations(),
   });
 
   const handleFilterChange = (key: keyof SalesReportFilters, value: string) => {
