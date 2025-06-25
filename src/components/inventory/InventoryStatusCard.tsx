@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -11,7 +10,9 @@ interface InventoryStatusCardProps {
 }
 
 export function InventoryStatusCard({ stationId }: InventoryStatusCardProps) {
-  const { data: inventory = [], isLoading, error, refetch } = useFuelInventory(stationId);
+  const { data: inventory = [], isLoading, error, refetch } = useFuelInventory(
+    stationId ? { stationId } : undefined
+  );
 
   if (error) {
     return <ErrorFallback error={error} onRetry={() => refetch()} title="Inventory Status" />;
