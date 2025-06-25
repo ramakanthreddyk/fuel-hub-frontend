@@ -10,6 +10,7 @@ import StationsPage from './pages/dashboard/StationsPage'
 import PumpsPage from './pages/dashboard/PumpsPage'
 import NozzlesPage from './pages/dashboard/NozzlesPage'
 import ReadingsPage from './pages/dashboard/ReadingsPage'
+import NewReadingPage from './pages/dashboard/NewReadingPage'
 import SalesPage from './pages/dashboard/SalesPage'
 import InventoryPage from './pages/dashboard/InventoryPage'
 import FuelDeliveriesPage from './pages/dashboard/FuelDeliveriesPage'
@@ -56,6 +57,7 @@ function App() {
                     <Route path="stations/:stationId/pumps" element={<PumpsPage />} />
                     <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
                     <Route path="stations/:stationId/pumps/:pumpId/nozzles/:nozzleId/readings" element={<ReadingsPage />} />
+                    <Route path="readings/new" element={<NewReadingPage />} />
                     <Route path="stations/:stationId/sales" element={<SalesPage />} />
                     <Route path="fuel-inventory" element={<InventoryPage />} />
                     <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
