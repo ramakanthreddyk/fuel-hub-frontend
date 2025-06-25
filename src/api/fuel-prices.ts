@@ -21,6 +21,13 @@ export interface CreateFuelPriceRequest {
   validFrom?: string;
 }
 
+export interface UpdateFuelPriceRequest {
+  stationId?: string;
+  fuelType?: 'petrol' | 'diesel' | 'premium';
+  price?: number;
+  effectiveFrom?: string;
+}
+
 export const fuelPricesApi = {
   // Get all fuel prices
   getFuelPrices: async (): Promise<FuelPrice[]> => {
@@ -39,8 +46,8 @@ export const fuelPricesApi = {
     return response.data;
   },
 
-  // Update fuel price
-  updateFuelPrice: async (id: string, data: Partial<CreateFuelPriceRequest>): Promise<FuelPrice> => {
+  // Update fuel price using PUT
+  updateFuelPrice: async (id: string, data: UpdateFuelPriceRequest): Promise<FuelPrice> => {
     const response = await apiClient.put(`/fuel-prices/${id}`, data);
     return response.data;
   }

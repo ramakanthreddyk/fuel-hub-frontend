@@ -7,11 +7,14 @@ import { Building2 } from 'lucide-react';
 
 interface StationComparisonChartProps {
   stationIds: string[];
-  period?: 'today' | 'week' | 'month';
+  period?: string;
 }
 
 export function StationComparisonChart({ stationIds, period = 'month' }: StationComparisonChartProps) {
-  const { data: comparisonData = [], isLoading } = useStationComparison(stationIds, period);
+  const { data: comparisonData = [], isLoading } = useStationComparison({ 
+    stationIds, 
+    period 
+  });
 
   if (isLoading) {
     return (

@@ -1,10 +1,10 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { fuelInventoryApi } from '@/api/fuel-inventory';
+import { fuelInventoryApi, FuelInventoryParams } from '@/api/fuel-inventory';
 
-export const useFuelInventory = (stationId?: string, fuelType?: 'petrol' | 'diesel') => {
+export const useFuelInventory = (params?: FuelInventoryParams) => {
   return useQuery({
-    queryKey: ['fuel-inventory', stationId, fuelType],
-    queryFn: () => fuelInventoryApi.getFuelInventory(stationId, fuelType)
+    queryKey: ['fuel-inventory', params],
+    queryFn: () => fuelInventoryApi.getFuelInventory(params)
   });
 };

@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fuelPricesApi, CreateFuelPriceRequest } from '@/api/fuel-prices';
+import { fuelPricesApi, CreateFuelPriceRequest, UpdateFuelPriceRequest } from '@/api/fuel-prices';
 import { useToast } from '@/hooks/use-toast';
 
 export const useFuelPrices = () => {
@@ -20,26 +20,25 @@ export const useCreateFuelPrice = () => {
       queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
       toast({
         title: "Success",
-        description: "Fuel price updated successfully",
+        description: "Fuel price created successfully",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to update fuel price",
+        description: "Failed to create fuel price",
         variant: "destructive",
       });
     },
   });
 };
 
-export const useUpdateFuelPrice = () => {
+export const useUpdateFuelPrice = (id: string) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CreateFuelPriceRequest> }) => 
-      fuelPricesApi.updateFuelPrice(id, data),
+    mutationFn: (data: UpdateFuelPriceRequest) => fuelPricesApi.updateFuelPrice(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
       toast({

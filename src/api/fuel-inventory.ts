@@ -10,14 +10,19 @@ export interface FuelInventory {
   lastUpdated: string;
 }
 
+export interface FuelInventoryParams {
+  stationId?: string;
+  fuelType?: string;
+}
+
 export const fuelInventoryApi = {
-  // Get fuel inventory status
-  getFuelInventory: async (stationId?: string, fuelType?: 'petrol' | 'diesel'): Promise<FuelInventory[]> => {
-    const params: any = {};
-    if (stationId) params.stationId = stationId;
-    if (fuelType) params.fuelType = fuelType;
+  // Get fuel inventory status with optional filtering
+  getFuelInventory: async (params?: FuelInventoryParams): Promise<FuelInventory[]> => {
+    const searchParams = new URLSearchParams();
+    if (params?.stationId) searchParams.append('stationId', params.stationId);
+    if (params?.fuelType) searchParams.append('fuelType', params.fuelType);
     
-    const response = await apiClient.get('/fuel-inventory', { params });
+    const response = await apiClient.get(`/fuel-inventory?${searchParams.toString()}`);
     return response.data;
   }
 };

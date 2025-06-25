@@ -60,12 +60,17 @@ export interface SuperAdminAnalytics {
   }[];
 }
 
+export interface StationComparisonParams {
+  stationIds: string[];
+  period?: string;
+}
+
 export const analyticsApi = {
-  getStationComparison: async (stationIds: string[], period: string): Promise<StationComparison[]> => {
+  getStationComparison: async ({ stationIds, period }: StationComparisonParams): Promise<StationComparison[]> => {
     const params = new URLSearchParams({
-      period,
       stationIds: stationIds.join(','),
     });
+    if (period) params.append('period', period);
     
     const response = await apiClient.get(`/analytics/station-comparison?${params}`);
     return response.data;

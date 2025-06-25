@@ -51,6 +51,13 @@ export interface ScheduleReportRequest {
   frequency: string;
 }
 
+export interface SalesReportExportFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  format?: 'csv' | 'json';
+}
+
 export const reportsApi = {
   getSalesReport: async (filters: SalesReportFilters): Promise<{
     data: SalesReportData[];
@@ -72,6 +79,14 @@ export const reportsApi = {
     });
     
     const response = await apiClient.get(`/reports/sales/export?${params.toString()}`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  // New POST endpoint for sales report export
+  exportSalesReport: async (filters: SalesReportExportFilters): Promise<Blob> => {
+    const response = await apiClient.post('/reports/sales', filters, {
       responseType: 'blob',
     });
     return response.data;

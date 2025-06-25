@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { reportsApi, SalesReportFilters } from '@/api/reports';
+import { reportsApi, SalesReportFilters, SalesReportExportFilters } from '@/api/reports';
 
 export const useSalesReport = (filters: SalesReportFilters) => {
   return useQuery({
@@ -24,4 +24,10 @@ export const useReportExport = () => {
     scheduleReport: scheduleMutation.mutateAsync,
     isExporting: exportMutation.isPending,
   };
+};
+
+export const useExportSalesReport = (filters: SalesReportExportFilters) => {
+  return useMutation({
+    mutationFn: () => reportsApi.exportSalesReport(filters),
+  });
 };

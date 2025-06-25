@@ -1,12 +1,12 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { analyticsApi } from '@/api/analytics';
+import { analyticsApi, StationComparisonParams } from '@/api/analytics';
 
-export const useStationComparison = (stationIds: string[], period: string) => {
+export const useStationComparison = (opts: StationComparisonParams) => {
   return useQuery({
-    queryKey: ['analytics', 'station-comparison', stationIds, period],
-    queryFn: () => analyticsApi.getStationComparison(stationIds, period),
-    enabled: stationIds.length > 0,
+    queryKey: ['analytics', 'station-comparison', opts.stationIds, opts.period],
+    queryFn: () => analyticsApi.getStationComparison(opts),
+    enabled: opts.stationIds.length > 0,
   });
 };
 

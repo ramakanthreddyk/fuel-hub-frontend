@@ -15,9 +15,18 @@ export interface Alert {
   metadata?: Record<string, any>;
 }
 
+export interface AlertsParams {
+  stationId?: string;
+  unreadOnly?: boolean;
+}
+
 export const alertsApi = {
-  getAlerts: async (): Promise<Alert[]> => {
-    const response = await apiClient.get('/alerts');
+  getAlerts: async (params?: AlertsParams): Promise<Alert[]> => {
+    const searchParams = new URLSearchParams();
+    if (params?.stationId) searchParams.append('stationId', params.stationId);
+    if (params?.unreadOnly) searchParams.append('unreadOnly', 'true');
+    
+    const response = await apiClient.get(`/alerts?${searchParams.toString()}`);
     return response.data;
   },
 
