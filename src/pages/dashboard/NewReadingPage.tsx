@@ -1,4 +1,3 @@
-
 import { ReadingEntryForm } from '@/components/readings/ReadingEntryForm';
 
 export default function NewReadingPage() {
