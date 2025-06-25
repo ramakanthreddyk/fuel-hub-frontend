@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Building2, MapPin, Fuel, Plus, Settings, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useStationsWithMetrics } from '@/hooks/useStations';
+import { CreateStationDialog } from '@/components/dashboard/CreateStationDialog';
 
 export default function StationsPage() {
   const { data: stations, isLoading, error } = useStationsWithMetrics();
@@ -38,10 +39,7 @@ export default function StationsPage() {
             Manage your fuel stations and monitor their performance
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Station
-        </Button>
+        <CreateStationDialog />
       </div>
 
       {/* Stats Cards */}
@@ -149,10 +147,12 @@ export default function StationsPage() {
           <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
           <h3 className="mt-4 text-lg font-semibold">No stations found</h3>
           <p className="text-muted-foreground">Get started by adding your first station.</p>
-          <Button className="mt-4">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Station
-          </Button>
+          <CreateStationDialog>
+            <Button className="mt-4">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Station
+            </Button>
+          </CreateStationDialog>
         </div>
       )}
     </div>
