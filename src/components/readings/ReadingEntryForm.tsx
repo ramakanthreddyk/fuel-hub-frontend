@@ -146,7 +146,7 @@ export function ReadingEntryForm() {
                 <SelectContent>
                   {pumps?.map((pump) => (
                     <SelectItem key={pump.id} value={pump.id}>
-                      {pump.name} ({pump.serialNumber})
+                      {pump.label} {pump.serialNumber ? `(${pump.serialNumber})` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -283,7 +283,7 @@ export function ReadingEntryForm() {
                       <SelectContent>
                         {creditors?.map((creditor) => (
                           <SelectItem key={creditor.id} value={creditor.id}>
-                            {creditor.name}
+                            {creditor.partyName}
                           </SelectItem>
                         ))}
                       </SelectContent>
