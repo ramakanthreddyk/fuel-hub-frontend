@@ -11,8 +11,9 @@ interface TenantFormProps {
     name: string; 
     schemaName?: string; 
     planId: string;
-    adminEmail?: string;
-    adminPassword?: string;
+    ownerName?: string;
+    ownerEmail?: string;
+    ownerPassword?: string;
   }) => void;
   plans: Plan[];
   isLoading?: boolean;
@@ -23,8 +24,9 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
     name: '',
     schemaName: '',
     planId: '',
-    adminEmail: '',
-    adminPassword: ''
+    ownerName: '',
+    ownerEmail: '',
+    ownerPassword: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,8 +35,9 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
       name: formData.name,
       schemaName: formData.schemaName || undefined,
       planId: formData.planId,
-      adminEmail: formData.adminEmail || undefined,
-      adminPassword: formData.adminPassword || undefined
+      ownerName: formData.ownerName || undefined,
+      ownerEmail: formData.ownerEmail || undefined,
+      ownerPassword: formData.ownerPassword || undefined
     });
   };
 
@@ -90,24 +93,34 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="adminEmail">Admin Email (Optional)</Label>
+        <Label htmlFor="ownerName">Owner Name (Optional)</Label>
         <Input
-          id="adminEmail"
-          type="email"
-          value={formData.adminEmail}
-          onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-          placeholder="Auto-generated if empty"
+          id="ownerName"
+          value={formData.ownerName}
+          onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+          placeholder="Auto-generated from tenant name"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="adminPassword">Admin Password (Optional)</Label>
+        <Label htmlFor="ownerEmail">Owner Email (Optional)</Label>
         <Input
-          id="adminPassword"
+          id="ownerEmail"
+          type="email"
+          value={formData.ownerEmail}
+          onChange={(e) => setFormData({ ...formData, ownerEmail: e.target.value })}
+          placeholder="owner@tenant-schema.com"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="ownerPassword">Owner Password (Optional)</Label>
+        <Input
+          id="ownerPassword"
           type="password"
-          value={formData.adminPassword}
-          onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
-          placeholder="Default: tenant123"
+          value={formData.ownerPassword}
+          onChange={(e) => setFormData({ ...formData, ownerPassword: e.target.value })}
+          placeholder="firstname@schema123"
         />
       </div>
       
