@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { Plus, Fuel, Settings, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { pumpsApi, CreatePumpRequest } from '@/api/pumps';
+import { pumpsApi } from '@/api/pumps';
 import { stationsApi } from '@/api/stations';
 import { Link } from 'react-router-dom';
 
@@ -21,10 +21,9 @@ export default function PumpsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm<CreatePumpRequest>({
+  const form = useForm({
     defaultValues: {
-      stationId: stationId || '',
-      name: '',
+      label: '',
       serialNumber: ''
     }
   });
@@ -64,8 +63,8 @@ export default function PumpsPage() {
     }
   });
 
-  const onSubmit = (data: CreatePumpRequest) => {
-    createPumpMutation.mutate(data);
+  const onSubmit = (data: any) => {
+    createPumpMutation.mutate({ ...data, stationId: stationId! });
   };
 
   if (!stationId) {
@@ -99,12 +98,12 @@ export default function PumpsPage() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="label"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pump Name</FormLabel>
+                      <FormLabel>Pump Label</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter pump name" {...field} />
+                        <Input placeholder="Enter pump label" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -186,7 +185,7 @@ export default function PumpsPage() {
           <Card key={pump.id} className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{pump.name}</CardTitle>
+                <CardTitle className="text-lg">{pump.label}</CardTitle>
                 <Badge variant={pump.status === 'active' ? 'default' : 'secondary'}>
                   {pump.status}
                 </Badge>
