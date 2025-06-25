@@ -8,6 +8,7 @@ import { PaymentMethodChart } from '@/components/dashboard/PaymentMethodChart';
 import { FuelBreakdownChart } from '@/components/dashboard/FuelBreakdownChart';
 import { TopCreditorsTable } from '@/components/dashboard/TopCreditorsTable';
 import { SalesTrendChart } from '@/components/dashboard/SalesTrendChart';
+import { OrganizationHierarchy } from '@/components/dashboard/OrganizationHierarchy';
 import { useStationMetrics } from '@/hooks/useDashboard';
 import { DateRange } from 'react-day-picker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -90,6 +91,9 @@ export default function SummaryPage() {
         <SalesTrendChart filters={filters} />
         <TopCreditorsTable filters={filters} />
       </div>
+
+      {/* Organization Hierarchy */}
+      <OrganizationHierarchy />
 
       {selectedStation && (
         <div className="flex justify-center">
