@@ -47,26 +47,12 @@ export const authApi = {
         throw new Error('Missing user data in response');
       }
       
-      // Extract tenant from email if it follows tenant-specific format (user@tenant_name.com)
-      if (response.data.user.role !== 'superadmin' && !response.data.user.tenantId) {
-        const emailParts = credentials.email.split('@');
-        if (emailParts.length === 2) {
-          const domain = emailParts[1];
-          // Check if domain looks like a tenant name (not a standard domain)
-          if (!domain.includes('.') || domain.endsWith('.com')) {
-            const tenantName = domain.replace('.com', '');
-            response.data.user.tenantId = tenantName;
-            response.data.user.tenantName = tenantName;
-            console.log('[AUTH-API] Extracted tenant from email:', tenantName);
-          }
-        }
-        
-        // Fallback to default tenant
-        if (!response.data.user.tenantId) {
-          response.data.user.tenantId = 'production_tenant';
-          response.data.user.tenantName = 'Production Tenant';
-        }
-      }
+      // Backend already provides correct tenantId (schema name) in JWT
+      // Don't override it with email-based extraction
+      console.log('[AUTH-API] Using backend-provided tenant context:', {
+        tenantId: response.data.user.tenantId,
+        tenantName: response.data.user.tenantName
+      });
       
       return response.data;
     } catch (error) {
