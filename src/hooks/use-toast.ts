@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -5,8 +6,8 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -188,4 +189,31 @@ function useToast() {
   }
 }
 
-export { useToast, toast }
+// Enhanced toast helpers for common use cases
+const toastHelpers = {
+  success: (title: string, description?: string) => toast({
+    title,
+    description,
+    variant: "default",
+  }),
+  
+  error: (title: string, description?: string) => toast({
+    title,
+    description,
+    variant: "destructive",
+  }),
+  
+  info: (title: string, description?: string) => toast({
+    title,
+    description,
+    variant: "default",
+  }),
+  
+  loading: (title: string, description?: string) => toast({
+    title,
+    description,
+    variant: "default",
+  }),
+}
+
+export { useToast, toast, toastHelpers }
