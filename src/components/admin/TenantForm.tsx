@@ -92,36 +92,19 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="ownerName">Owner Name (Optional)</Label>
-        <Input
-          id="ownerName"
-          value={formData.ownerName}
-          onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-          placeholder="Auto-generated from tenant name"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="ownerEmail">Owner Email (Optional)</Label>
-        <Input
-          id="ownerEmail"
-          type="email"
-          value={formData.ownerEmail}
-          onChange={(e) => setFormData({ ...formData, ownerEmail: e.target.value })}
-          placeholder="owner@tenant-schema.com"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="ownerPassword">Owner Password (Optional)</Label>
-        <Input
-          id="ownerPassword"
-          type="password"
-          value={formData.ownerPassword}
-          onChange={(e) => setFormData({ ...formData, ownerPassword: e.target.value })}
-          placeholder="firstname@schema123"
-        />
+      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+        <h4 className="font-medium text-blue-900 mb-2">Auto-Generated Users</h4>
+        <p className="text-sm text-blue-700 mb-2">
+          The system will automatically create:
+        </p>
+        <ul className="text-sm text-blue-600 space-y-1">
+          <li>• <strong>Owner:</strong> owner@{formData.schemaName || 'tenant-name'}.com</li>
+          <li>• <strong>Manager:</strong> manager@{formData.schemaName || 'tenant-name'}.com</li>
+          <li>• <strong>Attendant:</strong> attendant@{formData.schemaName || 'tenant-name'}.com</li>
+        </ul>
+        <p className="text-xs text-blue-500 mt-2">
+          Passwords: {formData.name.split(' ')[0].toLowerCase() || 'firstname'}@schema123
+        </p>
       </div>
       
       <Button type="submit" disabled={isLoading || !formData.name || !formData.planId}>
