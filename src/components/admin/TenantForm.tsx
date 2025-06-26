@@ -9,7 +9,6 @@ import { Plan } from '@/api/api-contract';
 interface TenantFormProps {
   onSubmit: (data: { 
     name: string; 
-    schemaName?: string; 
     planId: string;
     ownerName?: string;
     ownerEmail?: string;
@@ -22,7 +21,6 @@ interface TenantFormProps {
 export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
   const [formData, setFormData] = useState({
     name: '',
-    schemaName: '',
     planId: '',
     ownerName: '',
     ownerEmail: '',
@@ -33,7 +31,6 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
     e.preventDefault();
     onSubmit({
       name: formData.name,
-      schemaName: formData.schemaName || undefined,
       planId: formData.planId,
       ownerName: formData.ownerName || undefined,
       ownerEmail: formData.ownerEmail || undefined,
@@ -41,13 +38,7 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
     });
   };
 
-  const generateSchema = () => {
-    const schema = formData.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '_')
-      .slice(0, 20);
-    setFormData({ ...formData, schemaName: schema });
-  };
+  // Schema generation is no longer needed with the unified schema model
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -61,20 +52,7 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
         />
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="schemaName">Schema Name (Optional)</Label>
-        <div className="flex gap-2">
-          <Input
-            id="schemaName"
-            value={formData.schemaName}
-            onChange={(e) => setFormData({ ...formData, schemaName: e.target.value })}
-            placeholder="Auto-generated if empty"
-          />
-          <Button type="button" variant="outline" onClick={generateSchema}>
-            Generate
-          </Button>
-        </div>
-      </div>
+      {/* Schema name field removed as it's no longer needed with the unified schema model */}
       
       <div className="space-y-2">
         <Label htmlFor="planId">Subscription Plan *</Label>
@@ -98,12 +76,12 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
           The system will automatically create:
         </p>
         <ul className="text-sm text-blue-600 space-y-1">
-          <li>• <strong>Owner:</strong> owner@{formData.schemaName || 'tenant-name'}.com</li>
-          <li>• <strong>Manager:</strong> manager@{formData.schemaName || 'tenant-name'}.com</li>
-          <li>• <strong>Attendant:</strong> attendant@{formData.schemaName || 'tenant-name'}.com</li>
+          <li>• <strong>Owner:</strong> owner@{formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'tenant'}.com</li>
+          <li>• <strong>Manager:</strong> manager@{formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'tenant'}.com</li>
+          <li>• <strong>Attendant:</strong> attendant@{formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'tenant'}.com</li>
         </ul>
         <p className="text-xs text-blue-500 mt-2">
-          Passwords: {formData.name.split(' ')[0].toLowerCase() || 'firstname'}@{formData.schemaName || 'schema'}123
+          Passwords: {formData.name.split(' ')[0].toLowerCase() || 'firstname'}@123
         </p>
       </div>
       
