@@ -1,11 +1,6 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { FuelInventory, ApiResponse } from './api-contract';
-
-export interface FuelInventoryParams {
-  stationId?: string;
-  fuelType?: string;
-}
+import type { FuelInventory, FuelInventoryParams, ApiResponse } from './api-contract';
 
 export const fuelInventoryApi = {
   // Get fuel inventory status with optional filtering
@@ -23,6 +18,3 @@ export const fuelInventoryApi = {
     }
   }
 };
-
-// Export types for backward compatibility
-export type { FuelInventory, FuelInventoryParams };

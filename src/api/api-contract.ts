@@ -69,6 +69,7 @@ export interface Station {
   attendantCount: number;
   pumpCount: number;
   createdAt: string;
+  pumps?: Pump[];
   metrics?: {
     totalSales: number;
     totalVolume: number;
@@ -90,6 +91,7 @@ export interface Pump {
   status: Status;
   nozzleCount: number;
   createdAt: string;
+  nozzles?: Nozzle[];
 }
 
 export interface CreatePumpRequest {
@@ -252,6 +254,28 @@ export interface CreateUserRequest {
   stationId?: string;
 }
 
+export interface UpdateUserRequest {
+  name?: string;
+  role?: 'manager' | 'attendant';
+  stationId?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordRequest {
+  newPassword: string;
+}
+
+export interface CreateSuperAdminRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: 'superadmin';
+}
+
 // Tenants Endpoints (SuperAdmin)
 export interface Tenant {
   id: string;
@@ -273,6 +297,12 @@ export interface CreateTenantRequest {
   planId: string;
   adminEmail?: string;
   adminPassword?: string;
+}
+
+export interface TenantDetailsResponse {
+  tenant: Tenant;
+  users: User[];
+  stations: Station[];
 }
 
 // Plans Endpoints (SuperAdmin)
@@ -309,6 +339,30 @@ export interface FuelTypeBreakdown {
   amount: number;
 }
 
+export interface TopCreditor {
+  id: string;
+  partyName: string;
+  outstandingAmount: number;
+  creditLimit?: number;
+}
+
+export interface DailySalesTrend {
+  date: string;
+  amount: number;
+  volume: number;
+}
+
+export interface StationMetric {
+  id: string;
+  name: string;
+  todaySales: number;
+  monthlySales: number;
+  salesGrowth: number;
+  activePumps: number;
+  totalPumps: number;
+  status: 'active' | 'maintenance' | 'inactive';
+}
+
 // Fuel Inventory Endpoints
 export interface FuelInventory {
   id: string;
@@ -317,6 +371,11 @@ export interface FuelInventory {
   fuelType: 'petrol' | 'diesel';
   currentVolume: number;
   lastUpdated: string;
+}
+
+export interface FuelInventoryParams {
+  stationId?: string;
+  fuelType?: string;
 }
 
 // Fuel Deliveries Endpoints
@@ -354,6 +413,11 @@ export interface Alert {
   metadata?: Record<string, any>;
 }
 
+export interface AlertsParams {
+  stationId?: string;
+  unreadOnly?: boolean;
+}
+
 // Reconciliation Endpoints
 export interface ReconciliationRecord {
   id: string;
@@ -378,6 +442,19 @@ export interface CreateReconciliationRequest {
   managerConfirmation: boolean;
 }
 
+export interface DailyReadingSummary {
+  nozzleId: string;
+  nozzleNumber: number;
+  previousReading: number;
+  currentReading: number;
+  deltaVolume: number;
+  pricePerLitre: number;
+  saleValue: number;
+  paymentMethod: string;
+  cashDeclared: number;
+  fuelType: string;
+}
+
 // Reports Endpoints
 export interface SalesReportFilters {
   startDate?: string;
@@ -398,6 +475,128 @@ export interface SalesReportData {
   attendant: string;
   stationName: string;
   nozzleNumber: number;
+}
+
+export interface SalesReportSummary {
+  totalRevenue: number;
+  totalVolume: number;
+  fuelTypeBreakdown: Record<string, { revenue: number; volume: number }>;
+  paymentMethodBreakdown: Record<string, number>;
+}
+
+export interface ExportReportRequest {
+  type: string;
+  format: string;
+  stationId?: string;
+  dateRange?: { from: Date; to: Date };
+}
+
+export interface ScheduleReportRequest {
+  type: string;
+  stationId?: string;
+  frequency: string;
+}
+
+export interface SalesReportExportFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  format?: 'csv' | 'json';
+}
+
+// Analytics Endpoints
+export interface StationComparison {
+  id: string;
+  stationName: string;
+  sales: number;
+  volume: number;
+  transactions: number;
+  growth: number;
+}
+
+export interface HourlySales {
+  hour: string;
+  sales: number;
+  volume: number;
+  transactions: number;
+}
+
+export interface PeakHour {
+  timeRange: string;
+  avgSales: number;
+  avgVolume: number;
+}
+
+export interface FuelPerformance {
+  fuelType: string;
+  volume: number;
+  sales: number;
+  margin: number;
+  growth: number;
+}
+
+export interface StationRanking {
+  id: string;
+  name: string;
+  sales: number;
+  volume: number;
+  growth: number;
+  efficiency: number;
+  rank: number;
+}
+
+export interface SuperAdminAnalytics {
+  totalTenants: number;
+  activeTenants: number;
+  totalStations: number;
+  salesVolume: number;
+  totalRevenue: number;
+  monthlyGrowth: {
+    month: string;
+    tenants: number;
+    revenue: number;
+  }[];
+  topTenants: {
+    id: string;
+    name: string;
+    stationsCount: number;
+    revenue: number;
+  }[];
+}
+
+export interface StationComparisonParams {
+  stationIds: string[];
+  period?: string;
+}
+
+export interface SuperAdminSummary {
+  totalTenants: number;
+  activeTenants: number;
+  totalPlans: number;
+  totalAdminUsers: number;
+  totalUsers: number;
+  totalStations: number;
+  signupsThisMonth: number;
+  recentTenants: Array<{
+    id: string;
+    name: string;
+    createdAt: string;
+    status: "active" | "suspended" | "cancelled";
+  }>;
+  tenantsByPlan: Array<{
+    planName: string;
+    count: number;
+    percentage: number;
+  }>;
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'superadmin';
+  createdAt: string;
+  lastLogin?: string;
 }
 
 /**

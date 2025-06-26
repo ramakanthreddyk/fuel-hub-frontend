@@ -1,30 +1,14 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { SalesSummary, PaymentMethodBreakdown, FuelTypeBreakdown, ApiResponse } from './api-contract';
-
-export interface TopCreditor {
-  id: string;
-  partyName: string;
-  outstandingAmount: number;
-  creditLimit?: number;
-}
-
-export interface DailySalesTrend {
-  date: string;
-  amount: number;
-  volume: number;
-}
-
-export interface StationMetric {
-  id: string;
-  name: string;
-  todaySales: number;
-  monthlySales: number;
-  salesGrowth: number;
-  activePumps: number;
-  totalPumps: number;
-  status: 'active' | 'maintenance' | 'inactive';
-}
+import type { 
+  SalesSummary, 
+  PaymentMethodBreakdown, 
+  FuelTypeBreakdown, 
+  TopCreditor,
+  DailySalesTrend,
+  StationMetric,
+  ApiResponse 
+} from './api-contract';
 
 interface DashboardFilters {
   stationId?: string;
@@ -129,9 +113,4 @@ export const dashboardApi = {
 };
 
 // Export types for backward compatibility
-export type { 
-  TopCreditor, 
-  DailySalesTrend, 
-  StationMetric, 
-  DashboardFilters 
-};
+export type { DashboardFilters };

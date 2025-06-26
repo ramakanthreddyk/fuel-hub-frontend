@@ -16,7 +16,7 @@ import {
   Shield,
   Wrench
 } from 'lucide-react';
-import { Tenant, User as TenantUser, Station, Pump, Nozzle } from '@/api/tenants';
+import { Tenant, User as TenantUser, Station, Pump, Nozzle } from '@/api/api-contract';
 
 interface TenantHierarchyProps {
   tenant: Tenant;

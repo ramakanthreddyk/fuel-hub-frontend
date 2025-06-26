@@ -1,28 +1,14 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { User, CreateUserRequest, ApiResponse } from './api-contract';
-
-export interface UpdateUserRequest {
-  name?: string;
-  role?: 'manager' | 'attendant';
-  stationId?: string;
-}
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-}
-
-export interface ResetPasswordRequest {
-  newPassword: string;
-}
-
-export interface CreateSuperAdminRequest {
-  name: string;
-  email: string;
-  password: string;
-  role: 'superadmin';
-}
+import type { 
+  User, 
+  CreateUserRequest, 
+  UpdateUserRequest,
+  ChangePasswordRequest,
+  ResetPasswordRequest,
+  CreateSuperAdminRequest,
+  ApiResponse 
+} from './api-contract';
 
 export const usersApi = {
   // Get users for current tenant
@@ -85,14 +71,4 @@ export const usersApi = {
     const response = await apiClient.post('/admin/users', userData);
     return extractApiData<User>(response);
   }
-};
-
-// Export types for backward compatibility
-export type { 
-  User, 
-  CreateUserRequest, 
-  UpdateUserRequest, 
-  ChangePasswordRequest, 
-  ResetPasswordRequest, 
-  CreateSuperAdminRequest 
 };

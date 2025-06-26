@@ -1,19 +1,11 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { ReconciliationRecord, CreateReconciliationRequest, ApiResponse } from './api-contract';
-
-export interface DailyReadingSummary {
-  nozzleId: string;
-  nozzleNumber: number;
-  previousReading: number;
-  currentReading: number;
-  deltaVolume: number;
-  pricePerLitre: number;
-  saleValue: number;
-  paymentMethod: string;
-  cashDeclared: number;
-  fuelType: string;
-}
+import type { 
+  ReconciliationRecord, 
+  CreateReconciliationRequest, 
+  DailyReadingSummary,
+  ApiResponse 
+} from './api-contract';
 
 export const reconciliationApi = {
   // Get daily readings summary for reconciliation
@@ -47,6 +39,3 @@ export const reconciliationApi = {
     }
   }
 };
-
-// Export types for backward compatibility
-export type { ReconciliationRecord, CreateReconciliationRequest, DailyReadingSummary };

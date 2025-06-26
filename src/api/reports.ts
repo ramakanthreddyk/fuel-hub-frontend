@@ -1,26 +1,14 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { SalesReportFilters, SalesReportData, SalesReportSummary, ApiResponse } from './api-contract';
-
-export interface ExportReportRequest {
-  type: string;
-  format: string;
-  stationId?: string;
-  dateRange?: { from: Date; to: Date };
-}
-
-export interface ScheduleReportRequest {
-  type: string;
-  stationId?: string;
-  frequency: string;
-}
-
-export interface SalesReportExportFilters {
-  stationId?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  format?: 'csv' | 'json';
-}
+import type { 
+  SalesReportFilters, 
+  SalesReportData, 
+  SalesReportSummary, 
+  ExportReportRequest,
+  ScheduleReportRequest,
+  SalesReportExportFilters,
+  ApiResponse 
+} from './api-contract';
 
 export const reportsApi = {
   getSalesReport: async (filters: SalesReportFilters): Promise<{
@@ -69,14 +57,4 @@ export const reportsApi = {
   scheduleReport: async (request: ScheduleReportRequest): Promise<void> => {
     await apiClient.post('/reports/schedule', request);
   },
-};
-
-// Export types for backward compatibility
-export type { 
-  SalesReportFilters, 
-  SalesReportData, 
-  SalesReportSummary,
-  ExportReportRequest,
-  ScheduleReportRequest,
-  SalesReportExportFilters
 };

@@ -1,13 +1,13 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { Tenant, CreateTenantRequest, User, Station, ApiResponse } from './api-contract';
-
-// New interface for the API response structure
-export interface TenantDetailsResponse {
-  tenant: Tenant;
-  users: User[];
-  stations: Station[];
-}
+import type { 
+  Tenant, 
+  CreateTenantRequest, 
+  User, 
+  Station, 
+  TenantDetailsResponse,
+  ApiResponse 
+} from './api-contract';
 
 export const tenantsApi = {
   // Get all tenants (SuperAdmin only)
@@ -53,6 +53,3 @@ export const tenantsApi = {
     await apiClient.delete(`/admin/tenants/${tenantId}`);
   }
 };
-
-// Export types for backward compatibility
-export type { Tenant, CreateTenantRequest, TenantDetailsResponse };

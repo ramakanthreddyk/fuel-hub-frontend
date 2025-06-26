@@ -1,36 +1,12 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { Plan, CreateTenantRequest, ApiResponse } from './api-contract';
-
-export interface SuperAdminSummary {
-  totalTenants: number;
-  activeTenants: number;
-  totalPlans: number;
-  totalAdminUsers: number;
-  totalUsers: number;
-  totalStations: number;
-  signupsThisMonth: number;
-  recentTenants: Array<{
-    id: string;
-    name: string;
-    createdAt: string;
-    status: "active" | "suspended" | "cancelled";
-  }>;
-  tenantsByPlan: Array<{
-    planName: string;
-    count: number;
-    percentage: number;
-  }>;
-}
-
-export interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  role: 'superadmin';
-  createdAt: string;
-  lastLogin?: string;
-}
+import type { 
+  Plan, 
+  CreateTenantRequest, 
+  SuperAdminSummary,
+  AdminUser,
+  ApiResponse 
+} from './api-contract';
 
 export const superAdminApi = {
   // Get platform dashboard metrics
@@ -106,6 +82,3 @@ export const superAdminApi = {
     await apiClient.delete(`/admin/users/${userId}`);
   }
 };
-
-// Export types for backward compatibility
-export type { SuperAdminSummary, AdminUser };

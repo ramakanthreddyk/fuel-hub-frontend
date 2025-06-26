@@ -1,11 +1,6 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { Alert, ApiResponse } from './api-contract';
-
-export interface AlertsParams {
-  stationId?: string;
-  unreadOnly?: boolean;
-}
+import type { Alert, AlertsParams, ApiResponse } from './api-contract';
 
 export const alertsApi = {
   getAlerts: async (params?: AlertsParams): Promise<Alert[]> => {
@@ -30,6 +25,3 @@ export const alertsApi = {
     await apiClient.delete(`/alerts/${alertId}`);
   },
 };
-
-// Export types for backward compatibility
-export type { Alert, AlertsParams };

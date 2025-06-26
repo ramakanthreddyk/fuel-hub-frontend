@@ -1,70 +1,15 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { ApiResponse } from './api-contract';
-
-export interface StationComparison {
-  id: string;
-  stationName: string;
-  sales: number;
-  volume: number;
-  transactions: number;
-  growth: number;
-}
-
-export interface HourlySales {
-  hour: string;
-  sales: number;
-  volume: number;
-  transactions: number;
-}
-
-export interface PeakHour {
-  timeRange: string;
-  avgSales: number;
-  avgVolume: number;
-}
-
-export interface FuelPerformance {
-  fuelType: string;
-  volume: number;
-  sales: number;
-  margin: number;
-  growth: number;
-}
-
-export interface StationRanking {
-  id: string;
-  name: string;
-  sales: number;
-  volume: number;
-  growth: number;
-  efficiency: number;
-  rank: number;
-}
-
-export interface SuperAdminAnalytics {
-  totalTenants: number;
-  activeTenants: number;
-  totalStations: number;
-  salesVolume: number;
-  totalRevenue: number;
-  monthlyGrowth: {
-    month: string;
-    tenants: number;
-    revenue: number;
-  }[];
-  topTenants: {
-    id: string;
-    name: string;
-    stationsCount: number;
-    revenue: number;
-  }[];
-}
-
-export interface StationComparisonParams {
-  stationIds: string[];
-  period?: string;
-}
+import type { 
+  ApiResponse,
+  StationComparison,
+  HourlySales,
+  PeakHour,
+  FuelPerformance,
+  StationRanking,
+  SuperAdminAnalytics,
+  StationComparisonParams
+} from './api-contract';
 
 export const analyticsApi = {
   getStationComparison: async ({ stationIds, period }: StationComparisonParams): Promise<StationComparison[]> => {
@@ -139,15 +84,4 @@ export const analyticsApi = {
     const response = await apiClient.get('/analytics/superadmin');
     return extractApiData<SuperAdminAnalytics>(response);
   },
-};
-
-// Export types for backward compatibility
-export type { 
-  StationComparison, 
-  HourlySales, 
-  PeakHour, 
-  FuelPerformance, 
-  StationRanking, 
-  SuperAdminAnalytics, 
-  StationComparisonParams 
 };
