@@ -1,20 +1,13 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
-  title: FuelSync API
-  description: API specification for FuelSync fuel station management system
+  title: FuelSync Hub API
   version: 1.0.0
 servers:
-  - url: /v1
-    description: API base URL
-security:
-  - bearerAuth: []
-  - tenantHeader: []
+- url: /api/v1
 paths:
-  # Auth endpoints
-  /auth/login:
+  /api/v1/auth/login:
     post:
-      tags: [Authentication]
-      summary: User login
+      summary: User login and JWT issuance
       requestBody:
         required: true
         content:
@@ -27,1152 +20,48 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
-  /auth/logout:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LoginResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/auth/logout:
     post:
-      tags: [Authentication]
       summary: User logout
       responses:
         '200':
           description: Logout successful
-  /auth/refresh:
-    post:
-      tags: [Authentication]
-      summary: Refresh authentication token
-      responses:
-        '200':
-          description: Token refreshed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponse'
-
-  # Alerts endpoints
-  /alerts:
-    get:
-      tags: [Alerts]
-      summary: Get all alerts
-      responses:
-        '200':
-          description: List of alerts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Alert'
-  /alerts/{alertId}/read:
-    patch:
-      tags: [Alerts]
-      summary: Mark alert as read
-      parameters:
-        - name: alertId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Alert marked as read
-  /alerts/{alertId}:
-    delete:
-      tags: [Alerts]
-      summary: Dismiss alert
-      parameters:
-        - name: alertId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Alert dismissed
-
-  # Analytics endpoints
-  /analytics/station-comparison:
-    get:
-      tags: [Analytics]
-      summary: Get station comparison data
-      parameters:
-        - name: period
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: stationIds
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Station comparison data
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StationComparison'
-  /analytics/hourly-sales:
-    get:
-      tags: [Analytics]
-      summary: Get hourly sales data
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            type: string
-            format: date-time
-        - name: dateTo
-          in: query
-          schema:
-            type: string
-            format: date-time
-      responses:
-        '200':
-          description: Hourly sales data
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/HourlySales'
-  /analytics/peak-hours:
-    get:
-      tags: [Analytics]
-      summary: Get peak hours data
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Peak hours data
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PeakHour'
-  /analytics/fuel-performance:
-    get:
-      tags: [Analytics]
-      summary: Get fuel performance data
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            type: string
-            format: date-time
-        - name: dateTo
-          in: query
-          schema:
-            type: string
-            format: date-time
-      responses:
-        '200':
-          description: Fuel performance data
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FuelPerformance'
-  /analytics/station-ranking:
-    get:
-      tags: [Analytics]
-      summary: Get station ranking
-      parameters:
-        - name: period
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Station ranking data
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StationRanking'
-  /analytics/superadmin:
-    get:
-      tags: [Analytics]
-      summary: Get super admin analytics
-      responses:
-        '200':
-          description: Super admin analytics data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuperAdminAnalytics'
-
-  # Creditors endpoints
-  /creditors:
-    get:
-      tags: [Creditors]
-      summary: Get all creditors
-      responses:
-        '200':
-          description: List of creditors
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Creditor'
-    post:
-      tags: [Creditors]
-      summary: Create new creditor
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateCreditorRequest'
-      responses:
-        '201':
-          description: Creditor created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Creditor'
-  /creditors/{id}:
-    get:
-      tags: [Creditors]
-      summary: Get creditor by ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Creditor details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Creditor'
-
-  # Credit Payments endpoints
-  /credit-payments:
-    get:
-      tags: [Credit Payments]
-      summary: Get payments for a creditor
-      parameters:
-        - name: creditorId
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: List of payments
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CreditPayment'
-    post:
-      tags: [Credit Payments]
-      summary: Create new payment
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePaymentRequest'
-      responses:
-        '201':
-          description: Payment created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreditPayment'
-
-  # Dashboard endpoints
-  /dashboard/sales-summary:
-    get:
-      tags: [Dashboard]
-      summary: Get sales summary
-      parameters:
-        - name: range
-          in: query
-          schema:
-            type: string
-            default: monthly
-        - name: stationId
-          in: query
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            type: string
-        - name: dateTo
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Sales summary data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SalesSummary'
-  /dashboard/payment-methods:
-    get:
-      tags: [Dashboard]
-      summary: Get payment method breakdown
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            type: string
-        - name: dateTo
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Payment method breakdown
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PaymentMethodBreakdown'
-  /dashboard/fuel-breakdown:
-    get:
-      tags: [Dashboard]
-      summary: Get fuel type breakdown
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-        - name: dateFrom
-          in: query
-          schema:
-            type: string
-        - name: dateTo
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Fuel type breakdown
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FuelTypeBreakdown'
-  /dashboard/top-creditors:
-    get:
-      tags: [Dashboard]
-      summary: Get top creditors
-      parameters:
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 5
-        - name: stationId
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Top creditors list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TopCreditor'
-  /dashboard/sales-trend:
-    get:
-      tags: [Dashboard]
-      summary: Get daily sales trend
-      parameters:
-        - name: days
-          in: query
-          schema:
-            type: integer
-            default: 7
-        - name: stationId
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Daily sales trend
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DailySalesTrend'
-
-  # Fuel Deliveries endpoints
-  /fuel-deliveries:
-    get:
-      tags: [Fuel Deliveries]
-      summary: Get fuel deliveries
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: List of fuel deliveries
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FuelDelivery'
-    post:
-      tags: [Fuel Deliveries]
-      summary: Create new fuel delivery
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateFuelDeliveryRequest'
-      responses:
-        '201':
-          description: Fuel delivery created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FuelDelivery'
-
-  # Fuel Inventory endpoints
-  /fuel-inventory:
-    get:
-      tags: [Fuel Inventory]
-      summary: Get fuel inventory status
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-        - name: fuelType
-          in: query
-          schema:
-            type: string
-            enum: [petrol, diesel]
-      responses:
-        '200':
-          description: Fuel inventory data
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FuelInventory'
-
-  # Fuel Prices endpoints
-  /fuel-prices:
-    get:
-      tags: [Fuel Prices]
-      summary: Get all fuel prices
-      responses:
-        '200':
-          description: List of fuel prices
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FuelPrice'
-    post:
-      tags: [Fuel Prices]
-      summary: Create new fuel price
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateFuelPriceRequest'
-      responses:
-        '201':
-          description: Fuel price created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FuelPrice'
-  /fuel-prices/{id}:
-    put:
-      tags: [Fuel Prices]
-      summary: Update fuel price
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateFuelPriceRequest'
-      responses:
-        '200':
-          description: Fuel price updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FuelPrice'
-
-  # Nozzles endpoints
-  /nozzles:
-    get:
-      tags: [Nozzles]
-      summary: Get nozzles for a pump
-      parameters:
-        - name: pumpId
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: List of nozzles
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Nozzle'
-    post:
-      tags: [Nozzles]
-      summary: Create new nozzle
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateNozzleRequest'
-      responses:
-        '201':
-          description: Nozzle created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Nozzle'
-
-  # Pumps endpoints
-  /pumps:
-    get:
-      tags: [Pumps]
-      summary: Get pumps for a station
-      parameters:
-        - name: stationId
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: List of pumps
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pump'
-    post:
-      tags: [Pumps]
-      summary: Create new pump
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePumpRequest'
-      responses:
-        '201':
-          description: Pump created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pump'
-  /pumps/{pumpId}:
-    get:
-      tags: [Pumps]
-      summary: Get pump by ID
-      parameters:
-        - name: pumpId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Pump details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pump'
-
-  # Nozzle Readings endpoints
-  /nozzle-readings:
-    get:
-      tags: [Readings]
-      summary: Get nozzle readings
-      parameters:
-        - name: nozzleId
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: limit
-          in: query
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: List of nozzle readings
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NozzleReading'
-    post:
-      tags: [Readings]
-      summary: Create new reading
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateReadingRequest'
-      responses:
-        '201':
-          description: Reading created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NozzleReading'
-
-  # Reconciliation endpoints
-  /reconciliation:
-    get:
-      tags: [Reconciliation]
-      summary: Get reconciliation history
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Reconciliation history
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ReconciliationRecord'
-    post:
-      tags: [Reconciliation]
-      summary: Create reconciliation record
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateReconciliationRequest'
-      responses:
-        '201':
-          description: Reconciliation record created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReconciliationRecord'
-  /reconciliation/daily-summary:
-    get:
-      tags: [Reconciliation]
-      summary: Get daily readings summary
-      parameters:
-        - name: stationId
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: date
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Daily readings summary
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DailyReadingSummary'
-
-  # Reports endpoints
-  /reports/sales:
-    get:
-      tags: [Reports]
-      summary: Get sales report
-      parameters:
-        - name: startDate
-          in: query
-          schema:
-            type: string
-        - name: endDate
-          in: query
-          schema:
-            type: string
-        - name: paymentMethod
-          in: query
-          schema:
-            type: string
-        - name: nozzleId
-          in: query
-          schema:
-            type: string
-        - name: stationId
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Sales report data
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/SalesReportData'
-                  summary:
-                    $ref: '#/components/schemas/SalesReportSummary'
-  /reports/sales/export:
-    get:
-      tags: [Reports]
-      summary: Export sales report as CSV
-      parameters:
-        - name: startDate
-          in: query
-          schema:
-            type: string
-        - name: endDate
-          in: query
-          schema:
-            type: string
-        - name: paymentMethod
-          in: query
-          schema:
-            type: string
-        - name: nozzleId
-          in: query
-          schema:
-            type: string
-        - name: stationId
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: CSV file
-          content:
-            text/csv:
-              schema:
-                type: string
-                format: binary
-  /reports/export:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/auth/refresh:
     post:
-      tags: [Reports]
-      summary: Export report
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExportReportRequest'
+      summary: Refresh JWT token
       responses:
         '200':
-          description: Report file
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
-  /reports/schedule:
-    post:
-      tags: [Reports]
-      summary: Schedule report
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScheduleReportRequest'
-      responses:
-        '200':
-          description: Report scheduled
-
-  # Sales endpoints
-  /sales:
-    get:
-      tags: [Sales]
-      summary: Get sales with filters
-      parameters:
-        - name: stationId
-          in: query
-          schema:
-            type: string
-        - name: startDate
-          in: query
-          schema:
-            type: string
-        - name: endDate
-          in: query
-          schema:
-            type: string
-        - name: paymentMethod
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Sales data
+          description: Token refreshed
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  sales:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Sale'
-
-  # Stations endpoints
-  /stations:
-    get:
-      tags: [Stations]
-      summary: Get all stations
-      parameters:
-        - name: includeMetrics
-          in: query
-          schema:
-            type: boolean
-      responses:
-        '200':
-          description: List of stations
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Station'
-  /stations/{stationId}:
-    get:
-      tags: [Stations]
-      summary: Get station by ID
-      parameters:
-        - name: stationId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Station details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Station'
-
-  # Super Admin endpoints
-  /analytics/dashboard:
-    get:
-      tags: [Super Admin]
-      summary: Get platform dashboard metrics
-      responses:
-        '200':
-          description: Platform metrics
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuperAdminSummary'
-  /admin/plans:
-    get:
-      tags: [Super Admin]
-      summary: Get all plans
-      responses:
-        '200':
-          description: List of plans
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Plan'
+                  data:
+                    $ref: '#/components/schemas/LoginResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/users:
     post:
-      tags: [Super Admin]
-      summary: Create plan
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePlanRequest'
-      responses:
-        '201':
-          description: Plan created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Plan'
-  /admin/plans/{planId}:
-    put:
-      tags: [Super Admin]
-      summary: Update plan
-      parameters:
-        - name: planId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePlanRequest'
-      responses:
-        '200':
-          description: Plan updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Plan'
-    delete:
-      tags: [Super Admin]
-      summary: Delete plan
-      parameters:
-        - name: planId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Plan deleted
-  /admin/tenants:
-    get:
-      tags: [Super Admin]
-      summary: Get all tenants
-      responses:
-        '200':
-          description: List of tenants
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Tenant'
-    post:
-      tags: [Super Admin]
-      summary: Create tenant with admin
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateTenantRequest'
-      responses:
-        '201':
-          description: Tenant created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Tenant'
-  /admin/tenants/{tenantId}/status:
-    patch:
-      tags: [Super Admin]
-      summary: Update tenant status
-      parameters:
-        - name: tenantId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                status:
-                  type: string
-                  enum: [active, suspended, cancelled]
-      responses:
-        '200':
-          description: Tenant status updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Tenant'
-  /admin/tenants/{tenantId}:
-    delete:
-      tags: [Super Admin]
-      summary: Delete tenant
-      parameters:
-        - name: tenantId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Tenant deleted
-  /admin/users:
-    get:
-      tags: [Super Admin]
-      summary: Get admin users
-      responses:
-        '200':
-          description: List of admin users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AdminUser'
-    post:
-      tags: [Super Admin]
-      summary: Create admin user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateAdminUserRequest'
-      responses:
-        '201':
-          description: Admin user created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AdminUser'
-  /admin/users/{userId}:
-    put:
-      tags: [Super Admin]
-      summary: Update admin user
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-      responses:
-        '200':
-          description: Admin user updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AdminUser'
-    delete:
-      tags: [Super Admin]
-      summary: Delete admin user
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Admin user deleted
-  /admin/users/{userId}/reset-password:
-    post:
-      tags: [Super Admin]
-      summary: Reset admin user password
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                newPassword:
-                  type: string
-      responses:
-        '200':
-          description: Password reset
-
-  # Users endpoints
-  /users:
-    get:
-      tags: [Users]
-      summary: Get users for current tenant
-      responses:
-        '200':
-          description: List of users
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  users:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/User'
-    post:
-      tags: [Users]
-      summary: Create new user
+      summary: Create tenant user
       requestBody:
         required: true
         content:
@@ -1186,10 +75,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-  /users/{userId}:
+        default:
+          $ref: '#/components/responses/Error'
     get:
-      tags: [Users]
-      summary: Get user by ID
+      summary: List tenant users
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/users/{userId}:
+    get:
+      summary: Get user details
       parameters:
         - name: userId
           in: path
@@ -1202,16 +111,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
     put:
-      tags: [Users]
-      summary: Update user
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: Update tenant user
       requestBody:
         required: true
         content:
@@ -1224,29 +129,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
+        default:
+          $ref: '#/components/responses/Error'
     delete:
-      tags: [Users]
-      summary: Delete user
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: Delete tenant user
       responses:
         '200':
-          description: User deleted
-  /users/{userId}/change-password:
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/users/{userId}/change-password:
     post:
-      tags: [Users]
       summary: Change user password
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -1256,16 +154,21 @@ paths:
       responses:
         '200':
           description: Password changed
-  /users/{userId}/reset-password:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/users/{userId}/reset-password:
     post:
-      tags: [Users]
       summary: Reset user password
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -1275,7 +178,1167 @@ paths:
       responses:
         '200':
           description: Password reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/stations:
+    post:
+      summary: Create station
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStationRequest'
+      responses:
+        '201':
+          description: Station created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+        default:
+          $ref: '#/components/responses/Error'
+    get:
+      summary: List stations
+      responses:
+        '200':
+          description: List of stations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Station'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/stations/{stationId}:
+    get:
+      summary: Get details for a single station
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Station details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Station'
+    put:
+      summary: Update station
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStationRequest'
+      responses:
+        '200':
+          description: Station updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Station'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      summary: Delete station
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/stations/{stationId}/metrics:
+    get:
+      summary: Station metrics summary
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/stations/{stationId}/performance:
+    get:
+      summary: Station performance comparison
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/pumps:
+    post:
+      summary: Create pump
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    get:
+      summary: List pumps
+      description: Returns pumps with `nozzleCount` per pump.
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/pumps/{id}:
+    get:
+      summary: Get pump details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Update pump
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    delete:
+      summary: Delete pump
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/nozzles:
+    post:
+      summary: Create nozzle
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    get:
+      summary: List nozzles
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/nozzles/{id}:
+    get:
+      summary: Get nozzle details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Update nozzle
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    delete:
+      summary: Delete nozzle
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/nozzle-readings:
+    post:
+      summary: Record nozzle reading and generate sale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nozzleId:
+                  type: string
+                reading:
+                  type: number
+                recordedAt:
+                  type: string
+                  format: date-time
+                creditorId:
+                  type: string
+                  nullable: true
+                paymentMethod:
+                  type: string
+                  enum:
+                  - cash
+                  - card
+                  - upi
+                  - credit
+                  description: 'Optional. Currently the API infers ''cash'' or ''credit''
+                    based on
 
+                    `creditorId`. Support for `card` and `upi` is planned.
+
+                    '
+              required:
+              - nozzleId
+              - reading
+              - recordedAt
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    get:
+      summary: List nozzle readings
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/fuel-prices:
+    post:
+      summary: Create fuel price entry
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    get:
+      summary: List fuel prices
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/fuel-prices/{id}:
+    put:
+      summary: Update fuel price
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    delete:
+      summary: Delete fuel price
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/alerts:
+    get:
+      summary: List alerts
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/alerts/{alertId}:
+    delete:
+      summary: Delete an alert by ID
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Alert deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: boolean
+  /api/v1/alerts/{id}/read:
+    patch:
+      summary: Mark alert read
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/v1/analytics/station-comparison:
+    get:
+      summary: Station comparison metrics
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/analytics/hourly-sales:
+    get:
+      summary: Get hourly sales metrics for a station
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Hourly sales data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HourlySalesMetric'
+  /api/v1/analytics/peak-hours:
+    get:
+      summary: Get peak sales hours for a station
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Peak hours
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PeakHourMetric'
+  /api/v1/analytics/fuel-performance:
+    get:
+      summary: Get fuel performance for a station
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Fuel performance data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FuelPerformanceMetric'
+  /api/v1/reports/sales:
+    get:
+      summary: Get sales report
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Sales data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SalesReportData'
+                  summary:
+                    $ref: '#/components/schemas/SalesReportSummary'
+    post:
+      summary: Export sales report
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportReportRequest'
+  /api/v1/reports/export:
+    post:
+      summary: Export report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportReportRequest'
+      responses:
+        '200':
+          description: Report file
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/reports/schedule:
+    post:
+      summary: Schedule report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleReportRequest'
+      responses:
+        '200':
+          description: Report scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+  /api/v1/creditors:
+    post:
+      summary: Create creditor
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    get:
+      summary: List creditors
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/creditors/{id}:
+    get:
+      summary: Get creditor details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Creditor details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Creditor'
+    put:
+      summary: Update creditor
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    delete:
+      summary: Delete creditor
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/credit-payments:
+    post:
+      summary: Record credit payment
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    get:
+      summary: List credit payments
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/fuel-deliveries:
+    post:
+      summary: Record fuel delivery
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    get:
+      summary: List fuel deliveries
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/sales:
+    get:
+      summary: List sales records
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/sales/analytics:
+    get:
+      summary: Sales aggregation metrics
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/reconciliation:
+    get:
+      summary: Get reconciliation history
+      parameters:
+        - name: stationId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reconciliation records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReconciliationRecord'
+    post:
+      summary: Run daily reconciliation
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReconciliationRequest'
+  /api/v1/reconciliation/{stationId}:
+    get:
+      summary: Get reconciliation summary
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/reconciliation/daily-summary:
+    get:
+      summary: Daily nozzle reading summary
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/dashboard/sales-summary:
+    get:
+      summary: Dashboard sales summary
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/dashboard/payment-methods:
+    get:
+      summary: Dashboard payment method breakdown
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/dashboard/fuel-breakdown:
+    get:
+      summary: Dashboard fuel breakdown
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/dashboard/top-creditors:
+    get:
+      summary: Dashboard top creditors
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/dashboard/sales-trend:
+    get:
+      summary: Dashboard sales trend
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/tenants:
+    get:
+      summary: List tenants
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      summary: Create tenant
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/v1/admin/dashboard:
+    get:
+      summary: Retrieve admin dashboard metrics
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/plans:
+    post:
+      summary: Create subscription plan
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    get:
+      summary: List subscription plans
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/plans/{id}:
+    get:
+      summary: Get plan info
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Update plan
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    delete:
+      summary: Delete plan
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/users/{id}:
+    get:
+      summary: Get admin user
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Update admin user
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    delete:
+      summary: Delete admin user
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/users/{id}/reset-password:
+    post:
+      summary: Reset admin password
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/v1/admin/tenants/{id}:
+    get:
+      summary: Get tenant info
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      summary: Delete tenant
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/tenants/{id}/status:
+    patch:
+      summary: Update tenant status
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/v1/analytics/dashboard:
+    get:
+      summary: Tenant dashboard metrics
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/analytics/superadmin:
+    get:
+      summary: Super admin analytics dashboard
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/analytics/tenant/{id}:
+    get:
+      summary: Analytics for specific tenant
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/auth/test:
+    get:
+      summary: Verify auth token validity
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/fuel-deliveries/inventory:
+    get:
+      summary: Fuel stock after deliveries
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/fuel-inventory:
+    get:
+      summary: List current fuel inventory
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/inventory:
+    get:
+      summary: Current part inventory
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/inventory/alerts:
+    get:
+      summary: Low stock alerts
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/inventory/update:
+    post:
+      summary: Update inventory counts
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/v1/reports/financial/export:
+    get:
+      summary: Export financial report
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/reports/sales/export:
+    get:
+      summary: Export sales report
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/settings:
+    get:
+      summary: Retrieve tenant settings
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      summary: Update tenant settings
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/v1/stations/compare:
+    get:
+      summary: Compare station performance
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/stations/ranking:
+    get:
+      summary: Station ranking report
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/docs/swagger.json:
+    get:
+      summary: Serve raw OpenAPI spec
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /test:
+    get:
+      summary: Echo test endpoint
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      summary: Echo test POST
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /test-login:
+    post:
+      summary: Login helper for tests
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /schemas:
+    get:
+      summary: List tenant schemas
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/users:
+    post:
+      summary: Create super admin user
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+    get:
+      summary: List super admin users
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/tenants:
+    get:
+      summary: List tenants
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      summary: Create tenant
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/v1/admin/tenants/summary:
+    get:
+      summary: Get tenant metrics summary
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/analytics:
+    get:
+      summary: Super admin analytics
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
 components:
   securitySchemes:
     bearerAuth:
@@ -1287,8 +1350,29 @@ components:
       in: header
       name: x-tenant-id
 
+  responses:
+    Success:
+      description: Success response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+    Error:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+
   schemas:
-    # Auth schemas
     LoginRequest:
       type: object
       required: [email, password]
@@ -1319,8 +1403,6 @@ components:
               type: string
             tenantName:
               type: string
-
-    # Alert schemas
     Alert:
       type: object
       properties:
@@ -1349,8 +1431,6 @@ components:
           format: date-time
         metadata:
           type: object
-
-    # Analytics schemas
     StationComparison:
       type: object
       properties:
@@ -1453,8 +1533,6 @@ components:
                 type: number
               revenue:
                 type: number
-
-    # Creditor schemas
     Creditor:
       type: object
       properties:
@@ -1520,8 +1598,6 @@ components:
           type: string
         notes:
           type: string
-
-    # Dashboard schemas
     SalesSummary:
       type: object
       properties:
@@ -1575,8 +1651,6 @@ components:
           type: number
         volume:
           type: number
-
-    # Fuel schemas
     FuelDelivery:
       type: object
       properties:
@@ -1669,8 +1743,6 @@ components:
         validFrom:
           type: string
           format: date-time
-
-    # Equipment schemas
     Nozzle:
       type: object
       properties:
@@ -1729,8 +1801,6 @@ components:
           type: string
         serialNumber:
           type: string
-
-    # Reading schemas
     NozzleReading:
       type: object
       properties:
@@ -1767,8 +1837,6 @@ components:
           enum: [cash, card, upi, credit]
         creditorId:
           type: string
-
-    # Reconciliation schemas
     ReconciliationRecord:
       type: object
       properties:
@@ -1833,8 +1901,6 @@ components:
           type: number
         fuelType:
           type: string
-
-    # Report schemas
     SalesReportData:
       type: object
       properties:
@@ -1931,8 +1997,6 @@ components:
           type: string
         frequency:
           type: string
-
-    # Sales schemas
     Sale:
       type: object
       properties:
@@ -1977,8 +2041,6 @@ components:
               type: number
             fuelType:
               type: string
-
-    # Station schemas
     Station:
       type: object
       properties:
@@ -2000,8 +2062,19 @@ components:
         createdAt:
           type: string
           format: date-time
-
-    # Super Admin schemas
+    CreateStationRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+    UpdateStationRequest:
+      type: object
+      properties:
+        name:
+          type: string
     SuperAdminSummary:
       type: object
       properties:
@@ -2114,8 +2187,6 @@ components:
           type: string
         password:
           type: string
-
-    # Tenant schemas
     Tenant:
       type: object
       properties:
@@ -2153,8 +2224,6 @@ components:
           type: string
         adminPassword:
           type: string
-
-    # User schemas
     User:
       type: object
       properties:
@@ -2217,3 +2286,29 @@ components:
       properties:
         newPassword:
           type: string
+    HourlySalesMetric:
+      type: object
+      properties:
+        hour:
+          type: string
+          format: date-time
+        salesVolume:
+          type: number
+        salesAmount:
+          type: number
+    PeakHourMetric:
+      type: object
+      properties:
+        hour:
+          type: string
+        salesVolume:
+          type: number
+    FuelPerformanceMetric:
+      type: object
+      properties:
+        fuelType:
+          type: string
+        totalSalesVolume:
+          type: number
+        totalSalesAmount:
+          type: number
