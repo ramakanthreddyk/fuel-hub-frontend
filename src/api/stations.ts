@@ -24,7 +24,18 @@ export const stationsApi = {
     try {
       const params = includeMetrics ? '?includeMetrics=true' : '';
       const response = await apiClient.get(`/stations${params}`);
-      return ensureArray<Station>(response.data);
+      const rawStations = ensureArray(response.data);
+      return rawStations.map((station: any) => ({
+        id: station.id,
+        name: station.name,
+        address: station.address,
+        status: station.status,
+        manager: station.manager,
+        attendantCount: station.attendantCount || 0,
+        pumpCount: station.pumpCount || 0,
+        createdAt: station.createdAt || station.created_at,
+        metrics: station.metrics
+      }));
     } catch (error) {
       console.error('Error fetching stations:', error);
       return [];
@@ -40,6 +51,17 @@ export const stationsApi = {
   // Get station by ID
   getStation: async (stationId: string): Promise<Station> => {
     const response = await apiClient.get(`/stations/${stationId}`);
-    return response.data;
+    const station = response.data;
+    return {
+      id: station.id,
+      name: station.name,
+      address: station.address,
+      status: station.status,
+      manager: station.manager,
+      attendantCount: station.attendantCount || 0,
+      pumpCount: station.pumpCount || 0,
+      createdAt: station.createdAt || station.created_at,
+      metrics: station.metrics
+    };
   }
 };
