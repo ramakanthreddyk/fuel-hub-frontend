@@ -1,54 +1,53 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Users, Edit, Trash2, Key } from 'lucide-react';
-import { superAdminApi } from '@/api/superadmin';
-import { AdminUser } from '@/api/api-contract';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { AdminUserForm } from '@/components/admin/AdminUserForm';
-import { formatDate } from '@/utils/formatters';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { MoreVertical, Copy, Edit, Trash2, Reset } from 'lucide-react';
+import { usersApi } from '@/api/users';
+import { CreateSuperAdminRequest, User } from '@/api/api-contract';
+import { UserForm } from '@/components/users/UserForm';
+import { ResetPasswordForm } from '@/components/users/ResetPasswordForm';
 
-export default function SuperAdminUsersPage() {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-  const [resetPasswordUser, setResetPasswordUser] = useState<AdminUser | null>(null);
-  const [newPassword, setNewPassword] = useState('');
-  
+export default function UsersPage() {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showResetPasswordForm, setShowResetPasswordForm] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'superadmin' });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [createFormData, setCreateFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
-
-  const [editFormData, setEditFormData] = useState({
-    name: '',
-    email: ''
-  });
-
   const { data: users, isLoading } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: superAdminApi.getAdminUsers
+    queryKey: ['users'],
+    queryFn: () => usersApi.getUsers(),
   });
 
-  const createUserMutation = useMutation({
-    mutationFn: superAdminApi.createAdminUser,
+  const { mutateAsync: createUser } = useMutation({
+    mutationFn: (data: CreateSuperAdminRequest) => usersApi.createUser(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      setIsCreateDialogOpen(false);
-      setCreateFormData({ name: '', email: '', password: '' });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: "Success",
-        description: "Admin user created successfully",
+        description: "User created successfully",
       });
     },
     onError: (error: any) => {
@@ -57,16 +56,13 @@ export default function SuperAdminUsersPage() {
         description: error.response?.data?.message || "Failed to create user",
         variant: "destructive",
       });
-    }
+    },
   });
 
-  const updateUserMutation = useMutation({
-    mutationFn: ({ userId, userData }: { userId: string; userData: { name?: string; email?: string } }) => 
-      superAdminApi.updateAdminUser(userId, userData),
+  const { mutateAsync: updateUser } = useMutation({
+    mutationFn: (data: User) => usersApi.updateUser(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      setIsEditDialogOpen(false);
-      setEditingUser(null);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: "Success",
         description: "User updated successfully",
@@ -78,34 +74,13 @@ export default function SuperAdminUsersPage() {
         description: error.response?.data?.message || "Failed to update user",
         variant: "destructive",
       });
-    }
-  });
-
-  const resetPasswordMutation = useMutation({
-    mutationFn: ({ userId, newPassword }: { userId: string; newPassword: string }) => 
-      superAdminApi.resetAdminPassword(userId, newPassword),
-    onSuccess: () => {
-      setIsResetPasswordDialogOpen(false);
-      setResetPasswordUser(null);
-      setNewPassword('');
-      toast({
-        title: "Success",
-        description: "Password reset successfully",
-      });
     },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to reset password",
-        variant: "destructive",
-      });
-    }
   });
 
-  const deleteUserMutation = useMutation({
-    mutationFn: superAdminApi.deleteAdminUser,
+  const { mutateAsync: deleteUser } = useMutation({
+    mutationFn: (id: string) => usersApi.deleteUser(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: "Success",
         description: "User deleted successfully",
@@ -117,229 +92,197 @@ export default function SuperAdminUsersPage() {
         description: error.response?.data?.message || "Failed to delete user",
         variant: "destructive",
       });
-    }
+    },
   });
 
-  const handleCreateUser = (data: { name: string; email: string; password?: string; role: 'superadmin' }) => {
-    createUserMutation.mutate(data);
+  const { mutateAsync: resetPassword } = useMutation({
+    mutationFn: (email: string) => usersApi.resetPassword(email),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast({
+        title: "Success",
+        description: "Password reset email sent successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to reset password",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateUser = async (formData: { name: string; email: string; password?: string; role: 'superadmin' }) => {
+    try {
+      // Ensure password is provided for user creation
+      if (!formData.password) {
+        toast({
+          title: "Error",
+          description: "Password is required for creating a new user",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const userData: CreateSuperAdminRequest = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password, // Now guaranteed to be present
+      };
+
+      await createUser(userData);
+      setShowCreateForm(false);
+      setNewUser({ name: '', email: '', password: '', role: 'superadmin' });
+    } catch (error) {
+      console.error('Failed to create user:', error);
+    }
   };
 
-  const handleEditUser = (user: AdminUser) => {
-    setEditingUser(user);
-    setEditFormData({ name: user.name, email: user.email });
-    setIsEditDialogOpen(true);
+  const handleUpdateUser = async (formData: { name: string; email: string; role: 'superadmin' }) => {
+    try {
+      if (!selectedUser) return;
+
+      const userData: User = {
+        id: selectedUser.id,
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+      };
+
+      await updateUser(userData);
+      setSelectedUser(null);
+    } catch (error) {
+      console.error('Failed to update user:', error);
+    }
   };
 
-  const handleUpdateUser = (data: { name?: string; email?: string }) => {
-    if (!editingUser) return;
-    
-    updateUserMutation.mutate({
-      userId: editingUser.id,
-      userData: data
-    });
+  const handleDeleteUser = async (id: string) => {
+    try {
+      await deleteUser(id);
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+    }
   };
 
-  const handleResetPassword = (user: AdminUser) => {
-    setResetPasswordUser(user);
-    setNewPassword('');
-    setIsResetPasswordDialogOpen(true);
-  };
-
-  const handleResetPasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!resetPasswordUser || !newPassword) return;
-    
-    resetPasswordMutation.mutate({
-      userId: resetPasswordUser.id,
-      newPassword
-    });
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      deleteUserMutation.mutate(userId);
+  const handleResetPassword = async (email: string) => {
+    try {
+      await resetPassword(email);
+      setShowResetPasswordForm(false);
+    } catch (error) {
+      console.error('Failed to reset password:', error);
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin User Management</h1>
-          <p className="text-muted-foreground">Manage SuperAdmin users and their access</p>
+          <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+          <p className="text-muted-foreground">
+            Manage platform users
+          </p>
         </div>
-        
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Admin User
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Admin User</DialogTitle>
-              <DialogDescription>
-                Create a new SuperAdmin user account
-              </DialogDescription>
-            </DialogHeader>
-            <AdminUserForm
-              onSubmit={handleCreateUser}
-              isLoading={createUserMutation.isPending}
-            />
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setShowCreateForm(true)}>Add User</Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Admin Users
-          </CardTitle>
-          <CardDescription>
-            SuperAdmin users with full platform access
-          </CardDescription>
+          <CardTitle>Users List</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-4 animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/6"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/6"></div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading && (
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Last Login</TableHead>
-                  <TableHead className="w-[150px]">Actions</TableHead>
+                  <TableCell colSpan={4} className="text-center">Loading...</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users?.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                        {user.role}
-                      </span>
-                    </TableCell>
-                    <TableCell>{formatDate(user.createdAt)}</TableCell>
-                    <TableCell>
-                      {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          <Edit className="h-4 w-4" />
+              )}
+              {!isLoading && users?.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">No users found.</TableCell>
+                </TableRow>
+              )}
+              {!isLoading && users?.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreVertical className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleResetPassword(user)}
-                        >
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.id)}>
+                          <Copy className="mr-2 h-4 w-4" />
+                          <span>Copy user ID</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSelectedUser(user)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>Edit</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => {
+                          setSelectedUser(user);
+                          setShowResetPasswordForm(true);
+                        }}>
+                          <Reset className="mr-2 h-4 w-4" />
+                          <span>Reset Password</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteUser(user.id)} className="text-red-500">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Delete</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 
-      {/* Edit User Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>
-              Update user information
-            </DialogDescription>
-          </DialogHeader>
-          {editingUser && (
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              handleUpdateUser(editFormData);
-            }} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Full Name</Label>
-                <Input
-                  id="edit-name"
-                  value={editFormData.name}
-                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-email">Email Address</Label>
-                <Input
-                  id="edit-email"
-                  type="email"
-                  value={editFormData.email}
-                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                  required
-                />
-              </div>
-              <Button type="submit" disabled={updateUserMutation.isPending}>
-                {updateUserMutation.isPending ? "Updating..." : "Update User"}
-              </Button>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
+      {showCreateForm && (
+        <UserForm
+          onSubmit={handleCreateUser}
+          onCancel={() => setShowCreateForm(false)}
+          isLoading={isLoading}
+        />
+      )}
 
-      {/* Reset Password Dialog */}
-      <Dialog open={isResetPasswordDialogOpen} onOpenChange={setIsResetPasswordDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-            <DialogDescription>
-              Reset password for {resetPasswordUser?.name}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" disabled={resetPasswordMutation.isPending}>
-              {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {selectedUser && (
+        <UserForm
+          user={selectedUser}
+          onSubmit={handleUpdateUser}
+          onCancel={() => setSelectedUser(null)}
+          isLoading={isLoading}
+        />
+      )}
+
+      {showResetPasswordForm && selectedUser && (
+        <ResetPasswordForm
+          onSubmit={(data) => handleResetPassword(data.email)}
+          onCancel={() => {
+            setShowResetPasswordForm(false);
+            setSelectedUser(null);
+          }}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }

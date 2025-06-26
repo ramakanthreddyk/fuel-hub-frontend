@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Download } from 'lucide-react';
-import { SalesReportFilters } from '@/api/api-contract';
+import type { SalesReportFilters } from '@/api/api-contract';
 import { useSalesReport } from '@/hooks/useReports';
 import { SalesReportFilters as ReportFiltersComponent } from '@/components/reports/SalesReportFilters';
 import { SalesReportTable } from '@/components/reports/SalesReportTable';
@@ -10,7 +11,12 @@ import { SalesReportSummary } from '@/components/reports/SalesReportSummary';
 import { CSVExportButton } from '@/components/reports/CSVExportButton';
 
 export default function ReportsPage() {
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<SalesReportFilters>({
+    startDate: undefined,
+    endDate: undefined,
+    stationId: undefined,
+    paymentMethod: undefined
+  });
   const { data: reportData, isLoading } = useSalesReport(filters);
 
   const hasValidDateRange = filters.startDate && filters.endDate;

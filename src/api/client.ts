@@ -72,7 +72,8 @@ apiClient.interceptors.response.use(
     devLog('Response received:', { 
       url: response.config.url,
       status: response.status,
-      hasData: !!response.data
+      hasData: !!response.data,
+      responseStructure: response.data ? Object.keys(response.data) : []
     });
     
     // Convert snake_case to camelCase for all response data
@@ -80,19 +81,17 @@ apiClient.interceptors.response.use(
       response.data = toCamelCase(response.data);
     }
     
-    // Standardize response data access - always ensure data is accessible at response.data
-    // Handle both wrapped ({ data: ... }) and direct responses
-    if (response.data && typeof response.data === 'object') {
-      // If response has a 'data' property, keep it as is (already standardized)
-      // If response doesn't have 'data' property, it's the actual data
-      if (!response.data.hasOwnProperty('data')) {
-        // Wrap direct responses in standardized format
-        const originalData = response.data;
-        response.data = {
-          data: originalData,
-          success: true
-        };
-      }
+    // NEW: Handle the updated response structure where data is nested under 'data' property
+    // The backend now returns: { data: { token: "...", user: {...} } }
+    // We need to extract the nested data for compatibility with existing code
+    if (response.data && response.data.data) {
+      devLog('Extracting nested data from response structure');
+      // Keep the original structure but also expose the nested data directly
+      const nestedData = response.data.data;
+      response.data = {
+        ...response.data,
+        ...nestedData // Spread the nested data to top level for backward compatibility
+      };
     }
     
     return response;
@@ -226,19 +225,33 @@ export const showErrorToast = (title: string, description?: string) => {
 };
 
 /**
- * Standardized data extraction helper
- * Always extracts data from response.data.data (standardized format)
+ * Updated data extraction helper for new response structure
+ * Handles both legacy and new response formats
  */
 export const extractApiData = <T>(response: any): T => {
-  return response.data?.data || response.data;
+  // New structure: response.data contains the actual data
+  // Legacy structure: response.data.data contains the actual data
+  const data = response.data;
+  
+  // If the response already has the data we need directly, return it
+  if (data && (data.token || data.user || data.id || Array.isArray(data))) {
+    return data;
+  }
+  
+  // If there's a nested data property, extract from there
+  if (data && data.data) {
+    return data.data;
+  }
+  
+  // Fallback to original data
+  return data;
 };
 
 /**
- * Standardized array data extraction helper
- * Ensures we always return an array, even if the response format varies
+ * Updated array data extraction helper
  */
 export const extractApiArray = <T>(response: any, fallbackKey?: string): T[] => {
-  const data = response.data?.data || response.data;
+  const data = extractApiData(response);
   
   // If data is already an array, return it
   if (Array.isArray(data)) {
