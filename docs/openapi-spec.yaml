@@ -74,7 +74,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
         default:
           $ref: '#/components/responses/Error'
     get:
@@ -321,6 +324,13 @@ paths:
     get:
       summary: List pumps
       description: Returns pumps with `nozzleCount` per pump.
+      parameters:
+        - name: stationId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter pumps by station ID
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -376,6 +386,13 @@ paths:
               type: object
     get:
       summary: List nozzles
+      parameters:
+        - name: pumpId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter nozzles by pump ID
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -459,6 +476,27 @@ paths:
           $ref: '#/components/responses/Error'
     get:
       summary: List nozzle readings
+      parameters:
+        - name: nozzleId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by nozzle ID
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Start of date range
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: End of date range
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -699,6 +737,14 @@ paths:
       responses:
         '200':
           description: Report file
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    description: Base64 encoded export content
         default:
           $ref: '#/components/responses/Error'
   /api/v1/reports/schedule:
@@ -1360,17 +1406,17 @@ components:
             properties:
               data:
                 type: object
-    Error:
-      description: Error response
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              message:
-                type: string
+  Error:
+    description: Error response
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+            message:
+              type: string
 
   schemas:
     LoginRequest:
