@@ -38,16 +38,17 @@ export const readingsApi = {
   // Get latest reading for a nozzle
   getLatestReading: async (nozzleId: string): Promise<NozzleReading | null> => {
     try {
-      const response = await apiClient.get(`/nozzle-readings?nozzleId=${nozzleId}&limit=1`);
-      const reading = response.data[0] || response.data.readings?.[0];
-      if (!reading) return null;
+      const response = await apiClient.get(`/nozzle-readings?nozzleId=${nozzleId}`);
+      const readings = response.data.readings || [];
+      if (readings.length === 0) return null;
       
+      const reading = readings[0];
       return {
         id: reading.id,
         nozzleId: reading.nozzle_id,
-        reading: reading.reading,
+        reading: parseFloat(reading.reading),
         recordedAt: reading.recorded_at,
-        paymentMethod: reading.payment_method,
+        paymentMethod: reading.payment_method || 'cash',
         creditorId: reading.creditor_id,
         createdAt: reading.created_at
       };
