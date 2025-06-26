@@ -13,8 +13,19 @@ export const tenantsApi = {
   // Get all tenants (SuperAdmin only)
   getTenants: async (): Promise<Tenant[]> => {
     try {
-      const response = await apiClient.get('/admin/tenants');
-      return extractApiArray<Tenant>(response, 'tenants');
+      // Try the admin/tenants endpoint first
+      try {
+        const response = await apiClient.get('/admin/tenants');
+        return extractApiArray<Tenant>(response, 'tenants');
+      } catch (adminError) {
+        // If that fails with a schema error, try the fallback endpoint
+        if (adminError.response?.data?.message?.includes('schema_name')) {
+          console.log('Falling back to /admin/organizations endpoint due to schema_name error');
+          const fallbackResponse = await apiClient.get('/admin/organizations');
+          return extractApiArray<Tenant>(fallbackResponse, 'organizations');
+        }
+        throw adminError; // Re-throw if it's not a schema error
+      }
     } catch (error) {
       console.error('Error fetching tenants:', error);
       return [];
