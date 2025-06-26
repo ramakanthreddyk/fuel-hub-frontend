@@ -1,9 +1,43 @@
+
 /**
- * Ensures that API responses are always arrays
- * @param data The data from the API response
- * @returns An array, either the original data if it was an array, or an empty array
+ * API Helper Utilities
+ * 
+ * Note: snake_case to camelCase conversion is now handled globally
+ * by the response interceptor in src/api/client.ts
  */
-export function ensureArray<T>(data: any): T[] {
-  if (!data) return [];
-  return Array.isArray(data) ? data : [];
-}
+
+/**
+ * Ensures the input is an array, even if it's not
+ * @deprecated Use extractApiArray from src/api/client.ts instead
+ */
+export const ensureArray = <T>(data: any): T[] => {
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && typeof data === 'object') {
+    // Try common array property names
+    const arrayKeys = ['items', 'results', 'data', 'list'];
+    for (const key of arrayKeys) {
+      if (Array.isArray(data[key])) {
+        return data[key];
+      }
+    }
+  }
+  return [];
+};
+
+/**
+ * Validates that required fields are present in an object
+ */
+export const validateRequiredFields = (obj: any, requiredFields: string[]): boolean => {
+  return requiredFields.every(field => obj && obj.hasOwnProperty(field) && obj[field] !== undefined);
+};
+
+/**
+ * Safely extracts nested object properties
+ */
+export const safeGet = (obj: any, path: string, defaultValue: any = null): any => {
+  return path.split('.').reduce((current, key) => {
+    return (current && current[key] !== undefined) ? current[key] : defaultValue;
+  }, obj);
+};

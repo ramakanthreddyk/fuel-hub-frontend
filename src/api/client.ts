@@ -1,7 +1,7 @@
-
 import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
 import { camelCase, isObject, isArray } from 'lodash';
+import type { ApiResponse, ApiError } from './api-contract';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
@@ -20,7 +20,7 @@ const toCamelCase = (obj: any): any => {
   return obj;
 };
 
-// Helper function for conditional logging
+// Helper function for conditional development logging
 const devLog = (message: string, ...args: any[]) => {
   if (import.meta.env.DEV) {
     console.log(`[API-CLIENT] ${message}`, ...args);
@@ -66,7 +66,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Enhanced response interceptor with snake_case to camelCase conversion
+// Response interceptor with standardized response handling and snake_case to camelCase conversion
 apiClient.interceptors.response.use(
   (response) => {
     devLog('Response received:', { 
@@ -78,6 +78,21 @@ apiClient.interceptors.response.use(
     // Convert snake_case to camelCase for all response data
     if (response.data) {
       response.data = toCamelCase(response.data);
+    }
+    
+    // Standardize response data access - always ensure data is accessible at response.data
+    // Handle both wrapped ({ data: ... }) and direct responses
+    if (response.data && typeof response.data === 'object') {
+      // If response has a 'data' property, keep it as is (already standardized)
+      // If response doesn't have 'data' property, it's the actual data
+      if (!response.data.hasOwnProperty('data')) {
+        // Wrap direct responses in standardized format
+        const originalData = response.data;
+        response.data = {
+          data: originalData,
+          success: true
+        };
+      }
     }
     
     return response;
@@ -127,14 +142,14 @@ apiClient.interceptors.response.use(
         case 404:
           toast({
             title: "Not Found",
-            description: data?.message || "The requested resource was not found.",
+            description: data?.error?.message || data?.message || "The requested resource was not found.",
             variant: "destructive",
           });
           break;
           
         case 422:
-          // Validation errors
-          const validationMessage = data?.message || "Please check your input and try again.";
+          // Validation errors - use standardized error format
+          const validationMessage = data?.error?.message || data?.message || "Please check your input and try again.";
           toast({
             title: "Validation Error",
             description: validationMessage,
@@ -165,7 +180,7 @@ apiClient.interceptors.response.use(
           if (!isLoginRequest) {
             toast({
               title: "Request Failed",
-              description: data?.message || `Request failed with status ${status}`,
+              description: data?.error?.message || data?.message || `Request failed with status ${status}`,
               variant: "destructive",
             });
           }
@@ -208,4 +223,44 @@ export const showErrorToast = (title: string, description?: string) => {
     description,
     variant: "destructive",
   });
+};
+
+/**
+ * Standardized data extraction helper
+ * Always extracts data from response.data.data (standardized format)
+ */
+export const extractApiData = <T>(response: any): T => {
+  return response.data?.data || response.data;
+};
+
+/**
+ * Standardized array data extraction helper
+ * Ensures we always return an array, even if the response format varies
+ */
+export const extractApiArray = <T>(response: any, fallbackKey?: string): T[] => {
+  const data = response.data?.data || response.data;
+  
+  // If data is already an array, return it
+  if (Array.isArray(data)) {
+    return data;
+  }
+  
+  // If data is an object with a fallback key (e.g., 'users', 'stations'), try that
+  if (fallbackKey && data && Array.isArray(data[fallbackKey])) {
+    return data[fallbackKey];
+  }
+  
+  // If data is an object, check for common array keys
+  if (data && typeof data === 'object') {
+    const commonArrayKeys = ['items', 'results', 'list', 'records'];
+    for (const key of commonArrayKeys) {
+      if (Array.isArray(data[key])) {
+        return data[key];
+      }
+    }
+  }
+  
+  // Last resort: return empty array
+  devError('Unable to extract array from response:', data);
+  return [];
 };

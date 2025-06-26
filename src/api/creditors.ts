@@ -1,82 +1,49 @@
 
-import { apiClient } from './client';
-
-export interface Creditor {
-  id: string;
-  name: string;
-  contactNumber?: string;
-  address?: string;
-  status: 'active' | 'inactive';
-  createdAt: string;
-  partyName: string;
-  creditLimit?: number;
-  currentOutstanding?: number;
-}
-
-export interface CreateCreditorRequest {
-  partyName: string;
-  creditLimit?: number;
-}
-
-export interface CreditPayment {
-  id: string;
-  creditorId: string;
-  amount: number;
-  paymentMethod: 'cash' | 'bank_transfer' | 'check';
-  referenceNumber?: string;
-  notes?: string;
-  createdAt: string;
-}
-
-export interface CreatePaymentRequest {
-  creditorId: string;
-  amount: number;
-  paymentMethod: 'cash' | 'bank_transfer' | 'check';
-  referenceNumber?: string;
-  notes?: string;
-}
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { 
+  Creditor, 
+  CreateCreditorRequest, 
+  CreditPayment, 
+  CreatePaymentRequest,
+  ApiResponse 
+} from './api-contract';
 
 export const creditorsApi = {
   // Get all creditors
   getCreditors: async (): Promise<Creditor[]> => {
     const response = await apiClient.get('/creditors');
-    const rawCreditors = response.data.creditors || response.data || [];
-    
-    // Response is already converted to camelCase by the interceptor
-    return rawCreditors.map((creditor: any) => ({
-      id: creditor.id,
-      name: creditor.partyName,
-      partyName: creditor.partyName,
-      contactNumber: creditor.contactNumber,
-      address: creditor.address,
-      status: creditor.status,
-      creditLimit: parseFloat(creditor.creditLimit || 0),
-      currentOutstanding: 0, // Backend doesn't provide this in list
-      createdAt: creditor.createdAt
-    }));
+    return extractApiArray<Creditor>(response, 'creditors');
   },
 
   // Create new creditor
   createCreditor: async (data: CreateCreditorRequest): Promise<Creditor> => {
     const response = await apiClient.post('/creditors', data);
-    return response.data;
+    return extractApiData<Creditor>(response);
   },
 
   // Get creditor by ID
   getCreditor: async (id: string): Promise<Creditor> => {
     const response = await apiClient.get(`/creditors/${id}`);
-    return response.data;
+    return extractApiData<Creditor>(response);
   },
 
   // Get payments for a creditor
   getPayments: async (creditorId: string): Promise<CreditPayment[]> => {
     const response = await apiClient.get(`/credit-payments?creditorId=${creditorId}`);
-    return response.data;
+    return extractApiArray<CreditPayment>(response);
   },
 
   // Create new payment
   createPayment: async (data: CreatePaymentRequest): Promise<CreditPayment> => {
     const response = await apiClient.post('/credit-payments', data);
-    return response.data;
+    return extractApiData<CreditPayment>(response);
   }
+};
+
+// Export types for backward compatibility
+export type { 
+  Creditor, 
+  CreateCreditorRequest, 
+  CreditPayment, 
+  CreatePaymentRequest 
 };

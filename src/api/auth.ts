@@ -1,23 +1,6 @@
 
-import { apiClient } from './client';
-import { UserRole } from '@/contexts/AuthContext';
-
-export interface LoginRequest {
-  email: string; // Supports formats: user@domain.com, user@tenant_name.com
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    tenantId?: string;
-    tenantName?: string;
-  };
-}
+import { apiClient, extractApiData } from './client';
+import type { LoginRequest, LoginResponse, ApiResponse } from './api-contract';
 
 const devLog = (message: string, ...args: any[]) => {
   if (import.meta.env.DEV) {
@@ -39,31 +22,30 @@ export const authApi = {
       devLog('API base URL:', apiClient.defaults.baseURL);
       
       const response = await apiClient.post('/auth/login', credentials);
+      const loginData = extractApiData<LoginResponse>(response);
       
       devLog('Login response received:', {
-        status: response.status,
-        hasToken: !!response.data.token,
-        hasUser: !!response.data.user
+        hasToken: !!loginData.token,
+        hasUser: !!loginData.user
       });
       
       // Validate response structure
-      if (!response.data.token) {
+      if (!loginData.token) {
         devError('Missing token in response');
         throw new Error('Missing token in response');
       }
       
-      if (!response.data.user) {
+      if (!loginData.user) {
         devError('Missing user data in response');
         throw new Error('Missing user data in response');
       }
       
-      // Response is already converted to camelCase by the interceptor
       devLog('Using backend-provided tenant context:', {
-        tenantId: response.data.user.tenantId,
-        tenantName: response.data.user.tenantName
+        tenantId: loginData.user.tenantId,
+        tenantName: loginData.user.tenantName
       });
       
-      return response.data;
+      return loginData;
     } catch (error: any) {
       devError('Login request failed:', error.message);
       devLog('Error details:', error.response?.data || 'No response data');
@@ -79,6 +61,10 @@ export const authApi = {
   refreshToken: async (): Promise<LoginResponse> => {
     devLog('Refreshing token');
     const response = await apiClient.post('/auth/refresh');
-    return response.data;
+    return extractApiData<LoginResponse>(response);
   }
 };
+
+// Export types for backward compatibility
+export type { LoginRequest, LoginResponse };
+export type { UserRole } from './api-contract';

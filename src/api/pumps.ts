@@ -1,34 +1,13 @@
 
-import { apiClient } from './client';
-import { ensureArray } from '@/utils/apiHelpers';
-
-export interface Pump {
-  id: string;
-  stationId: string;
-  label: string;
-  serialNumber?: string;
-  status: 'active' | 'inactive' | 'maintenance';
-  nozzleCount: number;
-  createdAt: string;
-}
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { Pump, CreatePumpRequest, ApiResponse } from './api-contract';
 
 export const pumpsApi = {
   // Get pumps for a station
   getPumps: async (stationId: string): Promise<Pump[]> => {
     try {
       const response = await apiClient.get(`/pumps?stationId=${stationId}`);
-      
-      // Response is already converted to camelCase by the interceptor
-      const rawPumps = ensureArray(response.data.pumps || response.data);
-      return rawPumps.map((pump: any) => ({
-        id: pump.id,
-        stationId: pump.stationId,
-        label: pump.label,
-        serialNumber: pump.serialNumber,
-        status: pump.status,
-        nozzleCount: pump.nozzleCount,
-        createdAt: pump.createdAt
-      }));
+      return extractApiArray<Pump>(response, 'pumps');
     } catch (error) {
       console.error('Error fetching pumps:', error);
       return [];
@@ -36,26 +15,15 @@ export const pumpsApi = {
   },
   
   // Create new pump
-  createPump: async (data: { stationId: string; label: string; serialNumber?: string }): Promise<Pump> => {
+  createPump: async (data: CreatePumpRequest): Promise<Pump> => {
     const response = await apiClient.post('/pumps', data);
-    return response.data;
+    return extractApiData<Pump>(response);
   },
   
   // Get single pump
   getPump: async (pumpId: string): Promise<Pump> => {
     const response = await apiClient.get(`/pumps/${pumpId}`);
-    const pump = response.data;
-    
-    // Response is already converted to camelCase by the interceptor
-    return {
-      id: pump.id,
-      stationId: pump.stationId,
-      label: pump.label,
-      serialNumber: pump.serialNumber,
-      status: pump.status,
-      nozzleCount: pump.nozzleCount,
-      createdAt: pump.createdAt
-    };
+    return extractApiData<Pump>(response);
   },
   
   // Delete pump
@@ -63,3 +31,6 @@ export const pumpsApi = {
     await apiClient.delete(`/pumps/${pumpId}`);
   }
 };
+
+// Export types for backward compatibility
+export type { Pump, CreatePumpRequest };
