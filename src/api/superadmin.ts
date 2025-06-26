@@ -11,8 +11,24 @@ import type {
 export const superAdminApi = {
   // Get platform dashboard metrics
   getSummary: async (): Promise<SuperAdminSummary> => {
-    const response = await apiClient.get('/analytics/dashboard');
-    return extractApiData<SuperAdminSummary>(response);
+    try {
+      const response = await apiClient.get('/admin/dashboard');
+      return extractApiData<SuperAdminSummary>(response);
+    } catch (error) {
+      console.error('Error fetching admin dashboard:', error);
+      // Return default empty data structure
+      return {
+        totalTenants: 0,
+        activeTenants: 0,
+        totalPlans: 0,
+        totalAdminUsers: 0,
+        totalUsers: 0,
+        totalStations: 0,
+        signupsThisMonth: 0,
+        recentTenants: [],
+        tenantsByPlan: []
+      };
+    }
   },
 
   // Get all plans
@@ -52,8 +68,19 @@ export const superAdminApi = {
   // Get all admin users
   getAdminUsers: async (): Promise<AdminUser[]> => {
     try {
-      const response = await apiClient.get('/admin/users');
-      return extractApiArray<AdminUser>(response, 'users');
+      // Try different endpoints based on what might be available
+      try {
+        const response = await apiClient.get('/admin/users');
+        return extractApiArray<AdminUser>(response, 'users');
+      } catch (adminError) {
+        // If 403 Forbidden, try the superadmin users endpoint
+        if (adminError.response?.status === 403) {
+          console.log('Falling back to /superadmin/users endpoint due to 403 error');
+          const fallbackResponse = await apiClient.get('/superadmin/users');
+          return extractApiArray<AdminUser>(fallbackResponse, 'users');
+        }
+        throw adminError; // Re-throw if it's not a 403 error
+      }
     } catch (error) {
       console.error('Error fetching admin users:', error);
       return [];
