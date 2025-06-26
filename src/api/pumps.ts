@@ -24,7 +24,7 @@ export const pumpsApi = {
         label: pump.label,
         serialNumber: pump.serial_number,
         status: pump.status,
-        nozzleCount: pump.nozzle_count,
+        nozzleCount: pump.nozzleCount,
         createdAt: pump.created_at
       }));
     } catch (error) {
@@ -50,7 +50,7 @@ export const pumpsApi = {
       label: pump.label,
       serialNumber: pump.serial_number,
       status: pump.status,
-      nozzleCount: pump.nozzle_count,
+      nozzleCount: pump.nozzleCount,
       createdAt: pump.created_at
     };
   },
