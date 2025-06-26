@@ -17,11 +17,13 @@ export const superAdminApi = {
       const summaryData = extractApiData<any>(response);
       
       // Map the response to the expected SuperAdminSummary structure
+      // Backend returns: tenantCount, activeTenantCount, planCount, adminCount
+      // Frontend expects: totalTenants, activeTenants, totalPlans, totalAdminUsers, etc.
       return {
-        totalTenants: summaryData.totalTenants || 0,
-        activeTenants: summaryData.activeTenants || 0,
-        totalPlans: summaryData.totalPlans || 0,
-        totalAdminUsers: summaryData.totalAdminUsers || 0,
+        totalTenants: summaryData.tenantCount || 0,
+        activeTenants: summaryData.activeTenantCount || 0,
+        totalPlans: summaryData.planCount || 0,
+        totalAdminUsers: summaryData.adminCount || 0,
         totalUsers: summaryData.totalUsers || 0,
         totalStations: summaryData.totalStations || 0,
         signupsThisMonth: summaryData.newTenantsThisMonth || 0,

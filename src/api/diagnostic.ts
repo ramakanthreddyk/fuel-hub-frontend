@@ -50,7 +50,7 @@ export const diagnosticApi = {
       }
     }
 
-    // Check tenants endpoint (corrected from organizations)
+    // Check tenants endpoint
     try {
       console.log('Checking tenants endpoint...');
       await apiClient.options('/admin/tenants');

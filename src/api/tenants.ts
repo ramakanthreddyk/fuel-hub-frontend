@@ -58,12 +58,12 @@ export const tenantsApi = {
       const response = await apiClient.get(`/admin/tenants/${tenantId}`);
       const tenantData = extractApiData<any>(response);
       
-      // Get users for this tenant
-      const usersResponse = await apiClient.get(`/admin/tenants/${tenantId}/users`);
+      // Get users for this tenant - using correct endpoint
+      const usersResponse = await apiClient.get(`/admin/users?tenantId=${tenantId}`);
       const users = extractApiArray<User>(usersResponse, 'users');
       
-      // Get stations for this tenant
-      const stationsResponse = await apiClient.get(`/admin/tenants/${tenantId}/stations`);
+      // Get stations for this tenant - using correct endpoint
+      const stationsResponse = await apiClient.get(`/stations?tenantId=${tenantId}`);
       const stations = extractApiArray<Station>(stationsResponse, 'stations');
       
       // Map to expected Tenant structure
