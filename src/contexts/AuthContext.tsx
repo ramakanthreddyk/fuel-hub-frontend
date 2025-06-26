@@ -97,7 +97,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('[FRONTEND-AUTH] Login response received:', {
         token: response.token ? '✓ Present' : '✗ Missing',
         user: response.user ? '✓ Present' : '✗ Missing',
-        role: response.user?.role
+        role: response.user?.role,
+        isSuperAdmin: response.user?.role === 'superadmin'
       });
       
       setUser(response.user);
@@ -105,18 +106,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('fuelsync_token', response.token);
       localStorage.setItem('fuelsync_user', JSON.stringify(response.user));
       
-      // Role-based redirect
+      // Role-based redirect with SuperAdmin flag
       console.log(`[FRONTEND-AUTH] Redirecting user with role: ${response.user.role}`);
-      switch (response.user.role) {
-        case 'superadmin':
-          console.log('[FRONTEND-AUTH] Detected superadmin role, redirecting to superadmin overview');
-          navigate('/superadmin/overview');
-          break;
-        case 'attendant':
-          navigate('/dashboard/readings/new');
-          break;
-        default:
-          navigate('/dashboard');
+      
+      if (response.user.role === 'superadmin') {
+        console.log('[FRONTEND-AUTH] 🔱 SuperAdmin detected! Using admin routes without tenant context');
+        navigate('/superadmin/overview');
+      } else {
+        console.log('[FRONTEND-AUTH] Regular user detected, using tenant-scoped routes');
+        switch (response.user.role) {
+          case 'attendant':
+            navigate('/dashboard/readings/new');
+            break;
+          default:
+            navigate('/dashboard');
+        }
       }
     } catch (error) {
       console.error('[FRONTEND-AUTH] Login failed:', error);

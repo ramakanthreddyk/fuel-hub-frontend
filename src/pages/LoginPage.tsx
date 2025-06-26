@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Fuel } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Eye, EyeOff, Fuel, Crown, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,17 +15,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loginAttemptType, setLoginAttemptType] = useState<'regular' | 'admin' | null>(null);
   
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check if email looks like an admin email
+  const isAdminEmail = email.toLowerCase().includes('admin') || email.toLowerCase().includes('superadmin');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setLoginAttemptType(isAdminEmail ? 'admin' : 'regular');
 
     console.log('[LOGIN-PAGE] Form submitted with email:', email);
-    console.log('[LOGIN-PAGE] Starting login process');
+    console.log('[LOGIN-PAGE] Detected login type:', isAdminEmail ? 'SuperAdmin' : 'Regular User');
 
     try {
       await login(email, password);
@@ -33,6 +39,7 @@ export default function LoginPage() {
       // Navigation is handled by AuthContext
     } catch (error: any) {
       console.error('[LOGIN-PAGE] Login failed:', error);
+      setLoginAttemptType(null);
       toast({
         title: "Login Failed",
         description: error.message || "Invalid credentials. Please try again.",
@@ -64,7 +71,15 @@ export default function LoginPage() {
         {/* Login Form */}
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-semibold">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl font-semibold flex items-center justify-center gap-2">
+              Welcome Back
+              {isAdminEmail && (
+                <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 flex items-center gap-1">
+                  <Crown className="h-3 w-3" />
+                  Admin
+                </Badge>
+              )}
+            </CardTitle>
             <CardDescription>
               Enter your credentials to access your account
             </CardDescription>
@@ -82,6 +97,12 @@ export default function LoginPage() {
                   required
                   className="h-11"
                 />
+                {isAdminEmail && (
+                  <div className="flex items-center gap-2 text-xs text-purple-600">
+                    <Shield className="h-3 w-3" />
+                    <span>SuperAdmin login detected - will use admin routes</span>
+                  </div>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -120,7 +141,7 @@ export default function LoginPage() {
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Signing In...
+                    {loginAttemptType === 'admin' ? 'Authenticating Admin...' : 'Signing In...'}
                   </div>
                 ) : (
                   'Sign In'
