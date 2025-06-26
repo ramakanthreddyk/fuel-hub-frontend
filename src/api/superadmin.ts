@@ -1,5 +1,6 @@
 
-import { apiClient } from './client';
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { Plan, CreateTenantRequest, ApiResponse } from './api-contract';
 
 export interface SuperAdminSummary {
   totalTenants: number;
@@ -22,25 +23,6 @@ export interface SuperAdminSummary {
   }>;
 }
 
-export interface Plan {
-  id: string;
-  name: string;
-  maxStations: number;
-  maxPumpsPerStation: number;
-  maxNozzlesPerPump: number;
-  priceMonthly: number;
-  priceYearly: number;
-  features: string[];
-}
-
-export interface CreateTenantRequest {
-  name: string;
-  planId: string;
-  schemaName?: string;
-  adminEmail?: string;
-  adminPassword?: string;
-}
-
 export interface AdminUser {
   id: string;
   name: string;
@@ -54,25 +36,30 @@ export const superAdminApi = {
   // Get platform dashboard metrics
   getSummary: async (): Promise<SuperAdminSummary> => {
     const response = await apiClient.get('/analytics/dashboard');
-    return response.data;
+    return extractApiData<SuperAdminSummary>(response);
   },
 
   // Get all plans
   getPlans: async (): Promise<Plan[]> => {
-    const response = await apiClient.get('/admin/plans');
-    return response.data;
+    try {
+      const response = await apiClient.get('/admin/plans');
+      return extractApiArray<Plan>(response, 'plans');
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+      return [];
+    }
   },
 
   // Create plan
   createPlan: async (planData: Omit<Plan, 'id'>): Promise<Plan> => {
     const response = await apiClient.post('/admin/plans', planData);
-    return response.data;
+    return extractApiData<Plan>(response);
   },
 
   // Update plan
   updatePlan: async (planId: string, planData: Partial<Plan>): Promise<Plan> => {
     const response = await apiClient.put(`/admin/plans/${planId}`, planData);
-    return response.data;
+    return extractApiData<Plan>(response);
   },
 
   // Delete plan
@@ -83,25 +70,30 @@ export const superAdminApi = {
   // Create new tenant with admin user
   createTenantWithAdmin: async (tenantData: CreateTenantRequest) => {
     const response = await apiClient.post('/admin/tenants', tenantData);
-    return response.data;
+    return extractApiData(response);
   },
 
   // Get all admin users
   getAdminUsers: async (): Promise<AdminUser[]> => {
-    const response = await apiClient.get('/admin/users');
-    return response.data;
+    try {
+      const response = await apiClient.get('/admin/users');
+      return extractApiArray<AdminUser>(response, 'users');
+    } catch (error) {
+      console.error('Error fetching admin users:', error);
+      return [];
+    }
   },
 
   // Create admin user
   createAdminUser: async (userData: { name: string; email: string; password: string }): Promise<AdminUser> => {
     const response = await apiClient.post('/admin/users', userData);
-    return response.data;
+    return extractApiData<AdminUser>(response);
   },
 
   // Update admin user
   updateAdminUser: async (userId: string, userData: { name?: string; email?: string }): Promise<AdminUser> => {
     const response = await apiClient.put(`/admin/users/${userId}`, userData);
-    return response.data;
+    return extractApiData<AdminUser>(response);
   },
 
   // Reset admin user password
@@ -114,3 +106,6 @@ export const superAdminApi = {
     await apiClient.delete(`/admin/users/${userId}`);
   }
 };
+
+// Export types for backward compatibility
+export type { SuperAdminSummary, AdminUser };

@@ -1,5 +1,6 @@
 
-import { apiClient } from './client';
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { ApiResponse } from './api-contract';
 
 export interface StationComparison {
   id: string;
@@ -67,50 +68,86 @@ export interface StationComparisonParams {
 
 export const analyticsApi = {
   getStationComparison: async ({ stationIds, period }: StationComparisonParams): Promise<StationComparison[]> => {
-    const params = new URLSearchParams({
-      stationIds: stationIds.join(','),
-    });
-    if (period) params.append('period', period);
-    
-    const response = await apiClient.get(`/analytics/station-comparison?${params}`);
-    return response.data;
+    try {
+      const params = new URLSearchParams({
+        stationIds: stationIds.join(','),
+      });
+      if (period) params.append('period', period);
+      
+      const response = await apiClient.get(`/analytics/station-comparison?${params}`);
+      return extractApiArray<StationComparison>(response);
+    } catch (error) {
+      console.error('Error fetching station comparison:', error);
+      return [];
+    }
   },
 
   getHourlySales: async (stationId?: string, dateRange?: { from: Date; to: Date }): Promise<HourlySales[]> => {
-    const params = new URLSearchParams();
-    if (stationId) params.append('stationId', stationId);
-    if (dateRange?.from) params.append('dateFrom', dateRange.from.toISOString());
-    if (dateRange?.to) params.append('dateTo', dateRange.to.toISOString());
-    
-    const response = await apiClient.get(`/analytics/hourly-sales?${params}`);
-    return response.data;
+    try {
+      const params = new URLSearchParams();
+      if (stationId) params.append('stationId', stationId);
+      if (dateRange?.from) params.append('dateFrom', dateRange.from.toISOString());
+      if (dateRange?.to) params.append('dateTo', dateRange.to.toISOString());
+      
+      const response = await apiClient.get(`/analytics/hourly-sales?${params}`);
+      return extractApiArray<HourlySales>(response);
+    } catch (error) {
+      console.error('Error fetching hourly sales:', error);
+      return [];
+    }
   },
 
   getPeakHours: async (stationId?: string): Promise<PeakHour[]> => {
-    const params = new URLSearchParams();
-    if (stationId) params.append('stationId', stationId);
-    
-    const response = await apiClient.get(`/analytics/peak-hours?${params}`);
-    return response.data;
+    try {
+      const params = new URLSearchParams();
+      if (stationId) params.append('stationId', stationId);
+      
+      const response = await apiClient.get(`/analytics/peak-hours?${params}`);
+      return extractApiArray<PeakHour>(response);
+    } catch (error) {
+      console.error('Error fetching peak hours:', error);
+      return [];
+    }
   },
 
   getFuelPerformance: async (stationId?: string, dateRange?: { from: Date; to: Date }): Promise<FuelPerformance[]> => {
-    const params = new URLSearchParams();
-    if (stationId) params.append('stationId', stationId);
-    if (dateRange?.from) params.append('dateFrom', dateRange.from.toISOString());
-    if (dateRange?.to) params.append('dateTo', dateRange.to.toISOString());
-    
-    const response = await apiClient.get(`/analytics/fuel-performance?${params}`);
-    return response.data;
+    try {
+      const params = new URLSearchParams();
+      if (stationId) params.append('stationId', stationId);
+      if (dateRange?.from) params.append('dateFrom', dateRange.from.toISOString());
+      if (dateRange?.to) params.append('dateTo', dateRange.to.toISOString());
+      
+      const response = await apiClient.get(`/analytics/fuel-performance?${params}`);
+      return extractApiArray<FuelPerformance>(response);
+    } catch (error) {
+      console.error('Error fetching fuel performance:', error);
+      return [];
+    }
   },
 
   getStationRanking: async (period: string): Promise<StationRanking[]> => {
-    const response = await apiClient.get(`/analytics/station-ranking?period=${period}`);
-    return response.data;
+    try {
+      const response = await apiClient.get(`/analytics/station-ranking?period=${period}`);
+      return extractApiArray<StationRanking>(response);
+    } catch (error) {
+      console.error('Error fetching station ranking:', error);
+      return [];
+    }
   },
 
   getSuperAdminAnalytics: async (): Promise<SuperAdminAnalytics> => {
     const response = await apiClient.get('/analytics/superadmin');
-    return response.data;
+    return extractApiData<SuperAdminAnalytics>(response);
   },
+};
+
+// Export types for backward compatibility
+export type { 
+  StationComparison, 
+  HourlySales, 
+  PeakHour, 
+  FuelPerformance, 
+  StationRanking, 
+  SuperAdminAnalytics, 
+  StationComparisonParams 
 };

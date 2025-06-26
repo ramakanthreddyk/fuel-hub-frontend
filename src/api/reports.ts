@@ -1,42 +1,6 @@
 
-import { apiClient } from './client';
-
-export interface SalesReportFilters {
-  startDate?: string;
-  endDate?: string;
-  paymentMethod?: string;
-  nozzleId?: string;
-  stationId?: string;
-}
-
-export interface SalesReportData {
-  id: string;
-  date: string;
-  fuelType: 'petrol' | 'diesel' | 'premium';
-  volume: number;
-  pricePerLitre: number;
-  amount: number;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
-  attendant: string;
-  stationName: string;
-  nozzleNumber: number;
-}
-
-export interface SalesReportSummary {
-  totalVolume: number;
-  totalRevenue: number;
-  fuelTypeBreakdown: {
-    petrol: { volume: number; revenue: number };
-    diesel: { volume: number; revenue: number };
-    premium: { volume: number; revenue: number };
-  };
-  paymentMethodBreakdown: {
-    cash: number;
-    card: number;
-    upi: number;
-    credit: number;
-  };
-}
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { SalesReportFilters, SalesReportData, SalesReportSummary, ApiResponse } from './api-contract';
 
 export interface ExportReportRequest {
   type: string;
@@ -69,7 +33,10 @@ export const reportsApi = {
     });
     
     const response = await apiClient.get(`/reports/sales?${params.toString()}`);
-    return response.data;
+    return extractApiData<{
+      data: SalesReportData[];
+      summary: SalesReportSummary;
+    }>(response);
   },
 
   exportSalesCSV: async (filters: SalesReportFilters): Promise<Blob> => {
@@ -102,4 +69,14 @@ export const reportsApi = {
   scheduleReport: async (request: ScheduleReportRequest): Promise<void> => {
     await apiClient.post('/reports/schedule', request);
   },
+};
+
+// Export types for backward compatibility
+export type { 
+  SalesReportFilters, 
+  SalesReportData, 
+  SalesReportSummary,
+  ExportReportRequest,
+  ScheduleReportRequest,
+  SalesReportExportFilters
 };

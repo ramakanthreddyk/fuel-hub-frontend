@@ -1,19 +1,6 @@
 
-import { apiClient } from './client';
-
-export interface Alert {
-  id: string;
-  type: 'inventory' | 'credit' | 'maintenance' | 'sales' | 'system';
-  severity: 'info' | 'warning' | 'critical';
-  title: string;
-  message: string;
-  stationId: string;
-  stationName: string;
-  isRead: boolean;
-  isActive: boolean;
-  createdAt: string;
-  metadata?: Record<string, any>;
-}
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { Alert, ApiResponse } from './api-contract';
 
 export interface AlertsParams {
   stationId?: string;
@@ -22,12 +9,17 @@ export interface AlertsParams {
 
 export const alertsApi = {
   getAlerts: async (params?: AlertsParams): Promise<Alert[]> => {
-    const searchParams = new URLSearchParams();
-    if (params?.stationId) searchParams.append('stationId', params.stationId);
-    if (params?.unreadOnly) searchParams.append('unreadOnly', 'true');
-    
-    const response = await apiClient.get(`/alerts?${searchParams.toString()}`);
-    return response.data;
+    try {
+      const searchParams = new URLSearchParams();
+      if (params?.stationId) searchParams.append('stationId', params.stationId);
+      if (params?.unreadOnly) searchParams.append('unreadOnly', 'true');
+      
+      const response = await apiClient.get(`/alerts?${searchParams.toString()}`);
+      return extractApiArray<Alert>(response, 'alerts');
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+      return [];
+    }
   },
 
   markAsRead: async (alertId: string): Promise<void> => {
@@ -38,3 +30,6 @@ export const alertsApi = {
     await apiClient.delete(`/alerts/${alertId}`);
   },
 };
+
+// Export types for backward compatibility
+export type { Alert, AlertsParams };

@@ -1,52 +1,6 @@
 
-import { apiClient } from './client';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: 'owner' | 'manager' | 'attendant';
-  createdAt: string;
-}
-
-export interface Nozzle {
-  id: string;
-  nozzleNumber: number;
-  fuelType: string;
-  status: string;
-}
-
-export interface Pump {
-  id: string;
-  label: string;
-  serialNumber?: string;
-  status: string;
-  nozzleCount: number;
-  nozzles?: Nozzle[];
-}
-
-export interface Station {
-  id: string;
-  name: string;
-  address?: string;
-  status: string;
-  pumpCount: number;
-  pumps?: Pump[];
-}
-
-export interface Tenant {
-  id: string;
-  name: string;
-  schemaName: string;
-  planId: string;
-  planName: string;
-  status: 'active' | 'suspended' | 'cancelled';
-  createdAt: string;
-  stationCount?: number;
-  userCount?: number;
-  users?: User[];
-  stations?: Station[];
-}
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { Tenant, CreateTenantRequest, User, Station, ApiResponse } from './api-contract';
 
 // New interface for the API response structure
 export interface TenantDetailsResponse {
@@ -55,25 +9,22 @@ export interface TenantDetailsResponse {
   stations: Station[];
 }
 
-export interface CreateTenantRequest {
-  name: string;
-  schemaName?: string;
-  planId: string;
-  adminEmail?: string;
-  adminPassword?: string;
-}
-
 export const tenantsApi = {
   // Get all tenants (SuperAdmin only)
   getTenants: async (): Promise<Tenant[]> => {
-    const response = await apiClient.get('/admin/tenants');
-    return response.data;
+    try {
+      const response = await apiClient.get('/admin/tenants');
+      return extractApiArray<Tenant>(response, 'tenants');
+    } catch (error) {
+      console.error('Error fetching tenants:', error);
+      return [];
+    }
   },
   
   // Get tenant details with hierarchy
   getTenantDetails: async (tenantId: string): Promise<Tenant> => {
     const response = await apiClient.get(`/admin/tenants/${tenantId}`);
-    const data: TenantDetailsResponse = response.data;
+    const data: TenantDetailsResponse = extractApiData<TenantDetailsResponse>(response);
     
     // Merge the separate arrays into the tenant object for backward compatibility
     return {
@@ -88,13 +39,13 @@ export const tenantsApi = {
   // Create new tenant
   createTenant: async (tenantData: CreateTenantRequest): Promise<Tenant> => {
     const response = await apiClient.post('/admin/tenants', tenantData);
-    return response.data;
+    return extractApiData<Tenant>(response);
   },
   
   // Update tenant status
   updateTenantStatus: async (tenantId: string, status: 'active' | 'suspended' | 'cancelled'): Promise<Tenant> => {
     const response = await apiClient.patch(`/admin/tenants/${tenantId}/status`, { status });
-    return response.data;
+    return extractApiData<Tenant>(response);
   },
   
   // Delete tenant
@@ -102,3 +53,6 @@ export const tenantsApi = {
     await apiClient.delete(`/admin/tenants/${tenantId}`);
   }
 };
+
+// Export types for backward compatibility
+export type { Tenant, CreateTenantRequest, TenantDetailsResponse };

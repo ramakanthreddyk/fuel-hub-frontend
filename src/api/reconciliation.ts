@@ -1,28 +1,6 @@
 
-import { apiClient } from './client';
-
-export interface ReconciliationRecord {
-  id: string;
-  stationId: string;
-  date: string;
-  totalExpected: number;
-  cashReceived: number;
-  reconciliationNotes?: string;
-  managerConfirmation: boolean;
-  createdAt: string;
-  station?: {
-    name: string;
-  };
-}
-
-export interface CreateReconciliationRequest {
-  stationId: string;
-  date: string;
-  totalExpected: number;
-  cashReceived: number;
-  reconciliationNotes?: string;
-  managerConfirmation: boolean;
-}
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { ReconciliationRecord, CreateReconciliationRequest, ApiResponse } from './api-contract';
 
 export interface DailyReadingSummary {
   nozzleId: string;
@@ -40,20 +18,35 @@ export interface DailyReadingSummary {
 export const reconciliationApi = {
   // Get daily readings summary for reconciliation
   getDailyReadingsSummary: async (stationId: string, date: string): Promise<DailyReadingSummary[]> => {
-    const response = await apiClient.get(`/reconciliation/daily-summary?stationId=${stationId}&date=${date}`);
-    return response.data;
+    try {
+      const response = await apiClient.get(`/reconciliation/daily-summary?stationId=${stationId}&date=${date}`);
+      return extractApiArray<DailyReadingSummary>(response, 'readings');
+    } catch (error) {
+      console.error('Error fetching daily readings summary:', error);
+      return [];
+    }
   },
 
   // Create new reconciliation record
   createReconciliation: async (data: CreateReconciliationRequest): Promise<ReconciliationRecord> => {
     const response = await apiClient.post('/reconciliation', data);
-    return response.data;
+    return extractApiData<ReconciliationRecord>(response);
   },
 
   // Get reconciliation history
   getReconciliationHistory: async (stationId?: string): Promise<ReconciliationRecord[]> => {
-    const params = stationId ? { stationId } : {};
-    const response = await apiClient.get('/reconciliation', { params });
-    return response.data;
+    try {
+      const params = new URLSearchParams();
+      if (stationId) params.append('stationId', stationId);
+      
+      const response = await apiClient.get(`/reconciliation?${params.toString()}`);
+      return extractApiArray<ReconciliationRecord>(response, 'reconciliations');
+    } catch (error) {
+      console.error('Error fetching reconciliation history:', error);
+      return [];
+    }
   }
 };
+
+// Export types for backward compatibility
+export type { ReconciliationRecord, CreateReconciliationRequest, DailyReadingSummary };

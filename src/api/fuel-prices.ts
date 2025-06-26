@@ -1,39 +1,13 @@
 
-import { apiClient } from './client';
-import { ensureArray } from '@/utils/apiHelpers';
-
-export interface FuelPrice {
-  id: string;
-  stationId: string;
-  fuelType: 'petrol' | 'diesel' | 'premium';
-  price: number;
-  validFrom: string;
-  createdAt: string;
-  station?: {
-    name: string;
-  };
-}
-
-export interface CreateFuelPriceRequest {
-  stationId: string;
-  fuelType: 'petrol' | 'diesel' | 'premium';
-  price: number;
-  validFrom?: string;
-}
-
-export interface UpdateFuelPriceRequest {
-  stationId?: string;
-  fuelType?: 'petrol' | 'diesel' | 'premium';
-  price?: number;
-  effectiveFrom?: string;
-}
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { FuelPrice, CreateFuelPriceRequest, UpdateFuelPriceRequest, ApiResponse } from './api-contract';
 
 export const fuelPricesApi = {
   // Get all fuel prices
   getFuelPrices: async (): Promise<FuelPrice[]> => {
     try {
       const response = await apiClient.get('/fuel-prices');
-      return ensureArray<FuelPrice>(response.data);
+      return extractApiArray<FuelPrice>(response, 'fuelPrices');
     } catch (error) {
       console.error('Error fetching fuel prices:', error);
       return [];
@@ -43,12 +17,15 @@ export const fuelPricesApi = {
   // Create new fuel price
   createFuelPrice: async (data: CreateFuelPriceRequest): Promise<FuelPrice> => {
     const response = await apiClient.post('/fuel-prices', data);
-    return response.data;
+    return extractApiData<FuelPrice>(response);
   },
 
   // Update fuel price using PUT
   updateFuelPrice: async (id: string, data: UpdateFuelPriceRequest): Promise<FuelPrice> => {
     const response = await apiClient.put(`/fuel-prices/${id}`, data);
-    return response.data;
+    return extractApiData<FuelPrice>(response);
   }
 };
+
+// Export types for backward compatibility
+export type { FuelPrice, CreateFuelPriceRequest, UpdateFuelPriceRequest };
