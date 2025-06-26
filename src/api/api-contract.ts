@@ -280,7 +280,6 @@ export interface CreateSuperAdminRequest {
 export interface Tenant {
   id: string;
   name: string;
-  schemaName: string;
   planId: string;
   planName: string;
   status: TenantStatus;
@@ -289,14 +288,15 @@ export interface Tenant {
   userCount?: number;
   users?: User[];
   stations?: Station[];
+  // schemaName is removed as it's no longer used in the unified schema model
 }
 
 export interface CreateTenantRequest {
   name: string;
-  schemaName?: string;
   planId: string;
   adminEmail?: string;
   adminPassword?: string;
+  // schemaName is removed as it's no longer used in the unified schema model
 }
 
 export interface TenantDetailsResponse {
