@@ -40,7 +40,18 @@ export const creditorsApi = {
   // Get all creditors
   getCreditors: async (): Promise<Creditor[]> => {
     const response = await apiClient.get('/creditors');
-    return response.data;
+    const rawCreditors = response.data.creditors || response.data || [];
+    return rawCreditors.map((creditor: any) => ({
+      id: creditor.id,
+      name: creditor.party_name,
+      partyName: creditor.party_name,
+      contactNumber: creditor.contact_number,
+      address: creditor.address,
+      status: creditor.status,
+      creditLimit: parseFloat(creditor.credit_limit || 0),
+      currentOutstanding: 0, // Backend doesn't provide this in list
+      createdAt: creditor.created_at
+    }));
   },
 
   // Create new creditor
