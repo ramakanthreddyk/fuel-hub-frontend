@@ -36,7 +36,13 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
 
   // Check role authorization
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    console.log('[AUTH] User role not authorized:', user.role);
+    console.log('[AUTH] User role not authorized:', user.role, 'Required roles:', allowedRoles);
+    return <Navigate to="/unauthorized" replace />;
+  }
+  
+  // Special handling for superadmin routes
+  if (location.pathname.startsWith('/superadmin') && user.role !== 'superadmin') {
+    console.log('[AUTH] Non-superadmin trying to access superadmin route');
     return <Navigate to="/unauthorized" replace />;
   }
 
