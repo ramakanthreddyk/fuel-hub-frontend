@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -175,3 +175,4 @@ export const showErrorToast = (title: string, description?: string) => {
     variant: "destructive",
   });
 };
+
