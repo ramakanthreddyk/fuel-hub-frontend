@@ -1,13 +1,28 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { diagnosticApi } from '@/api/diagnostic';
 
+interface DiagnosticResult {
+  status: 'unknown' | 'ok' | 'error';
+  error: string | null;
+}
+
+interface DiagnosticResults {
+  auth: DiagnosticResult;
+  tenants: DiagnosticResult;
+  users: DiagnosticResult;
+  plans: DiagnosticResult;
+  dashboard: DiagnosticResult;
+  schemaIssues: string[];
+}
+
 export function BackendDiagnosticTool() {
-  const [results, setResults] = useState(null);
+  const [results, setResults] = useState<DiagnosticResults | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const runDiagnostics = async () => {
     setIsLoading(true);
@@ -16,7 +31,7 @@ export function BackendDiagnosticTool() {
       const diagnosticResults = await diagnosticApi.checkBackendHealth();
       setResults(diagnosticResults);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Unknown error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -26,7 +41,7 @@ export function BackendDiagnosticTool() {
     runDiagnostics();
   }, []);
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: DiagnosticResult['status']) => {
     if (status === 'ok') return <CheckCircle className="h-5 w-5 text-green-500" />;
     if (status === 'error') return <XCircle className="h-5 w-5 text-red-500" />;
     return <RefreshCw className="h-5 w-5 text-gray-400 animate-spin" />;
@@ -71,9 +86,11 @@ export function BackendDiagnosticTool() {
               <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div>
                   <p className="font-medium capitalize">{key} API</p>
-                  {value.error && <p className="text-xs text-red-500 mt-1">{value.error}</p>}
+                  {(value as DiagnosticResult).error && (
+                    <p className="text-xs text-red-500 mt-1">{(value as DiagnosticResult).error}</p>
+                  )}
                 </div>
-                {getStatusIcon(value.status)}
+                {getStatusIcon((value as DiagnosticResult).status)}
               </div>
             ))}
           </div>
