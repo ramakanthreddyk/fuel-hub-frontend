@@ -20,14 +20,17 @@ export default function SuperAdminOverviewPage() {
     queryKey: ['superadmin-summary'],
     queryFn: superAdminApi.getSummary,
     retry: 1,
-    onError: (error) => {
-      console.error('Error fetching superadmin summary:', error);
-      toast({
-        title: "Dashboard Error",
-        description: "Could not load dashboard data. Please try again later.",
-        variant: "destructive",
-      });
-    }
+    meta: {
+      errorMessage: "Could not load dashboard data. Please try again later.",
+    },
+    // onError: (error) => {
+    //   console.error('Error fetching superadmin summary:', error);
+    //   toast({
+    //     title: "Dashboard Error",
+    //     description: "Could not load dashboard data. Please try again later.",
+    //     variant: "destructive",
+    //   });
+    // }
   });
 
   const handleQuickAction = (action: string) => {
