@@ -109,6 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log(`[FRONTEND-AUTH] Redirecting user with role: ${response.user.role}`);
       switch (response.user.role) {
         case 'superadmin':
+          console.log('[FRONTEND-AUTH] Detected superadmin role, redirecting to superadmin overview');
           navigate('/superadmin/overview');
           break;
         case 'attendant':
