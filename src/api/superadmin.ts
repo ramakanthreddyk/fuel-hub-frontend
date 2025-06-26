@@ -12,10 +12,37 @@ export const superAdminApi = {
   // Get platform dashboard metrics
   getSummary: async (): Promise<SuperAdminSummary> => {
     try {
+      console.log('Fetching admin dashboard summary');
       const response = await apiClient.get('/admin/dashboard');
-      return extractApiData<SuperAdminSummary>(response);
+      const summaryData = extractApiData<any>(response);
+      
+      // Map the response to the expected SuperAdminSummary structure
+      return {
+        totalTenants: summaryData.totalOrganizations || 0,
+        activeTenants: summaryData.activeOrganizations || 0,
+        totalPlans: summaryData.totalPlans || 0,
+        totalAdminUsers: summaryData.totalAdminUsers || 0,
+        totalUsers: summaryData.totalUsers || 0,
+        totalStations: summaryData.totalStations || 0,
+        signupsThisMonth: summaryData.newOrganizationsThisMonth || 0,
+        recentTenants: (summaryData.recentOrganizations || []).map((org: any) => ({
+          id: org.id,
+          name: org.name,
+          createdAt: org.createdAt,
+          status: org.status
+        })),
+        tenantsByPlan: (summaryData.organizationsByPlan || []).map((plan: any) => ({
+          planName: plan.planName,
+          count: plan.count,
+          percentage: plan.percentage
+        }))
+      };
     } catch (error) {
       console.error('Error fetching admin dashboard:', error);
+      // Log detailed error information
+      if (error.response?.data?.message) {
+        console.error('Backend error message:', error.response.data.message);
+      }
       // Return default empty data structure
       return {
         totalTenants: 0,
@@ -59,53 +86,97 @@ export const superAdminApi = {
     await apiClient.delete(`/admin/plans/${planId}`);
   },
 
-  // Create new tenant with admin user
-  createTenantWithAdmin: async (tenantData: CreateTenantRequest) => {
-    const response = await apiClient.post('/admin/tenants', tenantData);
-    return extractApiData(response);
+  // Create new organization with admin user
+  createTenantWithAdmin: async (orgData: CreateTenantRequest) => {
+    try {
+      console.log('Creating new organization with admin user:', orgData);
+      const response = await apiClient.post('/admin/organizations', orgData);
+      return extractApiData(response);
+    } catch (error) {
+      console.error('Error creating organization with admin:', error);
+      // Log detailed error information
+      if (error.response?.data?.message) {
+        console.error('Backend error message:', error.response.data.message);
+      }
+      throw error;
+    }
   },
 
   // Get all admin users
   getAdminUsers: async (): Promise<AdminUser[]> => {
     try {
-      // Try different endpoints based on what might be available
-      try {
-        const response = await apiClient.get('/admin/users');
-        return extractApiArray<AdminUser>(response, 'users');
-      } catch (adminError) {
-        // If 403 Forbidden, try the superadmin users endpoint
-        if (adminError.response?.status === 403) {
-          console.log('Falling back to /superadmin/users endpoint due to 403 error');
-          const fallbackResponse = await apiClient.get('/superadmin/users');
-          return extractApiArray<AdminUser>(fallbackResponse, 'users');
-        }
-        throw adminError; // Re-throw if it's not a 403 error
-      }
+      console.log('Fetching admin users');
+      const response = await apiClient.get('/admin/users');
+      return extractApiArray<AdminUser>(response, 'users');
     } catch (error) {
       console.error('Error fetching admin users:', error);
+      // Log detailed error information
+      if (error.response?.data?.message) {
+        console.error('Backend error message:', error.response.data.message);
+      }
       return [];
     }
   },
 
   // Create admin user
   createAdminUser: async (userData: { name: string; email: string; password: string }): Promise<AdminUser> => {
-    const response = await apiClient.post('/admin/users', userData);
-    return extractApiData<AdminUser>(response);
+    try {
+      console.log('Creating new admin user:', userData.email);
+      const response = await apiClient.post('/admin/users', userData);
+      return extractApiData<AdminUser>(response);
+    } catch (error) {
+      console.error('Error creating admin user:', error);
+      // Log detailed error information
+      if (error.response?.data?.message) {
+        console.error('Backend error message:', error.response.data.message);
+      }
+      throw error;
+    }
   },
 
   // Update admin user
   updateAdminUser: async (userId: string, userData: { name?: string; email?: string }): Promise<AdminUser> => {
-    const response = await apiClient.put(`/admin/users/${userId}`, userData);
-    return extractApiData<AdminUser>(response);
+    try {
+      console.log(`Updating admin user ${userId}:`, userData);
+      const response = await apiClient.put(`/admin/users/${userId}`, userData);
+      return extractApiData<AdminUser>(response);
+    } catch (error) {
+      console.error(`Error updating admin user ${userId}:`, error);
+      // Log detailed error information
+      if (error.response?.data?.message) {
+        console.error('Backend error message:', error.response.data.message);
+      }
+      throw error;
+    }
   },
 
   // Reset admin user password
   resetAdminPassword: async (userId: string, newPassword: string): Promise<void> => {
-    await apiClient.post(`/admin/users/${userId}/reset-password`, { newPassword });
+    try {
+      console.log(`Resetting password for admin user ${userId}`);
+      await apiClient.post(`/admin/users/${userId}/reset-password`, { newPassword });
+    } catch (error) {
+      console.error(`Error resetting password for admin user ${userId}:`, error);
+      // Log detailed error information
+      if (error.response?.data?.message) {
+        console.error('Backend error message:', error.response.data.message);
+      }
+      throw error;
+    }
   },
 
   // Delete admin user
   deleteAdminUser: async (userId: string): Promise<void> => {
-    await apiClient.delete(`/admin/users/${userId}`);
+    try {
+      console.log(`Deleting admin user ${userId}`);
+      await apiClient.delete(`/admin/users/${userId}`);
+    } catch (error) {
+      console.error(`Error deleting admin user ${userId}:`, error);
+      // Log detailed error information
+      if (error.response?.data?.message) {
+        console.error('Backend error message:', error.response.data.message);
+      }
+      throw error;
+    }
   }
 };
