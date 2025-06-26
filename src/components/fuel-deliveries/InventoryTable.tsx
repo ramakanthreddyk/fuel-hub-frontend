@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FuelInventory } from '@/api/fuel-inventory';
+import { FuelInventory } from '@/api/api-contract';
 import { format } from 'date-fns';
 
 interface InventoryTableProps {

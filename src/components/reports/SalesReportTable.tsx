@@ -1,7 +1,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { SalesReportData } from '@/api/reports';
+import { SalesReportData } from '@/api/api-contract';
 import { format } from 'date-fns';
 
 interface SalesReportTableProps {

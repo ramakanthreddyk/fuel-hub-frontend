@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { stationsApi } from '@/api/stations';
-import type { SalesReportFilters } from '@/api/reports';
+import { SalesReportFilters } from '@/api/api-contract';
 
 interface SalesReportFiltersProps {
   filters: SalesReportFilters;

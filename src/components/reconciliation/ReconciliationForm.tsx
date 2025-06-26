@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useCreateReconciliation } from '@/hooks/useReconciliation';
-import { DailyReadingSummary } from '@/api/reconciliation';
+import { DailyReadingSummary } from '@/api/api-contract';
 
 interface ReconciliationFormProps {
   stationId: string;

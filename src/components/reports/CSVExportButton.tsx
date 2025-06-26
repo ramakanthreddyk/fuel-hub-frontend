@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
-import { reportsApi, SalesReportFilters } from '@/api/reports';
+import { reportsApi } from '@/api/reports';
+import { SalesReportFilters } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
 
 interface CSVExportButtonProps {

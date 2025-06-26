@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User } from '@/api/users';
+import { User } from '@/api/api-contract';
 
 interface AdminUserFormProps {
   onSubmit: (data: { name: string; email: string; password?: string; role: 'superadmin' }) => void;

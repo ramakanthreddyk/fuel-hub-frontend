@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { DailyReadingSummary } from '@/api/reconciliation';
+import { DailyReadingSummary } from '@/api/api-contract';
 
 interface ReconciliationTableProps {
   readings: DailyReadingSummary[];

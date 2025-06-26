@@ -1,6 +1,7 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { reportsApi, SalesReportFilters, SalesReportExportFilters } from '@/api/reports';
+import { reportsApi } from '@/api/reports';
+import { SalesReportFilters, SalesReportExportFilters } from '@/api/api-contract';
 
 export const useSalesReport = (filters: SalesReportFilters) => {
   return useQuery({

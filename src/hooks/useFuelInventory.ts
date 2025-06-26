@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { fuelInventoryApi, FuelInventoryParams } from '@/api/fuel-inventory';
+import { fuelInventoryApi } from '@/api/fuel-inventory';
+import { FuelInventoryParams } from '@/api/api-contract';
 
 export const useFuelInventory = (params?: FuelInventoryParams) => {
   return useQuery({

@@ -7,7 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Edit, Package, Plus, Trash2 } from 'lucide-react';
-import { superAdminApi, Plan } from '@/api/superadmin';
+import { superAdminApi } from '@/api/superadmin';
+import { Plan } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
 import { PlanForm } from '@/components/admin/PlanForm';
 import { formatCurrency } from '@/utils/formatters';

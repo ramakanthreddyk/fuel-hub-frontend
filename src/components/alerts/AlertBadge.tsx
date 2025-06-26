@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAlerts } from '@/hooks/useAlerts';
 import { Bell, X, CheckCircle } from 'lucide-react';
-import { Alert } from '@/api/alerts';
+import { Alert } from '@/api/api-contract';
 import { format } from 'date-fns';
 
 export function AlertBadge() {

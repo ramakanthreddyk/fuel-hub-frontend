@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { KeyRound, Eye, EyeOff } from 'lucide-react';
-import { usersApi, ChangePasswordRequest } from '@/api/users';
+import { usersApi } from '@/api/users';
+import { ChangePasswordRequest } from '@/api/api-contract';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 

@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Building2 } from 'lucide-react';
-import { superAdminApi, CreateTenantRequest } from '@/api/superadmin';
+import { superAdminApi } from '@/api/superadmin';
+import { CreateTenantRequest } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CreateTenantPage() {

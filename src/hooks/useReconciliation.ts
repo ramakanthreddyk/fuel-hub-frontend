@@ -1,6 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { reconciliationApi, CreateReconciliationRequest } from '@/api/reconciliation';
+import { reconciliationApi } from '@/api/reconciliation';
+import { CreateReconciliationRequest } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
 
 export const useDailyReadingsSummary = (stationId: string, date: string) => {

@@ -1,6 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { alertsApi, AlertsParams } from '@/api/alerts';
+import { alertsApi } from '@/api/alerts';
+import { AlertsParams } from '@/api/api-contract';
 
 export const useAlerts = (params?: AlertsParams) => {
   const queryClient = useQueryClient();

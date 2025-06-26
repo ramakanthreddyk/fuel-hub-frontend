@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Building2, Plus, MoreHorizontal, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { tenantsApi, CreateTenantRequest } from '@/api/tenants';
+import { tenantsApi } from '@/api/tenants';
+import { CreateTenantRequest } from '@/api/api-contract';
 import { superAdminApi } from '@/api/superadmin';
 import { useToast } from '@/hooks/use-toast';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';

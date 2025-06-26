@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -8,8 +7,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Users, Edit, Trash2, Key } from 'lucide-react';
-import { superAdminApi, AdminUser } from '@/api/superadmin';
+import { superAdminApi } from '@/api/superadmin';
+import { AdminUser } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
+import { AdminUserForm } from '@/components/admin/AdminUserForm';
 import { formatDate } from '@/utils/formatters';
 
 export default function SuperAdminUsersPage() {
@@ -119,9 +120,8 @@ export default function SuperAdminUsersPage() {
     }
   });
 
-  const handleCreateUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    createUserMutation.mutate(createFormData);
+  const handleCreateUser = (data: { name: string; email: string; password?: string; role: 'superadmin' }) => {
+    createUserMutation.mutate(data);
   };
 
   const handleEditUser = (user: AdminUser) => {
@@ -130,13 +130,12 @@ export default function SuperAdminUsersPage() {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateUser = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateUser = (data: { name?: string; email?: string }) => {
     if (!editingUser) return;
     
     updateUserMutation.mutate({
       userId: editingUser.id,
-      userData: editFormData
+      userData: data
     });
   };
 
@@ -184,40 +183,10 @@ export default function SuperAdminUsersPage() {
                 Create a new SuperAdmin user account
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  value={createFormData.name}
-                  onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={createFormData.email}
-                  onChange={(e) => setCreateFormData({ ...createFormData, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={createFormData.password}
-                  onChange={(e) => setCreateFormData({ ...createFormData, password: e.target.value })}
-                  required
-                />
-              </div>
-              <Button type="submit" disabled={createUserMutation.isPending}>
-                {createUserMutation.isPending ? "Creating..." : "Create User"}
-              </Button>
-            </form>
+            <AdminUserForm
+              onSubmit={handleCreateUser}
+              isLoading={createUserMutation.isPending}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -313,30 +282,35 @@ export default function SuperAdminUsersPage() {
               Update user information
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdateUser} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Full Name</Label>
-              <Input
-                id="edit-name"
-                value={editFormData.name}
-                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-email">Email Address</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={editFormData.email}
-                onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                required
-              />
-            </div>
-            <Button type="submit" disabled={updateUserMutation.isPending}>
-              {updateUserMutation.isPending ? "Updating..." : "Update User"}
-            </Button>
-          </form>
+          {editingUser && (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleUpdateUser(editFormData);
+            }} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Full Name</Label>
+                <Input
+                  id="edit-name"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email Address</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  required
+                />
+              </div>
+              <Button type="submit" disabled={updateUserMutation.isPending}>
+                {updateUserMutation.isPending ? "Updating..." : "Update User"}
+              </Button>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
 

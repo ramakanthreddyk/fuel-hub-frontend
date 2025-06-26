@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X } from 'lucide-react';
-import { Plan } from '@/api/superadmin';
+import { Plan } from '@/api/api-contract';
 
 interface PlanFormProps {
   onSubmit: (data: {

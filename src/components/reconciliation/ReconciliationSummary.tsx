@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { DailyReadingSummary } from '@/api/reconciliation';
+import { DailyReadingSummary } from '@/api/api-contract';
 
 interface ReconciliationSummaryProps {
   readings: DailyReadingSummary[];

@@ -1,6 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { analyticsApi, StationComparisonParams } from '@/api/analytics';
+import { analyticsApi } from '@/api/analytics';
+import { StationComparisonParams } from '@/api/api-contract';
 
 export const useStationComparison = (opts: StationComparisonParams) => {
   return useQuery({
