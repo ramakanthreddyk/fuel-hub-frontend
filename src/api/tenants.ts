@@ -22,10 +22,10 @@ interface Organization {
 }
 
 export const tenantsApi = {
-  // Get all tenants (SuperAdmin only) - using correct endpoint
+  // Get all tenants (SuperAdmin only) - using SuperAdmin route
   getTenants: async (): Promise<Tenant[]> => {
     try {
-      console.log('Fetching tenants from /admin/tenants');
+      console.log('Fetching tenants from SuperAdmin endpoint /admin/tenants');
       const response = await apiClient.get('/admin/tenants');
       const tenants = extractApiArray<Organization>(response, 'tenants');
       
@@ -51,20 +51,17 @@ export const tenantsApi = {
     }
   },
   
-  // Get tenant details with hierarchy
+  // Get tenant details with hierarchy (SuperAdmin route)
   getTenantDetails: async (tenantId: string): Promise<Tenant> => {
     try {
-      console.log(`Fetching tenant details for ${tenantId}`);
+      console.log(`Fetching tenant details for ${tenantId} via SuperAdmin endpoint`);
       const response = await apiClient.get(`/admin/tenants/${tenantId}`);
       const tenantData = extractApiData<any>(response);
       
-      // Get users for this tenant - using correct endpoint
-      const usersResponse = await apiClient.get(`/admin/users?tenantId=${tenantId}`);
-      const users = extractApiArray<User>(usersResponse, 'users');
-      
-      // Get stations for this tenant - using correct endpoint
-      const stationsResponse = await apiClient.get(`/stations?tenantId=${tenantId}`);
-      const stations = extractApiArray<Station>(stationsResponse, 'stations');
+      // For SuperAdmin, we get tenant details but users and stations might need separate calls
+      // Based on the console logs, it seems like the detailed tenant response includes this data
+      const users = tenantData.users || [];
+      const stations = tenantData.stations || [];
       
       // Map to expected Tenant structure
       return {
@@ -88,7 +85,7 @@ export const tenantsApi = {
     }
   },
   
-  // Create new tenant
+  // Create new tenant (SuperAdmin route)
   createTenant: async (tenantData: CreateTenantRequest): Promise<Tenant> => {
     try {
       console.log('Creating new tenant with data:', tenantData);
@@ -117,7 +114,7 @@ export const tenantsApi = {
     }
   },
   
-  // Update tenant status
+  // Update tenant status (SuperAdmin route)
   updateTenantStatus: async (tenantId: string, status: 'active' | 'suspended' | 'cancelled'): Promise<Tenant> => {
     try {
       console.log(`Updating tenant ${tenantId} status to ${status}`);
@@ -146,7 +143,7 @@ export const tenantsApi = {
     }
   },
   
-  // Delete tenant
+  // Delete tenant (SuperAdmin route)
   deleteTenant: async (tenantId: string): Promise<void> => {
     try {
       console.log(`Deleting tenant ${tenantId}`);

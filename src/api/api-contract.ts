@@ -1,4 +1,3 @@
-
 /**
  * API Contract Types - Auto-generated from OpenAPI Spec
  * 
@@ -174,7 +173,7 @@ export interface SalesFilters {
   paymentMethod?: string;
 }
 
-// Fuel Prices Endpoints
+// Fuel Prices Endpoints - Updated to match OpenAPI spec
 export interface FuelPrice {
   id: string;
   stationId: string;
@@ -194,12 +193,9 @@ export interface CreateFuelPriceRequest {
   validFrom?: string;
 }
 
-export interface UpdateFuelPriceRequest {
-  stationId?: string;
-  fuelType?: FuelType;
-  price?: number;
-  effectiveFrom?: string;
-}
+// OpenAPI spec doesn't specify fields for PUT /fuel-prices/{id} - just object
+// Removing specific UpdateFuelPriceRequest interface to match spec
+// Use generic object for updates as per OpenAPI specification
 
 // Creditors Endpoints
 export interface Creditor {

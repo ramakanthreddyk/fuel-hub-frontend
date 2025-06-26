@@ -95,7 +95,7 @@ export const superAdminApi = {
     }
   },
 
-  // Create new tenant with admin user
+  // Create new tenant with admin user (SuperAdmin route)
   createTenantWithAdmin: async (tenantData: CreateTenantRequest): Promise<any> => {
     try {
       console.log('Creating tenant with admin user:', tenantData);
@@ -107,10 +107,10 @@ export const superAdminApi = {
     }
   },
 
-  // Get admin users
+  // Get admin users (SuperAdmin only - corrected endpoint)
   getAdminUsers: async (): Promise<AdminUser[]> => {
     try {
-      console.log('Fetching admin users');
+      console.log('Fetching admin users via SuperAdmin endpoint');
       const response = await apiClient.get('/admin/users');
       return extractApiArray<AdminUser>(response, 'users');
     } catch (error) {
