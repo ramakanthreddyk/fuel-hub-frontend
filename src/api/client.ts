@@ -1,7 +1,37 @@
+
 import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
+import { camelCase, isObject, isArray } from 'lodash';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+
+// Helper function to convert snake_case keys to camelCase recursively
+const toCamelCase = (obj: any): any => {
+  if (isArray(obj)) {
+    return obj.map((item) => toCamelCase(item));
+  } else if (isObject(obj) && obj !== null && !(obj instanceof Date)) {
+    const camelCaseObj: any = {};
+    Object.keys(obj).forEach((key) => {
+      const camelKey = camelCase(key);
+      camelCaseObj[camelKey] = toCamelCase(obj[key]);
+    });
+    return camelCaseObj;
+  }
+  return obj;
+};
+
+// Helper function for conditional logging
+const devLog = (message: string, ...args: any[]) => {
+  if (import.meta.env.DEV) {
+    console.log(`[API-CLIENT] ${message}`, ...args);
+  }
+};
+
+const devError = (message: string, ...args: any[]) => {
+  if (import.meta.env.DEV) {
+    console.error(`[API-CLIENT] ${message}`, ...args);
+  }
+};
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -16,19 +46,17 @@ export const apiClient = axios.create({
 // Request interceptor to add auth token and handle headers
 apiClient.interceptors.request.use(
   (config) => {
-    console.log(`[API-CLIENT] Making request to: ${config.baseURL}${config.url}`);
+    devLog(`Making request to: ${config.baseURL}${config.url}`);
     
     const token = localStorage.getItem('fuelsync_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Tenant context is now handled via JWT token, no need for x-tenant-id header
-    
     return config;
   },
   (error) => {
-    console.error('[API-CLIENT] Request interceptor error:', error);
+    devError('Request interceptor error:', error);
     toast({
       title: "Request Error",
       description: "Failed to prepare request. Please try again.",
@@ -38,18 +66,24 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Enhanced response interceptor with comprehensive error handling
+// Enhanced response interceptor with snake_case to camelCase conversion
 apiClient.interceptors.response.use(
   (response) => {
-    console.log('[API-CLIENT] Response received:', { 
+    devLog('Response received:', { 
       url: response.config.url,
       status: response.status,
       hasData: !!response.data
     });
+    
+    // Convert snake_case to camelCase for all response data
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    
     return response;
   },
   (error) => {
-    console.error('[API-CLIENT] Request failed:', { 
+    devError('Request failed:', { 
       url: error.config?.url,
       status: error.response?.status,
       message: error.message,
@@ -66,7 +100,7 @@ apiClient.interceptors.response.use(
       switch (status) {
         case 401:
           if (!isLoginRequest) {
-            console.log('[API-CLIENT] 401 error detected, redirecting to login');
+            devLog('401 error detected, redirecting to login');
             localStorage.removeItem('fuelsync_token');
             localStorage.removeItem('fuelsync_user');
             
@@ -175,4 +209,3 @@ export const showErrorToast = (title: string, description?: string) => {
     variant: "destructive",
   });
 };
-

@@ -27,15 +27,16 @@ export const nozzlesApi = {
   getNozzles: async (pumpId: string): Promise<Nozzle[]> => {
     try {
       const response = await apiClient.get(`/nozzles?pumpId=${pumpId}`);
+      
+      // Response is already converted to camelCase by the interceptor
       const rawNozzles = ensureArray(response.data.nozzles || response.data);
-      // Convert snake_case to camelCase
       return rawNozzles.map((nozzle: any) => ({
         id: nozzle.id,
-        pumpId: nozzle.pump_id,
-        nozzleNumber: nozzle.nozzle_number,
-        fuelType: nozzle.fuel_type,
+        pumpId: nozzle.pumpId,
+        nozzleNumber: nozzle.nozzleNumber,
+        fuelType: nozzle.fuelType,
         status: nozzle.status,
-        createdAt: nozzle.created_at
+        createdAt: nozzle.createdAt
       }));
     } catch (error) {
       console.error('Error fetching nozzles:', error);
@@ -48,13 +49,15 @@ export const nozzlesApi = {
     try {
       const response = await apiClient.get(`/nozzles/${nozzleId}`);
       const nozzle = response.data;
+      
+      // Response is already converted to camelCase by the interceptor
       return {
         id: nozzle.id,
-        pumpId: nozzle.pump_id,
-        nozzleNumber: nozzle.nozzle_number,
-        fuelType: nozzle.fuel_type,
+        pumpId: nozzle.pumpId,
+        nozzleNumber: nozzle.nozzleNumber,
+        fuelType: nozzle.fuelType,
         status: nozzle.status,
-        createdAt: nozzle.created_at
+        createdAt: nozzle.createdAt
       };
     } catch (error) {
       console.error('Error fetching nozzle:', error);
@@ -66,27 +69,31 @@ export const nozzlesApi = {
   createNozzle: async (data: CreateNozzleRequest): Promise<Nozzle> => {
     const response = await apiClient.post('/nozzles', data);
     const nozzle = response.data;
+    
+    // Response is already converted to camelCase by the interceptor
     return {
       id: nozzle.id,
-      pumpId: nozzle.pump_id || data.pumpId,
-      nozzleNumber: nozzle.nozzle_number || data.nozzleNumber,
-      fuelType: nozzle.fuel_type || data.fuelType,
+      pumpId: nozzle.pumpId || data.pumpId,
+      nozzleNumber: nozzle.nozzleNumber || data.nozzleNumber,
+      fuelType: nozzle.fuelType || data.fuelType,
       status: nozzle.status || 'active',
-      createdAt: nozzle.created_at || new Date().toISOString()
+      createdAt: nozzle.createdAt || new Date().toISOString()
     };
   },
   
   // Update nozzle
   updateNozzle: async (nozzleId: string, data: UpdateNozzleRequest): Promise<Nozzle> => {
-    const response = await apiClient.put(`/nozzles/${nozzleId}`, data);
+    const response = await apiClient.post(`/nozzles/${nozzleId}`, data);
     const nozzle = response.data;
+    
+    // Response is already converted to camelCase by the interceptor
     return {
       id: nozzle.id || nozzleId,
-      pumpId: nozzle.pump_id,
-      nozzleNumber: nozzle.nozzle_number,
-      fuelType: nozzle.fuel_type || data.fuelType,
+      pumpId: nozzle.pumpId,
+      nozzleNumber: nozzle.nozzleNumber,
+      fuelType: nozzle.fuelType || data.fuelType,
       status: nozzle.status || data.status,
-      createdAt: nozzle.created_at
+      createdAt: nozzle.createdAt
     };
   },
   

@@ -41,16 +41,18 @@ export const creditorsApi = {
   getCreditors: async (): Promise<Creditor[]> => {
     const response = await apiClient.get('/creditors');
     const rawCreditors = response.data.creditors || response.data || [];
+    
+    // Response is already converted to camelCase by the interceptor
     return rawCreditors.map((creditor: any) => ({
       id: creditor.id,
-      name: creditor.party_name,
-      partyName: creditor.party_name,
-      contactNumber: creditor.contact_number,
+      name: creditor.partyName,
+      partyName: creditor.partyName,
+      contactNumber: creditor.contactNumber,
       address: creditor.address,
       status: creditor.status,
-      creditLimit: parseFloat(creditor.credit_limit || 0),
+      creditLimit: parseFloat(creditor.creditLimit || 0),
       currentOutstanding: 0, // Backend doesn't provide this in list
-      createdAt: creditor.created_at
+      createdAt: creditor.createdAt
     }));
   },
 

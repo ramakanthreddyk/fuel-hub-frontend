@@ -24,14 +24,16 @@ export const readingsApi = {
   createReading: async (readingData: CreateReadingRequest): Promise<NozzleReading> => {
     const response = await apiClient.post('/nozzle-readings', readingData);
     const reading = response.data;
+    
+    // Response is already converted to camelCase by the interceptor
     return {
       id: reading.id,
-      nozzleId: reading.nozzle_id || readingData.nozzleId,
+      nozzleId: reading.nozzleId || readingData.nozzleId,
       reading: reading.reading || readingData.reading,
-      recordedAt: reading.recorded_at || readingData.recordedAt,
-      paymentMethod: reading.payment_method || readingData.paymentMethod,
-      creditorId: reading.creditor_id || readingData.creditorId,
-      createdAt: reading.created_at || new Date().toISOString()
+      recordedAt: reading.recordedAt || readingData.recordedAt,
+      paymentMethod: reading.paymentMethod || readingData.paymentMethod,
+      creditorId: reading.creditorId || readingData.creditorId,
+      createdAt: reading.createdAt || new Date().toISOString()
     };
   },
   
@@ -43,14 +45,15 @@ export const readingsApi = {
       if (readings.length === 0) return null;
       
       const reading = readings[0];
+      // Response is already converted to camelCase by the interceptor
       return {
         id: reading.id,
-        nozzleId: reading.nozzle_id,
+        nozzleId: reading.nozzleId,
         reading: parseFloat(reading.reading),
-        recordedAt: reading.recorded_at,
-        paymentMethod: reading.payment_method || 'cash',
-        creditorId: reading.creditor_id,
-        createdAt: reading.created_at
+        recordedAt: reading.recordedAt,
+        paymentMethod: reading.paymentMethod || 'cash',
+        creditorId: reading.creditorId,
+        createdAt: reading.createdAt
       };
     } catch (error) {
       return null;
