@@ -18,20 +18,20 @@ export const superAdminApi = {
       
       // Map the response to the expected SuperAdminSummary structure
       return {
-        totalTenants: summaryData.totalOrganizations || 0,
-        activeTenants: summaryData.activeOrganizations || 0,
+        totalTenants: summaryData.totalTenants || 0,
+        activeTenants: summaryData.activeTenants || 0,
         totalPlans: summaryData.totalPlans || 0,
         totalAdminUsers: summaryData.totalAdminUsers || 0,
         totalUsers: summaryData.totalUsers || 0,
         totalStations: summaryData.totalStations || 0,
-        signupsThisMonth: summaryData.newOrganizationsThisMonth || 0,
-        recentTenants: (summaryData.recentOrganizations || []).map((org: any) => ({
-          id: org.id,
-          name: org.name,
-          createdAt: org.createdAt,
-          status: org.status
+        signupsThisMonth: summaryData.newTenantsThisMonth || 0,
+        recentTenants: (summaryData.recentTenants || []).map((tenant: any) => ({
+          id: tenant.id,
+          name: tenant.name,
+          createdAt: tenant.createdAt,
+          status: tenant.status
         })),
-        tenantsByPlan: (summaryData.organizationsByPlan || []).map((plan: any) => ({
+        tenantsByPlan: (summaryData.tenantsByPlan || []).map((plan: any) => ({
           planName: plan.planName,
           count: plan.count,
           percentage: plan.percentage
@@ -93,11 +93,11 @@ export const superAdminApi = {
     }
   },
 
-  // Create new tenant with admin user (unified tenant_id approach)
+  // Create new tenant with admin user
   createTenantWithAdmin: async (tenantData: CreateTenantRequest): Promise<any> => {
     try {
       console.log('Creating tenant with admin user:', tenantData);
-      const response = await apiClient.post('/admin/organizations', tenantData);
+      const response = await apiClient.post('/admin/tenants', tenantData);
       return extractApiData<any>(response);
     } catch (error) {
       console.error('Error creating tenant with admin:', error);

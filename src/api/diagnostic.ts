@@ -50,17 +50,17 @@ export const diagnosticApi = {
       }
     }
 
-    // Check organizations endpoint
+    // Check tenants endpoint (corrected from organizations)
     try {
-      console.log('Checking organizations endpoint...');
-      await apiClient.options('/admin/organizations');
+      console.log('Checking tenants endpoint...');
+      await apiClient.options('/admin/tenants');
       results.tenants.status = 'ok' as const;
     } catch (error: any) {
       results.tenants.status = 'error' as const;
       results.tenants.error = error.message;
       if (error.response?.data?.message) {
         if (error.response.data.message.includes('schema_name')) {
-          results.schemaIssues.push('Organizations endpoint has schema_name issues');
+          results.schemaIssues.push('Tenants endpoint has schema_name issues');
         }
       }
     }

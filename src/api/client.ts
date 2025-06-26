@@ -43,7 +43,7 @@ export const apiClient = axios.create({
   timeout: 10000,
 });
 
-// Request interceptor to add auth token and handle headers
+// Request interceptor to add auth token and tenant_id header
 apiClient.interceptors.request.use(
   (config) => {
     devLog(`Making request to: ${config.baseURL}${config.url}`);
@@ -52,6 +52,19 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       devLog('Added authorization token to request');
+      
+      // Extract tenant_id from JWT token if available
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.tenantId) {
+          config.headers['x-tenant-id'] = payload.tenantId;
+          devLog('Added tenant-id header from JWT:', payload.tenantId);
+        } else {
+          devLog('No tenantId found in JWT payload (likely superadmin)');
+        }
+      } catch (error) {
+        devLog('Error parsing JWT token for tenant_id:', error);
+      }
     } else {
       devLog('No token found in localStorage');
     }

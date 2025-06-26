@@ -22,28 +22,28 @@ interface Organization {
 }
 
 export const tenantsApi = {
-  // Get all organizations (SuperAdmin only)
+  // Get all tenants (SuperAdmin only) - using correct endpoint
   getTenants: async (): Promise<Tenant[]> => {
     try {
-      console.log('Fetching organizations from /admin/organizations');
-      const response = await apiClient.get('/admin/organizations');
-      const organizations = extractApiArray<Organization>(response, 'organizations');
+      console.log('Fetching tenants from /admin/tenants');
+      const response = await apiClient.get('/admin/tenants');
+      const tenants = extractApiArray<Organization>(response, 'tenants');
       
-      // Map the organization structure to the expected Tenant structure
-      return organizations.map(org => ({
-        id: org.id,
-        name: org.name,
-        status: org.status,
-        planId: org.planId,
-        planName: org.planName,
-        createdAt: org.createdAt,
-        userCount: org.userCount || 0,
-        stationCount: org.stationCount || 0,
+      // Map the tenant structure to the expected Tenant structure
+      return tenants.map(tenant => ({
+        id: tenant.id,
+        name: tenant.name,
+        status: tenant.status,
+        planId: tenant.planId,
+        planName: tenant.planName,
+        createdAt: tenant.createdAt,
+        userCount: tenant.userCount || 0,
+        stationCount: tenant.stationCount || 0,
         users: [],
         stations: []
       }));
     } catch (error) {
-      console.error('Error fetching organizations:', error);
+      console.error('Error fetching tenants:', error);
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }
@@ -51,36 +51,36 @@ export const tenantsApi = {
     }
   },
   
-  // Get organization details with hierarchy
-  getTenantDetails: async (orgId: string): Promise<Tenant> => {
+  // Get tenant details with hierarchy
+  getTenantDetails: async (tenantId: string): Promise<Tenant> => {
     try {
-      console.log(`Fetching organization details for ${orgId}`);
-      const response = await apiClient.get(`/admin/organizations/${orgId}`);
-      const orgData = extractApiData<any>(response);
+      console.log(`Fetching tenant details for ${tenantId}`);
+      const response = await apiClient.get(`/admin/tenants/${tenantId}`);
+      const tenantData = extractApiData<any>(response);
       
-      // Get users for this organization
-      const usersResponse = await apiClient.get(`/admin/organizations/${orgId}/users`);
+      // Get users for this tenant
+      const usersResponse = await apiClient.get(`/admin/tenants/${tenantId}/users`);
       const users = extractApiArray<User>(usersResponse, 'users');
       
-      // Get stations for this organization
-      const stationsResponse = await apiClient.get(`/admin/organizations/${orgId}/stations`);
+      // Get stations for this tenant
+      const stationsResponse = await apiClient.get(`/admin/tenants/${tenantId}/stations`);
       const stations = extractApiArray<Station>(stationsResponse, 'stations');
       
-      // Map to expected Tenant structure (no schema references)
+      // Map to expected Tenant structure
       return {
-        id: orgData.id,
-        name: orgData.name,
-        status: orgData.status,
-        planId: orgData.planId,
-        planName: orgData.planName,
-        createdAt: orgData.createdAt,
+        id: tenantData.id,
+        name: tenantData.name,
+        status: tenantData.status,
+        planId: tenantData.planId,
+        planName: tenantData.planName,
+        createdAt: tenantData.createdAt,
         users,
         stations,
         userCount: users.length,
         stationCount: stations.length
       };
     } catch (error) {
-      console.error(`Error fetching organization details for ${orgId}:`, error);
+      console.error(`Error fetching tenant details for ${tenantId}:`, error);
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }
@@ -88,28 +88,28 @@ export const tenantsApi = {
     }
   },
   
-  // Create new organization
-  createTenant: async (orgData: CreateTenantRequest): Promise<Tenant> => {
+  // Create new tenant
+  createTenant: async (tenantData: CreateTenantRequest): Promise<Tenant> => {
     try {
-      console.log('Creating new organization with data:', orgData);
-      const response = await apiClient.post('/admin/organizations', orgData);
-      const newOrg = extractApiData<Organization>(response);
+      console.log('Creating new tenant with data:', tenantData);
+      const response = await apiClient.post('/admin/tenants', tenantData);
+      const newTenant = extractApiData<Organization>(response);
       
       // Map to expected Tenant structure
       return {
-        id: newOrg.id,
-        name: newOrg.name,
-        status: newOrg.status,
-        planId: newOrg.planId,
-        planName: newOrg.planName,
-        createdAt: newOrg.createdAt,
+        id: newTenant.id,
+        name: newTenant.name,
+        status: newTenant.status,
+        planId: newTenant.planId,
+        planName: newTenant.planName,
+        createdAt: newTenant.createdAt,
         users: [],
         stations: [],
         userCount: 0,
         stationCount: 0
       };
     } catch (error) {
-      console.error('Error creating organization:', error);
+      console.error('Error creating tenant:', error);
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }
@@ -117,28 +117,28 @@ export const tenantsApi = {
     }
   },
   
-  // Update organization status
-  updateTenantStatus: async (orgId: string, status: 'active' | 'suspended' | 'cancelled'): Promise<Tenant> => {
+  // Update tenant status
+  updateTenantStatus: async (tenantId: string, status: 'active' | 'suspended' | 'cancelled'): Promise<Tenant> => {
     try {
-      console.log(`Updating organization ${orgId} status to ${status}`);
-      const response = await apiClient.patch(`/admin/organizations/${orgId}/status`, { status });
-      const updatedOrg = extractApiData<Organization>(response);
+      console.log(`Updating tenant ${tenantId} status to ${status}`);
+      const response = await apiClient.patch(`/admin/tenants/${tenantId}/status`, { status });
+      const updatedTenant = extractApiData<Organization>(response);
       
       // Map to expected Tenant structure
       return {
-        id: updatedOrg.id,
-        name: updatedOrg.name,
-        status: updatedOrg.status,
-        planId: updatedOrg.planId,
-        planName: updatedOrg.planName,
-        createdAt: updatedOrg.createdAt,
+        id: updatedTenant.id,
+        name: updatedTenant.name,
+        status: updatedTenant.status,
+        planId: updatedTenant.planId,
+        planName: updatedTenant.planName,
+        createdAt: updatedTenant.createdAt,
         users: [],
         stations: [],
-        userCount: updatedOrg.userCount || 0,
-        stationCount: updatedOrg.stationCount || 0
+        userCount: updatedTenant.userCount || 0,
+        stationCount: updatedTenant.stationCount || 0
       };
     } catch (error) {
-      console.error(`Error updating organization ${orgId} status:`, error);
+      console.error(`Error updating tenant ${tenantId} status:`, error);
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }
@@ -146,13 +146,13 @@ export const tenantsApi = {
     }
   },
   
-  // Delete organization
-  deleteTenant: async (orgId: string): Promise<void> => {
+  // Delete tenant
+  deleteTenant: async (tenantId: string): Promise<void> => {
     try {
-      console.log(`Deleting organization ${orgId}`);
-      await apiClient.delete(`/admin/organizations/${orgId}`);
+      console.log(`Deleting tenant ${tenantId}`);
+      await apiClient.delete(`/admin/tenants/${tenantId}`);
     } catch (error) {
-      console.error(`Error deleting organization ${orgId}:`, error);
+      console.error(`Error deleting tenant ${tenantId}:`, error);
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }
