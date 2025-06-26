@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,8 @@ export function CreateStationDialog({ children }: CreateStationDialogProps) {
 
   const createStationMutation = useMutation({
     mutationFn: stationsApi.createStation,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Station created successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['stations'] });
       setOpen(false);
       setFormData({ name: '', address: '' });
@@ -35,9 +37,17 @@ export function CreateStationDialog({ children }: CreateStationDialogProps) {
       });
     },
     onError: (error: any) => {
+      console.error('Failed to create station:', error);
+      console.error('Error response:', error.response?.data);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error?.message || 
+                          error.message || 
+                          "Failed to create station";
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to create station",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -45,6 +55,7 @@ export function CreateStationDialog({ children }: CreateStationDialogProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!formData.name.trim()) {
       toast({
         title: "Error",
@@ -53,6 +64,8 @@ export function CreateStationDialog({ children }: CreateStationDialogProps) {
       });
       return;
     }
+
+    console.log('Submitting station data:', formData);
     createStationMutation.mutate(formData);
   };
 

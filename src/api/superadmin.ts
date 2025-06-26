@@ -17,8 +17,6 @@ export const superAdminApi = {
       const summaryData = extractApiData<any>(response);
       
       // Map the response to the expected SuperAdminSummary structure
-      // Backend returns: tenantCount, activeTenantCount, planCount, adminCount
-      // Frontend expects: totalTenants, activeTenants, totalPlans, totalAdminUsers, etc.
       return {
         totalTenants: summaryData.tenantCount || 0,
         activeTenants: summaryData.activeTenantCount || 0,
@@ -107,7 +105,7 @@ export const superAdminApi = {
     }
   },
 
-  // Get admin users (SuperAdmin only - corrected endpoint)
+  // Get admin users (SuperAdmin only)
   getAdminUsers: async (): Promise<AdminUser[]> => {
     try {
       console.log('Fetching admin users via SuperAdmin endpoint');
@@ -116,6 +114,18 @@ export const superAdminApi = {
     } catch (error) {
       console.error('Error fetching admin users:', error);
       return [];
+    }
+  },
+
+  // Create admin user (SuperAdmin only)
+  createAdminUser: async (userData: any): Promise<AdminUser> => {
+    try {
+      console.log('Creating admin user:', userData);
+      const response = await apiClient.post('/admin/users', userData);
+      return extractApiData<AdminUser>(response);
+    } catch (error) {
+      console.error('Error creating admin user:', error);
+      throw error;
     }
   }
 };

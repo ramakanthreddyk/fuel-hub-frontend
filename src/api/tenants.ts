@@ -10,7 +10,7 @@ import type {
 } from './api-contract';
 
 // Define the actual structure returned by the backend
-interface Organization {
+interface TenantResponse {
   id: string;
   name: string;
   status: 'active' | 'suspended' | 'cancelled';
@@ -22,12 +22,12 @@ interface Organization {
 }
 
 export const tenantsApi = {
-  // Get all tenants (SuperAdmin only) - using SuperAdmin route
+  // Get all tenants (SuperAdmin only)
   getTenants: async (): Promise<Tenant[]> => {
     try {
       console.log('Fetching tenants from SuperAdmin endpoint /admin/tenants');
       const response = await apiClient.get('/admin/tenants');
-      const tenants = extractApiArray<Organization>(response, 'tenants');
+      const tenants = extractApiArray<TenantResponse>(response, 'tenants');
       
       // Map the tenant structure to the expected Tenant structure
       return tenants.map(tenant => ({
@@ -51,17 +51,12 @@ export const tenantsApi = {
     }
   },
   
-  // Get tenant details with hierarchy (SuperAdmin route)
+  // Get tenant details (SuperAdmin route)
   getTenantDetails: async (tenantId: string): Promise<Tenant> => {
     try {
       console.log(`Fetching tenant details for ${tenantId} via SuperAdmin endpoint`);
       const response = await apiClient.get(`/admin/tenants/${tenantId}`);
       const tenantData = extractApiData<any>(response);
-      
-      // For SuperAdmin, we get tenant details but users and stations might need separate calls
-      // Based on the console logs, it seems like the detailed tenant response includes this data
-      const users = tenantData.users || [];
-      const stations = tenantData.stations || [];
       
       // Map to expected Tenant structure
       return {
@@ -71,10 +66,10 @@ export const tenantsApi = {
         planId: tenantData.planId,
         planName: tenantData.planName,
         createdAt: tenantData.createdAt,
-        users,
-        stations,
-        userCount: users.length,
-        stationCount: stations.length
+        users: tenantData.users || [],
+        stations: tenantData.stations || [],
+        userCount: tenantData.userCount || 0,
+        stationCount: tenantData.stationCount || 0
       };
     } catch (error) {
       console.error(`Error fetching tenant details for ${tenantId}:`, error);
@@ -90,7 +85,7 @@ export const tenantsApi = {
     try {
       console.log('Creating new tenant with data:', tenantData);
       const response = await apiClient.post('/admin/tenants', tenantData);
-      const newTenant = extractApiData<Organization>(response);
+      const newTenant = extractApiData<TenantResponse>(response);
       
       // Map to expected Tenant structure
       return {
@@ -119,7 +114,7 @@ export const tenantsApi = {
     try {
       console.log(`Updating tenant ${tenantId} status to ${status}`);
       const response = await apiClient.patch(`/admin/tenants/${tenantId}/status`, { status });
-      const updatedTenant = extractApiData<Organization>(response);
+      const updatedTenant = extractApiData<TenantResponse>(response);
       
       // Map to expected Tenant structure
       return {
