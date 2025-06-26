@@ -12,7 +12,7 @@ import { tenantsApi } from '@/api/tenants';
 import { CreateTenantRequest } from '@/api/api-contract';
 import { superAdminApi } from '@/api/superadmin';
 import { useToast } from '@/hooks/use-toast';
-import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
+import { SuperAdminErrorBoundary } from '@/components/admin/SuperAdminErrorBoundary';
 import { TenantForm } from '@/components/admin/TenantForm';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { formatDate } from '@/utils/formatters';
@@ -141,7 +141,7 @@ export default function SuperAdminTenantsPage() {
           </Dialog>
         </div>
 
-        <DashboardErrorBoundary error={error} onRetry={() => refetch()}>
+        <SuperAdminErrorBoundary error={error} onRetry={() => refetch()}>
           {isLoading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
@@ -259,7 +259,7 @@ export default function SuperAdminTenantsPage() {
               ))}
             </div>
           )}
-        </DashboardErrorBoundary>
+        </SuperAdminErrorBoundary>
       </div>
     </div>
   );
