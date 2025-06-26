@@ -56,7 +56,9 @@ export default function StationsPage() {
               <Plus className="h-4 w-4" />
             </Button>
           </CreateStationDialog>
-          <CreateStationDialog className="hidden md:block" />
+          <div className="hidden md:block">
+            <CreateStationDialog />
+          </div>
         </div>
       </div>
 
