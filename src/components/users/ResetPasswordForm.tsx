@@ -27,15 +27,15 @@ export function ResetPasswordForm({ onSubmit, onCancel, isLoading }: ResetPasswo
       <CardContent>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="newPassword">New Password</Label>
             <Input
-              id="email"
-              type="email"
-              {...register('email', { required: 'Email is required' })}
-              placeholder="Enter user's email address"
+              id="newPassword"
+              type="password"
+              {...register('newPassword', { required: 'New password is required' })}
+              placeholder="Enter new password"
             />
-            {errors.email && (
-              <p className="text-sm text-red-600">{errors.email.message}</p>
+            {errors.newPassword && (
+              <p className="text-sm text-red-600">{errors.newPassword.message}</p>
             )}
           </div>
 

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -22,10 +23,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreVertical, Copy, Edit, Trash2, Reset } from 'lucide-react';
+import { MoreVertical, Copy, Edit, Trash2, RotateCcw } from 'lucide-react';
 import { usersApi } from '@/api/users';
 import { CreateSuperAdminRequest, User } from '@/api/api-contract';
-import { UserForm } from '@/components/users/UserForm';
+import { SuperAdminUserForm } from '@/components/users/SuperAdminUserForm';
 import { ResetPasswordForm } from '@/components/users/ResetPasswordForm';
 
 export default function UsersPage() {
@@ -42,7 +43,7 @@ export default function UsersPage() {
   });
 
   const { mutateAsync: createUser } = useMutation({
-    mutationFn: (data: CreateSuperAdminRequest) => usersApi.createUser(data),
+    mutationFn: (data: CreateSuperAdminRequest) => usersApi.createSuperAdminUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
@@ -60,7 +61,7 @@ export default function UsersPage() {
   });
 
   const { mutateAsync: updateUser } = useMutation({
-    mutationFn: (data: User) => usersApi.updateUser(data),
+    mutationFn: ({ userId, userData }: { userId: string; userData: any }) => usersApi.updateUser(userId, userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
@@ -96,7 +97,7 @@ export default function UsersPage() {
   });
 
   const { mutateAsync: resetPassword } = useMutation({
-    mutationFn: (email: string) => usersApi.resetPassword(email),
+    mutationFn: ({ userId, passwordData }: { userId: string; passwordData: any }) => usersApi.resetPassword(userId, passwordData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
@@ -113,7 +114,7 @@ export default function UsersPage() {
     },
   });
 
-  const handleCreateUser = async (formData: { name: string; email: string; password?: string; role: 'superadmin' }) => {
+  const handleCreateUser = async (formData: CreateSuperAdminRequest) => {
     try {
       // Ensure password is provided for user creation
       if (!formData.password) {
@@ -128,7 +129,8 @@ export default function UsersPage() {
       const userData: CreateSuperAdminRequest = {
         name: formData.name,
         email: formData.email,
-        password: formData.password, // Now guaranteed to be present
+        password: formData.password,
+        role: 'superadmin'
       };
 
       await createUser(userData);
@@ -139,18 +141,17 @@ export default function UsersPage() {
     }
   };
 
-  const handleUpdateUser = async (formData: { name: string; email: string; role: 'superadmin' }) => {
+  const handleUpdateUser = async (formData: CreateSuperAdminRequest) => {
     try {
       if (!selectedUser) return;
 
-      const userData: User = {
-        id: selectedUser.id,
+      const userData = {
         name: formData.name,
         email: formData.email,
         role: formData.role,
       };
 
-      await updateUser(userData);
+      await updateUser({ userId: selectedUser.id, userData });
       setSelectedUser(null);
     } catch (error) {
       console.error('Failed to update user:', error);
@@ -165,9 +166,10 @@ export default function UsersPage() {
     }
   };
 
-  const handleResetPassword = async (email: string) => {
+  const handleResetPassword = async (passwordData: any) => {
     try {
-      await resetPassword(email);
+      if (!selectedUser) return;
+      await resetPassword({ userId: selectedUser.id, passwordData });
       setShowResetPasswordForm(false);
     } catch (error) {
       console.error('Failed to reset password:', error);
@@ -239,7 +241,7 @@ export default function UsersPage() {
                           setSelectedUser(user);
                           setShowResetPasswordForm(true);
                         }}>
-                          <Reset className="mr-2 h-4 w-4" />
+                          <RotateCcw className="mr-2 h-4 w-4" />
                           <span>Reset Password</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDeleteUser(user.id)} className="text-red-500">
@@ -257,15 +259,15 @@ export default function UsersPage() {
       </Card>
 
       {showCreateForm && (
-        <UserForm
+        <SuperAdminUserForm
           onSubmit={handleCreateUser}
           onCancel={() => setShowCreateForm(false)}
           isLoading={isLoading}
         />
       )}
 
-      {selectedUser && (
-        <UserForm
+      {selectedUser && !showResetPasswordForm && (
+        <SuperAdminUserForm
           user={selectedUser}
           onSubmit={handleUpdateUser}
           onCancel={() => setSelectedUser(null)}
@@ -275,7 +277,7 @@ export default function UsersPage() {
 
       {showResetPasswordForm && selectedUser && (
         <ResetPasswordForm
-          onSubmit={(data) => handleResetPassword(data.email)}
+          onSubmit={handleResetPassword}
           onCancel={() => {
             setShowResetPasswordForm(false);
             setSelectedUser(null);

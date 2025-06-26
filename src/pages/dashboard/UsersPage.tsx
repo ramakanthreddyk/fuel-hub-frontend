@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -141,7 +142,11 @@ export default function UsersPage() {
                 Create a new user account for this tenant
               </DialogDescription>
             </DialogHeader>
-            <UserForm onSubmit={handleCreateUser} isLoading={createUserMutation.isPending} />
+            <UserForm 
+              onSubmit={handleCreateUser} 
+              onCancel={() => setIsCreateDialogOpen(false)}
+              isLoading={createUserMutation.isPending} 
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -238,8 +243,9 @@ export default function UsersPage() {
           </DialogHeader>
           {selectedUser && (
             <UserForm
-              initialData={selectedUser}
+              user={selectedUser}
               onSubmit={(userData) => handleUpdateUser(selectedUser.id, userData)}
+              onCancel={() => setIsEditDialogOpen(false)}
               isLoading={updateUserMutation.isPending}
             />
           )}
@@ -256,8 +262,8 @@ export default function UsersPage() {
           </DialogHeader>
           {selectedUser && (
             <ResetPasswordForm
-              userId={selectedUser.id}
               onSubmit={(passwordData) => handleResetPassword(selectedUser.id, passwordData)}
+              onCancel={() => setIsResetPasswordDialogOpen(false)}
               isLoading={resetPasswordMutation.isPending}
             />
           )}

@@ -6,28 +6,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { CreateUserRequest, User } from '@/api/api-contract';
+import type { CreateSuperAdminRequest, User } from '@/api/api-contract';
 
-interface UserFormProps {
+interface SuperAdminUserFormProps {
   user?: User;
-  onSubmit: (data: CreateUserRequest) => void;
+  onSubmit: (data: CreateSuperAdminRequest) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function UserForm({ user, onSubmit, onCancel, isLoading }: UserFormProps) {
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreateUserRequest>({
+export function SuperAdminUserForm({ user, onSubmit, onCancel, isLoading }: SuperAdminUserFormProps) {
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreateSuperAdminRequest>({
     defaultValues: {
       name: user?.name || '',
       email: user?.email || '',
-      role: (user?.role as 'manager' | 'attendant') || 'attendant',
+      role: 'superadmin',
       password: ''
     }
   });
 
   const watchedRole = watch('role');
 
-  const handleFormSubmit = (data: CreateUserRequest) => {
+  const handleFormSubmit = (data: CreateSuperAdminRequest) => {
     onSubmit(data);
   };
 
@@ -67,14 +67,13 @@ export function UserForm({ user, onSubmit, onCancel, isLoading }: UserFormProps)
             <Label htmlFor="role">Role</Label>
             <Select
               value={watchedRole}
-              onValueChange={(value: 'manager' | 'attendant') => setValue('role', value)}
+              onValueChange={(value: 'superadmin') => setValue('role', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="attendant">Attendant</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
+                <SelectItem value="superadmin">SuperAdmin</SelectItem>
               </SelectContent>
             </Select>
           </div>
