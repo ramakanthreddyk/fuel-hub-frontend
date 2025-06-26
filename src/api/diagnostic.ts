@@ -1,4 +1,19 @@
+
 import { apiClient } from './client';
+
+interface DiagnosticResult {
+  status: 'unknown' | 'ok' | 'error';
+  error: string | null;
+}
+
+interface DiagnosticResults {
+  auth: DiagnosticResult;
+  tenants: DiagnosticResult;
+  users: DiagnosticResult;
+  plans: DiagnosticResult;
+  dashboard: DiagnosticResult;
+  schemaIssues: string[];
+}
 
 /**
  * Diagnostic tool to check backend API health and schema compatibility
@@ -9,13 +24,13 @@ export const diagnosticApi = {
    * This function makes various API calls to check if the backend is working correctly
    * and if the schema is compatible with the frontend
    */
-  checkBackendHealth: async () => {
-    const results = {
-      auth: { status: 'unknown', error: null },
-      tenants: { status: 'unknown', error: null },
-      users: { status: 'unknown', error: null },
-      plans: { status: 'unknown', error: null },
-      dashboard: { status: 'unknown', error: null },
+  checkBackendHealth: async (): Promise<DiagnosticResults> => {
+    const results: DiagnosticResults = {
+      auth: { status: 'unknown' as const, error: null },
+      tenants: { status: 'unknown' as const, error: null },
+      users: { status: 'unknown' as const, error: null },
+      plans: { status: 'unknown' as const, error: null },
+      dashboard: { status: 'unknown' as const, error: null },
       schemaIssues: []
     };
 
@@ -24,9 +39,9 @@ export const diagnosticApi = {
       console.log('Checking auth endpoint...');
       // Just check if the endpoint exists, don't actually try to login
       await apiClient.options('/auth/login');
-      results.auth.status = 'ok';
-    } catch (error) {
-      results.auth.status = 'error';
+      results.auth.status = 'ok' as const;
+    } catch (error: any) {
+      results.auth.status = 'error' as const;
       results.auth.error = error.message;
       if (error.response?.data?.message) {
         if (error.response.data.message.includes('schema_name')) {
@@ -39,9 +54,9 @@ export const diagnosticApi = {
     try {
       console.log('Checking organizations endpoint...');
       await apiClient.options('/admin/organizations');
-      results.tenants.status = 'ok';
-    } catch (error) {
-      results.tenants.status = 'error';
+      results.tenants.status = 'ok' as const;
+    } catch (error: any) {
+      results.tenants.status = 'error' as const;
       results.tenants.error = error.message;
       if (error.response?.data?.message) {
         if (error.response.data.message.includes('schema_name')) {
@@ -54,9 +69,9 @@ export const diagnosticApi = {
     try {
       console.log('Checking users endpoint...');
       await apiClient.options('/admin/users');
-      results.users.status = 'ok';
-    } catch (error) {
-      results.users.status = 'error';
+      results.users.status = 'ok' as const;
+    } catch (error: any) {
+      results.users.status = 'error' as const;
       results.users.error = error.message;
       if (error.response?.data?.message) {
         if (error.response.data.message.includes('schema_name')) {
@@ -69,9 +84,9 @@ export const diagnosticApi = {
     try {
       console.log('Checking plans endpoint...');
       await apiClient.options('/admin/plans');
-      results.plans.status = 'ok';
-    } catch (error) {
-      results.plans.status = 'error';
+      results.plans.status = 'ok' as const;
+    } catch (error: any) {
+      results.plans.status = 'error' as const;
       results.plans.error = error.message;
     }
 
@@ -79,9 +94,9 @@ export const diagnosticApi = {
     try {
       console.log('Checking dashboard endpoint...');
       await apiClient.options('/admin/dashboard');
-      results.dashboard.status = 'ok';
-    } catch (error) {
-      results.dashboard.status = 'error';
+      results.dashboard.status = 'ok' as const;
+    } catch (error: any) {
+      results.dashboard.status = 'error' as const;
       results.dashboard.error = error.message;
       if (error.response?.data?.message) {
         if (error.response.data.message.includes('schema_name')) {
