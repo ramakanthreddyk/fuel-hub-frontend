@@ -7,6 +7,10 @@
  * 
  * IMPORTANT: Any changes to the backend API must be reflected here.
  * Consider using openapi-typescript-codegen for automatic type generation.
+ * 
+ * DATA PARTITIONING POLICY:
+ * All data isolation is handled by tenant_id (UUID) only. Never use schema_name for routing or access.
+ * The backend handles multi-tenancy through tenant_id in headers and database queries.
  */
 
 // Common Types
@@ -276,7 +280,7 @@ export interface CreateSuperAdminRequest {
   role: 'superadmin';
 }
 
-// Tenants Endpoints (SuperAdmin)
+// Tenants Endpoints (SuperAdmin) - NO SCHEMA_NAME references
 export interface Tenant {
   id: string;
   name: string;
@@ -288,7 +292,6 @@ export interface Tenant {
   userCount?: number;
   users?: User[];
   stations?: Station[];
-  // schemaName is removed as it's no longer used in the unified schema model
 }
 
 export interface CreateTenantRequest {
@@ -296,7 +299,6 @@ export interface CreateTenantRequest {
   planId: string;
   adminEmail?: string;
   adminPassword?: string;
-  // schemaName is removed as it's no longer used in the unified schema model
 }
 
 export interface TenantDetailsResponse {
@@ -600,18 +602,22 @@ export interface AdminUser {
 }
 
 /**
- * CONTRACT DRIFT TRACKING
+ * DEVELOPER NOTES:
  * 
- * Missing Backend Endpoints (Frontend expects but backend doesn't provide):
- * - None identified yet
+ * All data partitioning is now handled by tenant_id (UUID) only. Never use schema_name for routing or access.
  * 
- * Extra Backend Endpoints (Backend provides but frontend doesn't use):
- * - To be identified during implementation
+ * The backend uses:
+ * - tenant_id in JWT tokens for user context
+ * - x-tenant-id header for API requests  
+ * - Database row-level security with tenant_id columns
  * 
- * Parameter Mismatches:
- * - To be identified during implementation
+ * Frontend responsibilities:
+ * - Include x-tenant-id header in all API calls (handled by apiClient)
+ * - Store and manage tenant context using tenant_id + tenantName
+ * - Never construct URLs or filters based on schema names
  * 
- * Response Format Inconsistencies:
- * - Some endpoints return data directly, others wrap in { data: ... }
- * - This should be standardized across all endpoints
+ * DEPRECATED CONCEPTS (removed from codebase):
+ * - schema_name, schemaName, tenant_schema
+ * - Dynamic schema switching
+ * - Schema-based routing or filtering
  */

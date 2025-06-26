@@ -1,8 +1,9 @@
-
 # FuelSync Hub - Frontend-Backend API Contract
 
 ## Overview
 This document defines the API contract between the FuelSync Hub frontend and backend systems. The frontend is built with React + TypeScript and expects REST API endpoints with JSON responses.
+
+**IMPORTANT: All data isolation is handled by tenant_id (UUID) only. Never use schema_name for routing or access.**
 
 ## Authentication & Headers
 All API requests include:
@@ -24,7 +25,7 @@ All endpoints are prefixed with `/api/v1`
 **Request Body:**
 ```typescript
 {
-  email: string; // Supports formats: user@domain.com, owner@tenant-schema-name.com
+  email: string; // Standard email format
   password: string;
 }
 ```
@@ -38,8 +39,8 @@ All endpoints are prefixed with `/api/v1`
     name: string;
     email: string;
     role: "superadmin" | "owner" | "manager" | "attendant";
-    tenantId?: string;
-    tenantName?: string;
+    tenantId?: string;      // UUID for data isolation
+    tenantName?: string;    // Display name only
   };
 }
 ```
@@ -152,72 +153,118 @@ All endpoints are prefixed with `/api/v1`
 
 ---
 
-## 3. SUPERADMIN ANALYTICS ENDPOINTS
+## 3. SUPERADMIN ENDPOINTS
 
-### GET /analytics/dashboard
-**Purpose:** Get SuperAdmin dashboard metrics
+### GET /admin/organizations
+**Purpose:** List all tenant organizations
 **Role Required:** superadmin
 
 **Expected Response:**
 ```typescript
-{
-  totalTenants: number;
-  activeTenants: number;
-  totalPlans: number;
-  totalAdminUsers: number;
-  totalUsers: number;
-  totalStations: number;
-  signupsThisMonth: number;
-  recentTenants: Array<{
+Array<{
+  id: string;                    // tenant_id (UUID)
+  name: string;                  // Display name
+  planName: string;
+  status: "active" | "suspended" | "cancelled";
+  createdAt: string;
+  adminUser?: {
     id: string;
     name: string;
-    createdAt: string;
-    status: "active" | "suspended" | "cancelled";
-  }>;
-  tenantsByPlan: Array<{
-    planName: string;
-    count: number;
-    percentage: number;
-  }>;
+    email: string;
+  };
+}>
+```
+
+### POST /admin/organizations
+**Purpose:** Create new tenant organization
+**Role Required:** superadmin
+
+**Request Body:**
+```typescript
+{
+  name: string;           // Organization display name
+  planId: string;         // Subscription plan ID
+  adminEmail: string;     // Admin user email
+  adminPassword: string;  // Admin user password
 }
 ```
 
-### GET /analytics/tenant/:id
-**Purpose:** Get detailed analytics for a specific tenant
+**Expected Response:**
+```typescript
+{
+  id: string;        // tenant_id (UUID)
+  name: string;
+  planId: string;
+  status: "active";
+  createdAt: string;
+  adminUser: {
+    id: string;
+    email: string;
+    name: string;
+  };
+}
+```
+
+### PUT /admin/organizations/:id/status
+**Purpose:** Update tenant status
+**Role Required:** superadmin
+
+**Request Body:**
+```typescript
+{
+  status: "active" | "suspended" | "cancelled";
+}
+```
+
+### GET /admin/plans
+**Purpose:** List all subscription plans
 **Role Required:** superadmin
 
 **Expected Response:**
 ```typescript
+Array<{
+  id: string;
+  name: string;
+  maxStations: number;
+  maxPumpsPerStation: number;
+  maxNozzlesPerPump: number;
+  priceMonthly: number;
+  priceYearly: number;
+  features: string[];
+}>
+```
+
+### POST /admin/plans
+**Purpose:** Create new subscription plan
+**Role Required:** superadmin
+
+**Request Body:**
+```typescript
 {
-  tenant: {
-    id: string;
-    name: string;
-    status: string;
-    planName: string;
-    createdAt: string;
-  };
-  metrics: {
-    totalUsers: number;
-    totalStations: number;
-    totalSales: number;
-    totalVolume: number;
-    monthlyGrowth: number;
-  };
-  stationMetrics: Array<{
-    stationId: string;
-    stationName: string;
-    sales: number;
-    volume: number;
-    transactions: number;
-  }>;
-  userActivity: Array<{
-    userId: string;
-    userName: string;
-    lastLogin: string;
-    role: string;
-    isActive: boolean;
-  }>;
+  name: string;
+  maxStations: number;
+  maxPumpsPerStation: number;
+  maxNozzlesPerPump: number;
+  priceMonthly: number;
+  priceYearly: number;
+  features: string[];
 }
+```
+
+### GET /admin/users
+**Purpose:** List all admin users
+**Role Required:** superadmin
+
+**Expected Response:**
+```typescript
+Array<{
+  id: string;
+  name: string;
+  email: string;
+  role: "superadmin";
+  createdAt: string;
+  lastLogin?: string;
+}>
 ```
 
 ---
@@ -363,109 +410,7 @@ Array<{
 
 ---
 
-## 6. SUPERADMIN MANAGEMENT
-
-### GET /admin/tenants
-**Purpose:** List all tenant organizations
-**Role Required:** superadmin
-
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  name: string;
-  schemaName: string;
-  planName: string;
-  status: "active" | "suspended" | "cancelled";
-  createdAt: string;
-  adminUser?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-}>
-```
-
-### POST /admin/tenants
-**Purpose:** Create new tenant organization
-**Role Required:** superadmin
-
-**Request Body:**
-```typescript
-{
-  name: string;
-  planId: string;
-  adminEmail: string;
-  adminPassword: string;
-  schemaName: string;
-}
-```
-
-### PUT /admin/tenants/:id/status
-**Purpose:** Update tenant status
-**Role Required:** superadmin
-
-**Request Body:**
-```typescript
-{
-  status: "active" | "suspended" | "cancelled";
-}
-```
-
-### GET /admin/plans
-**Purpose:** List all subscription plans
-**Role Required:** superadmin
-
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  name: string;
-  maxStations: number;
-  maxPumpsPerStation: number;
-  maxNozzlesPerPump: number;
-  priceMonthly: number;
-  priceYearly: number;
-  features: string[];
-}>
-```
-
-### POST /admin/plans
-**Purpose:** Create new subscription plan
-**Role Required:** superadmin
-
-**Request Body:**
-```typescript
-{
-  name: string;
-  maxStations: number;
-  maxPumpsPerStation: number;
-  maxNozzlesPerPump: number;
-  priceMonthly: number;
-  priceYearly: number;
-  features: string[];
-}
-```
-
-### GET /admin/users
-**Purpose:** List all admin users
-**Role Required:** superadmin
-
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  name: string;
-  email: string;
-  role: "superadmin";
-  createdAt: string;
-  lastLogin?: string;
-}>
-```
-
----
-
-## 7. ERROR HANDLING
+## 6. ERROR HANDLING
 
 All endpoints should return consistent error responses:
 
@@ -515,49 +460,60 @@ All endpoints should return consistent error responses:
 
 ---
 
-## 8. SUPPORTED EMAIL FORMATS
+## TENANT CONTEXT & DATA ISOLATION
 
-The authentication system supports these email formats:
-- Standard: `user@domain.com`
-- Tenant-specific: `owner@tenant-schema-name.com` (e.g., `owner@acme-fuels.com`)
-- Auto-created owners use format: `owner@tenant-schema-name.com` with password `tenant123`
+### How Tenant Context Works
 
----
+1. **Authentication:**
+   - User logs in with email/password
+   - JWT token contains `tenantId` (UUID) for non-superadmin users
+   - Frontend stores both `tenantId` and `tenantName`
 
-## 9. ROLE-BASED ACCESS CONTROL
+2. **API Requests:**
+   - All tenant-scoped requests include `x-tenant-id` header
+   - Backend filters all data by this tenant_id
+   - No schema switching or dynamic database contexts
 
-### User Roles Hierarchy:
-1. **SuperAdmin**: Platform-wide access, can manage tenants and plans
-2. **Owner**: Full tenant access, can manage all users and data
-3. **Manager**: Can view users, manage stations and operations
-4. **Attendant**: Limited access, can record readings and sales
+3. **Data Access:**
+   - Database uses row-level security with tenant_id columns
+   - Each tenant's data is completely isolated
+   - SuperAdmin can access cross-tenant data via special endpoints
 
-### Permission Matrix:
-- **User Management**: Owner only (create/edit/delete users)
-- **View Users**: Owner, Manager
-- **Password Management**: Users can change own password, Owner can reset any password
-- **Station Management**: Owner, Manager
-- **Sales/Readings**: Owner, Manager, Attendant
+### Supported User Types
 
----
+- **SuperAdmin**: Platform-wide access, manages tenants and plans
+- **Owner**: Full tenant access (tenant_id in JWT)
+- **Manager**: Limited tenant access (tenant_id in JWT)  
+- **Attendant**: Basic tenant access (tenant_id in JWT)
 
-## 10. AUTOMATIC USER CREATION
+### Automatic User Creation
 
 When a tenant is created:
 - An owner user is automatically created
-- Email format: `owner@tenant-schema-name.com` (underscores become hyphens)
-- Default password: `tenant123`
+- Email format: provided admin email
+- Password: provided admin password
 - Role: `owner`
+- tenantId: assigned automatically
 
-Example: Tenant with schema `acme_fuels` gets owner email `owner@acme-fuels.com`
+---
+
+## REMOVED CONCEPTS
+
+The following concepts have been completely removed from the API:
+
+❌ **schema_name, schemaName, tenant_schema**
+❌ **Dynamic schema switching endpoints**
+❌ **Schema-based routing or filtering**
+❌ **Per-tenant database schemas**
 
 ---
 
 ## Notes for Frontend Implementation
 
-1. **Role-based UI**: Show/hide features based on user role
-2. **Permission Checks**: Validate user permissions before API calls
-3. **Password Management**: Provide change password functionality in settings
+1. **Tenant Context**: Use `tenantId` for all data operations, `tenantName` for display only
+2. **API Headers**: Always include `x-tenant-id` from auth context (handled by apiClient)
+3. **State Management**: Track tenants by `tenantId` (UUID), not schema names
 4. **Error Handling**: Handle 403 Forbidden responses gracefully
-5. **User Creation**: Only show create user option to owners
-6. **Auto-generated Credentials**: Display auto-generated credentials when creating tenants
+5. **SuperAdmin Features**: Only show cross-tenant features to superadmin users
+
+**Remember: All data isolation is by tenant_id (UUID), not DB schema.**

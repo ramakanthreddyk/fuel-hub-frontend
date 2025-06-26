@@ -191,7 +191,7 @@ export default function SuperAdminTenantsPage() {
                       </Badge>
                     </div>
                     <CardDescription className="text-sm">
-                      Schema: <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{tenant.schemaName}</span>
+                      Tenant ID: <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{tenant.id}</span>
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">

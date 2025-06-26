@@ -9,7 +9,7 @@ import type {
   ApiResponse 
 } from './api-contract';
 
-// Define the actual structure returned by the backend with unified schema
+// Define the actual structure returned by the backend
 interface Organization {
   id: string;
   name: string;
@@ -44,7 +44,6 @@ export const tenantsApi = {
       }));
     } catch (error) {
       console.error('Error fetching organizations:', error);
-      // Log detailed error information
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }
@@ -67,7 +66,7 @@ export const tenantsApi = {
       const stationsResponse = await apiClient.get(`/admin/organizations/${orgId}/stations`);
       const stations = extractApiArray<Station>(stationsResponse, 'stations');
       
-      // Map to expected Tenant structure
+      // Map to expected Tenant structure (no schema references)
       return {
         id: orgData.id,
         name: orgData.name,
@@ -82,7 +81,6 @@ export const tenantsApi = {
       };
     } catch (error) {
       console.error(`Error fetching organization details for ${orgId}:`, error);
-      // Log detailed error information
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }
@@ -112,7 +110,6 @@ export const tenantsApi = {
       };
     } catch (error) {
       console.error('Error creating organization:', error);
-      // Log detailed error information
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }
@@ -142,7 +139,6 @@ export const tenantsApi = {
       };
     } catch (error) {
       console.error(`Error updating organization ${orgId} status:`, error);
-      // Log detailed error information
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }
@@ -157,7 +153,6 @@ export const tenantsApi = {
       await apiClient.delete(`/admin/organizations/${orgId}`);
     } catch (error) {
       console.error(`Error deleting organization ${orgId}:`, error);
-      // Log detailed error information
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }

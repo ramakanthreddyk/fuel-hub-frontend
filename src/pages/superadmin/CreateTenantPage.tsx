@@ -21,8 +21,7 @@ export default function CreateTenantPage() {
     name: '',
     planId: 'basic',
     adminEmail: '',
-    adminPassword: '',
-    schemaName: ''
+    adminPassword: ''
   });
 
   const createTenantMutation = useMutation({
@@ -47,7 +46,7 @@ export default function CreateTenantPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.adminEmail || !formData.adminPassword || !formData.schemaName) {
+    if (!formData.name || !formData.adminEmail || !formData.adminPassword) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -57,14 +56,6 @@ export default function CreateTenantPage() {
     }
 
     createTenantMutation.mutate(formData);
-  };
-
-  const generateSchema = () => {
-    const schema = formData.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .slice(0, 20);
-    setFormData({ ...formData, schemaName: schema });
   };
 
   return (
@@ -87,7 +78,7 @@ export default function CreateTenantPage() {
             Tenant Information
           </CardTitle>
           <CardDescription>
-            This will create a new tenant schema and admin user account
+            This will create a new tenant organization with isolated data access via tenant_id
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,25 +92,6 @@ export default function CreateTenantPage() {
                 placeholder="e.g., Shell Fuel South"
                 required
               />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="schemaName">Schema Name *</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="schemaName"
-                  value={formData.schemaName}
-                  onChange={(e) => setFormData({ ...formData, schemaName: e.target.value })}
-                  placeholder="e.g., shellsouth"
-                  required
-                />
-                <Button type="button" variant="outline" onClick={generateSchema}>
-                  Generate
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Lowercase letters and numbers only, no spaces
-              </p>
             </div>
 
             <div className="grid gap-2">
@@ -158,6 +130,13 @@ export default function CreateTenantPage() {
                 placeholder="Enter secure password"
                 required
               />
+            </div>
+
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <h4 className="font-medium text-blue-900 mb-2">Data Isolation</h4>
+              <p className="text-sm text-blue-700">
+                All tenant data is securely isolated using tenant_id (UUID). The admin user will have full access to manage this tenant's resources including stations, users, and operations data.
+              </p>
             </div>
 
             <div className="flex gap-2 pt-4">

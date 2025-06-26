@@ -38,8 +38,6 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
     });
   };
 
-  // Schema generation is no longer needed with the unified schema model
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
@@ -51,8 +49,6 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
           required
         />
       </div>
-      
-      {/* Schema name field removed as it's no longer needed with the unified schema model */}
       
       <div className="space-y-2">
         <Label htmlFor="planId">Subscription Plan *</Label>
@@ -71,17 +67,17 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
       </div>
 
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-        <h4 className="font-medium text-blue-900 mb-2">Auto-Generated Users</h4>
+        <h4 className="font-medium text-blue-900 mb-2">Auto-Generated Admin User</h4>
         <p className="text-sm text-blue-700 mb-2">
-          The system will automatically create:
+          The system will automatically create an admin user for this tenant:
         </p>
         <ul className="text-sm text-blue-600 space-y-1">
-          <li>• <strong>Owner:</strong> owner@{formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'tenant'}.com</li>
-          <li>• <strong>Manager:</strong> manager@{formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'tenant'}.com</li>
-          <li>• <strong>Attendant:</strong> attendant@{formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'tenant'}.com</li>
+          <li>• <strong>Email:</strong> admin@{formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'tenant'}.com</li>
+          <li>• <strong>Role:</strong> Owner (Full access to tenant resources)</li>
+          <li>• <strong>Password:</strong> Will be auto-generated and provided after creation</li>
         </ul>
         <p className="text-xs text-blue-500 mt-2">
-          Passwords: {formData.name.split(' ')[0].toLowerCase() || 'firstname'}@123
+          All tenant data is isolated by tenant_id (UUID) for security.
         </p>
       </div>
       
