@@ -1,6 +1,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { SuperAdminErrorBoundary } from '@/components/admin/SuperAdminErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Building2, Users, Gauge, TrendingUp, CheckCircle, Package, BarChart3, Plus, Settings, Eye } from 'lucide-react';
 import { superAdminApi } from '@/api/superadmin';
@@ -12,10 +14,20 @@ import { useNavigate } from 'react-router-dom';
 
 export default function SuperAdminOverviewPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
-  const { data: summary, isLoading } = useQuery({
+  const { data: summary, isLoading, error } = useQuery({
     queryKey: ['superadmin-summary'],
-    queryFn: superAdminApi.getSummary
+    queryFn: superAdminApi.getSummary,
+    retry: 1,
+    onError: (error) => {
+      console.error('Error fetching superadmin summary:', error);
+      toast({
+        title: "Dashboard Error",
+        description: "Could not load dashboard data. Please try again later.",
+        variant: "destructive",
+      });
+    }
   });
 
   const handleQuickAction = (action: string) => {
@@ -35,48 +47,37 @@ export default function SuperAdminOverviewPage() {
     }
   };
 
-  if (isLoading) {
+  const renderContent = () => {
+    if (error) {
+      return (
+        <SuperAdminErrorBoundary 
+          error={error} 
+          onRetry={() => window.location.reload()}
+        >
+          {null}
+        </SuperAdminErrorBoundary>
+      );
+    }
+    
+    if (isLoading) {
+      return (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="animate-pulse">
+                <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4"></div>
+              </CardHeader>
+              <CardContent className="animate-pulse">
+                <div className="h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-1/2"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      );
+    }
+    
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Platform Dashboard
-            </h1>
-            <p className="text-muted-foreground text-sm md:text-base">
-              Platform overview and system metrics
-            </p>
-          </div>
-          
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
-              <Card key={i} className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                <CardHeader className="animate-pulse">
-                  <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4"></div>
-                </CardHeader>
-                <CardContent className="animate-pulse">
-                  <div className="h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-1/2"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            Platform Dashboard
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base">
-            Platform overview and system metrics
-          </p>
-        </div>
-
+      <>
         {/* Enhanced Key Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <EnhancedMetricsCard
@@ -284,6 +285,23 @@ export default function SuperAdminOverviewPage() {
             </div>
           </CardContent>
         </Card>
+      </>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Platform Dashboard
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            Platform overview and system metrics
+          </p>
+        </div>
+
+        {renderContent()}
       </div>
     </div>
   );
