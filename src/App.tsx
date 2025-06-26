@@ -22,6 +22,15 @@ import { Toaster } from '@/components/ui/toaster'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { ErrorProvider } from '@/contexts/ErrorContext';
 
+// Import SuperAdmin pages
+import OverviewPage from './pages/superadmin/OverviewPage'
+import TenantsPage from './pages/superadmin/TenantsPage'
+import TenantDetailsPage from './pages/superadmin/TenantDetailsPage'
+import CreateTenantPage from './pages/superadmin/CreateTenantPage'
+import PlansPage from './pages/superadmin/PlansPage'
+import AnalyticsPage from './pages/superadmin/AnalyticsPage'
+import SuperAdminUsersPage from './pages/superadmin/UsersPage'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -65,6 +74,25 @@ function App() {
                     <Route path="reconciliation" element={<ReconciliationPage />} />
                     <Route path="creditors" element={<CreditorsPage />} />
                     <Route path="alerts" element={<AlertsPage />} />
+                  </Route>
+
+                  {/* SuperAdmin Routes */}
+                  <Route
+                    path="/superadmin"
+                    element={
+                      <RequireAuth allowedRoles={['superadmin']}>
+                        <DashboardLayout />
+                      </RequireAuth>
+                    }
+                  >
+                    <Route index element={<OverviewPage />} />
+                    <Route path="overview" element={<OverviewPage />} />
+                    <Route path="tenants" element={<TenantsPage />} />
+                    <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
+                    <Route path="tenants/create" element={<CreateTenantPage />} />
+                    <Route path="plans" element={<PlansPage />} />
+                    <Route path="analytics" element={<AnalyticsPage />} />
+                    <Route path="users" element={<SuperAdminUsersPage />} />
                   </Route>
 
                   <Route path="*" element={<LoginPage />} />
