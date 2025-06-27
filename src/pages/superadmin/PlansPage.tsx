@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -20,10 +19,13 @@ export default function PlansPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: plans, isLoading } = useQuery({
+  const { data: plansData, isLoading } = useQuery({
     queryKey: ['admin-plans'],
     queryFn: superadminApi.getPlans
   });
+
+  // Ensure plans is always an array
+  const plans = Array.isArray(plansData) ? plansData : [];
 
   const createPlanMutation = useMutation({
     mutationFn: superadminApi.createPlan,
@@ -182,42 +184,44 @@ export default function PlansPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {plans?.map((plan) => (
-                  <TableRow key={plan.id}>
-                    <TableCell>
-                      <Badge className={getPlanColor(plan.name)}>
-                        {plan.name}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-medium">{plan.maxStations}</TableCell>
-                    <TableCell>{formatCurrency(plan.priceMonthly)}</TableCell>
-                    <TableCell>{formatCurrency(plan.priceYearly)}</TableCell>
-                    <TableCell>
-                      <div className="text-sm text-muted-foreground">
-                        {plan.features?.length || 0} features
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleEditPlan(plan)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleDeletePlan(plan.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )) || (
+                {plans.length > 0 ? (
+                  plans.map((plan) => (
+                    <TableRow key={plan.id}>
+                      <TableCell>
+                        <Badge className={getPlanColor(plan.name)}>
+                          {plan.name}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">{plan.maxStations}</TableCell>
+                      <TableCell>{formatCurrency(plan.priceMonthly)}</TableCell>
+                      <TableCell>{formatCurrency(plan.priceYearly)}</TableCell>
+                      <TableCell>
+                        <div className="text-sm text-muted-foreground">
+                          {plan.features?.length || 0} features
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleEditPlan(plan)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDeletePlan(plan.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">No plans found</TableCell>
                   </TableRow>

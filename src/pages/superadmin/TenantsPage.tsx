@@ -2,20 +2,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Building2, Plus, MoreHorizontal, Eye } from 'lucide-react';
+import { Building2, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { tenantsApi } from '@/api/tenants';
 import { CreateTenantRequest } from '@/api/api-contract';
 import { superadminApi } from '@/api/superadmin';
 import { useToast } from '@/hooks/use-toast';
 import { SuperAdminErrorBoundary } from '@/components/admin/SuperAdminErrorBoundary';
 import { TenantForm } from '@/components/admin/TenantForm';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { formatDate } from '@/utils/formatters';
+import { TenantCard } from '@/components/admin/TenantCard';
 
 export default function SuperAdminTenantsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -95,11 +92,16 @@ export default function SuperAdminTenantsPage() {
     createTenantMutation.mutate(data);
   };
 
-  const getPlanColor = (planName: string) => {
-    if (planName.toLowerCase().includes('basic')) return 'bg-blue-100 text-blue-800 border-blue-200';
-    if (planName.toLowerCase().includes('premium')) return 'bg-purple-100 text-purple-800 border-purple-200';
-    if (planName.toLowerCase().includes('enterprise')) return 'bg-orange-100 text-orange-800 border-orange-200';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+  const handleUpdateStatus = (id: string, status: 'active' | 'suspended' | 'cancelled') => {
+    updateTenantStatusMutation.mutate({ id, status });
+  };
+
+  const handleDeleteTenant = (id: string) => {
+    deleteTenantMutation.mutate(id);
+  };
+
+  const handleViewTenant = (id: string) => {
+    navigate(`/superadmin/tenants/${id}`);
   };
 
   // Ensure tenants is always an array
@@ -146,14 +148,12 @@ export default function SuperAdminTenantsPage() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                  <CardHeader className="animate-pulse space-y-3">
+                  <div className="p-6 animate-pulse space-y-3">
                     <div className="h-5 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
                     <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-2/3"></div>
-                  </CardHeader>
-                  <CardContent className="animate-pulse space-y-3">
                     <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
                     <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-3/4"></div>
-                  </CardContent>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -177,85 +177,13 @@ export default function SuperAdminTenantsPage() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {tenantsArray.map((tenant) => (
-                <Card key={tenant.id} className="hover:shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm hover:scale-105">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="flex items-center gap-3 text-lg min-w-0 flex-1">
-                        <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex-shrink-0">
-                          <Building2 className="h-5 w-5 text-white" />
-                        </div>
-                        <span className="truncate">{tenant.name}</span>
-                      </CardTitle>
-                      <Badge className={`${getPlanColor(tenant.planName)} border font-medium text-xs px-2 py-1 flex-shrink-0`}>
-                        {tenant.planName}
-                      </Badge>
-                    </div>
-                    <CardDescription className="text-sm text-muted-foreground">
-                      Organization: <span className="font-medium">{tenant.name}</span>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">{tenant.stationCount || 0}</div>
-                        <div className="text-xs text-muted-foreground font-medium">Stations</div>
-                      </div>
-                      <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">{tenant.userCount || 0}</div>
-                        <div className="text-xs text-muted-foreground font-medium">Users</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Status:</span>
-                        <StatusBadge status={tenant.status} />
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => navigate(`/superadmin/tenants/${tenant.id}`)}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          {tenant.status !== 'active' && (
-                            <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'active' })}>
-                              ✅ Activate
-                            </DropdownMenuItem>
-                          )}
-                          {tenant.status !== 'suspended' && (
-                            <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'suspended' })}>
-                              ⏸️ Suspend
-                            </DropdownMenuItem>
-                          )}
-                          {tenant.status !== 'cancelled' && (
-                            <DropdownMenuItem onClick={() => updateTenantStatusMutation.mutate({ id: tenant.id, status: 'cancelled' })}>
-                              ❌ Cancel Subscription
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            onClick={() => {
-                              if (confirm('Are you sure you want to delete this tenant? This will disable their access but preserve all data.')) {
-                                deleteTenantMutation.mutate(tenant.id);
-                              }
-                            }}
-                            className="text-red-600"
-                          >
-                            🗑️ Delete (Soft)
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className="text-xs text-muted-foreground text-center">
-                      Created: {formatDate(tenant.createdAt)}
-                    </div>
-                  </CardContent>
-                </Card>
+                <TenantCard
+                  key={tenant.id}
+                  tenant={tenant}
+                  onUpdateStatus={handleUpdateStatus}
+                  onDelete={handleDeleteTenant}
+                  onView={handleViewTenant}
+                />
               ))}
             </div>
           )}

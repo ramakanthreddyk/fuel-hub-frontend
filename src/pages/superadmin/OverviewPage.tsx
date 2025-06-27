@@ -72,37 +72,37 @@ export default function SuperAdminOverviewPage() {
     
     return (
       <>
-        {/* Enhanced Key Metrics */}
+        {/* Enhanced Key Metrics - Using correct field names */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <EnhancedMetricsCard
             title="Total Tenants"
-            value={summary?.totalTenants || 0}
+            value={summary?.tenantCount || 0}
             icon={<Building2 className="h-5 w-5" />}
-            description={`${summary?.activeTenants || 0} active organizations`}
+            description={`${summary?.activeTenantCount || 0} active organizations`}
             gradient="from-purple-500 to-indigo-600"
           />
 
           <EnhancedMetricsCard
-            title="Total Users"
-            value={summary?.totalUsers || 0}
+            title="Admin Users"
+            value={summary?.adminCount || 0}
             icon={<Users className="h-5 w-5" />}
-            description="Across all tenants"
+            description="SuperAdmin users"
             gradient="from-blue-500 to-cyan-600"
           />
 
           <EnhancedMetricsCard
-            title="Total Stations"
-            value={summary?.totalStations || 0}
-            icon={<Gauge className="h-5 w-5" />}
-            description="Fuel stations registered"
+            title="Subscription Plans"
+            value={summary?.planCount || 0}
+            icon={<Package className="h-5 w-5" />}
+            description="Available plans"
             gradient="from-green-500 to-emerald-600"
           />
 
           <EnhancedMetricsCard
-            title="New This Month"
-            value={summary?.signupsThisMonth || 0}
+            title="Active Rate"
+            value={summary?.tenantCount ? Math.round((summary.activeTenantCount / summary.tenantCount) * 100) : 0}
             icon={<TrendingUp className="h-5 w-5" />}
-            description="New tenant signups"
+            description="% of active tenants"
             gradient="from-orange-500 to-red-600"
           />
         </div>

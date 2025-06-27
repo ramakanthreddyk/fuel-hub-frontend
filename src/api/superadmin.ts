@@ -1,4 +1,3 @@
-
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { 
   Tenant, 
@@ -22,7 +21,20 @@ export const superadminApi = {
   getSummary: async (): Promise<SuperAdminSummary> => {
     devLog('Fetching superadmin dashboard summary');
     const response = await apiClient.get('/admin/dashboard');
-    return extractApiData<SuperAdminSummary>(response);
+    const rawData = extractApiData<any>(response);
+    
+    // Map the actual backend response to our expected format
+    return {
+      tenantCount: rawData.tenantCount || 0,
+      activeTenantCount: rawData.activeTenantCount || 0,
+      planCount: rawData.planCount || 0,
+      adminCount: rawData.adminCount || 0,
+      totalUsers: rawData.totalUsers || 0,
+      totalStations: rawData.totalStations || 0,
+      signupsThisMonth: rawData.signupsThisMonth || 0,
+      recentTenants: rawData.recentTenants || [],
+      tenantsByPlan: rawData.tenantsByPlan || []
+    };
   },
 
   // Tenant Management
@@ -59,7 +71,21 @@ export const superadminApi = {
     devLog('Fetching all subscription plans');
     try {
       const response = await apiClient.get('/admin/plans');
-      const plans = extractApiArray<Plan>(response, 'plans');
+      console.log('Plans API response:', response.data);
+      
+      // Handle different response structures
+      let plans;
+      if (response.data && Array.isArray(response.data.plans)) {
+        plans = response.data.plans;
+      } else if (response.data && Array.isArray(response.data.data)) {
+        plans = response.data.data;
+      } else if (Array.isArray(response.data)) {
+        plans = response.data;
+      } else {
+        devLog('Unexpected plans response structure:', response.data);
+        return [];
+      }
+      
       // Ensure we always return an array
       return Array.isArray(plans) ? plans : [];
     } catch (error) {

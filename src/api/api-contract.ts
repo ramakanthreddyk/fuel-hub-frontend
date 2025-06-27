@@ -579,20 +579,21 @@ export interface StationComparisonParams {
 }
 
 export interface SuperAdminSummary {
-  totalTenants: number;
-  activeTenants: number;
-  totalPlans: number;
-  totalAdminUsers: number;
-  totalUsers: number;
-  totalStations: number;
-  signupsThisMonth: number;
-  recentTenants: Array<{
+  tenantCount: number;
+  activeTenantCount: number;
+  planCount: number;
+  adminCount: number;
+  // Optional fields for additional data if backend provides them
+  totalUsers?: number;
+  totalStations?: number;
+  signupsThisMonth?: number;
+  recentTenants?: Array<{
     id: string;
     name: string;
+    status: string;
     createdAt: string;
-    status: "active" | "suspended" | "cancelled";
   }>;
-  tenantsByPlan: Array<{
+  tenantsByPlan?: Array<{
     planName: string;
     count: number;
     percentage: number;
