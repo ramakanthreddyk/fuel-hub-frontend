@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/api/auth';
@@ -51,34 +52,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const storedToken = localStorage.getItem('fuelsync_token');
         const storedUser = localStorage.getItem('fuelsync_user');
         
+        console.log('[AUTH-CONTEXT] Initializing auth:', {
+          hasStoredToken: !!storedToken,
+          hasStoredUser: !!storedUser
+        });
+        
         if (storedToken && storedUser) {
           // Validate token by checking if it's not expired
           try {
             const payload = JSON.parse(atob(storedToken.split('.')[1]));
             const currentTime = Date.now() / 1000;
             
+            console.log('[AUTH-CONTEXT] Token validation:', {
+              tokenExp: payload.exp,
+              currentTime,
+              isExpired: payload.exp && payload.exp <= currentTime
+            });
+            
             if (payload.exp && payload.exp > currentTime) {
               // Token is still valid
+              const parsedUser = JSON.parse(storedUser);
               setToken(storedToken);
-              setUser(JSON.parse(storedUser));
-              console.log('[AUTH] Restored valid session');
+              setUser(parsedUser);
+              console.log('[AUTH-CONTEXT] Restored valid session for user:', parsedUser.role);
             } else {
               // Token expired, clear storage
-              console.log('[AUTH] Token expired, clearing session');
+              console.log('[AUTH-CONTEXT] Token expired, clearing session');
               localStorage.removeItem('fuelsync_token');
               localStorage.removeItem('fuelsync_user');
             }
           } catch (error) {
             // Invalid token format, clear storage
-            console.log('[AUTH] Invalid token format, clearing session');
+            console.log('[AUTH-CONTEXT] Invalid token format, clearing session:', error);
             localStorage.removeItem('fuelsync_token');
             localStorage.removeItem('fuelsync_user');
           }
         }
       } catch (error) {
-        console.error('[AUTH] Error initializing auth:', error);
+        console.error('[AUTH-CONTEXT] Error initializing auth:', error);
       } finally {
         setIsLoading(false);
+        console.log('[AUTH-CONTEXT] Auth initialization complete');
       }
     };
 
@@ -87,14 +101,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string, forceAdminRoute: boolean = false) => {
     setIsLoading(true);
-    console.log(`[FRONTEND-AUTH] Login attempt for email: ${email}`);
-    console.log(`[FRONTEND-AUTH] Force admin route: ${forceAdminRoute}`);
+    console.log(`[AUTH-CONTEXT] Login attempt for email: ${email}`);
+    console.log(`[AUTH-CONTEXT] Force admin route: ${forceAdminRoute}`);
     
     try {
-      console.log('[FRONTEND-AUTH] Sending login request to API');
+      console.log('[AUTH-CONTEXT] Sending login request to API');
       const response = await authApi.login({ email, password }, forceAdminRoute);
       
-      console.log('[FRONTEND-AUTH] Login response received:', {
+      console.log('[AUTH-CONTEXT] Login response received:', {
         token: response.token ? '✓ Present' : '✗ Missing',
         user: response.user ? '✓ Present' : '✗ Missing',
         role: response.user?.role,
@@ -107,13 +121,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('fuelsync_user', JSON.stringify(response.user));
       
       // Role-based redirect with SuperAdmin flag
-      console.log(`[FRONTEND-AUTH] Redirecting user with role: ${response.user.role}`);
+      console.log(`[AUTH-CONTEXT] Redirecting user with role: ${response.user.role}`);
       
       if (response.user.role === 'superadmin') {
-        console.log('[FRONTEND-AUTH] 🔱 SuperAdmin detected! Using admin routes without tenant context');
+        console.log('[AUTH-CONTEXT] 🔱 SuperAdmin detected! Using admin routes without tenant context');
         navigate('/superadmin/overview');
       } else {
-        console.log('[FRONTEND-AUTH] Regular user detected, using tenant-scoped routes');
+        console.log('[AUTH-CONTEXT] Regular user detected, using tenant-scoped routes');
         switch (response.user.role) {
           case 'attendant':
             navigate('/dashboard/readings/new');
@@ -123,8 +137,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error('[FRONTEND-AUTH] Login failed:', error);
-      console.log('[FRONTEND-AUTH] Error details:', error.response?.data || error.message);
+      console.error('[AUTH-CONTEXT] Login failed:', error);
+      console.log('[AUTH-CONTEXT] Error details:', error.response?.data || error.message);
       throw error;
     } finally {
       setIsLoading(false);
@@ -132,6 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
+    console.log('[AUTH-CONTEXT] Logging out user');
     setUser(null);
     setToken(null);
     localStorage.removeItem('fuelsync_token');
@@ -149,6 +164,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser,
     setToken
   };
+
+  console.log('[AUTH-CONTEXT] Current auth state:', {
+    hasUser: !!user,
+    hasToken: !!token,
+    isAuthenticated: !!user && !!token,
+    isLoading,
+    userRole: user?.role
+  });
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

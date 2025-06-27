@@ -16,7 +16,18 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
   const { isAuthenticated, user, isLoading, token } = useAuth();
   const location = useLocation();
 
+  console.log('[REQUIRE-AUTH] Current state:', {
+    isAuthenticated,
+    isLoading,
+    hasToken: !!token,
+    hasUser: !!user,
+    userRole: user?.role,
+    pathname: location.pathname,
+    allowedRoles
+  });
+
   if (isLoading) {
+    console.log('[REQUIRE-AUTH] Still loading, showing skeleton');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4">
@@ -30,21 +41,29 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
 
   // Check authentication
   if (!isAuthenticated || !token || !user) {
-    console.log('[AUTH] Not authenticated, redirecting to login');
+    console.log('[REQUIRE-AUTH] Not authenticated, redirecting to login:', {
+      isAuthenticated,
+      hasToken: !!token,
+      hasUser: !!user
+    });
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Check role authorization
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    console.log('[AUTH] User role not authorized:', user.role, 'Required roles:', allowedRoles);
+    console.log('[REQUIRE-AUTH] User role not authorized:', {
+      userRole: user.role,
+      allowedRoles
+    });
     return <Navigate to="/unauthorized" replace />;
   }
   
   // Special handling for superadmin routes
   if (location.pathname.startsWith('/superadmin') && user.role !== 'superadmin') {
-    console.log('[AUTH] Non-superadmin trying to access superadmin route');
+    console.log('[REQUIRE-AUTH] Non-superadmin trying to access superadmin route');
     return <Navigate to="/unauthorized" replace />;
   }
 
+  console.log('[REQUIRE-AUTH] Access granted for user:', user.role);
   return <>{children}</>;
 };

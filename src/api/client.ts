@@ -78,6 +78,14 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       const errorMessage = error.response?.data?.message || '';
       const isAuthEndpoint = error.config?.url?.includes('/auth/');
+      const currentPath = window.location.pathname;
+      
+      console.log('[API-CLIENT] 401 Error Analysis:', {
+        errorMessage,
+        isAuthEndpoint,
+        currentPath,
+        url: error.config?.url
+      });
       
       // Only logout for actual authentication failures, not permission issues
       const isLegitimateAuthFailure = 
@@ -85,17 +93,14 @@ apiClient.interceptors.response.use(
         errorMessage.toLowerCase().includes('invalid token') || 
         errorMessage.toLowerCase().includes('token expired') ||
         errorMessage.toLowerCase().includes('unauthorized access') ||
-        errorMessage.toLowerCase().includes('authentication failed');
+        errorMessage.toLowerCase().includes('authentication failed') ||
+        errorMessage.toLowerCase().includes('jwt') ||
+        errorMessage.toLowerCase().includes('token');
       
-      // NEVER log out for these endpoints that might return 401 for permission reasons
-      const isSafeEndpoint = 
-        error.config?.url?.includes('/nozzle-readings') ||
-        error.config?.url?.includes('/sales') ||
-        error.config?.url?.includes('/stations') ||
-        error.config?.url?.includes('/pumps') ||
-        error.config?.url?.includes('/nozzles');
+      // NEVER log out for dashboard routes that might return 401 for permission reasons
+      const isDashboardRoute = currentPath.startsWith('/dashboard') || currentPath.startsWith('/superadmin');
       
-      if (isLegitimateAuthFailure && !isSafeEndpoint) {
+      if (isLegitimateAuthFailure && !isDashboardRoute) {
         console.log('[API-CLIENT] Legitimate auth failure - clearing auth and redirecting');
         localStorage.removeItem('fuelsync_token');
         localStorage.removeItem('fuelsync_user');
@@ -104,9 +109,10 @@ apiClient.interceptors.response.use(
           window.location.href = '/login';
         }
       } else {
-        console.log('[API-CLIENT] 401 error but likely permission/tenant issue - not logging out');
+        console.log('[API-CLIENT] 401 error but likely permission/tenant issue or dashboard route - not logging out');
         console.log('[API-CLIENT] Error details:', errorMessage);
         console.log('[API-CLIENT] URL:', error.config?.url);
+        console.log('[API-CLIENT] Current path:', currentPath);
       }
     }
     

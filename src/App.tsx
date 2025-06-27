@@ -26,10 +26,10 @@ import { ErrorProvider } from '@/contexts/ErrorContext';
 import OverviewPage from './pages/superadmin/OverviewPage'
 import TenantsPage from './pages/superadmin/TenantsPage'
 import TenantDetailsPage from './pages/superadmin/TenantDetailsPage'
-import CreateTenantPage from './pages/superadmin/CreateTenantPage'
-import PlansPage from './pages/superadmin/PlansPage'
-import AnalyticsPage from './pages/superadmin/AnalyticsPage'
-import SuperAdminUsersPage from './pages/superadmin/UsersPage'
+import CreateTenantPage from './pages/superladmin/CreateTenantPage'
+import PlansPage from './pages/superladmin/PlansPage'
+import AnalyticsPage from './pages/superladmin/AnalyticsPage'
+import SuperAdminUsersPage from './pages/superladmin/UsersPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,7 +67,7 @@ function App() {
                     <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
                     <Route path="stations/:stationId/pumps/:pumpId/nozzles/:nozzleId/readings" element={<ReadingsPage />} />
                     <Route path="readings/new" element={<NewReadingPage />} />
-                    <Route path="stations/:stationId/sales" element={<SalesPage />} />
+                    <Route path="sales" element={<SalesPage />} />
                     <Route path="fuel-inventory" element={<InventoryPage />} />
                     <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
                     <Route path="fuel-prices" element={<FuelPricesPage />} />
@@ -95,6 +95,7 @@ function App() {
                     <Route path="users" element={<SuperAdminUsersPage />} />
                   </Route>
 
+                  <Route path="/" element={<LoginPage />} />
                   <Route path="*" element={<LoginPage />} />
                 </Routes>
               </div>
