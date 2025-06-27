@@ -57,7 +57,7 @@ const getMenuItems = (role: string) => {
         },
         {
           title: "User Management",
-          url: "/superladmin/users",
+          url: "/superadmin/users",
           icon: Users,
           color: "text-green-600",
           bgColor: "bg-green-50"
