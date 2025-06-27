@@ -20,7 +20,8 @@ import {
   UserPlus,
   Plus,
   Home,
-  PieChart
+  PieChart,
+  AlertTriangle
 } from 'lucide-react';
 import {
   Sidebar,
@@ -56,7 +57,7 @@ const getMenuItems = (role: string) => {
         },
         {
           title: "User Management",
-          url: "/superadmin/users",
+          url: "/superladmin/users",
           icon: Users,
           color: "text-green-600",
           bgColor: "bg-green-50"
@@ -80,13 +81,6 @@ const getMenuItems = (role: string) => {
     case 'owner':
       return [
         {
-          title: "Dashboard Summary",
-          url: "/dashboard/summary",
-          icon: Home,
-          color: "text-purple-600",
-          bgColor: "bg-purple-50"
-        },
-        {
           title: "Fuel Stations",
           url: "/dashboard/stations",
           icon: Building2,
@@ -94,18 +88,11 @@ const getMenuItems = (role: string) => {
           bgColor: "bg-blue-50"
         },
         {
-          title: "Meter Readings",
-          url: "/dashboard/readings", 
-          icon: Gauge,
+          title: "New Reading",
+          url: "/dashboard/readings/new",
+          icon: Plus,
           color: "text-green-600",
           bgColor: "bg-green-50"
-        },
-        {
-          title: "Daily Reconciliation",
-          url: "/dashboard/reconciliation",
-          icon: Calculator,
-          color: "text-indigo-600",
-          bgColor: "bg-indigo-50"
         },
         {
           title: "Sales & Revenue",
@@ -113,6 +100,13 @@ const getMenuItems = (role: string) => {
           icon: TrendingUp,
           color: "text-emerald-600",
           bgColor: "bg-emerald-50"
+        },
+        {
+          title: "Daily Reconciliation",
+          url: "/dashboard/reconciliation",
+          icon: Calculator,
+          color: "text-indigo-600",
+          bgColor: "bg-indigo-50"
         },
         {
           title: "Credit Management",
@@ -137,44 +131,23 @@ const getMenuItems = (role: string) => {
         },
         {
           title: "Inventory Tracking",
-          url: "/dashboard/inventory",
+          url: "/dashboard/fuel-inventory",
           icon: Database,
           color: "text-teal-600",
           bgColor: "bg-teal-50"
         },
         {
-          title: "User Management",
-          url: "/dashboard/users",
-          icon: UserPlus,
-          color: "text-pink-600",
-          bgColor: "bg-pink-50"
-        },
-        {
-          title: "Reports & Analytics",
-          url: "/dashboard/reports",
-          icon: FileText,
-          color: "text-violet-600",
-          bgColor: "bg-violet-50"
-        },
-        {
-          title: "System Settings",
-          url: "/dashboard/settings",
-          icon: Settings,
-          color: "text-gray-600",
-          bgColor: "bg-gray-50"
+          title: "System Alerts",
+          url: "/dashboard/alerts",
+          icon: AlertTriangle,
+          color: "text-orange-600",
+          bgColor: "bg-orange-50"
         }
       ];
     
     case 'manager':
       return [
         {
-          title: "Dashboard Summary",
-          url: "/dashboard/summary",
-          icon: Home,
-          color: "text-purple-600",
-          bgColor: "bg-purple-50"
-        },
-        {
           title: "Fuel Stations",
           url: "/dashboard/stations",
           icon: Building2,
@@ -182,18 +155,11 @@ const getMenuItems = (role: string) => {
           bgColor: "bg-blue-50"
         },
         {
-          title: "Meter Readings",
-          url: "/dashboard/readings", 
-          icon: Gauge,
+          title: "New Reading",
+          url: "/dashboard/readings/new",
+          icon: Plus,
           color: "text-green-600",
           bgColor: "bg-green-50"
-        },
-        {
-          title: "Daily Reconciliation",
-          url: "/dashboard/reconciliation",
-          icon: Calculator,
-          color: "text-indigo-600",
-          bgColor: "bg-indigo-50"
         },
         {
           title: "Sales & Revenue",
@@ -201,6 +167,13 @@ const getMenuItems = (role: string) => {
           icon: TrendingUp,
           color: "text-emerald-600",
           bgColor: "bg-emerald-50"
+        },
+        {
+          title: "Daily Reconciliation",
+          url: "/dashboard/reconciliation",
+          icon: Calculator,
+          color: "text-indigo-600",
+          bgColor: "bg-indigo-50"
         },
         {
           title: "Credit Management",
@@ -225,31 +198,10 @@ const getMenuItems = (role: string) => {
         },
         {
           title: "Inventory Tracking",
-          url: "/dashboard/inventory",
+          url: "/dashboard/fuel-inventory",
           icon: Database,
           color: "text-teal-600",
           bgColor: "bg-teal-50"
-        },
-        {
-          title: "Staff Management",
-          url: "/dashboard/users",
-          icon: UserPlus,
-          color: "text-pink-600",
-          bgColor: "bg-pink-50"
-        },
-        {
-          title: "Reports & Analytics",
-          url: "/dashboard/reports",
-          icon: FileText,
-          color: "text-violet-600",
-          bgColor: "bg-violet-50"
-        },
-        {
-          title: "Settings",
-          url: "/dashboard/settings",
-          icon: Settings,
-          color: "text-gray-600",
-          bgColor: "bg-gray-50"
         }
       ];
     
@@ -261,13 +213,6 @@ const getMenuItems = (role: string) => {
           icon: Plus,
           color: "text-green-600",
           bgColor: "bg-green-50"
-        },
-        {
-          title: "Reading History",
-          url: "/dashboard/readings",
-          icon: Gauge,
-          color: "text-blue-600",
-          bgColor: "bg-blue-50"
         },
         {
           title: "Credit Sales", 

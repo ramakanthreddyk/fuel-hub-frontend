@@ -74,21 +74,30 @@ apiClient.interceptors.response.use(
   (error) => {
     console.error(`[API-CLIENT] Error ${error.response?.status} for ${error.config?.url}:`, error.response?.data);
     
-    // Handle 401 errors more carefully - only logout for auth-related 401s
+    // Handle 401 errors more carefully - only logout for legitimate auth failures
     if (error.response?.status === 401) {
-      // Check if this is a legitimate auth failure vs missing tenant header
       const errorMessage = error.response?.data?.message || '';
-      const isAuthFailure = errorMessage.toLowerCase().includes('invalid') || 
-                           errorMessage.toLowerCase().includes('expired') ||
-                           errorMessage.toLowerCase().includes('unauthorized');
+      const isAuthEndpoint = error.config?.url?.includes('/auth/');
       
-      if (isAuthFailure || error.config?.url?.includes('/auth/')) {
-        console.log('[API-CLIENT] 401 Unauthorized - clearing auth and redirecting');
+      // Only logout for actual authentication failures, not permission issues
+      const isLegitimateAuthFailure = 
+        isAuthEndpoint || 
+        errorMessage.toLowerCase().includes('invalid token') || 
+        errorMessage.toLowerCase().includes('token expired') ||
+        errorMessage.toLowerCase().includes('unauthorized access') ||
+        errorMessage.toLowerCase().includes('authentication failed');
+      
+      if (isLegitimateAuthFailure) {
+        console.log('[API-CLIENT] Legitimate auth failure - clearing auth and redirecting');
         localStorage.removeItem('fuelsync_token');
         localStorage.removeItem('fuelsync_user');
-        window.location.href = '/login';
+        // Only redirect if we're not already on the login page
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
       } else {
-        console.log('[API-CLIENT] 401 error but not auth-related - not logging out');
+        console.log('[API-CLIENT] 401 error but likely permission/tenant issue - not logging out');
+        console.log('[API-CLIENT] Error details:', errorMessage);
       }
     }
     

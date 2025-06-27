@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,6 @@ import { nozzlesApi } from '@/api/nozzles';
 import { creditorsApi } from '@/api/creditors';
 import { useCreateReading, useLatestReading } from '@/hooks/useReadings';
 import { CreateReadingRequest } from '@/api/readings';
-import { useNavigate } from 'react-router-dom';
 
 interface ReadingFormData {
   stationId: string;
@@ -29,12 +27,12 @@ interface ReadingFormData {
 
 export function ReadingEntryForm() {
   const location = useLocation();
+  const navigate = useNavigate();
   const preselected = location.state?.preselected;
   
   const [selectedStation, setSelectedStation] = useState(preselected?.stationId || '');
   const [selectedPump, setSelectedPump] = useState(preselected?.pumpId || '');
   const [selectedNozzle, setSelectedNozzle] = useState(preselected?.nozzleId || '');
-  const navigate = useNavigate();
 
   const form = useForm<ReadingFormData>({
     defaultValues: {
@@ -107,7 +105,15 @@ export function ReadingEntryForm() {
 
     try {
       await createReading.mutateAsync(readingData);
-      navigate('/dashboard/sales');
+      console.log('[READING-FORM] Reading created, navigating back');
+      
+      // Navigate back to nozzles page if we came from there
+      if (preselected?.stationId && preselected?.pumpId) {
+        navigate(`/dashboard/stations/${preselected.stationId}/pumps/${preselected.pumpId}/nozzles`);
+      } else {
+        // Otherwise go to sales page
+        navigate('/dashboard/sales');
+      }
     } catch (error) {
       console.error('Error creating reading:', error);
     }
@@ -117,7 +123,7 @@ export function ReadingEntryForm() {
   const minReading = latestReading?.reading || 0;
 
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="max-w-5xl mx-auto">
       <CardHeader>
         <CardTitle>Record Nozzle Reading</CardTitle>
         <CardDescription>
@@ -214,8 +220,8 @@ export function ReadingEntryForm() {
               </div>
             )}
 
-            {/* Row 2: Reading, Time, Payment Details */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Row 2: Reading and Time */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="reading"
@@ -255,7 +261,10 @@ export function ReadingEntryForm() {
                   </FormItem>
                 )}
               />
+            </div>
 
+            {/* Row 3: Payment Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="paymentMethod"

@@ -9,15 +9,18 @@ export const useCreateReading = () => {
 
   return useMutation({
     mutationFn: readingsApi.createReading,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('[READINGS] Reading created successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['readings'] });
       queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['nozzles'] });
       toast({
         title: "Success",
         description: "Reading recorded successfully. Sale auto-generated.",
       });
     },
     onError: (error: any) => {
+      console.error('[READINGS] Error creating reading:', error);
       toast({
         title: "Error",
         description: error.response?.data?.message || "Failed to record reading",
