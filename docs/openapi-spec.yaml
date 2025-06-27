@@ -26,6 +26,27 @@ paths:
                     $ref: '#/components/schemas/LoginResponse'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/admin/auth/login:
+    post:
+      summary: SuperAdmin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/LoginResponse'
+        default:
+          $ref: '#/components/responses/Error'
   /api/v1/auth/logout:
     post:
       summary: User logout
