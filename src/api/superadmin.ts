@@ -1,5 +1,5 @@
 
-import { apiClient, extractApiData } from './client';
+import { apiClient, extractApiData, extractApiArray } from './client';
 import type { 
   Tenant, 
   Plan, 
@@ -7,7 +7,8 @@ import type {
   UpdateTenantStatusRequest,
   CreatePlanRequest,
   AdminUser,
-  CreateSuperAdminRequest
+  CreateSuperAdminRequest,
+  SuperAdminSummary
 } from './api-contract';
 
 const devLog = (message: string, ...args: any[]) => {
@@ -15,25 +16,6 @@ const devLog = (message: string, ...args: any[]) => {
     console.log(`[SUPERADMIN-API] ${message}`, ...args);
   }
 };
-
-export interface SuperAdminSummary {
-  totalTenants: number;
-  activeTenants: number;
-  totalUsers: number;
-  totalStations: number;
-  signupsThisMonth: number;
-  recentTenants?: Array<{
-    id: string;
-    name: string;
-    status: string;
-    createdAt: string;
-  }>;
-  tenantsByPlan?: Array<{
-    planName: string;
-    count: number;
-    percentage: number;
-  }>;
-}
 
 export const superadminApi = {
   // Dashboard Summary
@@ -43,22 +25,28 @@ export const superadminApi = {
     return extractApiData<SuperAdminSummary>(response);
   },
 
-  // Tenant Management (using correct tenant routes)
+  // Tenant Management
   getTenants: async (): Promise<Tenant[]> => {
     devLog('Fetching all tenants');
     const response = await apiClient.get('/admin/tenants');
-    return extractApiData<Tenant[]>(response);
+    return extractApiArray<Tenant>(response, 'tenants');
   },
 
-  createTenantWithAdmin: async (data: CreateTenantRequest): Promise<Tenant> => {
-    devLog('Creating new tenant with admin:', data.name);
+  createTenant: async (data: CreateTenantRequest): Promise<Tenant> => {
+    devLog('Creating new tenant:', data.name);
     const response = await apiClient.post('/admin/tenants', data);
     return extractApiData<Tenant>(response);
   },
 
-  updateTenantStatus: async (id: string, status: 'active' | 'suspended' | 'cancelled'): Promise<void> => {
-    devLog('Updating tenant status:', id, status);
-    await apiClient.patch(`/admin/tenants/${id}/status`, { status });
+  getTenant: async (id: string): Promise<Tenant> => {
+    devLog('Fetching tenant details:', id);
+    const response = await apiClient.get(`/admin/tenants/${id}`);
+    return extractApiData<Tenant>(response);
+  },
+
+  updateTenantStatus: async (id: string, statusData: UpdateTenantStatusRequest): Promise<void> => {
+    devLog('Updating tenant status:', id, statusData.status);
+    await apiClient.patch(`/admin/tenants/${id}/status`, statusData);
   },
 
   deleteTenant: async (id: string): Promise<void> => {
@@ -70,7 +58,7 @@ export const superadminApi = {
   getPlans: async (): Promise<Plan[]> => {
     devLog('Fetching all subscription plans');
     const response = await apiClient.get('/admin/plans');
-    return extractApiData<Plan[]>(response);
+    return extractApiArray<Plan>(response, 'plans');
   },
 
   createPlan: async (data: CreatePlanRequest): Promise<Plan> => {
@@ -90,51 +78,37 @@ export const superadminApi = {
     await apiClient.delete(`/admin/plans/${id}`);
   },
 
-  // SuperAdmin User Management - using correct /admin/users routes
+  // SuperAdmin User Management
   getAdminUsers: async (): Promise<AdminUser[]> => {
-    devLog('Fetching all admin users via /admin/users');
+    devLog('Fetching all admin users');
     const response = await apiClient.get('/admin/users');
-    return extractApiData<AdminUser[]>(response);
+    return extractApiArray<AdminUser>(response, 'users');
   },
 
   createAdminUser: async (data: CreateSuperAdminRequest): Promise<AdminUser> => {
-    devLog('Creating new admin user via /admin/users:', data.email);
+    devLog('Creating new admin user:', data.email);
     const response = await apiClient.post('/admin/users', data);
     return extractApiData<AdminUser>(response);
   },
 
   updateAdminUser: async (id: string, data: Partial<CreateSuperAdminRequest>): Promise<AdminUser> => {
-    devLog('Updating admin user via /admin/users:', id);
+    devLog('Updating admin user:', id);
     const response = await apiClient.put(`/admin/users/${id}`, data);
     return extractApiData<AdminUser>(response);
   },
 
   deleteAdminUser: async (id: string): Promise<void> => {
-    devLog('Deleting admin user via /admin/users:', id);
+    devLog('Deleting admin user:', id);
     await apiClient.delete(`/admin/users/${id}`);
   },
 
   resetAdminPassword: async (id: string, passwordData: { password: string }): Promise<void> => {
     devLog('Resetting admin user password:', id);
     await apiClient.post(`/admin/users/${id}/reset-password`, passwordData);
-  },
-
-  // Platform Analytics
-  getPlatformStats: async () => {
-    devLog('Fetching platform statistics');
-    const response = await apiClient.get('/admin/analytics/platform-stats');
-    return extractApiData(response);
-  },
-
-  getTenantUsage: async (tenantId?: string) => {
-    devLog('Fetching tenant usage analytics');
-    const url = tenantId ? `/admin/analytics/tenant-usage/${tenantId}` : '/admin/analytics/tenant-usage';
-    const response = await apiClient.get(url);
-    return extractApiData(response);
   }
 };
 
-// Export the correct name that other files expect
+// Export with both names for compatibility
 export const superAdminApi = superadminApi;
 
 export type { Tenant, Plan, CreateTenantRequest, UpdateTenantStatusRequest, CreatePlanRequest, AdminUser, CreateSuperAdminRequest };

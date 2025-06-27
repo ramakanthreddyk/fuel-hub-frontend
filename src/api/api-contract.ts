@@ -174,7 +174,7 @@ export interface SalesFilters {
   paymentMethod?: string;
 }
 
-// Fuel Prices Endpoints - Updated to match OpenAPI spec
+// Fuel Prices Endpoints
 export interface FuelPrice {
   id: string;
   stationId: string;
@@ -193,10 +193,6 @@ export interface CreateFuelPriceRequest {
   price: number;
   validFrom?: string;
 }
-
-// OpenAPI spec doesn't specify fields for PUT /fuel-prices/{id} - just object
-// Removing specific UpdateFuelPriceRequest interface to match spec
-// Use generic object for updates as per OpenAPI specification
 
 // Creditors Endpoints
 export interface Creditor {
@@ -277,7 +273,7 @@ export interface CreateSuperAdminRequest {
   role: 'superadmin';
 }
 
-// Tenants Endpoints (SuperAdmin) - NO SCHEMA_NAME references
+// Tenants Endpoints (SuperAdmin)
 export interface Tenant {
   id: string;
   name: string;
