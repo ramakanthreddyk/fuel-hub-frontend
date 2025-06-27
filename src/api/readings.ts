@@ -5,8 +5,16 @@ import type { NozzleReading, CreateReadingRequest, ApiResponse } from './api-con
 export const readingsApi = {
   // Create new reading
   createReading: async (readingData: CreateReadingRequest): Promise<NozzleReading> => {
-    const response = await apiClient.post('/nozzle-readings', readingData);
-    return extractApiData<NozzleReading>(response);
+    try {
+      console.log('[READINGS-API] Creating new reading:', readingData);
+      const response = await apiClient.post('/nozzle-readings', readingData);
+      console.log('[READINGS-API] Reading created successfully');
+      return extractApiData<NozzleReading>(response);
+    } catch (error) {
+      console.error('[READINGS-API] Error creating reading:', error);
+      // Don't let 401 errors cause logout - just pass the error up
+      throw error;
+    }
   },
   
   // Get latest reading for a nozzle
