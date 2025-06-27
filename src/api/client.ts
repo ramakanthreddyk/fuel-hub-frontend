@@ -87,7 +87,15 @@ apiClient.interceptors.response.use(
         errorMessage.toLowerCase().includes('unauthorized access') ||
         errorMessage.toLowerCase().includes('authentication failed');
       
-      if (isLegitimateAuthFailure) {
+      // NEVER log out for these endpoints that might return 401 for permission reasons
+      const isSafeEndpoint = 
+        error.config?.url?.includes('/nozzle-readings') ||
+        error.config?.url?.includes('/sales') ||
+        error.config?.url?.includes('/stations') ||
+        error.config?.url?.includes('/pumps') ||
+        error.config?.url?.includes('/nozzles');
+      
+      if (isLegitimateAuthFailure && !isSafeEndpoint) {
         console.log('[API-CLIENT] Legitimate auth failure - clearing auth and redirecting');
         localStorage.removeItem('fuelsync_token');
         localStorage.removeItem('fuelsync_user');
@@ -98,6 +106,7 @@ apiClient.interceptors.response.use(
       } else {
         console.log('[API-CLIENT] 401 error but likely permission/tenant issue - not logging out');
         console.log('[API-CLIENT] Error details:', errorMessage);
+        console.log('[API-CLIENT] URL:', error.config?.url);
       }
     }
     
