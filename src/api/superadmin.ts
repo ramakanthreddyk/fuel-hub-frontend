@@ -1,10 +1,12 @@
+
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { 
   Plan, 
   CreateTenantRequest, 
   SuperAdminSummary,
   AdminUser,
-  ApiResponse 
+  ApiResponse,
+  CreateSuperAdminRequest
 } from './api-contract';
 
 export const superAdminApi = {
