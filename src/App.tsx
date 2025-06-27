@@ -26,10 +26,10 @@ import { ErrorProvider } from '@/contexts/ErrorContext';
 import OverviewPage from './pages/superadmin/OverviewPage'
 import TenantsPage from './pages/superadmin/TenantsPage'
 import TenantDetailsPage from './pages/superadmin/TenantDetailsPage'
-import CreateTenantPage from './pages/superladmin/CreateTenantPage'
-import PlansPage from './pages/superladmin/PlansPage'
-import AnalyticsPage from './pages/superladmin/AnalyticsPage'
-import SuperAdminUsersPage from './pages/superladmin/UsersPage'
+import CreateTenantPage from './pages/superadmin/CreateTenantPage'
+import PlansPage from './pages/superadmin/PlansPage'
+import AnalyticsPage from './pages/superadmin/AnalyticsPage'
+import SuperAdminUsersPage from './pages/superadmin/UsersPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
