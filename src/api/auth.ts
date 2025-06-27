@@ -25,8 +25,8 @@ export const authApi = {
       devLog('API base URL:', apiClient.defaults.baseURL);
       
       if (forceAdminRoute) {
-        // Force admin route when user accessed /login/admin - use full API v1 path
-        devLog('Force admin route detected - using SuperAdmin endpoint: /api/v1/admin/auth/login');
+        // Force admin route when user accessed /login/admin
+        devLog('Force admin route detected - using SuperAdmin endpoint: /admin/auth/login');
         
         const adminResponse = await apiClient.post('/admin/auth/login', credentials);
         const adminLoginData = extractApiData<LoginResponse>(adminResponse);
@@ -43,43 +43,44 @@ export const authApi = {
         
         return adminLoginData;
       } else {
-        // Try SuperAdmin login first, then fallback to regular user
-        devLog('Attempting SuperAdmin login first at /api/v1/admin/auth/login...');
+        // Regular user login - try regular endpoint first
+        devLog('Attempting regular user login at /auth/login...');
         try {
-          const adminResponse = await apiClient.post('/admin/auth/login', credentials);
-          const adminLoginData = extractApiData<LoginResponse>(adminResponse);
+          const response = await apiClient.post('/auth/login', credentials);
+          const loginData = extractApiData<LoginResponse>(response);
           
-          devLog('SuperAdmin login successful:', {
-            hasToken: !!adminLoginData.token,
-            hasUser: !!adminLoginData.user,
-            role: adminLoginData.user?.role
+          devLog('Regular user login successful:', {
+            hasToken: !!loginData.token,
+            hasUser: !!loginData.user,
+            role: loginData.user?.role
           });
           
-          if (!adminLoginData.token || !adminLoginData.user) {
-            throw new Error('Invalid SuperAdmin response structure');
+          if (!loginData.token || !loginData.user) {
+            throw new Error('Invalid login response structure');
           }
           
-          return adminLoginData;
-        } catch (adminError: any) {
-          devLog('SuperAdmin login failed, trying regular user login at /api/v1/auth/login...');
+          return loginData;
+        } catch (regularError: any) {
+          devLog('Regular user login failed, trying SuperAdmin login at /admin/auth/login...');
           
-          if (adminError.response?.status === 404 || adminError.response?.status === 401) {
-            const response = await apiClient.post('/auth/login', credentials);
-            const loginData = extractApiData<LoginResponse>(response);
+          // If regular login fails with 401/404, try admin login as fallback
+          if (regularError.response?.status === 404 || regularError.response?.status === 401) {
+            const adminResponse = await apiClient.post('/admin/auth/login', credentials);
+            const adminLoginData = extractApiData<LoginResponse>(adminResponse);
             
-            devLog('Regular user login response received:', {
-              hasToken: !!loginData.token,
-              hasUser: !!loginData.user,
-              role: loginData.user?.role
+            devLog('SuperAdmin fallback login successful:', {
+              hasToken: !!adminLoginData.token,
+              hasUser: !!adminLoginData.user,
+              role: adminLoginData.user?.role
             });
             
-            if (!loginData.token || !loginData.user) {
-              throw new Error('Invalid login response structure');
+            if (!adminLoginData.token || !adminLoginData.user) {
+              throw new Error('Invalid SuperAdmin response structure');
             }
             
-            return loginData;
+            return adminLoginData;
           } else {
-            throw adminError;
+            throw regularError;
           }
         }
       }

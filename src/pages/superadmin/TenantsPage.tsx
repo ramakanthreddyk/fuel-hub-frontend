@@ -179,19 +179,19 @@ export default function SuperAdminTenantsPage() {
               {tenantsArray.map((tenant) => (
                 <Card key={tenant.id} className="hover:shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm hover:scale-105">
                   <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-3 text-lg">
-                        <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="flex items-center gap-3 text-lg min-w-0 flex-1">
+                        <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex-shrink-0">
                           <Building2 className="h-5 w-5 text-white" />
                         </div>
                         <span className="truncate">{tenant.name}</span>
                       </CardTitle>
-                      <Badge className={`${getPlanColor(tenant.planName)} border font-medium`}>
+                      <Badge className={`${getPlanColor(tenant.planName)} border font-medium text-xs px-2 py-1 flex-shrink-0`}>
                         {tenant.planName}
                       </Badge>
                     </div>
-                    <CardDescription className="text-sm">
-                      Tenant ID: <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">{tenant.id}</span>
+                    <CardDescription className="text-sm text-muted-foreground">
+                      Organization: <span className="font-medium">{tenant.name}</span>
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">

@@ -57,8 +57,15 @@ export const superadminApi = {
   // Plan Management
   getPlans: async (): Promise<Plan[]> => {
     devLog('Fetching all subscription plans');
-    const response = await apiClient.get('/admin/plans');
-    return extractApiArray<Plan>(response, 'plans');
+    try {
+      const response = await apiClient.get('/admin/plans');
+      const plans = extractApiArray<Plan>(response, 'plans');
+      // Ensure we always return an array
+      return Array.isArray(plans) ? plans : [];
+    } catch (error) {
+      devLog('Error fetching plans:', error);
+      return []; // Return empty array on error
+    }
   },
 
   createPlan: async (data: CreatePlanRequest): Promise<Plan> => {
