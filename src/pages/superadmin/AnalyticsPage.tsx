@@ -44,8 +44,8 @@ export default function AnalyticsPage() {
     );
   }
 
-  const activeRate = analytics.totalTenants > 0 
-    ? Math.round((analytics.activeTenants / analytics.totalTenants) * 100) 
+  const activeRate = analytics.tenantCount > 0 
+    ? Math.round((analytics.activeTenantCount / analytics.tenantCount) * 100) 
     : 0;
 
   return (
@@ -59,22 +59,22 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <EnhancedMetricsCard
           title="Total Tenants"
-          value={analytics.totalTenants}
+          value={analytics.tenantCount}
           icon={<Building2 className="h-4 w-4" />}
-          description={`${analytics.activeTenants} active`}
+          description={`${analytics.activeTenantCount} active`}
           gradient="from-purple-500 to-indigo-600"
         />
 
         <EnhancedMetricsCard
           title="Total Stations"
-          value={analytics.totalStations}
+          value={analytics.totalStations || 0}
           icon={<Gauge className="h-4 w-4" />}
           gradient="from-blue-500 to-cyan-600"
         />
 
         <EnhancedMetricsCard
           title="Total Users"
-          value={analytics.totalUsers}
+          value={analytics.totalUsers || 0}
           icon={<Users className="h-4 w-4" />}
           description="All tenant users"
           gradient="from-green-500 to-emerald-600"
@@ -82,7 +82,7 @@ export default function AnalyticsPage() {
 
         <EnhancedMetricsCard
           title="Monthly Signups"
-          value={analytics.signupsThisMonth}
+          value={analytics.signupsThisMonth || 0}
           icon={<TrendingUp className="h-4 w-4" />}
           description="New tenants this month"
           gradient="from-orange-500 to-red-600"
