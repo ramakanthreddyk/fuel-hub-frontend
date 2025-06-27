@@ -32,7 +32,7 @@ apiClient.interceptors.request.use(
         try {
           const user = JSON.parse(storedUser);
           
-          // For regular users (owner, manager, attendant), always add tenant header
+          // For regular users (owner, manager, attendant), ALWAYS add tenant header
           if (user.role !== 'superadmin' && user.tenantId) {
             config.headers['x-tenant-id'] = user.tenantId;
             console.log(`[API-CLIENT] Adding tenant header for ${user.role}:`, user.tenantId);
@@ -74,12 +74,22 @@ apiClient.interceptors.response.use(
   (error) => {
     console.error(`[API-CLIENT] Error ${error.response?.status} for ${error.config?.url}:`, error.response?.data);
     
-    // Handle 401 errors by clearing auth and redirecting to login
+    // Handle 401 errors more carefully - only logout for auth-related 401s
     if (error.response?.status === 401) {
-      console.log('[API-CLIENT] 401 Unauthorized - clearing auth and redirecting');
-      localStorage.removeItem('fuelsync_token');
-      localStorage.removeItem('fuelsync_user');
-      window.location.href = '/login';
+      // Check if this is a legitimate auth failure vs missing tenant header
+      const errorMessage = error.response?.data?.message || '';
+      const isAuthFailure = errorMessage.toLowerCase().includes('invalid') || 
+                           errorMessage.toLowerCase().includes('expired') ||
+                           errorMessage.toLowerCase().includes('unauthorized');
+      
+      if (isAuthFailure || error.config?.url?.includes('/auth/')) {
+        console.log('[API-CLIENT] 401 Unauthorized - clearing auth and redirecting');
+        localStorage.removeItem('fuelsync_token');
+        localStorage.removeItem('fuelsync_user');
+        window.location.href = '/login';
+      } else {
+        console.log('[API-CLIENT] 401 error but not auth-related - not logging out');
+      }
     }
     
     return Promise.reject(error);

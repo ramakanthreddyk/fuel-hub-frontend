@@ -109,7 +109,7 @@ export function ReadingEntryForm() {
       await createReading.mutateAsync(readingData);
       navigate('/dashboard/sales');
     } catch (error) {
-      // Error handled by mutation
+      console.error('Error creating reading:', error);
     }
   };
 
@@ -117,7 +117,7 @@ export function ReadingEntryForm() {
   const minReading = latestReading?.reading || 0;
 
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>Record Nozzle Reading</CardTitle>
         <CardDescription>
@@ -127,171 +127,59 @@ export function ReadingEntryForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Station Selection */}
-            <div className="grid gap-2">
-              <Label htmlFor="station">Station</Label>
-              <Select value={selectedStation} onValueChange={setSelectedStation}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a station" />
-                </SelectTrigger>
-                <SelectContent>
-                  {stations?.map((station) => (
-                    <SelectItem key={station.id} value={station.id}>
-                      {station.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Pump Selection */}
-            <div className="grid gap-2">
-              <Label htmlFor="pump">Pump</Label>
-              <Select value={selectedPump} onValueChange={setSelectedPump} disabled={!selectedStation}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a pump" />
-                </SelectTrigger>
-                <SelectContent>
-                  {pumps?.map((pump) => (
-                    <SelectItem key={pump.id} value={pump.id}>
-                      {pump.label} {pump.serialNumber ? `(${pump.serialNumber})` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Nozzle Selection */}
-            <FormField
-              control={form.control}
-              name="nozzleId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nozzle</FormLabel>
-                  <Select value={field.value} onValueChange={(value) => {
-                    field.onChange(value);
-                    setSelectedNozzle(value);
-                  }} disabled={!selectedPump}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a nozzle" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {nozzles?.map((nozzle) => (
-                        <SelectItem key={nozzle.id} value={nozzle.id}>
-                          Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Reading Info */}
-            {selectedNozzleData && (
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Fuel Type:</span>
-                    <span className="ml-2 font-medium">{selectedNozzleData.fuelType}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Previous Reading:</span>
-                    <span className="ml-2 font-medium">{latestReading?.reading || 0} L</span>
-                  </div>
-                </div>
+            {/* Row 1: Station, Pump, Nozzle Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="station">Station</Label>
+                <Select value={selectedStation} onValueChange={setSelectedStation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select station" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stations?.map((station) => (
+                      <SelectItem key={station.id} value={station.id}>
+                        {station.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
 
-            {/* Current Reading */}
-            <FormField
-              control={form.control}
-              name="reading"
-              rules={{
-                required: 'Reading is required',
-                min: {
-                  value: minReading,
-                  message: `Reading must be at least ${minReading}`,
-                },
-              }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Current Reading (Litres)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={minReading}
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div className="space-y-2">
+                <Label htmlFor="pump">Pump</Label>
+                <Select value={selectedPump} onValueChange={setSelectedPump} disabled={!selectedStation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select pump" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pumps?.map((pump) => (
+                      <SelectItem key={pump.id} value={pump.id}>
+                        {pump.label} {pump.serialNumber ? `(${pump.serialNumber})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Recorded At */}
-            <FormField
-              control={form.control}
-              name="recordedAt"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Recorded At</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Payment Method */}
-            <FormField
-              control={form.control}
-              name="paymentMethod"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Payment Method</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="card">Card</SelectItem>
-                      <SelectItem value="upi">UPI</SelectItem>
-                      <SelectItem value="credit">Credit</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Credit Party */}
-            {paymentMethod === 'credit' && (
               <FormField
                 control={form.control}
-                name="creditorId"
-                rules={{ required: 'Credit party is required for credit payments' }}
+                name="nozzleId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Credit Party</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <FormLabel>Nozzle</FormLabel>
+                    <Select value={field.value} onValueChange={(value) => {
+                      field.onChange(value);
+                      setSelectedNozzle(value);
+                    }} disabled={!selectedPump}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select credit party" />
+                          <SelectValue placeholder="Select nozzle" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {creditors?.map((creditor) => (
-                          <SelectItem key={creditor.id} value={creditor.id}>
-                            {creditor.partyName}
+                        {nozzles?.map((nozzle) => (
+                          <SelectItem key={nozzle.id} value={nozzle.id}>
+                            Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -300,7 +188,127 @@ export function ReadingEntryForm() {
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Nozzle Info Panel */}
+            {selectedNozzleData && (
+              <div className="p-4 bg-muted rounded-lg">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Fuel Type:</span>
+                    <span className="ml-2 font-medium">{selectedNozzleData.fuelType}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Previous Reading:</span>
+                    <span className="ml-2 font-medium">{latestReading?.reading || 0} L</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Nozzle:</span>
+                    <span className="ml-2 font-medium">#{selectedNozzleData.nozzleNumber}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Status:</span>
+                    <span className="ml-2 font-medium capitalize">{selectedNozzleData.status}</span>
+                  </div>
+                </div>
+              </div>
             )}
+
+            {/* Row 2: Reading, Time, Payment Details */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <FormField
+                control={form.control}
+                name="reading"
+                rules={{
+                  required: 'Reading is required',
+                  min: {
+                    value: minReading,
+                    message: `Reading must be at least ${minReading}`,
+                  },
+                }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current Reading (L)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={minReading}
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="recordedAt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Recorded At</FormLabel>
+                    <FormControl>
+                      <Input type="datetime-local" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="paymentMethod"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Payment Method</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="cash">Cash</SelectItem>
+                        <SelectItem value="card">Card</SelectItem>
+                        <SelectItem value="upi">UPI</SelectItem>
+                        <SelectItem value="credit">Credit</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Credit Party - shown only when needed */}
+              {paymentMethod === 'credit' && (
+                <FormField
+                  control={form.control}
+                  name="creditorId"
+                  rules={{ required: 'Credit party is required for credit payments' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Credit Party</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select party" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {creditors?.map((creditor) => (
+                            <SelectItem key={creditor.id} value={creditor.id}>
+                              {creditor.partyName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
 
             <Button type="submit" disabled={createReading.isPending} className="w-full">
               {createReading.isPending ? 'Recording...' : 'Record Reading'}
