@@ -16,10 +16,15 @@ export const salesApi = {
       
       const queryString = params.toString();
       const url = `/sales${queryString ? `?${queryString}` : ''}`;
+      console.log('[SALES-API] Fetching sales with filters:', filters);
       const response = await apiClient.get(url);
-      return extractApiArray<Sale>(response, 'sales');
-    } catch (error) {
-      console.error('Error fetching sales:', error);
+      const sales = extractApiArray<Sale>(response, 'sales');
+      console.log(`[SALES-API] Fetched ${sales.length} sales`);
+      return sales;
+    } catch (error: any) {
+      console.error('[SALES-API] Error fetching sales:', error);
+      console.error('[SALES-API] Error details:', error.response?.data);
+      // Don't let 401 errors cause logout - just return empty array
       return [];
     }
   }
