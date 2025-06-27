@@ -1,8 +1,12 @@
+
 import axios from 'axios';
+
+// Get the backend URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
-  baseURL: '/api/v1',
+  baseURL: `${API_BASE_URL}/api/v1`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -44,7 +48,7 @@ apiClient.interceptors.request.use(
       }
     }
 
-    console.log(`[API-CLIENT] ${config.method?.toUpperCase()} ${config.url}`, {
+    console.log(`[API-CLIENT] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, {
       hasAuth: !!config.headers.Authorization,
       hasTenant: !!config.headers['x-tenant-id'],
       isAdminAuth: isAdminAuthRoute,
