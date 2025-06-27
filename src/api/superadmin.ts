@@ -1,4 +1,3 @@
-
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { 
   Plan, 
@@ -105,10 +104,10 @@ export const superAdminApi = {
     }
   },
 
-  // Get admin users (SuperAdmin only)
+  // Get admin users (SuperAdmin only) - Updated to use correct endpoint
   getAdminUsers: async (): Promise<AdminUser[]> => {
     try {
-      console.log('Fetching admin users via SuperAdmin endpoint');
+      console.log('Fetching admin users via SuperAdmin endpoint /admin/users');
       const response = await apiClient.get('/admin/users');
       return extractApiArray<AdminUser>(response, 'users');
     } catch (error) {
@@ -118,14 +117,48 @@ export const superAdminApi = {
   },
 
   // Create admin user (SuperAdmin only)
-  createAdminUser: async (userData: any): Promise<AdminUser> => {
+  createAdminUser: async (userData: CreateSuperAdminRequest): Promise<AdminUser> => {
     try {
-      console.log('Creating admin user:', userData);
+      console.log('Creating admin user via SuperAdmin endpoint:', userData);
       const response = await apiClient.post('/admin/users', userData);
       return extractApiData<AdminUser>(response);
     } catch (error) {
       console.error('Error creating admin user:', error);
       throw error;
     }
-  }
+  },
+
+  // Update admin user (SuperAdmin only)
+  updateAdminUser: async (userId: string, userData: any): Promise<AdminUser> => {
+    try {
+      console.log(`Updating admin user ${userId} via SuperAdmin endpoint:`, userData);
+      const response = await apiClient.put(`/admin/users/${userId}`, userData);
+      return extractApiData<AdminUser>(response);
+    } catch (error) {
+      console.error(`Error updating admin user ${userId}:`, error);
+      throw error;
+    }
+  },
+
+  // Delete admin user (SuperAdmin only)
+  deleteAdminUser: async (userId: string): Promise<void> => {
+    try {
+      console.log(`Deleting admin user ${userId} via SuperAdmin endpoint`);
+      await apiClient.delete(`/admin/users/${userId}`);
+    } catch (error) {
+      console.error(`Error deleting admin user ${userId}:`, error);
+      throw error;
+    }
+  },
+
+  // Reset admin user password (SuperAdmin only)
+  resetAdminPassword: async (userId: string, passwordData: any): Promise<void> => {
+    try {
+      console.log(`Resetting password for admin user ${userId} via SuperAdmin endpoint`);
+      await apiClient.post(`/admin/users/${userId}/reset-password`, passwordData);
+    } catch (error) {
+      console.error(`Error resetting password for admin user ${userId}:`, error);
+      throw error;
+    }
+  },
 };

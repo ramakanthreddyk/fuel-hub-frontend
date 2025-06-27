@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,21 +19,22 @@ export default function LoginPage() {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
-  // Check if email looks like an admin email
-  const isAdminEmail = email.toLowerCase().includes('admin') || email.toLowerCase().includes('superadmin');
+  // Check if this is admin login via route path
+  const isAdminLoginRoute = location.pathname.includes('/admin') || location.pathname === '/login/admin';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setLoginAttemptType(isAdminEmail ? 'admin' : 'regular');
+    setLoginAttemptType(isAdminLoginRoute ? 'admin' : 'regular');
 
     console.log('[LOGIN-PAGE] Form submitted with email:', email);
-    console.log('[LOGIN-PAGE] Detected login type:', isAdminEmail ? 'SuperAdmin' : 'Regular User');
+    console.log('[LOGIN-PAGE] Login route type:', isAdminLoginRoute ? 'SuperAdmin Route' : 'Regular Route');
 
     try {
-      await login(email, password);
+      await login(email, password, isAdminLoginRoute);
       console.log('[LOGIN-PAGE] Login successful');
       
       // Navigation is handled by AuthContext
@@ -73,15 +74,18 @@ export default function LoginPage() {
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-semibold flex items-center justify-center gap-2">
               Welcome Back
-              {isAdminEmail && (
+              {isAdminLoginRoute && (
                 <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 flex items-center gap-1">
                   <Crown className="h-3 w-3" />
-                  Admin
+                  Admin Portal
                 </Badge>
               )}
             </CardTitle>
             <CardDescription>
-              Enter your credentials to access your account
+              {isAdminLoginRoute 
+                ? 'SuperAdmin Portal - Platform Management Access'
+                : 'Enter your credentials to access your account'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -97,10 +101,10 @@ export default function LoginPage() {
                   required
                   className="h-11"
                 />
-                {isAdminEmail && (
+                {isAdminLoginRoute && (
                   <div className="flex items-center gap-2 text-xs text-purple-600">
                     <Shield className="h-3 w-3" />
-                    <span>SuperAdmin login detected - will use admin routes</span>
+                    <span>Using SuperAdmin authentication endpoint</span>
                   </div>
                 )}
               </div>
@@ -144,10 +148,29 @@ export default function LoginPage() {
                     {loginAttemptType === 'admin' ? 'Authenticating Admin...' : 'Signing In...'}
                   </div>
                 ) : (
-                  'Sign In'
+                  isAdminLoginRoute ? 'Admin Sign In' : 'Sign In'
                 )}
               </Button>
             </form>
+
+            {/* Route Switch Links */}
+            <div className="mt-4 text-center text-sm">
+              {isAdminLoginRoute ? (
+                <button
+                  onClick={() => navigate('/login')}
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  Switch to Regular Login
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/login/admin')}
+                  className="text-purple-600 hover:text-purple-800 underline"
+                >
+                  SuperAdmin Portal →
+                </button>
+              )}
+            </div>
           </CardContent>
         </Card>
 

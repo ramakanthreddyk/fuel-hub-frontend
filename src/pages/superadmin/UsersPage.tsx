@@ -24,85 +24,85 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreVertical, Copy, Edit, Trash2, RotateCcw } from 'lucide-react';
-import { usersApi } from '@/api/users';
-import { CreateSuperAdminRequest, User } from '@/api/api-contract';
+import { superAdminApi } from '@/api/superadmin';
+import { CreateSuperAdminRequest, AdminUser } from '@/api/api-contract';
 import { SuperAdminUserForm } from '@/components/users/SuperAdminUserForm';
 import { ResetPasswordForm } from '@/components/users/ResetPasswordForm';
 
 export default function UsersPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showResetPasswordForm, setShowResetPasswordForm] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'superadmin' });
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Use SuperAdmin API for getting admin users
   const { data: users, isLoading } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => usersApi.getUsers(),
+    queryKey: ['superadmin-users'],
+    queryFn: () => superAdminApi.getAdminUsers(),
   });
 
   const { mutateAsync: createUser } = useMutation({
-    mutationFn: (data: CreateSuperAdminRequest) => usersApi.createSuperAdminUser(data),
+    mutationFn: (data: CreateSuperAdminRequest) => superAdminApi.createAdminUser(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
       toast({
         title: "Success",
-        description: "User created successfully",
+        description: "Admin user created successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to create user",
+        description: error.response?.data?.message || "Failed to create admin user",
         variant: "destructive",
       });
     },
   });
 
   const { mutateAsync: updateUser } = useMutation({
-    mutationFn: ({ userId, userData }: { userId: string; userData: any }) => usersApi.updateUser(userId, userData),
+    mutationFn: ({ userId, userData }: { userId: string; userData: any }) => superAdminApi.updateAdminUser(userId, userData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
       toast({
         title: "Success",
-        description: "User updated successfully",
+        description: "Admin user updated successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update user",
+        description: error.response?.data?.message || "Failed to update admin user",
         variant: "destructive",
       });
     },
   });
 
   const { mutateAsync: deleteUser } = useMutation({
-    mutationFn: (id: string) => usersApi.deleteUser(id),
+    mutationFn: (id: string) => superAdminApi.deleteAdminUser(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
       toast({
         title: "Success",
-        description: "User deleted successfully",
+        description: "Admin user deleted successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to delete user",
+        description: error.response?.data?.message || "Failed to delete admin user",
         variant: "destructive",
       });
     },
   });
 
   const { mutateAsync: resetPassword } = useMutation({
-    mutationFn: ({ userId, passwordData }: { userId: string; passwordData: any }) => usersApi.resetPassword(userId, passwordData),
+    mutationFn: ({ userId, passwordData }: { userId: string; passwordData: any }) => superAdminApi.resetAdminPassword(userId, passwordData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
       toast({
         title: "Success",
-        description: "Password reset email sent successfully",
+        description: "Password reset successfully",
       });
     },
     onError: (error: any) => {
@@ -116,11 +116,10 @@ export default function UsersPage() {
 
   const handleCreateUser = async (formData: CreateSuperAdminRequest) => {
     try {
-      // Ensure password is provided for user creation
       if (!formData.password) {
         toast({
           title: "Error",
-          description: "Password is required for creating a new user",
+          description: "Password is required for creating a new admin user",
           variant: "destructive",
         });
         return;
@@ -135,9 +134,8 @@ export default function UsersPage() {
 
       await createUser(userData);
       setShowCreateForm(false);
-      setNewUser({ name: '', email: '', password: '', role: 'superadmin' });
     } catch (error) {
-      console.error('Failed to create user:', error);
+      console.error('Failed to create admin user:', error);
     }
   };
 
@@ -154,7 +152,7 @@ export default function UsersPage() {
       await updateUser({ userId: selectedUser.id, userData });
       setSelectedUser(null);
     } catch (error) {
-      console.error('Failed to update user:', error);
+      console.error('Failed to update admin user:', error);
     }
   };
 
@@ -162,7 +160,7 @@ export default function UsersPage() {
     try {
       await deleteUser(id);
     } catch (error) {
-      console.error('Failed to delete user:', error);
+      console.error('Failed to delete admin user:', error);
     }
   };
 
@@ -180,17 +178,17 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+          <h1 className="text-3xl font-bold tracking-tight">SuperAdmin Users</h1>
           <p className="text-muted-foreground">
-            Manage platform users
+            Manage platform administrator accounts
           </p>
         </div>
-        <Button onClick={() => setShowCreateForm(true)}>Add User</Button>
+        <Button onClick={() => setShowCreateForm(true)}>Add Admin User</Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Users List</CardTitle>
+          <CardTitle>Admin Users List</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -199,18 +197,19 @@ export default function UsersPage() {
                 <TableHead className="w-[200px]">Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Last Login</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">Loading...</TableCell>
+                  <TableCell colSpan={5} className="text-center">Loading admin users...</TableCell>
                 </TableRow>
               )}
               {!isLoading && users?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">No users found.</TableCell>
+                  <TableCell colSpan={5} className="text-center">No admin users found.</TableCell>
                 </TableRow>
               )}
               {!isLoading && users?.map((user) => (
@@ -218,6 +217,7 @@ export default function UsersPage() {
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role}</TableCell>
+                  <TableCell>{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

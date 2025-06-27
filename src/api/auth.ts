@@ -1,4 +1,3 @@
-
 import { apiClient, extractApiData } from './client';
 import type { LoginRequest, LoginResponse, ApiResponse } from './api-contract';
 
@@ -15,15 +14,19 @@ const devError = (message: string, ...args: any[]) => {
 };
 
 export const authApi = {
-  login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    devLog('Sending login request:', { email: credentials.email });
+  login: async (credentials: LoginRequest, forceAdminRoute: boolean = false): Promise<LoginResponse> => {
+    devLog('Sending login request:', { 
+      email: credentials.email, 
+      forceAdminRoute 
+    });
     
     try {
       devLog('API base URL:', apiClient.defaults.baseURL);
       
-      // Try SuperAdmin login first
-      devLog('Attempting SuperAdmin login...');
-      try {
+      if (forceAdminRoute) {
+        // Force admin route when user accessed /login/admin
+        devLog('Force admin route detected - using SuperAdmin endpoint only');
+        
         const adminResponse = await apiClient.post('/admin/auth/login', credentials);
         const adminLoginData = extractApiData<LoginResponse>(adminResponse);
         
@@ -33,56 +36,50 @@ export const authApi = {
           role: adminLoginData.user?.role
         });
         
-        // Validate SuperAdmin response structure
-        if (!adminLoginData.token) {
-          devError('Missing token in SuperAdmin response');
-          throw new Error('Missing token in SuperAdmin response');
+        if (!adminLoginData.token || !adminLoginData.user) {
+          throw new Error('Invalid SuperAdmin response structure');
         }
         
-        if (!adminLoginData.user) {
-          devError('Missing user data in SuperAdmin response');
-          throw new Error('Missing user data in SuperAdmin response');
-        }
-        
-        devLog('SuperAdmin authenticated successfully - no tenant context needed');
         return adminLoginData;
-        
-      } catch (adminError: any) {
-        devLog('SuperAdmin login failed, trying regular user login...');
-        
-        // If SuperAdmin login fails (404 or 401), try regular user login
-        if (adminError.response?.status === 404 || adminError.response?.status === 401) {
-          devLog('Attempting regular user login...');
+      } else {
+        // Try SuperAdmin login first, then fallback to regular user
+        devLog('Attempting SuperAdmin login first...');
+        try {
+          const adminResponse = await apiClient.post('/admin/auth/login', credentials);
+          const adminLoginData = extractApiData<LoginResponse>(adminResponse);
           
-          const response = await apiClient.post('/auth/login', credentials);
-          const loginData = extractApiData<LoginResponse>(response);
-          
-          devLog('Regular user login response received:', {
-            hasToken: !!loginData.token,
-            hasUser: !!loginData.user,
-            role: loginData.user?.role
+          devLog('SuperAdmin login successful:', {
+            hasToken: !!adminLoginData.token,
+            hasUser: !!adminLoginData.user,
+            role: adminLoginData.user?.role
           });
           
-          // Validate response structure
-          if (!loginData.token) {
-            devError('Missing token in response');
-            throw new Error('Missing token in response');
+          if (!adminLoginData.token || !adminLoginData.user) {
+            throw new Error('Invalid SuperAdmin response structure');
           }
           
-          if (!loginData.user) {
-            devError('Missing user data in response');
-            throw new Error('Missing user data in response');
+          return adminLoginData;
+        } catch (adminError: any) {
+          devLog('SuperAdmin login failed, trying regular user login...');
+          
+          if (adminError.response?.status === 404 || adminError.response?.status === 401) {
+            const response = await apiClient.post('/auth/login', credentials);
+            const loginData = extractApiData<LoginResponse>(response);
+            
+            devLog('Regular user login response received:', {
+              hasToken: !!loginData.token,
+              hasUser: !!loginData.user,
+              role: loginData.user?.role
+            });
+            
+            if (!loginData.token || !loginData.user) {
+              throw new Error('Invalid login response structure');
+            }
+            
+            return loginData;
+          } else {
+            throw adminError;
           }
-          
-          devLog('Using backend-provided tenant context:', {
-            tenantId: loginData.user.tenantId,
-            tenantName: loginData.user.tenantName
-          });
-          
-          return loginData;
-        } else {
-          // Re-throw other admin errors (network issues, etc.)
-          throw adminError;
         }
       }
     } catch (error: any) {

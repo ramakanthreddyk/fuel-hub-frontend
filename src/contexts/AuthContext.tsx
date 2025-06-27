@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/api/auth';
@@ -17,7 +16,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, forceAdminRoute?: boolean) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -86,13 +85,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, forceAdminRoute: boolean = false) => {
     setIsLoading(true);
     console.log(`[FRONTEND-AUTH] Login attempt for email: ${email}`);
+    console.log(`[FRONTEND-AUTH] Force admin route: ${forceAdminRoute}`);
     
     try {
       console.log('[FRONTEND-AUTH] Sending login request to API');
-      const response = await authApi.login({ email, password });
+      const response = await authApi.login({ email, password }, forceAdminRoute);
       
       console.log('[FRONTEND-AUTH] Login response received:', {
         token: response.token ? '✓ Present' : '✗ Missing',
