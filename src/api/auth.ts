@@ -1,3 +1,4 @@
+
 import { apiClient, extractApiData } from './client';
 import type { LoginRequest, LoginResponse, ApiResponse } from './api-contract';
 
@@ -24,8 +25,8 @@ export const authApi = {
       devLog('API base URL:', apiClient.defaults.baseURL);
       
       if (forceAdminRoute) {
-        // Force admin route when user accessed /login/admin
-        devLog('Force admin route detected - using SuperAdmin endpoint only');
+        // Force admin route when user accessed /login/admin - use full API v1 path
+        devLog('Force admin route detected - using SuperAdmin endpoint: /api/v1/admin/auth/login');
         
         const adminResponse = await apiClient.post('/admin/auth/login', credentials);
         const adminLoginData = extractApiData<LoginResponse>(adminResponse);
@@ -43,7 +44,7 @@ export const authApi = {
         return adminLoginData;
       } else {
         // Try SuperAdmin login first, then fallback to regular user
-        devLog('Attempting SuperAdmin login first...');
+        devLog('Attempting SuperAdmin login first at /api/v1/admin/auth/login...');
         try {
           const adminResponse = await apiClient.post('/admin/auth/login', credentials);
           const adminLoginData = extractApiData<LoginResponse>(adminResponse);
@@ -60,7 +61,7 @@ export const authApi = {
           
           return adminLoginData;
         } catch (adminError: any) {
-          devLog('SuperAdmin login failed, trying regular user login...');
+          devLog('SuperAdmin login failed, trying regular user login at /api/v1/auth/login...');
           
           if (adminError.response?.status === 404 || adminError.response?.status === 401) {
             const response = await apiClient.post('/auth/login', credentials);

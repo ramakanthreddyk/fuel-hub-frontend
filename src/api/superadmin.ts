@@ -1,166 +1,106 @@
 
-import { apiClient, extractApiData, extractApiArray } from './client';
+import { apiClient, extractApiData } from './client';
 import type { 
+  Organization, 
   Plan, 
-  CreateTenantRequest, 
-  SuperAdminSummary,
-  AdminUser,
-  ApiResponse,
+  CreateOrganizationRequest, 
+  UpdateOrganizationStatusRequest,
+  CreatePlanRequest,
+  SuperAdminUser,
   CreateSuperAdminRequest
 } from './api-contract';
 
-export const superAdminApi = {
-  // Get platform dashboard metrics
-  getSummary: async (): Promise<SuperAdminSummary> => {
-    try {
-      console.log('Fetching admin dashboard summary');
-      const response = await apiClient.get('/admin/dashboard');
-      const summaryData = extractApiData<any>(response);
-      
-      // Map the response to the expected SuperAdminSummary structure
-      return {
-        totalTenants: summaryData.tenantCount || 0,
-        activeTenants: summaryData.activeTenantCount || 0,
-        totalPlans: summaryData.planCount || 0,
-        totalAdminUsers: summaryData.adminCount || 0,
-        totalUsers: summaryData.totalUsers || 0,
-        totalStations: summaryData.totalStations || 0,
-        signupsThisMonth: summaryData.newTenantsThisMonth || 0,
-        recentTenants: (summaryData.recentTenants || []).map((tenant: any) => ({
-          id: tenant.id,
-          name: tenant.name,
-          createdAt: tenant.createdAt,
-          status: tenant.status
-        })),
-        tenantsByPlan: (summaryData.tenantsByPlan || []).map((plan: any) => ({
-          planName: plan.planName,
-          count: plan.count,
-          percentage: plan.percentage
-        }))
-      };
-    } catch (error) {
-      console.error('Error fetching admin dashboard:', error);
-      if (error.response?.data?.message) {
-        console.error('Backend error message:', error.response.data.message);
-      }
-      throw error;
-    }
-  },
-
-  // Get all subscription plans
-  getPlans: async (): Promise<Plan[]> => {
-    try {
-      console.log('Fetching subscription plans');
-      const response = await apiClient.get('/admin/plans');
-      return extractApiArray<Plan>(response, 'plans');
-    } catch (error) {
-      console.error('Error fetching plans:', error);
-      return [];
-    }
-  },
-
-  // Create new subscription plan
-  createPlan: async (planData: Omit<Plan, 'id'>): Promise<Plan> => {
-    try {
-      console.log('Creating new plan:', planData);
-      const response = await apiClient.post('/admin/plans', planData);
-      return extractApiData<Plan>(response);
-    } catch (error) {
-      console.error('Error creating plan:', error);
-      throw error;
-    }
-  },
-
-  // Update subscription plan
-  updatePlan: async (planId: string, planData: Partial<Plan>): Promise<Plan> => {
-    try {
-      console.log(`Updating plan ${planId}:`, planData);
-      const response = await apiClient.put(`/admin/plans/${planId}`, planData);
-      return extractApiData<Plan>(response);
-    } catch (error) {
-      console.error(`Error updating plan ${planId}:`, error);
-      throw error;
-    }
-  },
-
-  // Delete subscription plan
-  deletePlan: async (planId: string): Promise<void> => {
-    try {
-      console.log(`Deleting plan ${planId}`);
-      await apiClient.delete(`/admin/plans/${planId}`);
-    } catch (error) {
-      console.error(`Error deleting plan ${planId}:`, error);
-      throw error;
-    }
-  },
-
-  // Create new tenant with admin user (SuperAdmin route)
-  createTenantWithAdmin: async (tenantData: CreateTenantRequest): Promise<any> => {
-    try {
-      console.log('Creating tenant with admin user:', tenantData);
-      const response = await apiClient.post('/admin/tenants', tenantData);
-      return extractApiData<any>(response);
-    } catch (error) {
-      console.error('Error creating tenant with admin:', error);
-      throw error;
-    }
-  },
-
-  // Get admin users (SuperAdmin only) - Updated to use correct endpoint
-  getAdminUsers: async (): Promise<AdminUser[]> => {
-    try {
-      console.log('Fetching admin users via SuperAdmin endpoint /admin/users');
-      const response = await apiClient.get('/admin/users');
-      return extractApiArray<AdminUser>(response, 'users');
-    } catch (error) {
-      console.error('Error fetching admin users:', error);
-      return [];
-    }
-  },
-
-  // Create admin user (SuperAdmin only)
-  createAdminUser: async (userData: CreateSuperAdminRequest): Promise<AdminUser> => {
-    try {
-      console.log('Creating admin user via SuperAdmin endpoint:', userData);
-      const response = await apiClient.post('/admin/users', userData);
-      return extractApiData<AdminUser>(response);
-    } catch (error) {
-      console.error('Error creating admin user:', error);
-      throw error;
-    }
-  },
-
-  // Update admin user (SuperAdmin only)
-  updateAdminUser: async (userId: string, userData: any): Promise<AdminUser> => {
-    try {
-      console.log(`Updating admin user ${userId} via SuperAdmin endpoint:`, userData);
-      const response = await apiClient.put(`/admin/users/${userId}`, userData);
-      return extractApiData<AdminUser>(response);
-    } catch (error) {
-      console.error(`Error updating admin user ${userId}:`, error);
-      throw error;
-    }
-  },
-
-  // Delete admin user (SuperAdmin only)
-  deleteAdminUser: async (userId: string): Promise<void> => {
-    try {
-      console.log(`Deleting admin user ${userId} via SuperAdmin endpoint`);
-      await apiClient.delete(`/admin/users/${userId}`);
-    } catch (error) {
-      console.error(`Error deleting admin user ${userId}:`, error);
-      throw error;
-    }
-  },
-
-  // Reset admin user password (SuperAdmin only)
-  resetAdminPassword: async (userId: string, passwordData: any): Promise<void> => {
-    try {
-      console.log(`Resetting password for admin user ${userId} via SuperAdmin endpoint`);
-      await apiClient.post(`/admin/users/${userId}/reset-password`, passwordData);
-    } catch (error) {
-      console.error(`Error resetting password for admin user ${userId}:`, error);
-      throw error;
-    }
-  },
+const devLog = (message: string, ...args: any[]) => {
+  if (import.meta.env.DEV) {
+    console.log(`[SUPERADMIN-API] ${message}`, ...args);
+  }
 };
+
+export const superadminApi = {
+  // Organization Management
+  getOrganizations: async (): Promise<Organization[]> => {
+    devLog('Fetching all organizations');
+    const response = await apiClient.get('/admin/organizations');
+    return extractApiData<Organization[]>(response);
+  },
+
+  createOrganization: async (data: CreateOrganizationRequest): Promise<Organization> => {
+    devLog('Creating new organization:', data.name);
+    const response = await apiClient.post('/admin/organizations', data);
+    return extractApiData<Organization>(response);
+  },
+
+  updateOrganizationStatus: async (id: string, data: UpdateOrganizationStatusRequest): Promise<void> => {
+    devLog('Updating organization status:', id, data.status);
+    await apiClient.put(`/admin/organizations/${id}/status`, data);
+  },
+
+  deleteOrganization: async (id: string): Promise<void> => {
+    devLog('Deleting organization:', id);
+    await apiClient.delete(`/admin/organizations/${id}`);
+  },
+
+  // Plan Management
+  getPlans: async (): Promise<Plan[]> => {
+    devLog('Fetching all subscription plans');
+    const response = await apiClient.get('/admin/plans');
+    return extractApiData<Plan[]>(response);
+  },
+
+  createPlan: async (data: CreatePlanRequest): Promise<Plan> => {
+    devLog('Creating new plan:', data.name);
+    const response = await apiClient.post('/admin/plans', data);
+    return extractApiData<Plan>(response);
+  },
+
+  updatePlan: async (id: string, data: Partial<CreatePlanRequest>): Promise<Plan> => {
+    devLog('Updating plan:', id);
+    const response = await apiClient.put(`/admin/plans/${id}`, data);
+    return extractApiData<Plan>(response);
+  },
+
+  deletePlan: async (id: string): Promise<void> => {
+    devLog('Deleting plan:', id);
+    await apiClient.delete(`/admin/plans/${id}`);
+  },
+
+  // SuperAdmin User Management - using correct /admin/users routes
+  getAdminUsers: async (): Promise<SuperAdminUser[]> => {
+    devLog('Fetching all admin users via /admin/users');
+    const response = await apiClient.get('/admin/users');
+    return extractApiData<SuperAdminUser[]>(response);
+  },
+
+  createAdminUser: async (data: CreateSuperAdminRequest): Promise<SuperAdminUser> => {
+    devLog('Creating new admin user via /admin/users:', data.email);
+    const response = await apiClient.post('/admin/users', data);
+    return extractApiData<SuperAdminUser>(response);
+  },
+
+  updateAdminUser: async (id: string, data: Partial<CreateSuperAdminRequest>): Promise<SuperAdminUser> => {
+    devLog('Updating admin user via /admin/users:', id);
+    const response = await apiClient.put(`/admin/users/${id}`, data);
+    return extractApiData<SuperAdminUser>(response);
+  },
+
+  deleteAdminUser: async (id: string): Promise<void> => {
+    devLog('Deleting admin user via /admin/users:', id);
+    await apiClient.delete(`/admin/users/${id}`);
+  },
+
+  // Platform Analytics
+  getPlatformStats: async () => {
+    devLog('Fetching platform statistics');
+    const response = await apiClient.get('/admin/analytics/platform-stats');
+    return extractApiData(response);
+  },
+
+  getTenantUsage: async (tenantId?: string) => {
+    devLog('Fetching tenant usage analytics');
+    const url = tenantId ? `/admin/analytics/tenant-usage/${tenantId}` : '/admin/analytics/tenant-usage';
+    const response = await apiClient.get(url);
+    return extractApiData(response);
+  }
+};
+
+export type { Organization, Plan, CreateOrganizationRequest, UpdateOrganizationStatusRequest, CreatePlanRequest, SuperAdminUser, CreateSuperAdminRequest };
