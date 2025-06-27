@@ -86,8 +86,14 @@ export const superadminApi = {
         return [];
       }
       
-      // Ensure we always return an array
-      return Array.isArray(plans) ? plans : [];
+      // Ensure each plan has features array and normalize data
+      const normalizedPlans = plans.map((plan: any) => ({
+        ...plan,
+        features: Array.isArray(plan.features) ? plan.features : []
+      }));
+      
+      devLog('Normalized plans:', normalizedPlans);
+      return normalizedPlans;
     } catch (error) {
       devLog('Error fetching plans:', error);
       return []; // Return empty array on error

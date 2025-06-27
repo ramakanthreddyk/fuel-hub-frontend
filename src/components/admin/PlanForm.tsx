@@ -21,7 +21,10 @@ interface PlanFormProps {
 }
 
 export function PlanForm({ onSubmit, initialData, isLoading }: PlanFormProps) {
-  const [features, setFeatures] = useState<string[]>(initialData?.features || []);
+  // Ensure features is always an array, even if initialData.features is undefined
+  const [features, setFeatures] = useState<string[]>(
+    Array.isArray(initialData?.features) ? initialData.features : []
+  );
   const [newFeature, setNewFeature] = useState('');
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -50,6 +53,8 @@ export function PlanForm({ onSubmit, initialData, isLoading }: PlanFormProps) {
       features
     });
   };
+
+  console.log('PlanForm render:', { initialData, features });
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

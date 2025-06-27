@@ -22,7 +22,6 @@ apiClient.interceptors.request.use(
     }
 
     // Add tenant context for non-admin routes
-    // Admin auth routes should NOT have tenant headers
     const isAdminAuthRoute = config.url?.includes('/admin/auth/');
     const isGeneralAdminRoute = config.url?.startsWith('/admin/') && !isAdminAuthRoute;
     
@@ -32,15 +31,19 @@ apiClient.interceptors.request.use(
       if (storedUser) {
         try {
           const user = JSON.parse(storedUser);
-          // For SuperAdmin accessing tenant-specific data, they can manually set tenant context
-          // For regular users, always use their tenant ID
+          
+          // For regular users (owner, manager, attendant), always add tenant header
           if (user.role !== 'superadmin' && user.tenantId) {
             config.headers['x-tenant-id'] = user.tenantId;
+            console.log(`[API-CLIENT] Adding tenant header for ${user.role}:`, user.tenantId);
           }
-          // For SuperAdmin, only add tenant header if explicitly set (for cross-tenant operations)
+          // For SuperAdmin accessing general admin routes, don't add tenant header
           else if (user.role === 'superadmin' && isGeneralAdminRoute) {
-            // Admin routes for SuperAdmin don't need tenant headers by default
-            // unless they're doing tenant-specific operations
+            console.log(`[API-CLIENT] SuperAdmin accessing admin route - no tenant header needed`);
+          }
+          // For SuperAdmin accessing non-admin routes, they might need tenant context for specific operations
+          else if (user.role === 'superadmin' && !isGeneralAdminRoute) {
+            console.log(`[API-CLIENT] SuperAdmin accessing tenant route - no tenant header by default`);
           }
         } catch (error) {
           console.error('[API-CLIENT] Error parsing stored user:', error);
@@ -73,6 +76,7 @@ apiClient.interceptors.response.use(
     
     // Handle 401 errors by clearing auth and redirecting to login
     if (error.response?.status === 401) {
+      console.log('[API-CLIENT] 401 Unauthorized - clearing auth and redirecting');
       localStorage.removeItem('fuelsync_token');
       localStorage.removeItem('fuelsync_user');
       window.location.href = '/login';
