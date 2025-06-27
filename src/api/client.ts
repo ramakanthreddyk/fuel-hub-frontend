@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 // Create axios instance with base configuration
@@ -92,6 +93,12 @@ export const extractApiData = <T>(response: any): T => {
   
   // Fallback to response.data
   return response.data;
+};
+
+// Helper function to extract array data from API responses
+export const extractApiArray = <T>(response: any): T[] => {
+  const data = extractApiData<T[]>(response);
+  return Array.isArray(data) ? data : [];
 };
 
 export default apiClient;

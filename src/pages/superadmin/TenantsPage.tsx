@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { tenantsApi } from '@/api/tenants';
 import { CreateTenantRequest } from '@/api/api-contract';
-import { superAdminApi } from '@/api/superadmin';
+import { superadminApi } from '@/api/superadmin';
 import { useToast } from '@/hooks/use-toast';
 import { SuperAdminErrorBoundary } from '@/components/admin/SuperAdminErrorBoundary';
 import { TenantForm } from '@/components/admin/TenantForm';
@@ -30,9 +30,9 @@ export default function SuperAdminTenantsPage() {
     retry: 2
   });
 
-  const { data: plans } = useQuery({
+  const { data: plans = [] } = useQuery({
     queryKey: ['admin-plans'],
-    queryFn: superAdminApi.getPlans
+    queryFn: superadminApi.getPlans
   });
 
   const createTenantMutation = useMutation({
@@ -133,7 +133,7 @@ export default function SuperAdminTenantsPage() {
                 </DialogDescription>
               </DialogHeader>
               <TenantForm
-                plans={plans || []}
+                plans={plans}
                 isLoading={createTenantMutation.isPending}
                 onSubmit={handleCreateTenant}
               />

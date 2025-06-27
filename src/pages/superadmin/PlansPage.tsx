@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Edit, Package, Plus, Trash2 } from 'lucide-react';
-import { superAdminApi } from '@/api/superadmin';
+import { superadminApi } from '@/api/superadmin';
 import { Plan } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
 import { PlanForm } from '@/components/admin/PlanForm';
@@ -22,11 +22,11 @@ export default function PlansPage() {
 
   const { data: plans, isLoading } = useQuery({
     queryKey: ['admin-plans'],
-    queryFn: superAdminApi.getPlans
+    queryFn: superadminApi.getPlans
   });
 
   const createPlanMutation = useMutation({
-    mutationFn: superAdminApi.createPlan,
+    mutationFn: superadminApi.createPlan,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-plans'] });
       setIsCreateDialogOpen(false);
@@ -46,7 +46,7 @@ export default function PlansPage() {
 
   const updatePlanMutation = useMutation({
     mutationFn: ({ planId, planData }: { planId: string; planData: Partial<Plan> }) => 
-      superAdminApi.updatePlan(planId, planData),
+      superadminApi.updatePlan(planId, planData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-plans'] });
       setIsEditDialogOpen(false);
@@ -66,7 +66,7 @@ export default function PlansPage() {
   });
 
   const deletePlanMutation = useMutation({
-    mutationFn: superAdminApi.deletePlan,
+    mutationFn: (planId: string) => superadminApi.deletePlan(planId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-plans'] });
       toast({
@@ -194,7 +194,7 @@ export default function PlansPage() {
                     <TableCell>{formatCurrency(plan.priceYearly)}</TableCell>
                     <TableCell>
                       <div className="text-sm text-muted-foreground">
-                        {plan.features.length} features
+                        {plan.features?.length || 0} features
                       </div>
                     </TableCell>
                     <TableCell>
@@ -217,7 +217,11 @@ export default function PlansPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )) || (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center">No plans found</TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           )}

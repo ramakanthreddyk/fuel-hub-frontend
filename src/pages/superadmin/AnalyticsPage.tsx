@@ -2,14 +2,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Users, Gauge, TrendingUp, CheckCircle } from 'lucide-react';
-import { superAdminApi } from '@/api/superadmin';
+import { superadminApi, SuperAdminSummary } from '@/api/superadmin';
 import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
 import { formatCurrency, formatNumber } from '@/utils/formatters';
 
 export default function AnalyticsPage() {
   const { data: analytics, isLoading, error } = useQuery({
     queryKey: ['superadmin-analytics'],
-    queryFn: superAdminApi.getSummary
+    queryFn: superadminApi.getSummary
   });
 
   if (isLoading) {
