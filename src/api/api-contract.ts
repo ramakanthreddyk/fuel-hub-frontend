@@ -1,3 +1,4 @@
+
 /**
  * API Contract Types - Auto-generated from OpenAPI Spec
  * 
@@ -297,6 +298,10 @@ export interface CreateTenantRequest {
   adminPassword?: string;
 }
 
+export interface UpdateTenantStatusRequest {
+  status: TenantStatus;
+}
+
 export interface TenantDetailsResponse {
   tenant: Tenant;
   users: User[];
@@ -306,6 +311,16 @@ export interface TenantDetailsResponse {
 // Plans Endpoints (SuperAdmin)
 export interface Plan {
   id: string;
+  name: string;
+  maxStations: number;
+  maxPumpsPerStation: number;
+  maxNozzlesPerPump: number;
+  priceMonthly: number;
+  priceYearly: number;
+  features: string[];
+}
+
+export interface CreatePlanRequest {
   name: string;
   maxStations: number;
   maxPumpsPerStation: number;

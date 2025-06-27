@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 // Create axios instance with base configuration
@@ -96,8 +95,16 @@ export const extractApiData = <T>(response: any): T => {
 };
 
 // Helper function to extract array data from API responses
-export const extractApiArray = <T>(response: any): T[] => {
-  const data = extractApiData<T[]>(response);
+export const extractApiArray = <T>(response: any, arrayKey?: string): T[] => {
+  const data = extractApiData(response);
+  
+  // If arrayKey is provided, try to get the array from that property
+  if (arrayKey && data && typeof data === 'object' && arrayKey in data) {
+    const arrayData = data[arrayKey];
+    return Array.isArray(arrayData) ? arrayData : [];
+  }
+  
+  // Otherwise, assume the data itself is the array
   return Array.isArray(data) ? data : [];
 };
 
