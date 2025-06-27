@@ -1,4 +1,3 @@
-
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { Nozzle, CreateNozzleRequest, UpdateNozzleRequest, ApiResponse } from './api-contract';
 
@@ -13,12 +12,10 @@ const transformNozzle = (backendNozzle: any): Nozzle => {
   return {
     id: backendNozzle.id,
     pumpId: backendNozzle.pump_id,
-    nozzleNumber: backendNozzle.nozzle_number, // Map snake_case to camelCase
+    nozzleNumber: backendNozzle.nozzle_number,
     fuelType: backendNozzle.fuel_type,
     status: backendNozzle.status,
-    createdAt: backendNozzle.created_at,
-    updatedAt: backendNozzle.updated_at,
-    tenantId: backendNozzle.tenant_id
+    createdAt: backendNozzle.created_at
   };
 };
 
