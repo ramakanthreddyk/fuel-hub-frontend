@@ -111,4 +111,14 @@ export const superadminApi = {
 // Export with both names for compatibility
 export const superAdminApi = superadminApi;
 
-export type { Tenant, Plan, CreateTenantRequest, UpdateTenantStatusRequest, CreatePlanRequest, AdminUser, CreateSuperAdminRequest };
+// Export types that are used in components
+export type { 
+  Tenant, 
+  Plan, 
+  CreateTenantRequest, 
+  UpdateTenantStatusRequest, 
+  CreatePlanRequest, 
+  AdminUser, 
+  CreateSuperAdminRequest,
+  SuperAdminSummary
+};

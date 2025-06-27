@@ -25,7 +25,7 @@ export default function CreateTenantPage() {
   });
 
   const createTenantMutation = useMutation({
-    mutationFn: (data: CreateTenantRequest) => superadminApi.createTenantWithAdmin(data),
+    mutationFn: (data: CreateTenantRequest) => superadminApi.createTenant(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
       toast({
