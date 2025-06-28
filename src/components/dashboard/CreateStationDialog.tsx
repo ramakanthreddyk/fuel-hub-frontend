@@ -1,122 +1,109 @@
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCreateStation } from '@/hooks/useStations';
 import { Plus } from 'lucide-react';
-import { stationsApi } from '@/api/stations';
-import { useToast } from '@/hooks/use-toast';
 
-interface CreateStationDialogProps {
-  children?: React.ReactNode;
-}
-
-export function CreateStationDialog({ children }: CreateStationDialogProps) {
+export function CreateStationDialog() {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    address: ''
+    address: '',
+    status: 'active' as 'active' | 'inactive' | 'maintenance'
   });
 
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const createStation = useCreateStation();
 
-  const createStationMutation = useMutation({
-    mutationFn: stationsApi.createStation,
-    onSuccess: (data) => {
-      console.log('Station created successfully:', data);
-      queryClient.invalidateQueries({ queryKey: ['stations'] });
-      setOpen(false);
-      setFormData({ name: '', address: '' });
-      toast({
-        title: "Success",
-        description: "Station created successfully",
-      });
-    },
-    onError: (error: any) => {
-      console.error('Failed to create station:', error);
-      console.error('Error response:', error.response?.data);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error?.message || 
-                          error.message || 
-                          "Failed to create station";
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name.trim()) {
-      toast({
-        title: "Error",
-        description: "Station name is required",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!formData.name.trim() || !formData.address.trim()) return;
 
-    console.log('Submitting station data:', formData);
-    createStationMutation.mutate(formData);
+    try {
+      await createStation.mutateAsync({
+        name: formData.name.trim(),
+        address: formData.address.trim(),
+        status: formData.status
+      });
+      setFormData({ name: '', address: '', status: 'active' });
+      setOpen(false);
+    } catch (error) {
+      console.error('Failed to create station:', error);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {children || (
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Station
-          </Button>
-        )}
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Station
+        </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create New Station</DialogTitle>
+          <DialogTitle>Add New Station</DialogTitle>
           <DialogDescription>
-            Add a new fuel station to your network
+            Create a new fuel station in your network.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Station Name *</Label>
+            <Label htmlFor="name">Station Name</Label>
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="Enter station name"
               required
             />
           </div>
-          
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
-            <Textarea
+            <Input
               id="address"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
               placeholder="Enter station address"
-              rows={3}
+              required
             />
           </div>
-          
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value: 'active' | 'inactive' | 'maintenance') => 
+                setFormData(prev => ({ ...prev, status: value }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="maintenance">Maintenance</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={createStationMutation.isPending}>
-              {createStationMutation.isPending ? "Creating..." : "Create Station"}
+            <Button
+              type="submit"
+              disabled={createStation.isPending || !formData.name.trim() || !formData.address.trim()}
+            >
+              {createStation.isPending ? 'Creating...' : 'Create Station'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

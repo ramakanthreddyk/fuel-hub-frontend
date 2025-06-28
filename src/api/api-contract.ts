@@ -1,3 +1,4 @@
+
 export interface ApiResponse<T> {
   success: boolean;
   message?: string;
@@ -13,22 +14,66 @@ export interface ApiErrorResponse {
   }>;
 }
 
+// Auth Types
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: User;
+}
+
 export interface AuthResponse {
   token: string;
   user: User;
 }
 
+export type UserRole = "superadmin" | "owner" | "manager" | "attendant";
+
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: "superadmin" | "owner" | "manager" | "attendant";
+  role: UserRole;
   tenantId?: string;
   tenantName?: string;
   stationId?: string;
   stationName?: string;
 }
 
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: "manager" | "attendant";
+  stationId?: string;
+}
+
+export interface UpdateUserRequest {
+  name?: string;
+  email?: string;
+  role?: "manager" | "attendant";
+  stationId?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordRequest {
+  password: string;
+}
+
+export interface CreateSuperAdminRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
+// Station Types
 export interface Station {
   id: string;
   name: string;
@@ -51,6 +96,7 @@ export interface CreateStationRequest {
   status: "active" | "inactive" | "maintenance";
 }
 
+// Pump Types
 export interface Pump {
   id: string;
   label: string;
@@ -66,6 +112,7 @@ export interface CreatePumpRequest {
   stationId: string;
 }
 
+// Nozzle Types
 export interface Nozzle {
   id: string;
   nozzleNumber: number;
@@ -85,6 +132,7 @@ export interface UpdateNozzleRequest {
   status?: "active" | "inactive" | "maintenance";
 }
 
+// Reading Types
 export interface NozzleReading {
   id: string;
   nozzleId: string;
@@ -118,6 +166,7 @@ export interface DailyReadingSummary {
   cashDeclared: number;
 }
 
+// Fuel Price Types
 export interface FuelPrice {
   id: string;
   stationId: string;
@@ -137,6 +186,7 @@ export interface CreateFuelPriceRequest {
   validFrom: string;
 }
 
+// Sales Types
 export interface Sale {
   id: string;
   nozzleId: string;
@@ -164,6 +214,7 @@ export interface SalesFilters {
   endDate?: string;
 }
 
+// Creditor Types
 export interface Creditor {
   id: string;
   partyName: string;
@@ -185,6 +236,17 @@ export interface CreateCreditorRequest {
   notes?: string;
 }
 
+export interface CreditPayment {
+  id: string;
+  creditorId: string;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
+  reference?: string;
+  notes?: string;
+  createdAt: string;
+}
+
 export interface CreatePaymentRequest {
   creditorId: string;
   amount: number;
@@ -194,7 +256,7 @@ export interface CreatePaymentRequest {
   notes?: string;
 }
 
-// Add attendant-specific types
+// Attendant-specific types
 export interface AttendantStation {
   id: string;
   name: string;
@@ -241,7 +303,7 @@ export interface CreateCashReportRequest {
   notes?: string;
 }
 
-// Add alert/warning types
+// Alert/Warning types
 export interface SystemAlert {
   id: string;
   type: 'warning' | 'error' | 'info';
@@ -265,12 +327,338 @@ export interface AlertSummary {
   unacknowledged: number;
 }
 
-// Update existing types to include fuel price validation
+export interface Alert {
+  id: string;
+  type: 'warning' | 'error' | 'info';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  title: string;
+  message: string;
+  stationId?: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface AlertsParams {
+  stationId?: string;
+  unreadOnly?: boolean;
+}
+
+// Fuel Price Validation
 export interface FuelPriceValidation {
   stationId: string;
   missingFuelTypes: ('petrol' | 'diesel' | 'premium')[];
   outdatedPrices: FuelPrice[];
   hasActivePrices: boolean;
+}
+
+// Dashboard Types
+export interface SalesSummary {
+  totalRevenue: number;
+  totalVolume: number;
+  salesCount: number;
+  averageTicketSize: number;
+  cashSales: number;
+  creditSales: number;
+  growthPercentage: number;
+}
+
+export interface PaymentMethodBreakdown {
+  method: string;
+  amount: number;
+  percentage: number;
+  count: number;
+}
+
+export interface FuelTypeBreakdown {
+  fuelType: string;
+  volume: number;
+  revenue: number;
+  percentage: number;
+}
+
+export interface TopCreditor {
+  id: string;
+  name: string;
+  outstandingAmount: number;
+  creditLimit: number;
+  utilizationPercentage: number;
+}
+
+export interface DailySalesTrend {
+  date: string;
+  revenue: number;
+  volume: number;
+  salesCount: number;
+}
+
+export interface StationMetric {
+  id: string;
+  name: string;
+  todaySales: number;
+  monthlySales: number;
+  salesGrowth: number;
+  activePumps: number;
+  totalPumps: number;
+  status: string;
+}
+
+// Reports Types
+export interface SalesReportFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  fuelType?: string;
+  paymentMethod?: string;
+}
+
+export interface SalesReportData {
+  id: string;
+  date: string;
+  stationName: string;
+  nozzleNumber: number;
+  fuelType: string;
+  volume: number;
+  pricePerLiter: number;
+  totalAmount: number;
+  paymentMethod: string;
+  creditorName?: string;
+}
+
+export interface SalesReportSummary {
+  totalRevenue: number;
+  totalVolume: number;
+  averagePrice: number;
+  salesCount: number;
+  paymentMethodBreakdown: Record<string, number>;
+  fuelTypeBreakdown: Record<string, { volume: number; revenue: number }>;
+}
+
+export interface SalesReportExportFilters {
+  stationId?: string;
+  dateFrom: string;
+  dateTo: string;
+  fuelType?: string;
+  paymentMethod?: string;
+  format: 'csv' | 'excel' | 'pdf';
+}
+
+export interface ExportReportRequest {
+  reportType: 'sales' | 'inventory' | 'reconciliation';
+  filters: Record<string, any>;
+  format: 'csv' | 'excel' | 'pdf';
+}
+
+export interface ScheduleReportRequest {
+  reportType: 'sales' | 'inventory' | 'reconciliation';
+  filters: Record<string, any>;
+  schedule: 'daily' | 'weekly' | 'monthly';
+  recipients: string[];
+}
+
+// Analytics Types
+export interface StationComparison {
+  stationId: string;
+  stationName: string;
+  revenue: number;
+  volume: number;
+  salesCount: number;
+  averageTicketSize: number;
+}
+
+export interface StationComparisonParams {
+  stationIds: string[];
+  period?: string;
+}
+
+export interface HourlySales {
+  hour: number;
+  revenue: number;
+  volume: number;
+  salesCount: number;
+}
+
+export interface PeakHour {
+  hour: number;
+  averageRevenue: number;
+  averageVolume: number;
+  averageSalesCount: number;
+}
+
+export interface FuelPerformance {
+  fuelType: string;
+  volume: number;
+  revenue: number;
+  margin: number;
+  salesCount: number;
+}
+
+export interface StationRanking {
+  rank: number;
+  stationId: string;
+  stationName: string;
+  revenue: number;
+  volume: number;
+  salesCount: number;
+  score: number;
+}
+
+export interface SuperAdminAnalytics {
+  totalTenants: number;
+  activeTenants: number;
+  totalStations: number;
+  totalRevenue: number;
+  revenueGrowth: number;
+  topPerformingTenants: Array<{
+    tenantId: string;
+    tenantName: string;
+    revenue: number;
+    stationCount: number;
+  }>;
+}
+
+// Inventory Types
+export interface FuelInventory {
+  id: string;
+  stationId: string;
+  stationName: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  currentVolume: number;
+  lastUpdated: string;
+}
+
+export interface FuelInventoryParams {
+  stationId?: string;
+  fuelType?: string;
+}
+
+export interface FuelDelivery {
+  id: string;
+  stationId: string;
+  stationName: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  quantity: number;
+  deliveryDate: string;
+  supplierName: string;
+  invoiceNumber: string;
+  pricePerLiter: number;
+  totalAmount: number;
+  createdAt: string;
+}
+
+export interface CreateFuelDeliveryRequest {
+  stationId: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  quantity: number;
+  deliveryDate: string;
+  supplierName: string;
+  invoiceNumber: string;
+  pricePerLiter: number;
+}
+
+// Reconciliation Types
+export interface ReconciliationRecord {
+  id: string;
+  stationId: string;
+  stationName: string;
+  reconciliationDate: string;
+  totalSales: number;
+  totalCash: number;
+  totalCredit: number;
+  declaredCash: number;
+  variance: number;
+  status: 'balanced' | 'variance' | 'pending';
+  notes?: string;
+  createdAt: string;
+}
+
+export interface CreateReconciliationRequest {
+  stationId: string;
+  reconciliationDate: string;
+  declaredCash: number;
+  notes?: string;
+}
+
+// Tenant Management Types (SuperAdmin)
+export interface Tenant {
+  id: string;
+  name: string;
+  status: 'active' | 'suspended' | 'cancelled';
+  planId: string;
+  planName: string;
+  createdAt: string;
+  users: User[];
+  stations: Station[];
+  userCount: number;
+  stationCount: number;
+}
+
+export interface CreateTenantRequest {
+  name: string;
+  planId: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPassword: string;
+}
+
+export interface UpdateTenantStatusRequest {
+  status: 'active' | 'suspended' | 'cancelled';
+}
+
+export interface TenantDetailsResponse {
+  tenant: Tenant;
+  users: User[];
+  stations: Station[];
+}
+
+// Plan Management Types (SuperAdmin)
+export interface Plan {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  features: string[];
+  maxStations: number;
+  maxUsers: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreatePlanRequest {
+  name: string;
+  description: string;
+  price: number;
+  features: string[];
+  maxStations: number;
+  maxUsers: number;
+}
+
+// SuperAdmin User Types
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'superadmin';
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+export interface SuperAdminSummary {
+  tenantCount: number;
+  activeTenantCount: number;
+  planCount: number;
+  adminCount: number;
+  totalUsers: number;
+  totalStations: number;
+  signupsThisMonth: number;
+  recentTenants: Array<{
+    id: string;
+    name: string;
+    createdAt: string;
+  }>;
+  tenantsByPlan: Array<{
+    planName: string;
+    count: number;
+  }>;
 }
 
 /*

@@ -2,15 +2,24 @@
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { Station, CreateStationRequest, ApiResponse } from './api-contract';
 
+// Extended Station interface for stations with metrics
+interface StationWithMetrics extends Station {
+  metrics?: {
+    totalSales: number;
+    activePumps: number;
+    totalPumps: number;
+  };
+}
+
 export const stationsApi = {
   // Get all stations for current tenant
-  getStations: async (includeMetrics = false): Promise<Station[]> => {
+  getStations: async (includeMetrics = false): Promise<StationWithMetrics[]> => {
     try {
       const params = includeMetrics ? '?includeMetrics=true' : '';
       const response = await apiClient.get(`/stations${params}`);
       
       // Use standardized array extraction
-      return extractApiArray<Station>(response, 'stations');
+      return extractApiArray<StationWithMetrics>(response, 'stations');
     } catch (error) {
       console.error('Error fetching stations:', error);
       return [];
@@ -65,4 +74,4 @@ export const stationsApi = {
 };
 
 // Export types for backward compatibility
-export type { Station, CreateStationRequest };
+export type { Station, CreateStationRequest, StationWithMetrics };

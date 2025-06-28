@@ -30,10 +30,8 @@ export function CreditorList() {
         <Card key={creditor.id} className="hover:shadow-md transition-shadow">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">{creditor.partyName || creditor.name}</CardTitle>
-              <Badge variant={creditor.status === 'active' ? 'default' : 'secondary'}>
-                {creditor.status}
-              </Badge>
+              <CardTitle className="text-lg">{creditor.partyName}</CardTitle>
+              <Badge variant="default">Active</Badge>
             </div>
           </CardHeader>
           <CardContent>
@@ -47,13 +45,13 @@ export function CreditorList() {
               <div className="flex justify-between text-sm">
                 <span>Outstanding:</span>
                 <span className="font-medium text-red-600">
-                  ₹{(creditor.currentOutstanding || 0).toLocaleString()}
+                  ₹{(creditor.outstandingAmount || 0).toLocaleString()}
                 </span>
               </div>
-              {creditor.contactNumber && (
+              {creditor.phoneNumber && (
                 <div className="flex justify-between text-sm">
                   <span>Contact:</span>
-                  <span>{creditor.contactNumber}</span>
+                  <span>{creditor.phoneNumber}</span>
                 </div>
               )}
             </div>
