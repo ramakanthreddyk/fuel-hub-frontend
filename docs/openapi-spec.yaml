@@ -523,6 +523,20 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/nozzle-readings/can-create/{nozzleId}:
+    get:
+      summary: Check if a nozzle reading can be created
+      parameters:
+        - name: nozzleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
   /api/v1/fuel-prices:
     post:
       summary: Create fuel price entry
@@ -539,6 +553,28 @@ paths:
               type: object
     get:
       summary: List fuel prices
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/fuel-prices/validate/{stationId}:
+    get:
+      summary: Validate fuel prices for a station
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/fuel-prices/missing:
+    get:
+      summary: List stations missing active prices
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -571,6 +607,41 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      summary: Create alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAlertRequest'
+      responses:
+        '201':
+          description: Alert created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Alert'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/alerts/summary:
+    get:
+      summary: Alert counts by severity
+      responses:
+        '200':
+          description: Counts of unread alerts grouped by severity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AlertSummary'
         default:
           $ref: '#/components/responses/Error'
   /api/v1/alerts/{alertId}:
@@ -1500,7 +1571,48 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
-components:
+  /api/v1/attendant/cash-reports:
+    get:
+      summary: List cash reports
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/attendant/alerts:
+    get:
+      summary: List attendant alerts
+      parameters:
+        - name: stationId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: unreadOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/attendant/alerts/{id}/acknowledge:
+    put:
+      summary: Acknowledge alert
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  components:
   securitySchemes:
     bearerAuth:
       type: http
@@ -2480,3 +2592,50 @@ components:
           type: number
         totalSalesAmount:
           type: number
+    PriceValidation:
+      type: object
+      properties:
+        missing:
+          type: array
+          items:
+            type: string
+        outdated:
+          type: array
+          items:
+            type: object
+            properties:
+              fuelType:
+                type: string
+              validFrom:
+                type: string
+                format: date-time
+    StationMissingPrice:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        missing:
+          type: array
+          items:
+            type: string
+
+    CreateAlertRequest:
+      type: object
+      required: [alertType, message]
+      properties:
+        stationId:
+          type: string
+        alertType:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, critical]
+
+    AlertSummary:
+      type: object
+      additionalProperties:
+        type: number
