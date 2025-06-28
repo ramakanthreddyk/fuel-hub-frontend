@@ -43,6 +43,21 @@ export const formatShortDateTime = (dateString: string | null | undefined): stri
   }
 };
 
+// Safe date formatting with custom format pattern
+export const formatSafeDate = (dateString: string | null | undefined, formatPattern: string = 'MMM dd, yyyy'): string => {
+  if (!dateString) return 'N/A';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+    return format(date, formatPattern);
+  } catch (error) {
+    return 'Invalid Date';
+  }
+};
+
 export const formatCurrency = (amount: number | string | null | undefined, currency: string = '₹'): string => {
   try {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
