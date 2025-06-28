@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -17,6 +16,9 @@ import { pumpsApi } from '@/api/pumps';
 import { Link } from 'react-router-dom';
 import { EnhancedNozzleCard } from '@/components/nozzles/EnhancedNozzleCard';
 import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
+import { useStationPriceValidation } from '@/hooks/useFuelPriceValidation';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { DollarSign } from 'lucide-react';
 
 export default function NozzlesPage() {
   const { stationId, pumpId } = useParams<{ stationId: string; pumpId: string }>();
@@ -97,6 +99,9 @@ export default function NozzlesPage() {
     { title: 'Petrol', value: nozzles?.filter(n => n.fuelType === 'petrol').length || 0, icon: Settings, color: 'text-purple-600' },
     { title: 'Diesel', value: nozzles?.filter(n => n.fuelType === 'diesel').length || 0, icon: Settings, color: 'text-orange-600' }
   ];
+
+  // Add fuel price validation
+  const { data: priceValidation } = useStationPriceValidation(stationId!);
 
   return (
     <div className="space-y-6">
@@ -185,6 +190,20 @@ export default function NozzlesPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Fuel Price Warning */}
+      {priceValidation && !priceValidation.hasActivePrices && (
+        <Alert className="border-orange-200 bg-orange-50">
+          <DollarSign className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            <strong>Missing Fuel Prices:</strong> This station is missing prices for {priceValidation.missingFuelTypes.join(', ')}. 
+            Readings cannot be recorded without fuel prices. 
+            <Link to="/dashboard/fuel-prices" className="underline font-medium ml-1">
+              Set prices here
+            </Link>.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {!canAddNozzles && (
         <Card className="border-orange-200 bg-orange-50">

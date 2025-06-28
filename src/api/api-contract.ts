@@ -1,184 +1,127 @@
-
-/**
- * API Contract Types - Auto-generated from OpenAPI Spec
- * 
- * This file contains TypeScript interfaces for all API endpoints
- * defined in the OpenAPI specification (docs/openapi-spec.yaml).
- * 
- * IMPORTANT: Any changes to the backend API must be reflected here.
- * Consider using openapi-typescript-codegen for automatic type generation.
- * 
- * DATA PARTITIONING POLICY:
- * All data isolation is handled by tenant_id (UUID) only. Never use schema_name for routing or access.
- * The backend handles multi-tenancy through tenant_id in headers and database queries.
- */
-
-// Common Types
-export type UserRole = 'superadmin' | 'owner' | 'manager' | 'attendant';
-export type FuelType = 'petrol' | 'diesel' | 'premium';
-export type PaymentMethod = 'cash' | 'card' | 'upi' | 'credit';
-export type Status = 'active' | 'inactive' | 'maintenance';
-export type TenantStatus = 'active' | 'suspended' | 'cancelled';
-
-// Standard API Response Wrapper
-export interface ApiResponse<T = any> {
-  data: T;
+export interface ApiResponse<T> {
+  success: boolean;
   message?: string;
-  success?: boolean;
+  data: T;
 }
 
-export interface PaginatedResponse<T = any> {
-  data: T[];
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export interface ApiError {
-  error: {
+export interface ApiErrorResponse {
+  success: boolean;
+  message: string;
+  details?: Array<{
+    field: string;
     message: string;
-    code?: string;
-    details?: any;
-  };
+  }>;
 }
 
-// Auth Endpoints
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
+export interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    tenantId?: string;
-    tenantName?: string;
-  };
+  user: User;
 }
 
-// Stations Endpoints
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "superadmin" | "owner" | "manager" | "attendant";
+  tenantId?: string;
+  tenantName?: string;
+  stationId?: string;
+  stationName?: string;
+}
+
 export interface Station {
   id: string;
   name: string;
-  address?: string;
-  status: Status;
+  address: string;
+  status: "active" | "inactive" | "maintenance";
   manager?: string;
   attendantCount: number;
   pumpCount: number;
   createdAt: string;
-  pumps?: Pump[];
-  metrics?: {
-    totalSales: number;
-    totalVolume: number;
-    transactionCount: number;
-  };
+  todaySales?: number;
+  monthlySales?: number;
+  salesGrowth?: number;
+  activePumps?: number;
+  totalPumps?: number;
 }
 
 export interface CreateStationRequest {
   name: string;
-  address?: string;
+  address: string;
+  status: "active" | "inactive" | "maintenance";
 }
 
-// Pumps Endpoints
 export interface Pump {
   id: string;
-  stationId: string;
   label: string;
-  serialNumber?: string;
-  status: Status;
-  nozzleCount: number;
-  createdAt: string;
-  nozzles?: Nozzle[];
+  serialNumber: string;
+  status: "active" | "inactive" | "maintenance";
+  stationId: string;
 }
 
 export interface CreatePumpRequest {
-  stationId: string;
   label: string;
-  serialNumber?: string;
+  serialNumber: string;
+  status: "active" | "inactive" | "maintenance";
+  stationId: string;
 }
 
-// Nozzles Endpoints
 export interface Nozzle {
   id: string;
-  pumpId: string;
   nozzleNumber: number;
-  fuelType: FuelType;
-  status: Status;
+  fuelType: "petrol" | "diesel" | "premium";
+  status: "active" | "inactive" | "maintenance";
+  pumpId: string;
   createdAt: string;
 }
 
 export interface CreateNozzleRequest {
   pumpId: string;
   nozzleNumber: number;
-  fuelType: FuelType;
+  fuelType: "petrol" | "diesel" | "premium";
 }
 
 export interface UpdateNozzleRequest {
-  fuelType?: FuelType;
-  status?: Status;
+  status?: "active" | "inactive" | "maintenance";
 }
 
-// Readings Endpoints
 export interface NozzleReading {
   id: string;
   nozzleId: string;
   reading: number;
   recordedAt: string;
-  paymentMethod: PaymentMethod;
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
   creditorId?: string;
   createdAt: string;
+  nozzleNumber?: number;
+  fuelType?: string;
 }
 
 export interface CreateReadingRequest {
   nozzleId: string;
   reading: number;
   recordedAt: string;
-  paymentMethod: PaymentMethod;
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
   creditorId?: string;
 }
 
-// Sales Endpoints
-export interface Sale {
-  id: string;
+export interface DailyReadingSummary {
   nozzleId: string;
-  stationId: string;
-  volume: number;
-  fuelType: FuelType;
-  fuelPrice: number;
-  amount: number;
-  paymentMethod: PaymentMethod;
-  creditorId?: string;
-  status: 'draft' | 'posted';
-  recordedAt: string;
-  createdAt: string;
-  station?: {
-    name: string;
-  };
-  nozzle?: {
-    nozzleNumber: number;
-    fuelType: string;
-  };
+  nozzleNumber: number;
+  fuelType: string;
+  previousReading: number;
+  currentReading: number;
+  deltaVolume: number;
+  pricePerLitre: number;
+  saleValue: number;
+  paymentMethod: string;
+  cashDeclared: number;
 }
 
-export interface SalesFilters {
-  stationId?: string;
-  startDate?: string;
-  endDate?: string;
-  paymentMethod?: string;
-}
-
-// Fuel Prices Endpoints
 export interface FuelPrice {
   id: string;
   stationId: string;
-  fuelType: FuelType;
+  fuelType: "petrol" | "diesel" | "premium";
   price: number;
   validFrom: string;
   createdAt: string;
@@ -189,443 +132,180 @@ export interface FuelPrice {
 
 export interface CreateFuelPriceRequest {
   stationId: string;
-  fuelType: FuelType;
+  fuelType: "petrol" | "diesel" | "premium";
   price: number;
-  validFrom?: string;
+  validFrom: string;
 }
 
-// Creditors Endpoints
+export interface Sale {
+  id: string;
+  nozzleId: string;
+  stationId: string;
+  volume: number;
+  fuelType: string;
+  fuelPrice: number;
+  amount: number;
+  paymentMethod: string;
+  creditorId?: string;
+  status: 'posted' | 'draft';
+  recordedAt: string;
+  createdAt: string;
+  station?: {
+    name: string;
+  };
+  nozzle?: {
+    nozzleNumber: number;
+  };
+}
+
+export interface SalesFilters {
+  stationId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface Creditor {
   id: string;
-  name: string;
-  contactNumber?: string;
-  address?: string;
-  status: Status;
-  createdAt: string;
   partyName: string;
+  contactPerson?: string;
+  phoneNumber?: string;
   creditLimit?: number;
-  currentOutstanding?: number;
+  outstandingAmount?: number;
+  paymentTerms?: string;
+  notes?: string;
+  createdAt: string;
 }
 
 export interface CreateCreditorRequest {
   partyName: string;
+  contactPerson?: string;
+  phoneNumber?: string;
   creditLimit?: number;
-}
-
-export interface CreditPayment {
-  id: string;
-  creditorId: string;
-  amount: number;
-  paymentMethod: 'cash' | 'bank_transfer' | 'check';
-  referenceNumber?: string;
+  paymentTerms?: string;
   notes?: string;
-  createdAt: string;
 }
 
 export interface CreatePaymentRequest {
   creditorId: string;
   amount: number;
-  paymentMethod: 'cash' | 'bank_transfer' | 'check';
-  referenceNumber?: string;
+  paymentDate: string;
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
+  reference?: string;
   notes?: string;
 }
 
-// Users Endpoints
-export interface User {
+// Add attendant-specific types
+export interface AttendantStation {
   id: string;
   name: string;
-  email: string;
-  role: UserRole;
-  tenantId?: string;
-  tenantName?: string;
-  stationId?: string;
-  stationName?: string;
-  createdAt: string;
+  address: string;
+  status: 'active' | 'inactive' | 'maintenance';
+  assignedAt: string;
 }
 
-export interface CreateUserRequest {
-  name: string;
-  email: string;
-  password: string;
-  role: 'manager' | 'attendant';
-  stationId?: string;
-}
-
-export interface UpdateUserRequest {
-  name?: string;
-  role?: 'manager' | 'attendant';
-  stationId?: string;
-}
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-}
-
-export interface ResetPasswordRequest {
-  newPassword: string;
-}
-
-export interface CreateSuperAdminRequest {
-  name: string;
-  email: string;
-  password: string;
-  role: 'superadmin';
-}
-
-// Tenants Endpoints (SuperAdmin)
-export interface Tenant {
+export interface AttendantPump {
   id: string;
-  name: string;
-  planId: string;
-  planName: string;
-  status: TenantStatus;
-  createdAt: string;
-  stationCount?: number;
-  userCount?: number;
-  users?: User[];
-  stations?: Station[];
-}
-
-export interface CreateTenantRequest {
-  name: string;
-  planId: string;
-  adminEmail?: string;
-  adminPassword?: string;
-}
-
-export interface UpdateTenantStatusRequest {
-  status: TenantStatus;
-}
-
-export interface TenantDetailsResponse {
-  tenant: Tenant;
-  users: User[];
-  stations: Station[];
-}
-
-// Plans Endpoints (SuperAdmin)
-export interface Plan {
-  id: string;
-  name: string;
-  maxStations: number;
-  maxPumpsPerStation: number;
-  maxNozzlesPerPump: number;
-  priceMonthly: number;
-  priceYearly: number;
-  features: string[];
-}
-
-export interface CreatePlanRequest {
-  name: string;
-  maxStations: number;
-  maxPumpsPerStation: number;
-  maxNozzlesPerPump: number;
-  priceMonthly: number;
-  priceYearly: number;
-  features: string[];
-}
-
-// Dashboard Endpoints
-export interface SalesSummary {
-  totalSales: number;
-  totalVolume: number;
-  transactionCount: number;
-  totalProfit: number;
-  profitMargin: number;
-  period: string;
-}
-
-export interface PaymentMethodBreakdown {
-  paymentMethod: string;
-  amount: number;
-  percentage: number;
-}
-
-export interface FuelTypeBreakdown {
-  fuelType: string;
-  volume: number;
-  amount: number;
-}
-
-export interface TopCreditor {
-  id: string;
-  partyName: string;
-  outstandingAmount: number;
-  creditLimit?: number;
-}
-
-export interface DailySalesTrend {
-  date: string;
-  amount: number;
-  volume: number;
-}
-
-export interface StationMetric {
-  id: string;
-  name: string;
-  todaySales: number;
-  monthlySales: number;
-  salesGrowth: number;
-  activePumps: number;
-  totalPumps: number;
-  status: 'active' | 'maintenance' | 'inactive';
-}
-
-// Fuel Inventory Endpoints
-export interface FuelInventory {
-  id: string;
+  label: string;
+  serialNumber: string;
+  status: 'active' | 'inactive' | 'maintenance';
   stationId: string;
   stationName: string;
-  fuelType: 'petrol' | 'diesel';
-  currentVolume: number;
-  lastUpdated: string;
 }
 
-export interface FuelInventoryParams {
-  stationId?: string;
-  fuelType?: string;
+export interface AttendantNozzle {
+  id: string;
+  nozzleNumber: number;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  status: 'active' | 'inactive' | 'maintenance';
+  pumpId: string;
+  pumpLabel: string;
+  stationName: string;
 }
 
-// Fuel Deliveries Endpoints
-export interface FuelDelivery {
+export interface CashReport {
   id: string;
   stationId: string;
-  stationName: string;
-  fuelType: 'petrol' | 'diesel';
-  volume: number;
-  deliveryDate: string;
-  deliveredBy?: string;
+  reportedBy: string;
+  cashAmount: number;
+  reportDate: string;
+  shift: 'morning' | 'afternoon' | 'night';
+  notes?: string;
   createdAt: string;
 }
 
-export interface CreateFuelDeliveryRequest {
+export interface CreateCashReportRequest {
   stationId: string;
-  fuelType: 'petrol' | 'diesel';
-  volume: number;
-  deliveryDate: string;
-  deliveredBy?: string;
+  cashAmount: number;
+  reportDate: string;
+  shift: 'morning' | 'afternoon' | 'night';
+  notes?: string;
 }
 
-// Alerts Endpoints
-export interface Alert {
+// Add alert/warning types
+export interface SystemAlert {
   id: string;
-  type: 'inventory' | 'credit' | 'maintenance' | 'sales' | 'system';
-  severity: 'info' | 'warning' | 'critical';
+  type: 'warning' | 'error' | 'info';
+  priority: 'low' | 'medium' | 'high' | 'critical';
   title: string;
   message: string;
-  stationId: string;
-  stationName: string;
-  isRead: boolean;
-  isActive: boolean;
-  createdAt: string;
-  metadata?: Record<string, any>;
-}
-
-export interface AlertsParams {
   stationId?: string;
-  unreadOnly?: boolean;
-}
-
-// Reconciliation Endpoints
-export interface ReconciliationRecord {
-  id: string;
-  stationId: string;
-  date: string;
-  totalExpected: number;
-  cashReceived: number;
-  reconciliationNotes?: string;
-  managerConfirmation: boolean;
-  createdAt: string;
-  station?: {
-    name: string;
-  };
-}
-
-export interface CreateReconciliationRequest {
-  stationId: string;
-  date: string;
-  totalExpected: number;
-  cashReceived: number;
-  reconciliationNotes?: string;
-  managerConfirmation: boolean;
-}
-
-export interface DailyReadingSummary {
-  nozzleId: string;
-  nozzleNumber: number;
-  previousReading: number;
-  currentReading: number;
-  deltaVolume: number;
-  pricePerLitre: number;
-  saleValue: number;
-  paymentMethod: string;
-  cashDeclared: number;
-  fuelType: string;
-}
-
-// Reports Endpoints
-export interface SalesReportFilters {
-  startDate?: string;
-  endDate?: string;
-  paymentMethod?: string;
   nozzleId?: string;
-  stationId?: string;
-}
-
-export interface SalesReportData {
-  id: string;
-  date: string;
-  fuelType: FuelType;
-  volume: number;
-  pricePerLitre: number;
-  amount: number;
-  paymentMethod: PaymentMethod;
-  attendant: string;
-  stationName: string;
-  nozzleNumber: number;
-}
-
-export interface SalesReportSummary {
-  totalRevenue: number;
-  totalVolume: number;
-  fuelTypeBreakdown: Record<string, { revenue: number; volume: number }>;
-  paymentMethodBreakdown: Record<string, number>;
-}
-
-export interface ExportReportRequest {
-  type: string;
-  format: string;
-  stationId?: string;
-  dateRange?: { from: Date; to: Date };
-}
-
-export interface ScheduleReportRequest {
-  type: string;
-  stationId?: string;
-  frequency: string;
-}
-
-export interface SalesReportExportFilters {
-  stationId?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  format?: 'csv' | 'json';
-}
-
-// Analytics Endpoints
-export interface StationComparison {
-  id: string;
-  stationName: string;
-  sales: number;
-  volume: number;
-  transactions: number;
-  growth: number;
-}
-
-export interface HourlySales {
-  hour: string;
-  sales: number;
-  volume: number;
-  transactions: number;
-}
-
-export interface PeakHour {
-  timeRange: string;
-  avgSales: number;
-  avgVolume: number;
-}
-
-export interface FuelPerformance {
-  fuelType: string;
-  volume: number;
-  sales: number;
-  margin: number;
-  growth: number;
-}
-
-export interface StationRanking {
-  id: string;
-  name: string;
-  sales: number;
-  volume: number;
-  growth: number;
-  efficiency: number;
-  rank: number;
-}
-
-export interface SuperAdminAnalytics {
-  totalTenants: number;
-  activeTenants: number;
-  totalStations: number;
-  salesVolume: number;
-  totalRevenue: number;
-  monthlyGrowth: {
-    month: string;
-    tenants: number;
-    revenue: number;
-  }[];
-  topTenants: {
-    id: string;
-    name: string;
-    stationsCount: number;
-    revenue: number;
-  }[];
-}
-
-export interface StationComparisonParams {
-  stationIds: string[];
-  period?: string;
-}
-
-export interface SuperAdminSummary {
-  tenantCount: number;
-  activeTenantCount: number;
-  planCount: number;
-  adminCount: number;
-  // Optional fields for additional data if backend provides them
-  totalUsers?: number;
-  totalStations?: number;
-  signupsThisMonth?: number;
-  recentTenants?: Array<{
-    id: string;
-    name: string;
-    status: string;
-    createdAt: string;
-  }>;
-  tenantsByPlan?: Array<{
-    planName: string;
-    count: number;
-    percentage: number;
-  }>;
-}
-
-export interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  role: 'superadmin';
   createdAt: string;
-  lastLogin?: string;
+  acknowledged: boolean;
+  acknowledgedBy?: string;
+  acknowledgedAt?: string;
 }
 
-/**
- * DEVELOPER NOTES:
- * 
- * All data partitioning is now handled by tenant_id (UUID) only. Never use schema_name for routing or access.
- * 
- * The backend uses:
- * - tenant_id in JWT tokens for user context
- * - x-tenant-id header for API requests  
- * - Database row-level security with tenant_id columns
- * 
- * Frontend responsibilities:
- * - Include x-tenant-id header in all API calls (handled by apiClient)
- * - Store and manage tenant context using tenant_id + tenantName
- * - Never construct URLs or filters based on schema names
- * 
- * DEPRECATED CONCEPTS (removed from codebase):
- * - schema_name, schemaName, tenant_schema
- * - Dynamic schema switching
- * - Schema-based routing or filtering
- */
+export interface AlertSummary {
+  total: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  unacknowledged: number;
+}
+
+// Update existing types to include fuel price validation
+export interface FuelPriceValidation {
+  stationId: string;
+  missingFuelTypes: ('petrol' | 'diesel' | 'premium')[];
+  outdatedPrices: FuelPrice[];
+  hasActivePrices: boolean;
+}
+
+/*
+BACKEND API REQUIREMENTS - Please implement these endpoints:
+
+1. ATTENDANT ENDPOINTS:
+   GET /api/v1/attendant/stations - Get stations assigned to current attendant
+   GET /api/v1/attendant/pumps?stationId={id} - Get pumps for assigned stations
+   GET /api/v1/attendant/nozzles?pumpId={id} - Get nozzles for assigned pumps
+   GET /api/v1/attendant/creditors?stationId={id} - Get creditors for assigned stations
+   POST /api/v1/attendant/cash-reports - Submit cash report
+   GET /api/v1/attendant/cash-reports - Get cash reports with filters
+   GET /api/v1/attendant/alerts - Get system alerts for attendant
+   PUT /api/v1/attendant/alerts/{id}/acknowledge - Acknowledge alert
+
+2. FUEL PRICE VALIDATION ENDPOINTS:
+   GET /api/v1/fuel-prices/validate/{stationId} - Check missing fuel prices for station
+   GET /api/v1/fuel-prices/missing - Get all stations with missing prices
+   GET /api/v1/nozzle-readings/can-create/{nozzleId} - Check if reading can be created
+
+3. SYSTEM ALERTS ENDPOINTS:
+   GET /api/v1/alerts/summary - Get alert counts by priority
+   POST /api/v1/alerts - Create system alert
+   
+4. ALERT SCENARIOS TO IMPLEMENT:
+   - No reading recorded for nozzle in 24+ hours (priority: medium)
+   - No fuel price set for active nozzle (priority: high)
+   - Creditor exceeding 90% of credit limit (priority: high)
+   - Station inactive for 24+ hours (priority: medium)
+   - Pump maintenance overdue (priority: low)
+   - Large volume discrepancy in readings (priority: critical)
+   - Cash report not submitted for shift (priority: medium)
+
+5. VALIDATION RULES:
+   - Prevent reading creation if no fuel price exists for nozzle fuel type
+   - Prevent sale calculation if fuel price is older than 7 days
+   - Warn if creditor approaching credit limit
+*/

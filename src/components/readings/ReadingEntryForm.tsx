@@ -8,12 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { stationsApi } from '@/api/stations';
 import { pumpsApi } from '@/api/pumps';
 import { nozzlesApi } from '@/api/nozzles';
 import { creditorsApi } from '@/api/creditors';
 import { useCreateReading, useLatestReading } from '@/hooks/useReadings';
+import { useCanCreateReading, useStationPriceValidation } from '@/hooks/useFuelPriceValidation';
 import { CreateReadingRequest } from '@/api/readings';
+import { AlertTriangle, DollarSign } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface ReadingFormData {
   stationId: string;
@@ -119,8 +123,16 @@ export function ReadingEntryForm() {
     }
   };
 
+  // Add fuel price validation
+  const { data: canCreateReading } = useCanCreateReading(selectedNozzle);
+  const { data: stationPriceValidation } = useStationPriceValidation(selectedStation);
+
   const selectedNozzleData = nozzles?.find(n => n.id === selectedNozzle);
   const minReading = latestReading?.reading || 0;
+
+  // Check if we can create reading
+  const canSubmit = canCreateReading?.canCreate !== false;
+  const hasMissingPrices = !canCreateReading?.canCreate && canCreateReading?.missingPrice;
 
   return (
     <Card className="max-w-5xl mx-auto">
@@ -131,6 +143,32 @@ export function ReadingEntryForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* Fuel Price Warnings */}
+        {stationPriceValidation && !stationPriceValidation.hasActivePrices && (
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              <strong>Missing Fuel Prices!</strong> This station is missing fuel prices for: {' '}
+              {stationPriceValidation.missingFuelTypes.join(', ')}. {' '}
+              <Link to="/dashboard/fuel-prices" className="underline font-medium">
+                Update fuel prices here
+              </Link> before recording readings.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {hasMissingPrices && (
+          <Alert className="mb-6 border-orange-200 bg-orange-50">
+            <DollarSign className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              <strong>Cannot record reading:</strong> {canCreateReading?.reason || 'Missing fuel price for this nozzle type'}. {' '}
+              <Link to="/dashboard/fuel-prices" className="underline font-medium">
+                Set fuel price first
+              </Link>.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Row 1: Station, Pump, Nozzle Selection */}
@@ -319,8 +357,13 @@ export function ReadingEntryForm() {
               )}
             </div>
 
-            <Button type="submit" disabled={createReading.isPending} className="w-full">
-              {createReading.isPending ? 'Recording...' : 'Record Reading'}
+            <Button 
+              type="submit" 
+              disabled={createReading.isPending || !canSubmit} 
+              className="w-full"
+            >
+              {createReading.isPending ? 'Recording...' : 
+               !canSubmit ? 'Set Fuel Price Required' : 'Record Reading'}
             </Button>
           </form>
         </Form>
