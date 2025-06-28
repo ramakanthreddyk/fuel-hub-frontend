@@ -53,8 +53,8 @@ export function ReconciliationTable({ readings, isLoading }: ReconciliationTable
         </TableRow>
       </TableHeader>
       <TableBody>
-        {readings.map((reading) => (
-          <TableRow key={reading.nozzleId}>
+        {readings.map((reading, index) => (
+          <TableRow key={`${reading.nozzleId}-${index}`}>
             <TableCell className="font-medium">
               Nozzle #{reading.nozzleNumber}
             </TableCell>
