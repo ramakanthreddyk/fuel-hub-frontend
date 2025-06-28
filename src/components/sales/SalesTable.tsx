@@ -47,6 +47,21 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
     }
   };
 
+  const formatSafeDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      return format(date, 'dd/MM/yy HH:mm');
+    } catch (error) {
+      console.warn('[SALES-TABLE] Invalid date format:', dateString);
+      return 'Invalid Date';
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -66,7 +81,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
         {sales.map((sale) => (
           <TableRow key={sale.id}>
             <TableCell className="font-mono text-sm">
-              {format(new Date(sale.recordedAt), 'dd/MM/yy HH:mm')}
+              {formatSafeDate(sale.recordedAt)}
             </TableCell>
             <TableCell className="font-medium">
               {sale.station?.name || 'Unknown Station'}
