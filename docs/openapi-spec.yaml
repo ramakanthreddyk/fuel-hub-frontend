@@ -964,9 +964,28 @@ paths:
   /api/v1/reconciliation/daily-summary:
     get:
       summary: Daily nozzle reading summary
+      parameters:
+        - name: stationId
+          in: query
+          description: Station identifier
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          description: ISO date (YYYY-MM-DD) to summarise
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          $ref: '#/components/responses/Success'
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DailyReadingSummary'
         default:
           $ref: '#/components/responses/Error'
   /api/v1/dashboard/sales-summary:
@@ -1342,7 +1361,11 @@ paths:
           $ref: '#/components/responses/Error'
   /schemas:
     get:
-      summary: List tenant schemas
+      summary: List tenant schemas (non-production)
+      description: |
+        Development utility for viewing or resetting demo tables.
+        When `NODE_ENV` is `production` the endpoint is authenticated and
+        returns a 403 response without touching the database.
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -1406,6 +1429,77 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/attendant/stations:
+    get:
+      summary: List stations for attendant
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/attendant/pumps:
+    get:
+      summary: List pumps for attendant
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/attendant/nozzles:
+    get:
+      summary: List nozzles for attendant
+      parameters:
+        - name: pumpId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/attendant/creditors:
+    get:
+      summary: List creditors for attendant
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/attendant/cash-report:
+    post:
+      summary: Submit cash and credit totals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stationId:
+                  type: string
+                date:
+                  type: string
+                  format: date
+                cashAmount:
+                  type: number
+                creditAmount:
+                  type: number
+              required:
+                - stationId
+                - date
+      responses:
+        '201':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
 components:
   securitySchemes:
     bearerAuth:
@@ -1427,17 +1521,28 @@ components:
             properties:
               data:
                 type: object
-  Error:
-    description: Error response
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            success:
-              type: boolean
-            message:
-              type: string
+    Error:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              message:
+                type: string
+    NotFound:
+      description: Route not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              message:
+                type: string
 
   schemas:
     LoginRequest:
