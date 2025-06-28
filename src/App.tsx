@@ -1,6 +1,4 @@
 
-import { AuthProvider } from '@/contexts/AuthContext'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { DashboardLayout } from './components/layout/DashboardLayout'
 import LoginPage from './pages/LoginPage'
@@ -18,9 +16,10 @@ import FuelPricesPage from './pages/dashboard/FuelPricesPage'
 import ReconciliationPage from './pages/dashboard/ReconciliationPage'
 import CreditorsPage from './pages/dashboard/CreditorsPage'
 import AlertsPage from './pages/dashboard/AlertsPage'
-import { Toaster } from '@/components/ui/toaster'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { ErrorProvider } from '@/contexts/ErrorContext';
+import { AuthProvider } from '@/contexts/AuthContext'
+import { DataMappingProvider } from '@/contexts/DataMappingContext';
 
 // Import SuperAdmin pages
 import OverviewPage from './pages/superadmin/OverviewPage'
@@ -31,26 +30,17 @@ import PlansPage from './pages/superadmin/PlansPage'
 import AnalyticsPage from './pages/superadmin/AnalyticsPage'
 import SuperAdminUsersPage from './pages/superadmin/UsersPage'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
-
 function App() {
   return (
     <ErrorBoundary>
       <ErrorProvider>
-        <QueryClientProvider client={queryClient}>
-          <Router>
-            <AuthProvider>
+        <Router>
+          <AuthProvider>
+            <DataMappingProvider>
               <div className="min-h-screen bg-gray-50">
-                <Toaster />
                 <Routes>
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/login/admin" element={<LoginPage />} />
                   <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
                   <Route
@@ -99,9 +89,9 @@ function App() {
                   <Route path="*" element={<LoginPage />} />
                 </Routes>
               </div>
-            </AuthProvider>
-          </Router>
-        </QueryClientProvider>
+            </DataMappingProvider>
+          </AuthProvider>
+        </Router>
       </ErrorProvider>
     </ErrorBoundary>
   )
