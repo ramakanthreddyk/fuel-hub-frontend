@@ -1,11 +1,11 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Sale } from '@/api/sales';
-import { formatShortDateTime, formatVolume, formatPrice, formatCurrency, formatSafeNumber } from '@/utils/formatters';
+import { EnhancedSale } from '@/hooks/useEnhancedSales';
+import { formatSafeDate, formatVolume, formatPrice, formatCurrency, formatSafeNumber } from '@/utils/formatters';
 
 interface SalesTableProps {
-  sales: Sale[];
+  sales: EnhancedSale[];
   isLoading?: boolean;
 }
 
@@ -66,7 +66,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
         {sales.map((sale) => (
           <TableRow key={sale.id}>
             <TableCell className="font-mono text-sm">
-              {formatShortDateTime(sale.recordedAt)}
+              {formatSafeDate(sale.recordedAt, 'dd/MM/yy HH:mm')}
             </TableCell>
             <TableCell className="font-medium">
               {sale.station?.name || 'Unknown Station'}

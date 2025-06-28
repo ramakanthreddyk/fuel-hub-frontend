@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SalesTable } from '@/components/sales/SalesTable';
 import { StationSelector } from '@/components/filters/StationSelector';
 import { DateRangePicker } from '@/components/filters/DateRangePicker';
-import { useSales } from '@/hooks/useSales';
+import { useEnhancedSales } from '@/hooks/useEnhancedSales';
 import { SalesFilters } from '@/api/sales';
 import { DollarSign, TrendingUp, CreditCard, Users, Download, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,22 +21,22 @@ export default function SalesPage() {
     endDate: dateRange?.to?.toISOString(),
   };
   
-  const { data: sales = [], isLoading } = useSales(filters);
+  const { data: sales = [], isLoading } = useEnhancedSales(filters);
 
   // Calculate summary stats with safe number handling
   const totalAmount = sales.reduce((sum, sale) => {
-    const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+    const amount = typeof sale.amount === 'number' ? sale.amount : 0;
     return sum + (isNaN(amount) ? 0 : amount);
   }, 0);
   
   const totalVolume = sales.reduce((sum, sale) => {
-    const volume = typeof sale.volume === 'string' ? parseFloat(sale.volume) : sale.volume;
+    const volume = typeof sale.volume === 'number' ? sale.volume : 0;
     return sum + (isNaN(volume) ? 0 : volume);
   }, 0);
   
   const creditSales = sales.filter(sale => sale.paymentMethod === 'credit');
   const creditAmount = creditSales.reduce((sum, sale) => {
-    const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+    const amount = typeof sale.amount === 'number' ? sale.amount : 0;
     return sum + (isNaN(amount) ? 0 : amount);
   }, 0);
   
