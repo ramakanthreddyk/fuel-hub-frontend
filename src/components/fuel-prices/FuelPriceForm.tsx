@@ -41,59 +41,61 @@ export function FuelPriceForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="stationId">Station *</Label>
-            <Select value={stationId} onValueChange={setStationId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select station" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.isArray(stations) && stations.map((station) => (
-                  <SelectItem key={station.id} value={station.id}>
-                    {station.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="stationId">Station *</Label>
+              <Select value={stationId} onValueChange={setStationId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select station" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.isArray(stations) && stations.map((station) => (
+                    <SelectItem key={station.id} value={station.id}>
+                      {station.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <Label htmlFor="fuelType">Fuel Type *</Label>
-            <Select value={fuelType} onValueChange={(value: 'petrol' | 'diesel' | 'premium') => setFuelType(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="petrol">Petrol</SelectItem>
-                <SelectItem value="diesel">Diesel</SelectItem>
-                <SelectItem value="premium">Premium</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div>
+              <Label htmlFor="fuelType">Fuel Type *</Label>
+              <Select value={fuelType} onValueChange={(value: 'petrol' | 'diesel' | 'premium') => setFuelType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="petrol">Petrol</SelectItem>
+                  <SelectItem value="diesel">Diesel</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <Label htmlFor="price">Price per Litre (₹) *</Label>
-            <Input
-              id="price"
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="Enter price per litre"
-              min="0"
-              step="0.01"
-              required
-            />
-          </div>
+            <div>
+              <Label htmlFor="price">Price per Litre (₹) *</Label>
+              <Input
+                id="price"
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="Enter price per litre"
+                min="0"
+                step="0.01"
+                required
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="validFrom">Valid From *</Label>
-            <Input
-              id="validFrom"
-              type="datetime-local"
-              value={validFrom}
-              onChange={(e) => setValidFrom(e.target.value)}
-              required
-            />
+            <div>
+              <Label htmlFor="validFrom">Valid From *</Label>
+              <Input
+                id="validFrom"
+                type="datetime-local"
+                value={validFrom}
+                onChange={(e) => setValidFrom(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <Button 

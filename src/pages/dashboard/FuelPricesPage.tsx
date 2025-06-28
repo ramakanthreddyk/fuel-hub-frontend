@@ -25,7 +25,7 @@ export default function FuelPricesPage() {
 
       {/* Add/Update Price Form */}
       {showForm && (
-        <div className="max-w-md">
+        <div className="max-w-4xl">
           <FuelPriceForm />
         </div>
       )}
