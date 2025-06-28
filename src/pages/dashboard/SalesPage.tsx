@@ -9,6 +9,7 @@ import { SalesFilters } from '@/api/sales';
 import { DollarSign, TrendingUp, CreditCard, Users, Download, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DateRange } from 'react-day-picker';
+import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
 
 export default function SalesPage() {
   const [selectedStation, setSelectedStation] = useState<string | undefined>();
@@ -22,10 +23,23 @@ export default function SalesPage() {
   
   const { data: sales = [], isLoading } = useSales(filters);
 
-  // Calculate summary stats
-  const totalAmount = sales.reduce((sum, sale) => sum + sale.amount, 0);
-  const totalVolume = sales.reduce((sum, sale) => sum + sale.volume, 0);
+  // Calculate summary stats with safe number handling
+  const totalAmount = sales.reduce((sum, sale) => {
+    const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+    return sum + (isNaN(amount) ? 0 : amount);
+  }, 0);
+  
+  const totalVolume = sales.reduce((sum, sale) => {
+    const volume = typeof sale.volume === 'string' ? parseFloat(sale.volume) : sale.volume;
+    return sum + (isNaN(volume) ? 0 : volume);
+  }, 0);
+  
   const creditSales = sales.filter(sale => sale.paymentMethod === 'credit');
+  const creditAmount = creditSales.reduce((sum, sale) => {
+    const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : sale.amount;
+    return sum + (isNaN(amount) ? 0 : amount);
+  }, 0);
+  
   const postedSales = sales.filter(sale => sale.status === 'posted');
 
   return (
@@ -78,9 +92,9 @@ export default function SalesPage() {
             <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">₹{totalAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-700">{formatCurrency(totalAmount)}</div>
             <p className="text-xs text-muted-foreground">
-              {sales.length} transactions
+              {formatSafeNumber(sales.length, 0)} transactions
             </p>
           </CardContent>
         </Card>
@@ -91,7 +105,7 @@ export default function SalesPage() {
             <TrendingUp className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-700">{totalVolume.toLocaleString()}L</div>
+            <div className="text-2xl font-bold text-blue-700">{formatVolume(totalVolume)}</div>
             <p className="text-xs text-muted-foreground">
               Fuel dispensed
             </p>
@@ -104,9 +118,9 @@ export default function SalesPage() {
             <CreditCard className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-700">₹{creditSales.reduce((sum, sale) => sum + sale.amount, 0).toLocaleString()}</div>
+            <div className="text-2xl font-bold text-orange-700">{formatCurrency(creditAmount)}</div>
             <p className="text-xs text-muted-foreground">
-              {creditSales.length} credit transactions
+              {formatSafeNumber(creditSales.length, 0)} credit transactions
             </p>
           </CardContent>
         </Card>
@@ -117,9 +131,9 @@ export default function SalesPage() {
             <Users className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-700">{postedSales.length}</div>
+            <div className="text-2xl font-bold text-purple-700">{formatSafeNumber(postedSales.length, 0)}</div>
             <p className="text-xs text-muted-foreground">
-              of {sales.length} total sales
+              of {formatSafeNumber(sales.length, 0)} total sales
             </p>
           </CardContent>
         </Card>

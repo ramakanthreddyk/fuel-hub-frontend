@@ -2,7 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Sale } from '@/api/sales';
-import { format } from 'date-fns';
+import { formatShortDateTime, formatVolume, formatPrice, formatCurrency, formatSafeNumber } from '@/utils/formatters';
 
 interface SalesTableProps {
   sales: Sale[];
@@ -47,21 +47,6 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
     }
   };
 
-  const formatSafeDate = (dateString: string | null | undefined) => {
-    if (!dateString) return 'N/A';
-    
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return 'Invalid Date';
-      }
-      return format(date, 'dd/MM/yy HH:mm');
-    } catch (error) {
-      console.warn('[SALES-TABLE] Invalid date format:', dateString);
-      return 'Invalid Date';
-    }
-  };
-
   return (
     <Table>
       <TableHeader>
@@ -81,16 +66,16 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
         {sales.map((sale) => (
           <TableRow key={sale.id}>
             <TableCell className="font-mono text-sm">
-              {formatSafeDate(sale.recordedAt)}
+              {formatShortDateTime(sale.recordedAt)}
             </TableCell>
             <TableCell className="font-medium">
               {sale.station?.name || 'Unknown Station'}
             </TableCell>
             <TableCell>
-              Nozzle {sale.nozzle?.nozzleNumber || 'N/A'}
+              Nozzle {formatSafeNumber(sale.nozzle?.nozzleNumber, 0) || 'N/A'}
             </TableCell>
             <TableCell className="text-right font-mono">
-              {sale.volume.toLocaleString()}
+              {formatVolume(sale.volume, 'L')}
             </TableCell>
             <TableCell>
               <Badge className={getFuelTypeColor(sale.fuelType)}>
@@ -98,10 +83,10 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
               </Badge>
             </TableCell>
             <TableCell className="text-right font-mono">
-              ₹{sale.fuelPrice.toFixed(2)}
+              {formatPrice(sale.fuelPrice)}
             </TableCell>
             <TableCell className="text-right font-mono font-medium">
-              ₹{sale.amount.toLocaleString()}
+              {formatCurrency(sale.amount)}
             </TableCell>
             <TableCell>
               <Badge className={getPaymentMethodColor(sale.paymentMethod)}>
