@@ -6,7 +6,14 @@ import { useToast } from '@/hooks/use-toast';
 export const useFuelPrices = () => {
   return useQuery({
     queryKey: ['fuel-prices'],
-    queryFn: fuelPricesApi.getFuelPrices,
+    queryFn: async () => {
+      console.log('[USE-FUEL-PRICES] Fetching fuel prices...');
+      const result = await fuelPricesApi.getFuelPrices();
+      console.log('[USE-FUEL-PRICES] Hook result:', result);
+      return result;
+    },
+    retry: 1,
+    staleTime: 30000, // 30 seconds
   });
 };
 
