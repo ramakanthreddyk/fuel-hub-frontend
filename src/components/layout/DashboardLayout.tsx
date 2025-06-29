@@ -19,10 +19,10 @@ export function DashboardLayout() {
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <AppSidebar />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 flex flex-col">
           <Header />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 space-y-6">
-            <div className="max-w-7xl mx-auto">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 space-y-6 overflow-auto">
+            <div className="max-w-7xl mx-auto w-full">
               <Outlet />
             </div>
           </main>
