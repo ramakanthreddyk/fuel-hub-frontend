@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,16 +15,9 @@ interface PaymentFormProps {
 
 export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps) {
   const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bank_transfer' | 'check'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | 'credit'>('cash');
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
-  
-  const [paymentMethods] = useState<Array<{ value: 'cash' | 'card' | 'upi' | 'credit'; label: string }>>([
-    { value: 'cash', label: 'Cash' },
-    { value: 'card', label: 'Card' },
-    { value: 'upi', label: 'UPI' },
-    { value: 'credit', label: 'Credit' },
-  ]);
 
   const createPayment = useCreatePayment();
 
@@ -35,6 +29,7 @@ export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps)
     createPayment.mutate({
       creditorId,
       amount: Number(amount),
+      paymentDate: new Date().toISOString(),
       paymentMethod,
       referenceNumber: referenceNumber || undefined,
       notes: notes || undefined,
@@ -69,14 +64,15 @@ export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps)
           
           <div>
             <Label htmlFor="paymentMethod">Payment Method *</Label>
-            <Select value={paymentMethod} onValueChange={(value: 'cash' | 'bank_transfer' | 'check') => setPaymentMethod(value)}>
+            <Select value={paymentMethod} onValueChange={(value: 'cash' | 'card' | 'upi' | 'credit') => setPaymentMethod(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="cash">Cash</SelectItem>
-                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                <SelectItem value="check">Check</SelectItem>
+                <SelectItem value="card">Card</SelectItem>
+                <SelectItem value="upi">UPI</SelectItem>
+                <SelectItem value="credit">Credit</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -87,7 +83,7 @@ export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps)
               id="referenceNumber"
               value={referenceNumber}
               onChange={(e) => setReferenceNumber(e.target.value)}
-              placeholder="Transaction ID, Check number, etc."
+              placeholder="Transaction ID, etc."
             />
           </div>
 

@@ -1,4 +1,3 @@
-
 export interface ApiResponse<T> {
   success: boolean;
   message?: string;
@@ -65,6 +64,7 @@ export interface ChangePasswordRequest {
 
 export interface ResetPasswordRequest {
   password: string;
+  newPassword?: string;
   token?: string;
 }
 
@@ -72,6 +72,7 @@ export interface CreateSuperAdminRequest {
   name: string;
   email: string;
   password: string;
+  role?: 'superadmin';
 }
 
 // Station Types
@@ -474,14 +475,17 @@ export interface SalesReportExportFilters {
 
 export interface ExportReportRequest {
   reportType: 'sales' | 'inventory' | 'reconciliation';
+  type?: 'sales' | 'inventory' | 'reconciliation';
   filters: Record<string, any>;
   format: 'csv' | 'excel' | 'pdf';
 }
 
 export interface ScheduleReportRequest {
   reportType: 'sales' | 'inventory' | 'reconciliation';
+  type?: 'sales' | 'inventory' | 'reconciliation';
   filters: Record<string, any>;
   schedule: 'daily' | 'weekly' | 'monthly';
+  frequency?: 'daily' | 'weekly' | 'monthly';
   recipients: string[];
 }
 
@@ -625,6 +629,10 @@ export interface CreateReconciliationRequest {
   reconciliationDate: string;
   date?: string;
   declaredCash: number;
+  totalExpected?: number;
+  cashReceived?: number;
+  reconciliationNotes?: string;
+  managerConfirmation?: boolean;
   notes?: string;
 }
 
@@ -648,6 +656,8 @@ export interface CreateTenantRequest {
   ownerName: string;
   ownerEmail: string;
   ownerPassword: string;
+  adminEmail?: string;
+  adminPassword?: string;
 }
 
 export interface UpdateTenantStatusRequest {
@@ -694,6 +704,7 @@ export interface AdminUser {
   role: 'superadmin';
   createdAt: string;
   lastLoginAt?: string;
+  lastLogin?: string;
 }
 
 export interface SuperAdminSummary {

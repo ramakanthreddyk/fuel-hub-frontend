@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CreateSuperAdminRequest, User } from '@/api/api-contract';
 
@@ -16,19 +15,16 @@ interface SuperAdminUserFormProps {
 }
 
 export function SuperAdminUserForm({ user, onSubmit, onCancel, isLoading }: SuperAdminUserFormProps) {
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreateSuperAdminRequest>({
+  const { register, handleSubmit, formState: { errors } } = useForm<CreateSuperAdminRequest>({
     defaultValues: {
       name: user?.name || '',
       email: user?.email || '',
-      role: 'superadmin',
       password: ''
     }
   });
 
-  const watchedRole = watch('role');
-
   const handleFormSubmit = (data: CreateSuperAdminRequest) => {
-    onSubmit(data);
+    onSubmit({ ...data, role: 'superadmin' });
   };
 
   return (
@@ -61,21 +57,6 @@ export function SuperAdminUserForm({ user, onSubmit, onCancel, isLoading }: Supe
             {errors.email && (
               <p className="text-sm text-red-600">{errors.email.message}</p>
             )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
-            <Select
-              value={watchedRole}
-              onValueChange={(value: 'superadmin') => setValue('role', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="superadmin">SuperAdmin</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {!user && (

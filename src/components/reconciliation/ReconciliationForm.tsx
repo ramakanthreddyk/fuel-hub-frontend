@@ -47,7 +47,8 @@ export function ReconciliationForm({ stationId, date, readings, onSuccess }: Rec
     try {
       await createReconciliation.mutateAsync({
         stationId,
-        date,
+        reconciliationDate: date,
+        declaredCash: totalCashDeclared,
         totalExpected,
         cashReceived: totalCashDeclared,
         reconciliationNotes: data.reconciliationNotes,

@@ -14,7 +14,7 @@ interface ReportExporterProps {
 
 export function ReportExporter({ stationId, dateRange }: ReportExporterProps) {
   const [reportType, setReportType] = useState<string>('');
-  const [format, setFormat] = useState<string>('');
+  const [format, setFormat] = useState<'csv' | 'excel' | 'pdf' | ''>('');
   const { exportReport, scheduleReport, isExporting } = useReportExport();
   const { toast } = useToast();
 
@@ -30,10 +30,12 @@ export function ReportExporter({ stationId, dateRange }: ReportExporterProps) {
 
     try {
       await exportReport({
-        type: reportType,
-        format,
-        stationId,
-        dateRange,
+        reportType: reportType as 'sales' | 'inventory' | 'reconciliation',
+        format: format as 'csv' | 'excel' | 'pdf',
+        filters: {
+          stationId,
+          dateRange,
+        },
       });
       
       toast({
@@ -61,9 +63,12 @@ export function ReportExporter({ stationId, dateRange }: ReportExporterProps) {
 
     try {
       await scheduleReport({
-        type: reportType,
-        stationId,
-        frequency: 'weekly',
+        reportType: reportType as 'sales' | 'inventory' | 'reconciliation',
+        schedule: 'weekly',
+        filters: {
+          stationId,
+        },
+        recipients: [],
       });
       
       toast({
@@ -98,8 +103,6 @@ export function ReportExporter({ stationId, dateRange }: ReportExporterProps) {
               <SelectContent>
                 <SelectItem value="sales">Sales Summary</SelectItem>
                 <SelectItem value="inventory">Inventory Report</SelectItem>
-                <SelectItem value="creditors">Creditors Report</SelectItem>
-                <SelectItem value="performance">Performance Analysis</SelectItem>
                 <SelectItem value="reconciliation">Reconciliation Report</SelectItem>
               </SelectContent>
             </Select>
@@ -107,7 +110,7 @@ export function ReportExporter({ stationId, dateRange }: ReportExporterProps) {
 
           <div>
             <label className="text-sm font-medium mb-2 block">Format</label>
-            <Select value={format} onValueChange={setFormat}>
+            <Select value={format} onValueChange={(value: 'csv' | 'excel' | 'pdf') => setFormat(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select format" />
               </SelectTrigger>
