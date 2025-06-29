@@ -35,18 +35,19 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
+  role: 'superadmin' | 'owner' | 'manager' | 'attendant';
   tenantId?: string;
   tenantName?: string;
   stationId?: string;
   stationName?: string;
+  createdAt: string;
 }
 
 export interface CreateUserRequest {
   name: string;
   email: string;
   password: string;
-  role: "manager" | "attendant";
+  role: 'manager' | 'attendant';
   stationId?: string;
 }
 
@@ -80,17 +81,17 @@ export interface Station {
   id: string;
   name: string;
   address: string;
-  status: "active" | "inactive" | "maintenance";
+  status: 'active' | 'inactive' | 'maintenance';
   manager?: string;
   attendantCount: number;
   pumpCount: number;
   createdAt: string;
+  // Metrics (optional when includeMetrics=true)
   todaySales?: number;
   monthlySales?: number;
   salesGrowth?: number;
   activePumps?: number;
   totalPumps?: number;
-  pumps?: Pump[];
   metrics?: {
     totalSales: number;
     activePumps: number;
@@ -103,7 +104,7 @@ export interface Station {
 export interface CreateStationRequest {
   name: string;
   address: string;
-  status: "active" | "inactive" | "maintenance";
+  status: 'active' | 'inactive' | 'maintenance';
 }
 
 // Pump Types
@@ -111,16 +112,15 @@ export interface Pump {
   id: string;
   label: string;
   serialNumber: string;
-  status: "active" | "inactive" | "maintenance";
+  status: 'active' | 'inactive' | 'maintenance';
   stationId: string;
   nozzleCount?: number;
-  nozzles?: Nozzle[];
 }
 
 export interface CreatePumpRequest {
   label: string;
   serialNumber: string;
-  status: "active" | "inactive" | "maintenance";
+  status: 'active' | 'inactive' | 'maintenance';
   stationId: string;
 }
 
@@ -128,8 +128,8 @@ export interface CreatePumpRequest {
 export interface Nozzle {
   id: string;
   nozzleNumber: number;
-  fuelType: "petrol" | "diesel" | "premium";
-  status: "active" | "inactive" | "maintenance";
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  status: 'active' | 'inactive' | 'maintenance';
   pumpId: string;
   createdAt: string;
 }
@@ -137,7 +137,7 @@ export interface Nozzle {
 export interface CreateNozzleRequest {
   pumpId: string;
   nozzleNumber: number;
-  fuelType: "petrol" | "diesel" | "premium";
+  fuelType: 'petrol' | 'diesel' | 'premium';
 }
 
 export interface UpdateNozzleRequest {
@@ -182,18 +182,15 @@ export interface DailyReadingSummary {
 export interface FuelPrice {
   id: string;
   stationId: string;
-  fuelType: "petrol" | "diesel" | "premium";
+  fuelType: 'petrol' | 'diesel' | 'premium';
   price: number;
   validFrom: string;
   createdAt: string;
-  station?: {
-    name: string;
-  };
 }
 
 export interface CreateFuelPriceRequest {
   stationId: string;
-  fuelType: "petrol" | "diesel" | "premium";
+  fuelType: 'petrol' | 'diesel' | 'premium';
   price: number;
   validFrom: string;
 }
@@ -231,12 +228,10 @@ export interface SalesFilters {
 export interface Creditor {
   id: string;
   partyName: string;
-  name?: string; // Alias for partyName
   contactPerson?: string;
   phoneNumber?: string;
   creditLimit?: number;
-  outstandingAmount?: number;
-  currentOutstanding?: number; // Alias for outstandingAmount
+  outstandingAmount: number;
   paymentTerms?: string;
   notes?: string;
   createdAt: string;
@@ -376,16 +371,12 @@ export interface FuelPriceValidation {
 // Dashboard Types
 export interface SalesSummary {
   totalRevenue: number;
-  totalSales?: number; // Alias for totalRevenue
   totalVolume: number;
   salesCount: number;
-  transactionCount?: number; // Alias for salesCount
   averageTicketSize: number;
   cashSales: number;
   creditSales: number;
   growthPercentage: number;
-  totalProfit?: number;
-  profitMargin?: number;
 }
 
 export interface PaymentMethodBreakdown {
@@ -644,8 +635,6 @@ export interface Tenant {
   planId: string;
   planName: string;
   createdAt: string;
-  users?: User[];
-  stations?: Station[];
   userCount: number;
   stationCount: number;
 }
@@ -656,8 +645,6 @@ export interface CreateTenantRequest {
   ownerName: string;
   ownerEmail: string;
   ownerPassword: string;
-  adminEmail?: string;
-  adminPassword?: string;
 }
 
 export interface UpdateTenantStatusRequest {
@@ -676,13 +663,9 @@ export interface Plan {
   name: string;
   description: string;
   price: number;
-  priceMonthly?: number;
-  priceYearly?: number;
-  features: string[];
   maxStations: number;
   maxUsers: number;
-  maxPumpsPerStation?: number;
-  maxNozzlesPerPump?: number;
+  features: string[];
   isActive: boolean;
   createdAt: string;
 }
@@ -691,9 +674,9 @@ export interface CreatePlanRequest {
   name: string;
   description: string;
   price: number;
-  features: string[];
   maxStations: number;
   maxUsers: number;
+  features: string[];
 }
 
 // SuperAdmin User Types
@@ -703,8 +686,13 @@ export interface AdminUser {
   email: string;
   role: 'superadmin';
   createdAt: string;
-  lastLoginAt?: string;
   lastLogin?: string;
+}
+
+export interface CreateSuperAdminRequest {
+  name: string;
+  email: string;
+  password: string;
 }
 
 export interface SuperAdminSummary {

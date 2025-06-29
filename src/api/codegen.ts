@@ -6,7 +6,6 @@
  * Run with: npx tsx src/api/codegen.ts
  */
 
-import { generate } from 'openapi-typescript-codegen';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -71,6 +70,16 @@ components:
       console.log('✅ Created minimal OpenAPI spec for demo');
     }
 
+    // Try to import and use the code generator
+    let generate;
+    try {
+      const codegen = await import('openapi-typescript-codegen');
+      generate = codegen.generate;
+    } catch (importError) {
+      console.log('⚠️ OpenAPI code generator not available, using fallback approach...');
+      throw new Error('Code generator not available');
+    }
+
     // Clean output directory
     if (fs.existsSync(OUTPUT_DIR)) {
       fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
@@ -117,13 +126,54 @@ components:
       fs.mkdirSync(modelsDir, { recursive: true });
     }
     
-    // Create a basic index file
-    const indexContent = `// Generated API types
+    // Create a basic index file with all the contract exports
+    const indexContent = `// Generated API types - exports from existing api-contract
 export * from '../api-contract';
+
+// Re-export commonly used types
+export type {
+  ApiResponse,
+  ApiErrorResponse,
+  User,
+  Station,
+  Pump,
+  Nozzle,
+  FuelPrice,
+  Creditor,
+  Sale,
+  Tenant,
+  Plan,
+  AdminUser,
+  CreateUserRequest,
+  CreateStationRequest,
+  CreatePumpRequest,
+  CreateNozzleRequest,
+  CreateReadingRequest,
+  CreateFuelPriceRequest,
+  CreateCreditorRequest,
+  CreateTenantRequest,
+  CreatePlanRequest,
+  CreateSuperAdminRequest,
+  SalesSummary,
+  PaymentMethodBreakdown,
+  SystemAlert,
+  AttendantStation,
+  CashReport,
+  CreateCashReportRequest,
+  SuperAdminSummary
+} from '../api-contract';
+
+// Export contract services
+export { authService } from '../contract/auth.service';
+export { stationsService } from '../contract/stations.service';
+export { attendantService } from '../contract/attendant.service';
+export { superAdminService } from '../contract/superadmin.service';
+export { ownerService } from '../contract/owner.service';
+export { managerService } from '../contract/manager.service';
 `;
     fs.writeFileSync(path.join(OUTPUT_DIR, 'index.ts'), indexContent);
     
-    console.log('✅ Basic generated structure created');
+    console.log('✅ Basic generated structure created with contract services');
   }
 }
 
