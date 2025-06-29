@@ -138,7 +138,7 @@ export class ManagerService {
    * GET /dashboard/payment-methods
    */
   async getPaymentMethods(): Promise<PaymentMethodBreakdown[]> {
-    return contractClient.getArray<PaymentMethodBreakdown>('/dashboard/payment-methods');
+    return contractClient.getArray<PaymentMethodBreakdown>('/dashboard/payment-methods', 'paymentMethods');
   }
 
   // Alert Management
