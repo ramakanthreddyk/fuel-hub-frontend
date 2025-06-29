@@ -1248,6 +1248,39 @@ paths:
           application/json:
             schema:
               type: object
+
+  /api/v1/admin/tenants/{tenantId}/settings:
+    get:
+      summary: List tenant settings
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/tenants/{tenantId}/settings/{key}:
+    get:
+      summary: Get tenant setting
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Update tenant setting
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: string
   /api/v1/analytics/dashboard:
     get:
       summary: Tenant dashboard metrics
