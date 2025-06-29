@@ -53,15 +53,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Protected Dashboard Layout Component
-const ProtectedDashboardLayout = ({ children }: { children: React.ReactNode }) => (
-  <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-    <DashboardLayout>
-      {children}
-    </DashboardLayout>
-  </RequireAuth>
-);
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -116,92 +107,30 @@ function App() {
             } />
             <Route path="/superadmin" element={<Navigate to="/superadmin/overview" replace />} />
 
-            {/* Dashboard Routes */}
+            {/* Dashboard Routes with Layout */}
             <Route path="/dashboard" element={
-              <ProtectedDashboardLayout>
-                <SummaryPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/stations" element={
-              <ProtectedDashboardLayout>
-                <StationsPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/pumps" element={
-              <ProtectedDashboardLayout>
-                <PumpsPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/nozzles" element={
-              <ProtectedDashboardLayout>
-                <NozzlesPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/readings" element={
-              <ProtectedDashboardLayout>
-                <ReadingsPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/readings/new" element={
-              <ProtectedDashboardLayout>
-                <NewReadingPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/fuel-prices" element={
-              <ProtectedDashboardLayout>
-                <FuelPricesPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/creditors" element={
-              <ProtectedDashboardLayout>
-                <CreditorsPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/creditors/:creditorId/payments" element={
-              <ProtectedDashboardLayout>
-                <CreditorPaymentsPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/sales" element={
-              <ProtectedDashboardLayout>
-                <SalesPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/reports" element={
-              <ProtectedDashboardLayout>
-                <ReportsPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/users" element={
-              <ProtectedDashboardLayout>
-                <UsersPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/settings" element={
-              <ProtectedDashboardLayout>
-                <SettingsPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/alerts" element={
-              <ProtectedDashboardLayout>
-                <AlertsPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/reconciliation" element={
-              <ProtectedDashboardLayout>
-                <ReconciliationPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/inventory" element={
-              <ProtectedDashboardLayout>
-                <InventoryPage />
-              </ProtectedDashboardLayout>
-            } />
-            <Route path="/dashboard/fuel-deliveries" element={
-              <ProtectedDashboardLayout>
-                <FuelDeliveriesPage />
-              </ProtectedDashboardLayout>
-            } />
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout />
+              </RequireAuth>
+            }>
+              <Route index element={<SummaryPage />} />
+              <Route path="stations" element={<StationsPage />} />
+              <Route path="pumps" element={<PumpsPage />} />
+              <Route path="nozzles" element={<NozzlesPage />} />
+              <Route path="readings" element={<ReadingsPage />} />
+              <Route path="readings/new" element={<NewReadingPage />} />
+              <Route path="fuel-prices" element={<FuelPricesPage />} />
+              <Route path="creditors" element={<CreditorsPage />} />
+              <Route path="creditors/:creditorId/payments" element={<CreditorPaymentsPage />} />
+              <Route path="sales" element={<SalesPage />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="alerts" element={<AlertsPage />} />
+              <Route path="reconciliation" element={<ReconciliationPage />} />
+              <Route path="inventory" element={<InventoryPage />} />
+              <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
+            </Route>
 
             {/* Catch all route */}
             <Route path="*" element={<NotFound />} />
