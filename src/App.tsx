@@ -108,28 +108,122 @@ function App() {
             <Route path="/superadmin" element={<Navigate to="/superadmin/overview" replace />} />
 
             {/* Dashboard Routes */}
-            <Route path="/dashboard/*" element={
+            <Route path="/dashboard" element={
               <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
                 <DashboardLayout>
-                  <Routes>
-                    <Route path="" element={<SummaryPage />} />
-                    <Route path="stations" element={<StationsPage />} />
-                    <Route path="pumps" element={<PumpsPage />} />
-                    <Route path="nozzles" element={<NozzlesPage />} />
-                    <Route path="readings" element={<ReadingsPage />} />
-                    <Route path="readings/new" element={<NewReadingPage />} />
-                    <Route path="fuel-prices" element={<FuelPricesPage />} />
-                    <Route path="creditors" element={<CreditorsPage />} />
-                    <Route path="creditors/:creditorId/payments" element={<CreditorPaymentsPage />} />
-                    <Route path="sales" element={<SalesPage />} />
-                    <Route path="reports" element={<ReportsPage />} />
-                    <Route path="users" element={<UsersPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="alerts" element={<AlertsPage />} />
-                    <Route path="reconciliation" element={<ReconciliationPage />} />
-                    <Route path="inventory" element={<InventoryPage />} />
-                    <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
-                  </Routes>
+                  <SummaryPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/stations" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <StationsPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/pumps" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <PumpsPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/nozzles" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <NozzlesPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/readings" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <ReadingsPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/readings/new" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <NewReadingPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/fuel-prices" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <FuelPricesPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/creditors" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <CreditorsPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/creditors/:creditorId/payments" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <CreditorPaymentsPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/sales" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <SalesPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/reports" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <ReportsPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/users" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <UsersPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/settings" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <SettingsPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/alerts" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <AlertsPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/reconciliation" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <ReconciliationPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/inventory" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <InventoryPage />
+                </DashboardLayout>
+              </RequireAuth>
+            } />
+            <Route path="/dashboard/fuel-deliveries" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <FuelDeliveriesPage />
                 </DashboardLayout>
               </RequireAuth>
             } />
