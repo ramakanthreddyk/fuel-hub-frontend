@@ -65,21 +65,47 @@ function App() {
             <Route path="/unauthorized" element={<Unauthorized />} />
 
             {/* SuperAdmin Routes */}
-            <Route path="/superadmin/*" element={
+            <Route path="/superadmin/overview" element={
               <RequireAuth allowedRoles={['superadmin']}>
-                <Routes>
-                  <Route path="overview" element={<OverviewPage />} />
-                  <Route path="tenants" element={<TenantsPage />} />
-                  <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
-                  <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
-                  <Route path="tenants/create" element={<CreateTenantPage />} />
-                  <Route path="plans" element={<PlansPage />} />
-                  <Route path="analytics" element={<AnalyticsPage />} />
-                  <Route path="users" element={<SuperAdminUsersPage />} />
-                  <Route path="" element={<Navigate to="overview" replace />} />
-                </Routes>
+                <OverviewPage />
               </RequireAuth>
             } />
+            <Route path="/superadmin/tenants" element={
+              <RequireAuth allowedRoles={['superadmin']}>
+                <TenantsPage />
+              </RequireAuth>
+            } />
+            <Route path="/superadmin/tenants/:tenantId" element={
+              <RequireAuth allowedRoles={['superadmin']}>
+                <TenantDetailsPage />
+              </RequireAuth>
+            } />
+            <Route path="/superadmin/tenants/:tenantId/settings" element={
+              <RequireAuth allowedRoles={['superadmin']}>
+                <TenantSettingsPage />
+              </RequireAuth>
+            } />
+            <Route path="/superadmin/tenants/create" element={
+              <RequireAuth allowedRoles={['superadmin']}>
+                <CreateTenantPage />
+              </RequireAuth>
+            } />
+            <Route path="/superadmin/plans" element={
+              <RequireAuth allowedRoles={['superadmin']}>
+                <PlansPage />
+              </RequireAuth>
+            } />
+            <Route path="/superadmin/analytics" element={
+              <RequireAuth allowedRoles={['superadmin']}>
+                <AnalyticsPage />
+              </RequireAuth>
+            } />
+            <Route path="/superadmin/users" element={
+              <RequireAuth allowedRoles={['superadmin']}>
+                <SuperAdminUsersPage />
+              </RequireAuth>
+            } />
+            <Route path="/superadmin" element={<Navigate to="/superadmin/overview" replace />} />
 
             {/* Dashboard Routes */}
             <Route path="/dashboard/*" element={
