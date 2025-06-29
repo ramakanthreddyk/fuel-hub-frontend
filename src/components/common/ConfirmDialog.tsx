@@ -11,6 +11,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ConfirmDialogProps {
   /** Whether dialog is visible */
@@ -99,7 +101,7 @@ export function ConfirmDialog({
           </AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleConfirm}
-            variant={variant}
+            className={cn(buttonVariants({ variant }))}
           >
             {confirmText}
           </AlertDialogAction>
