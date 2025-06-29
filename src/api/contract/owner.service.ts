@@ -101,7 +101,7 @@ export class OwnerService {
    * Update pump
    * PUT /pumps/{id}
    */
-  async updatePump(id: string, data: Partial<CreatePumpRequest>): Pump> {
+  async updatePump(id: string, data: Partial<CreatePumpRequest>): Promise<Pump> {
     return contractClient.put<Pump>(`/pumps/${id}`, data);
   }
 
@@ -194,7 +194,7 @@ export class OwnerService {
    * GET /dashboard/payment-methods
    */
   async getPaymentMethods(): Promise<PaymentMethodBreakdown[]> {
-    return contractClient.getArray<PaymentMethodBreakdown>('/dashboard/payment-methods');
+    return contractClient.getArray<PaymentMethodBreakdown>('/dashboard/payment-methods', 'paymentMethods');
   }
 }
 
