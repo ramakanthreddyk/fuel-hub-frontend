@@ -54,13 +54,13 @@ export default function CreditorPaymentsPage() {
             <div>
               <p className="text-sm text-muted-foreground">Outstanding</p>
               <p className="text-lg font-semibold text-red-600">
-                ₹{(creditor.outstandingAmount || creditor.currentOutstanding || 0).toLocaleString()}
+                ₹{(creditor.outstandingAmount || 0).toLocaleString()}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Available Credit</p>
               <p className="text-lg font-semibold text-green-600">
-                ₹{((creditor.creditLimit || 0) - (creditor.outstandingAmount || creditor.currentOutstanding || 0)).toLocaleString()}
+                ₹{((creditor.creditLimit || 0) - (creditor.outstandingAmount || 0)).toLocaleString()}
               </p>
             </div>
           </div>

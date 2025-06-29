@@ -1,3 +1,4 @@
+
 export interface ApiResponse<T> {
   success: boolean;
   message?: string;
@@ -99,6 +100,7 @@ export interface Station {
     totalVolume?: number;
     transactionCount?: number;
   };
+  pumps?: Pump[];
 }
 
 export interface CreateStationRequest {
@@ -115,6 +117,7 @@ export interface Pump {
   status: 'active' | 'inactive' | 'maintenance';
   stationId: string;
   nozzleCount?: number;
+  nozzles?: Nozzle[];
 }
 
 export interface CreatePumpRequest {
@@ -186,6 +189,7 @@ export interface FuelPrice {
   price: number;
   validFrom: string;
   createdAt: string;
+  stationName?: string;
 }
 
 export interface CreateFuelPriceRequest {
@@ -228,10 +232,12 @@ export interface SalesFilters {
 export interface Creditor {
   id: string;
   partyName: string;
+  name?: string; // Alias for partyName
   contactPerson?: string;
   phoneNumber?: string;
   creditLimit?: number;
   outstandingAmount: number;
+  currentOutstanding?: number; // Alias for outstandingAmount
   paymentTerms?: string;
   notes?: string;
   createdAt: string;
@@ -371,12 +377,16 @@ export interface FuelPriceValidation {
 // Dashboard Types
 export interface SalesSummary {
   totalRevenue: number;
+  totalSales?: number; // Alias for totalRevenue
   totalVolume: number;
   salesCount: number;
+  transactionCount?: number; // Alias for salesCount
   averageTicketSize: number;
   cashSales: number;
   creditSales: number;
   growthPercentage: number;
+  totalProfit?: number;
+  profitMargin?: number;
 }
 
 export interface PaymentMethodBreakdown {
@@ -637,6 +647,8 @@ export interface Tenant {
   createdAt: string;
   userCount: number;
   stationCount: number;
+  users?: User[];
+  stations?: Station[];
 }
 
 export interface CreateTenantRequest {
@@ -663,8 +675,12 @@ export interface Plan {
   name: string;
   description: string;
   price: number;
+  priceMonthly?: number; // Alias for price
+  priceYearly?: number;
   maxStations: number;
   maxUsers: number;
+  maxPumpsPerStation?: number;
+  maxNozzlesPerPump?: number;
   features: string[];
   isActive: boolean;
   createdAt: string;
@@ -674,8 +690,12 @@ export interface CreatePlanRequest {
   name: string;
   description: string;
   price: number;
+  priceMonthly?: number;
+  priceYearly?: number;
   maxStations: number;
   maxUsers: number;
+  maxPumpsPerStation?: number;
+  maxNozzlesPerPump?: number;
   features: string[];
 }
 

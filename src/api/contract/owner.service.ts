@@ -52,7 +52,7 @@ export class OwnerService {
    * DELETE /users/{id}
    */
   async deleteUser(id: string): Promise<void> {
-    return contractClient.delete<void>(`/users/${id}`);
+    return contractClient.delete(`/users/${id}`);
   }
 
   /**
@@ -60,7 +60,7 @@ export class OwnerService {
    * POST /users/{id}/reset-password
    */
   async resetUserPassword(id: string, newPassword: string): Promise<void> {
-    return contractClient.post<void>(`/users/${id}/reset-password`, { newPassword });
+    return contractClient.post(`/users/${id}/reset-password`, { newPassword });
   }
 
   // Station Management
@@ -85,7 +85,7 @@ export class OwnerService {
    * DELETE /stations/{id}
    */
   async deleteStation(id: string): Promise<void> {
-    return contractClient.delete<void>(`/stations/${id}`);
+    return contractClient.delete(`/stations/${id}`);
   }
 
   // Pump Management
@@ -101,7 +101,7 @@ export class OwnerService {
    * Update pump
    * PUT /pumps/{id}
    */
-  async updatePump(id: string, data: Partial<CreatePumpRequest>): Promise<Pump> {
+  async updatePump(id: string, data: Partial<CreatePumpRequest>): Pump> {
     return contractClient.put<Pump>(`/pumps/${id}`, data);
   }
 
@@ -110,7 +110,7 @@ export class OwnerService {
    * DELETE /pumps/{id}
    */
   async deletePump(id: string): Promise<void> {
-    return contractClient.delete<void>(`/pumps/${id}`);
+    return contractClient.delete(`/pumps/${id}`);
   }
 
   // Fuel Price Management
@@ -172,7 +172,7 @@ export class OwnerService {
    * DELETE /creditors/{id}
    */
   async deleteCreditor(id: string): Promise<void> {
-    return contractClient.delete<void>(`/creditors/${id}`);
+    return contractClient.delete(`/creditors/${id}`);
   }
 
   // Dashboard Analytics

@@ -51,9 +51,9 @@ export function FuelPriceTable() {
                     <Badge className={getFuelTypeColor(price.fuelType)}>
                       {price.fuelType.charAt(0).toUpperCase() + price.fuelType.slice(1)}
                     </Badge>
-                    {price.station && (
+                    {price.stationName && (
                       <span className="text-sm text-muted-foreground">
-                        • {price.station.name}
+                        • {price.stationName}
                       </span>
                     )}
                   </div>
