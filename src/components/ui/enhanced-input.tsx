@@ -1,11 +1,11 @@
 
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Input, InputProps } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
-export interface EnhancedInputProps extends Omit<InputProps, 'type'> {
+export interface EnhancedInputProps extends React.ComponentProps<"input"> {
   /** Input label */
   label?: string;
   /** Help text displayed below input */

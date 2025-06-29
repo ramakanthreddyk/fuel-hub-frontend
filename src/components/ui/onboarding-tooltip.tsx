@@ -96,9 +96,9 @@ export function OnboardingTooltip({
   }
 
   // Get target element
-  const getTargetElement = () => {
+  const getTargetElement = (): HTMLElement | null => {
     if (typeof currentStepData.target === 'string') {
-      return document.querySelector(currentStepData.target);
+      return document.querySelector(currentStepData.target) as HTMLElement;
     }
     return currentStepData.target.current;
   };
