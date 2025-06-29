@@ -42,7 +42,7 @@ import AnalyticsPage from '@/pages/superadmin/AnalyticsPage';
 import SuperAdminUsersPage from '@/pages/superadmin/UsersPage';
 
 // Layouts
-import DashboardLayout from '@/layouts/DashboardLayout';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 const queryClient = new QueryClient({
   defaultOptions: {
