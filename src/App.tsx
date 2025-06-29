@@ -65,54 +65,48 @@ function App() {
             <Route path="/unauthorized" element={<Unauthorized />} />
 
             {/* SuperAdmin Routes */}
-            <Route
-              path="/superadmin/*"
-              element={
-                <RequireAuth allowedRoles={['superadmin']}>
-                  <Routes>
-                    <Route path="overview" element={<OverviewPage />} />
-                    <Route path="tenants" element={<TenantsPage />} />
-                    <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
-                    <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
-                    <Route path="tenants/create" element={<CreateTenantPage />} />
-                    <Route path="plans" element={<PlansPage />} />
-                    <Route path="analytics" element={<AnalyticsPage />} />
-                    <Route path="users" element={<SuperAdminUsersPage />} />
-                    <Route path="" element={<Navigate to="overview" replace />} />
-                  </Routes>
-                </RequireAuth>
-              }
-            />
+            <Route path="/superadmin/*" element={
+              <RequireAuth allowedRoles={['superadmin']}>
+                <Routes>
+                  <Route path="overview" element={<OverviewPage />} />
+                  <Route path="tenants" element={<TenantsPage />} />
+                  <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
+                  <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
+                  <Route path="tenants/create" element={<CreateTenantPage />} />
+                  <Route path="plans" element={<PlansPage />} />
+                  <Route path="analytics" element={<AnalyticsPage />} />
+                  <Route path="users" element={<SuperAdminUsersPage />} />
+                  <Route path="" element={<Navigate to="overview" replace />} />
+                </Routes>
+              </RequireAuth>
+            } />
 
             {/* Dashboard Routes */}
-            <Route
-              path="/dashboard/*"
-              element={
-                <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                  <DashboardLayout>
-                    <Routes>
-                      <Route path="" element={<SummaryPage />} />
-                      <Route path="stations" element={<StationsPage />} />
-                      <Route path="pumps" element={<PumpsPage />} />
-                      <Route path="nozzles" element={<NozzlesPage />} />
-                      <Route path="readings" element={<ReadingsPage />} />
-                      <Route path="readings/new" element={<NewReadingPage />} />
-                      <Route path="fuel-prices" element={<FuelPricesPage />} />
-                      <Route path="creditors" element={<CreditorsPage />} />
-                      <Route path="creditors/:creditorId/payments" element={<CreditorPaymentsPage />} />
-                      <Route path="sales" element={<SalesPage />} />
-                      <Route path="reports" element={<ReportsPage />} />
-                      <Route path="users" element={<UsersPage />} />
-                      <Route path="settings" element={<SettingsPage />} />
-                      <Route path="alerts" element={<AlertsPage />} />
-                      <Route path="reconciliation" element={<ReconciliationPage />} />
-                      <Route path="inventory" element={<InventoryPage />} />
-                      <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
-                    </Routes>
-                  </DashboardLayout>
-                </RequireAuth>
-              }
-            />
+            <Route path="/dashboard/*" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <DashboardLayout>
+                  <Routes>
+                    <Route path="" element={<SummaryPage />} />
+                    <Route path="stations" element={<StationsPage />} />
+                    <Route path="pumps" element={<PumpsPage />} />
+                    <Route path="nozzles" element={<NozzlesPage />} />
+                    <Route path="readings" element={<ReadingsPage />} />
+                    <Route path="readings/new" element={<NewReadingPage />} />
+                    <Route path="fuel-prices" element={<FuelPricesPage />} />
+                    <Route path="creditors" element={<CreditorsPage />} />
+                    <Route path="creditors/:creditorId/payments" element={<CreditorPaymentsPage />} />
+                    <Route path="sales" element={<SalesPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="users" element={<UsersPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="alerts" element={<AlertsPage />} />
+                    <Route path="reconciliation" element={<ReconciliationPage />} />
+                    <Route path="inventory" element={<InventoryPage />} />
+                    <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
+                  </Routes>
+                </DashboardLayout>
+              </RequireAuth>
+            } />
 
             {/* Catch all route */}
             <Route path="*" element={<NotFound />} />

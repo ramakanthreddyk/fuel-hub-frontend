@@ -53,9 +53,8 @@ export function TenantCard({ tenant, onUpdateStatus, onDelete, onView }: TenantC
           </div>
           <TenantActions
             tenant={tenant}
-            onUpdateStatus={onUpdateStatus}
+            onStatusChange={onUpdateStatus}
             onDelete={onDelete}
-            onView={onView}
           />
         </div>
         <div className="text-xs text-muted-foreground text-center">
