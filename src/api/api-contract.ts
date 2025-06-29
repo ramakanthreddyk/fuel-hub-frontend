@@ -1,4 +1,3 @@
-
 export interface ApiResponse<T> {
   success: boolean;
   message?: string;
@@ -697,3 +696,236 @@ BACKEND API REQUIREMENTS - Please implement these endpoints:
    - Prevent sale calculation if fuel price is older than 7 days
    - Warn if creditor approaching credit limit
 */
+
+// Fix missing properties in existing types
+export interface Alert {
+  id: string;
+  type: 'warning' | 'error' | 'info';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  title: string;
+  message: string;
+  stationId?: string;
+  stationName?: string;
+  nozzleId?: string;
+  createdAt: string;
+  read: boolean;
+  severity?: 'low' | 'medium' | 'high' | 'critical'; // Alias for priority
+}
+
+// Extend Plan interface with missing properties
+export interface Plan {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  priceMonthly?: number;
+  priceYearly?: number;
+  features: string[];
+  maxStations: number;
+  maxUsers: number;
+  maxPumpsPerStation?: number;
+  maxNozzlesPerPump?: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+// Extend SalesSummary with missing fields
+export interface SalesSummary {
+  totalRevenue: number;
+  totalSales?: number; // Alias for totalRevenue
+  totalVolume: number;
+  salesCount: number;
+  transactionCount?: number; // Alias for salesCount
+  averageTicketSize: number;
+  cashSales: number;
+  creditSales: number;
+  growthPercentage: number;
+  totalProfit?: number;
+  profitMargin?: number;
+}
+
+// Extend PaymentMethodBreakdown
+export interface PaymentMethodBreakdown {
+  method: string;
+  paymentMethod?: string; // Alias for method
+  amount: number;
+  percentage: number;
+  count: number;
+}
+
+// Extend FuelTypeBreakdown
+export interface FuelTypeBreakdown {
+  fuelType: string;
+  volume: number;
+  revenue: number;
+  amount?: number; // Alias for revenue
+  percentage: number;
+}
+
+// Extend TopCreditor
+export interface TopCreditor {
+  id: string;
+  name: string;
+  partyName?: string; // Alias for name
+  outstandingAmount: number;
+  creditLimit: number;
+  utilizationPercentage: number;
+}
+
+// Extend DailySalesTrend
+export interface DailySalesTrend {
+  date: string;
+  revenue: number;
+  amount?: number; // Alias for revenue
+  volume: number;
+  salesCount: number;
+}
+
+// Extend Station with metrics
+export interface Station {
+  id: string;
+  name: string;
+  address: string;
+  status: "active" | "inactive" | "maintenance";
+  manager?: string;
+  attendantCount: number;
+  pumpCount: number;
+  createdAt: string;
+  todaySales?: number;
+  monthlySales?: number;
+  salesGrowth?: number;
+  activePumps?: number;
+  totalPumps?: number;
+  pumps?: Pump[];
+  metrics?: {
+    totalSales: number;
+    activePumps: number;
+    totalPumps: number;
+    totalVolume?: number;
+    transactionCount?: number;
+  };
+}
+
+// Extend SuperAdminAnalytics
+export interface SuperAdminAnalytics {
+  totalTenants: number;
+  activeTenants: number;
+  totalStations: number;
+  totalRevenue: number;
+  salesVolume?: number;
+  revenueGrowth: number;
+  monthlyGrowth?: number;
+  topPerformingTenants: Array<{
+    tenantId: string;
+    tenantName: string;
+    revenue: number;
+    stationCount: number;
+  }>;
+}
+
+// Extend PeakHour
+export interface PeakHour {
+  hour: number;
+  timeRange?: string;
+  averageRevenue: number;
+  avgSales?: number; // Alias for averageRevenue
+  averageVolume: number;
+  averageSalesCount: number;
+}
+
+// Extend StationRanking
+export interface StationRanking {
+  rank: number;
+  stationId: string;
+  id?: string; // Alias for stationId
+  stationName: string;
+  name?: string; // Alias for stationName
+  revenue: number;
+  sales?: number; // Alias for revenue
+  volume: number;
+  salesCount: number;
+  score: number;
+  growth?: number;
+  efficiency?: number;
+}
+
+// Extend CreditPayment
+export interface CreditPayment {
+  id: string;
+  creditorId: string;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
+  reference?: string;
+  referenceNumber?: string; // Alias for reference
+  notes?: string;
+  createdAt: string;
+}
+
+// Extend FuelDelivery
+export interface FuelDelivery {
+  id: string;
+  stationId: string;
+  stationName: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  quantity: number;
+  volume?: number; // Alias for quantity
+  deliveryDate: string;
+  supplierName: string;
+  deliveredBy?: string;
+  invoiceNumber: string;
+  pricePerLiter: number;
+  totalAmount: number;
+  createdAt: string;
+}
+
+// Extend CreateFuelDeliveryRequest
+export interface CreateFuelDeliveryRequest {
+  stationId: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  quantity: number;
+  volume?: number; // Alias for quantity
+  deliveryDate: string;
+  supplierName: string;
+  deliveredBy?: string;
+  invoiceNumber: string;
+  pricePerLiter: number;
+}
+
+// Extend CreateReconciliationRequest
+export interface CreateReconciliationRequest {
+  stationId: string;
+  reconciliationDate: string;
+  date?: string; // Alias for reconciliationDate
+  declaredCash: number;
+  notes?: string;
+}
+
+// Extend SalesReportFilters (alias for SalesFilters)
+export interface SalesReportFilters extends SalesFilters {
+  startDate?: string; // Alias for dateFrom
+  endDate?: string;   // Alias for dateTo
+}
+
+// Extend SalesReportData
+export interface SalesReportData {
+  id: string;
+  date: string;
+  stationName: string;
+  nozzleNumber: number;
+  fuelType: string;
+  volume: number;
+  pricePerLiter: number;
+  pricePerLitre?: number; // Alias for pricePerLiter
+  totalAmount: number;
+  amount?: number; // Alias for totalAmount
+  paymentMethod: string;
+  creditorName?: string;
+  attendant?: string;
+}
+
+// Export ResetPasswordRequest type
+export interface ResetPasswordRequest {
+  password: string;
+  token?: string;
+}

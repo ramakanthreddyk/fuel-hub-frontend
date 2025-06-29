@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,14 +9,22 @@ import { useCreatePayment } from '@/hooks/useCreditors';
 
 interface PaymentFormProps {
   creditorId: string;
+  onSuccess?: () => void;
 }
 
-export function PaymentForm({ creditorId }: PaymentFormProps) {
+export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps) {
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bank_transfer' | 'check'>('cash');
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
   
+  const [paymentMethods] = useState<Array<{ value: 'cash' | 'card' | 'upi' | 'credit'; label: string }>>([
+    { value: 'cash', label: 'Cash' },
+    { value: 'card', label: 'Card' },
+    { value: 'upi', label: 'UPI' },
+    { value: 'credit', label: 'Credit' },
+  ]);
+
   const createPayment = useCreatePayment();
 
   const handleSubmit = (e: React.FormEvent) => {

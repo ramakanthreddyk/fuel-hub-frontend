@@ -8,8 +8,7 @@
 import { contractClient } from '../contract-client';
 import type { 
   LoginRequest, 
-  LoginResponse, 
-  User 
+  LoginResponse 
 } from '../api-contract';
 
 export class AuthService {
@@ -19,6 +18,7 @@ export class AuthService {
    * Requires x-tenant-id header
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
+    console.log('[AUTH-SERVICE] Regular user login');
     return contractClient.post<LoginResponse>('/auth/login', credentials);
   }
 
@@ -28,6 +28,7 @@ export class AuthService {
    * No tenant header required
    */
   async adminLogin(credentials: LoginRequest): Promise<LoginResponse> {
+    console.log('[AUTH-SERVICE] SuperAdmin login');
     return contractClient.post<LoginResponse>('/admin/auth/login', credentials);
   }
 
@@ -36,6 +37,7 @@ export class AuthService {
    * POST /auth/logout
    */
   async logout(): Promise<void> {
+    console.log('[AUTH-SERVICE] User logout');
     return contractClient.post<void>('/auth/logout');
   }
 
@@ -44,6 +46,7 @@ export class AuthService {
    * POST /auth/refresh
    */
   async refreshToken(): Promise<LoginResponse> {
+    console.log('[AUTH-SERVICE] Token refresh');
     return contractClient.post<LoginResponse>('/auth/refresh');
   }
 }
