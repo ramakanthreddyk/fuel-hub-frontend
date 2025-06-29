@@ -12,7 +12,7 @@ import LoginPage from '@/pages/LoginPage';
 import NotFound from '@/pages/NotFound';
 import Unauthorized from '@/pages/Unauthorized';
 
-// Dashboard Pages
+// Dashboard Pages  
 import SummaryPage from '@/pages/dashboard/SummaryPage';
 import StationsPage from '@/pages/dashboard/StationsPage';
 import PumpsPage from '@/pages/dashboard/PumpsPage';
@@ -52,6 +52,15 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Protected Dashboard Layout Component
+const ProtectedDashboardLayout = ({ children }: { children: React.ReactNode }) => (
+  <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+    <DashboardLayout>
+      {children}
+    </DashboardLayout>
+  </RequireAuth>
+);
 
 function App() {
   return (
@@ -109,123 +118,89 @@ function App() {
 
             {/* Dashboard Routes */}
             <Route path="/dashboard" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <SummaryPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <SummaryPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/stations" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <StationsPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <StationsPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/pumps" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <PumpsPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <PumpsPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/nozzles" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <NozzlesPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <NozzlesPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/readings" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <ReadingsPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <ReadingsPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/readings/new" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <NewReadingPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <NewReadingPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/fuel-prices" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <FuelPricesPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <FuelPricesPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/creditors" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <CreditorsPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <CreditorsPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/creditors/:creditorId/payments" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <CreditorPaymentsPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <CreditorPaymentsPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/sales" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <SalesPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <SalesPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/reports" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <ReportsPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <ReportsPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/users" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <UsersPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <UsersPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/settings" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <SettingsPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <SettingsPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/alerts" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <AlertsPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <AlertsPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/reconciliation" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <ReconciliationPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <ReconciliationPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/inventory" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <InventoryPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <InventoryPage />
+              </ProtectedDashboardLayout>
             } />
             <Route path="/dashboard/fuel-deliveries" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout>
-                  <FuelDeliveriesPage />
-                </DashboardLayout>
-              </RequireAuth>
+              <ProtectedDashboardLayout>
+                <FuelDeliveriesPage />
+              </ProtectedDashboardLayout>
             } />
 
             {/* Catch all route */}
