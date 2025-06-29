@@ -7,12 +7,15 @@ Managers operate within a tenant and usually handle day‑to‑day station activ
 
 ## Key Endpoints
 - Dashboard metrics: all `/api/v1/dashboard/*` routes
+- `GET /api/v1/analytics/dashboard`
 - Station / pump / nozzle CRUD
 - Record nozzle readings and validate creation
 - Manage fuel prices and deliveries
 - Creditors and credit payments
 - Reconciliation and sales listing
 - Inventory checks and alerts
+- `GET /api/v1/inventory/alerts`
+- `POST /api/v1/inventory/update`
 - View but not create tenant users (`GET /api/v1/users`, `GET /api/v1/users/{id}`)
 
 Managers **cannot** update tenant settings or create additional users.
@@ -26,4 +29,5 @@ Managers **cannot** update tenant settings or create additional users.
 
 ## Errors
 Same as OWNER plus forbidden (`403`) when attempting owner‑only actions such as creating users or updating settings.
+- JWTs expire in 1h; use `/api/v1/auth/refresh`.
 

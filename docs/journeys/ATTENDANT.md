@@ -17,6 +17,7 @@ Attendants perform basic operations like recording nozzle readings and submittin
 All require `Authorization` header and `x-tenant-id` matching the JWT claim.
 
 Attendants have read‑only access to most data and cannot modify stations or users.
+JWTs expire in 1h; refresh via `/api/v1/auth/refresh`.
 
 ## Typical Flow
 1. Login and fetch assigned station list.

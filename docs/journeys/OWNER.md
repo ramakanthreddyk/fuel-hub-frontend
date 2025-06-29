@@ -18,6 +18,7 @@ Response contains JWT with claims `{ userId, tenantId, role: 'owner' }`.
 - `GET /api/v1/dashboard/fuel-breakdown`
 - `GET /api/v1/dashboard/top-creditors`
 - `GET /api/v1/dashboard/sales-trend`
+- `GET /api/v1/analytics/dashboard`
 - `GET /api/v1/analytics/station-comparison`
 - `GET /api/v1/analytics/hourly-sales`
 - `GET /api/v1/analytics/peak-hours`
@@ -44,6 +45,8 @@ Response contains JWT with claims `{ userId, tenantId, role: 'owner' }`.
 - Reconciliation reports: `POST/GET /api/v1/reconciliation`
 - Sales listing & analytics: `GET /api/v1/sales`, `GET /api/v1/sales/analytics`
 - Inventory levels: `GET/POST /api/v1/inventory`
+- Inventory alerts: `GET /api/v1/inventory/alerts`
+- Update inventory counts: `POST /api/v1/inventory/update`
 - Alerts feed: `GET /api/v1/alerts`
 - Fuel inventory view: `GET /api/v1/fuel-inventory`
 
@@ -75,4 +78,5 @@ Owners operate within their tenant schema (`<tenant_id>`). Common tables:
 ## Edge Notes
 - Some endpoints like analytics may require additional query params (`stationId`, `dateFrom`, `dateTo`).
 - Ensure `x-tenant-id` header always matches the tenant in JWT to avoid `TENANT_REQUIRED` errors.
+- JWTs expire in 1h; use `/api/v1/auth/refresh` to renew.
 
