@@ -43,7 +43,7 @@ export function AnalyticsDashboard({ analytics }: AnalyticsDashboardProps) {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.salesVolume.toLocaleString()}L</div>
+            <div className="text-2xl font-bold">{(analytics.salesVolume || 0).toLocaleString()}L</div>
           </CardContent>
         </Card>
 
@@ -71,53 +71,57 @@ export function AnalyticsDashboard({ analytics }: AnalyticsDashboardProps) {
       </div>
 
       {/* Monthly Growth Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Monthly Growth</CardTitle>
-          <CardDescription>Tenant signups and revenue over time</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={analytics.monthlyGrowth}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="tenants" fill="#8884d8" name="New Tenants" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      {analytics.monthlyGrowth && Array.isArray(analytics.monthlyGrowth) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Growth</CardTitle>
+            <CardDescription>Tenant signups and revenue over time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={analytics.monthlyGrowth}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="tenants" fill="#8884d8" name="New Tenants" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Top Tenants */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Top Performing Tenants</CardTitle>
-          <CardDescription>Tenants ranked by revenue</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tenant Name</TableHead>
-                <TableHead>Stations</TableHead>
-                <TableHead className="text-right">Revenue</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {analytics.topTenants.map((tenant) => (
-                <TableRow key={tenant.id}>
-                  <TableCell className="font-medium">{tenant.name}</TableCell>
-                  <TableCell>{tenant.stationsCount}</TableCell>
-                  <TableCell className="text-right font-mono">
-                    ₹{tenant.revenue.toLocaleString()}
-                  </TableCell>
+      {analytics.topTenants && analytics.topTenants.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Performing Tenants</CardTitle>
+            <CardDescription>Tenants ranked by revenue</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tenant Name</TableHead>
+                  <TableHead>Stations</TableHead>
+                  <TableHead className="text-right">Revenue</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {analytics.topTenants.map((tenant) => (
+                  <TableRow key={tenant.id}>
+                    <TableCell className="font-medium">{tenant.name}</TableCell>
+                    <TableCell>{tenant.stationsCount}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      ₹{tenant.revenue.toLocaleString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

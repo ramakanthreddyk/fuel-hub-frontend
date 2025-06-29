@@ -2,7 +2,7 @@
 import { useParams } from 'react-router-dom';
 import { useCreditor } from '@/hooks/useCreditors';
 import { PaymentHistory } from '@/components/creditors/PaymentHistory';
-import { PaymentForm } from '@/components/creditors/PaymentForm';
+import PaymentForm from '@/components/creditors/PaymentForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -54,13 +54,13 @@ export default function CreditorPaymentsPage() {
             <div>
               <p className="text-sm text-muted-foreground">Outstanding</p>
               <p className="text-lg font-semibold text-red-600">
-                ₹{(creditor.currentOutstanding || 0).toLocaleString()}
+                ₹{(creditor.outstandingAmount || creditor.currentOutstanding || 0).toLocaleString()}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Available Credit</p>
               <p className="text-lg font-semibold text-green-600">
-                ₹{((creditor.creditLimit || 0) - (creditor.currentOutstanding || 0)).toLocaleString()}
+                ₹{((creditor.creditLimit || 0) - (creditor.outstandingAmount || creditor.currentOutstanding || 0)).toLocaleString()}
               </p>
             </div>
           </div>

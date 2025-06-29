@@ -7,14 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStations } from '@/hooks/useStations';
 import { useCreateFuelDelivery } from '@/hooks/useFuelDeliveries';
-import { CreateFuelDeliveryRequest } from '@/api/fuel-deliveries';
+import { CreateFuelDeliveryRequest } from '@/api/api-contract';
 
 export function DeliveryForm() {
   const [formData, setFormData] = useState<CreateFuelDeliveryRequest>({
     stationId: '',
     fuelType: 'petrol',
-    volume: 0,
+    quantity: 0,
     deliveryDate: new Date().toISOString().split('T')[0],
+    supplierName: '',
+    invoiceNumber: '',
+    pricePerLiter: 0,
     deliveredBy: ''
   });
 
@@ -23,15 +26,18 @@ export function DeliveryForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.stationId || !formData.volume) return;
+    if (!formData.stationId || !formData.quantity || !formData.supplierName || !formData.invoiceNumber) return;
 
     createDelivery.mutate(formData, {
       onSuccess: () => {
         setFormData({
           stationId: '',
           fuelType: 'petrol',
-          volume: 0,
+          quantity: 0,
           deliveryDate: new Date().toISOString().split('T')[0],
+          supplierName: '',
+          invoiceNumber: '',
+          pricePerLiter: 0,
           deliveredBy: ''
         });
       }
@@ -70,7 +76,7 @@ export function DeliveryForm() {
               <Label htmlFor="fuelType">Fuel Type *</Label>
               <Select 
                 value={formData.fuelType} 
-                onValueChange={(value: 'petrol' | 'diesel') => setFormData({ ...formData, fuelType: value })}
+                onValueChange={(value: 'petrol' | 'diesel' | 'premium') => setFormData({ ...formData, fuelType: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -78,19 +84,56 @@ export function DeliveryForm() {
                 <SelectContent>
                   <SelectItem value="petrol">Petrol</SelectItem>
                   <SelectItem value="diesel">Diesel</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="volume">Volume (Litres) *</Label>
+              <Label htmlFor="quantity">Quantity (Litres) *</Label>
               <Input
-                id="volume"
+                id="quantity"
                 type="number"
-                value={formData.volume || ''}
-                onChange={(e) => setFormData({ ...formData, volume: Number(e.target.value) })}
-                placeholder="Enter volume"
+                value={formData.quantity || ''}
+                onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
+                placeholder="Enter quantity"
                 min="1"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pricePerLiter">Price per Liter *</Label>
+              <Input
+                id="pricePerLiter"
+                type="number"
+                value={formData.pricePerLiter || ''}
+                onChange={(e) => setFormData({ ...formData, pricePerLiter: Number(e.target.value) })}
+                placeholder="Enter price per liter"
+                min="0"
+                step="0.01"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="supplierName">Supplier Name *</Label>
+              <Input
+                id="supplierName"
+                value={formData.supplierName}
+                onChange={(e) => setFormData({ ...formData, supplierName: e.target.value })}
+                placeholder="Enter supplier name"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="invoiceNumber">Invoice Number *</Label>
+              <Input
+                id="invoiceNumber"
+                value={formData.invoiceNumber}
+                onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
+                placeholder="Enter invoice number"
                 required
               />
             </div>
@@ -106,11 +149,11 @@ export function DeliveryForm() {
               />
             </div>
 
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2">
               <Label htmlFor="deliveredBy">Delivered By</Label>
               <Input
                 id="deliveredBy"
-                value={formData.deliveredBy}
+                value={formData.deliveredBy || ''}
                 onChange={(e) => setFormData({ ...formData, deliveredBy: e.target.value })}
                 placeholder="Truck number or delivery person"
               />
@@ -119,7 +162,7 @@ export function DeliveryForm() {
 
           <Button 
             type="submit" 
-            disabled={createDelivery.isPending || !formData.stationId || !formData.volume}
+            disabled={createDelivery.isPending || !formData.stationId || !formData.quantity || !formData.supplierName || !formData.invoiceNumber}
             className="w-full md:w-auto"
           >
             {createDelivery.isPending ? 'Recording...' : 'Record Delivery'}

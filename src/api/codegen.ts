@@ -40,7 +40,7 @@ async function generateApiClient() {
       exportServices: true,
       exportModels: true,
       exportSchemas: false,
-      indent: '  ',
+      indent: '2',
       postfixServices: 'Service',
       postfixModels: '',
     });

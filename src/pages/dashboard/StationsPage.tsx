@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Building2, MapPin, Fuel, Plus, Settings, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useStationsWithMetrics } from '@/hooks/useStations';
-import { CreateStationDialog } from '@/components/dashboard/CreateStationDialog';
+import CreateStationDialog from '@/components/dashboard/CreateStationDialog';
 import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
 
 export default function StationsPage() {
@@ -75,10 +75,11 @@ export default function StationsPage() {
           <CardContent>
             <div className="text-2xl font-bold">{stationsList.length}</div>
             <p className="text-xs text-muted-foreground">
-              Active stations
+              {stationsList.filter(s => s.status === 'active').length} active
             </p>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Pumps</CardTitle>
@@ -91,93 +92,109 @@ export default function StationsPage() {
             </p>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{totalSales.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              Total across stations
+              Combined revenue
             </p>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Stations</CardTitle>
+            <CardTitle className="text-sm font-medium">Avg per Station</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stationsList.filter(s => s.status === 'active').length}</div>
+            <div className="text-2xl font-bold">
+              ₹{stationsList.length > 0 ? Math.round(totalSales / stationsList.length).toLocaleString() : '0'}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Currently operational
+              Average sales
             </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Stations Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {stationsList.map((station) => (
-          <Card key={station.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{station.name}</CardTitle>
-                <Badge variant={station.status === 'active' ? 'default' : 'secondary'}>
-                  {station.status}
-                </Badge>
-              </div>
-              <CardDescription className="flex items-center">
-                <MapPin className="mr-1 h-3 w-3" />
-                {station.address || 'No address provided'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Pumps:</span>
-                  <span className="font-medium">{station.pumpCount || 0}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Attendants:</span>
-                  <span className="font-medium">{station.attendantCount || 0}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Today's Sales:</span>
-                  <span className="font-medium">₹{(station.metrics?.totalSales || 0).toLocaleString()}</span>
-                </div>
-              </div>
-              <div className="mt-4 flex gap-2">
-                <Button asChild variant="outline" size="sm" className="flex-1">
-                  <Link to={`/dashboard/stations/${station.id}/pumps`}>
-                    <Fuel className="mr-1 h-3 w-3" />
-                    Pumps
-                  </Link>
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Settings className="mr-1 h-3 w-3" />
-                  Manage
-                </Button>
-              </div>
-            </CardContent>
+      <div className="grid gap-4 md:gap-6">
+        {stationsList.length === 0 ? (
+          <Card className="p-12 text-center">
+            <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No stations yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Get started by adding your first fuel station
+            </p>
+            <CreateStationDialog>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add First Station
+              </Button>
+            </CreateStationDialog>
           </Card>
-        ))}
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {stationsList.map((station) => (
+              <Card key={station.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{station.name}</CardTitle>
+                      <CardDescription className="flex items-center gap-1 mt-1">
+                        <MapPin className="h-3 w-3" />
+                        {station.address}
+                      </CardDescription>
+                    </div>
+                    <Badge 
+                      variant={station.status === 'active' ? 'default' : 'secondary'}
+                      className={
+                        station.status === 'active' ? 'bg-green-100 text-green-800' :
+                        station.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }
+                    >
+                      {station.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div className="text-muted-foreground">Pumps</div>
+                      <div className="font-semibold">{station.pumpCount || 0}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Sales</div>
+                      <div className="font-semibold">₹{(station.metrics?.totalSales || 0).toLocaleString()}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" asChild className="flex-1">
+                      <Link to={`/dashboard/stations/${station.id}`}>
+                        <Settings className="mr-2 h-3 w-3" />
+                        Manage
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" asChild className="flex-1">
+                      <Link to={`/dashboard/stations/${station.id}/pumps`}>
+                        <Fuel className="mr-2 h-3 w-3" />
+                        Pumps
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
-
-      {stationsList.length === 0 && (
-        <div className="text-center py-12">
-          <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-semibold">No stations found</h3>
-          <p className="text-muted-foreground">Get started by adding your first station.</p>
-          <CreateStationDialog>
-            <Button className="mt-4">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Station
-            </Button>
-          </CreateStationDialog>
-        </div>
-      )}
     </div>
   );
 }

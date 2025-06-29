@@ -1,3 +1,4 @@
+
 export interface ApiResponse<T> {
   success: boolean;
   message?: string;
@@ -64,6 +65,7 @@ export interface ChangePasswordRequest {
 
 export interface ResetPasswordRequest {
   password: string;
+  token?: string;
 }
 
 export interface CreateSuperAdminRequest {
@@ -87,6 +89,14 @@ export interface Station {
   salesGrowth?: number;
   activePumps?: number;
   totalPumps?: number;
+  pumps?: Pump[];
+  metrics?: {
+    totalSales: number;
+    activePumps: number;
+    totalPumps: number;
+    totalVolume?: number;
+    transactionCount?: number;
+  };
 }
 
 export interface CreateStationRequest {
@@ -102,6 +112,8 @@ export interface Pump {
   serialNumber: string;
   status: "active" | "inactive" | "maintenance";
   stationId: string;
+  nozzleCount?: number;
+  nozzles?: Nozzle[];
 }
 
 export interface CreatePumpRequest {
@@ -211,16 +223,19 @@ export interface SalesFilters {
   stationId?: string;
   startDate?: string;
   endDate?: string;
+  paymentMethod?: string;
 }
 
 // Creditor Types
 export interface Creditor {
   id: string;
   partyName: string;
+  name?: string; // Alias for partyName
   contactPerson?: string;
   phoneNumber?: string;
   creditLimit?: number;
   outstandingAmount?: number;
+  currentOutstanding?: number; // Alias for outstandingAmount
   paymentTerms?: string;
   notes?: string;
   createdAt: string;
@@ -242,6 +257,7 @@ export interface CreditPayment {
   paymentDate: string;
   paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
   reference?: string;
+  referenceNumber?: string;
   notes?: string;
   createdAt: string;
 }
@@ -252,6 +268,7 @@ export interface CreatePaymentRequest {
   paymentDate: string;
   paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
   reference?: string;
+  referenceNumber?: string;
   notes?: string;
 }
 
@@ -330,11 +347,16 @@ export interface Alert {
   id: string;
   type: 'warning' | 'error' | 'info';
   priority: 'low' | 'medium' | 'high' | 'critical';
+  severity?: 'low' | 'medium' | 'high' | 'critical'; // Alias for priority
   title: string;
   message: string;
   stationId?: string;
+  stationName?: string;
+  nozzleId?: string;
   createdAt: string;
   read: boolean;
+  isRead?: boolean; // Alias for read
+  isActive?: boolean; // Default true for active alerts
 }
 
 export interface AlertsParams {
@@ -353,16 +375,21 @@ export interface FuelPriceValidation {
 // Dashboard Types
 export interface SalesSummary {
   totalRevenue: number;
+  totalSales?: number; // Alias for totalRevenue
   totalVolume: number;
   salesCount: number;
+  transactionCount?: number; // Alias for salesCount
   averageTicketSize: number;
   cashSales: number;
   creditSales: number;
   growthPercentage: number;
+  totalProfit?: number;
+  profitMargin?: number;
 }
 
 export interface PaymentMethodBreakdown {
   method: string;
+  paymentMethod?: string; // Alias for method
   amount: number;
   percentage: number;
   count: number;
@@ -372,12 +399,14 @@ export interface FuelTypeBreakdown {
   fuelType: string;
   volume: number;
   revenue: number;
+  amount?: number; // Alias for revenue
   percentage: number;
 }
 
 export interface TopCreditor {
   id: string;
   name: string;
+  partyName?: string; // Alias for name
   outstandingAmount: number;
   creditLimit: number;
   utilizationPercentage: number;
@@ -386,6 +415,7 @@ export interface TopCreditor {
 export interface DailySalesTrend {
   date: string;
   revenue: number;
+  amount?: number; // Alias for revenue
   volume: number;
   salesCount: number;
 }
@@ -398,16 +428,14 @@ export interface StationMetric {
   salesGrowth: number;
   activePumps: number;
   totalPumps: number;
-  status: string;
+  status: "active" | "inactive" | "maintenance";
 }
 
 // Reports Types
-export interface SalesReportFilters {
-  stationId?: string;
-  dateFrom?: string;
-  dateTo?: string;
+export interface SalesReportFilters extends SalesFilters {
+  startDate?: string;
+  endDate?: string;
   fuelType?: string;
-  paymentMethod?: string;
 }
 
 export interface SalesReportData {
@@ -418,9 +446,12 @@ export interface SalesReportData {
   fuelType: string;
   volume: number;
   pricePerLiter: number;
+  pricePerLitre?: number;
   totalAmount: number;
+  amount?: number;
   paymentMethod: string;
   creditorName?: string;
+  attendant?: string;
 }
 
 export interface SalesReportSummary {
@@ -478,7 +509,9 @@ export interface HourlySales {
 
 export interface PeakHour {
   hour: number;
+  timeRange?: string;
   averageRevenue: number;
+  avgSales?: number;
   averageVolume: number;
   averageSalesCount: number;
 }
@@ -494,11 +527,16 @@ export interface FuelPerformance {
 export interface StationRanking {
   rank: number;
   stationId: string;
+  id?: string;
   stationName: string;
+  name?: string;
   revenue: number;
+  sales?: number;
   volume: number;
   salesCount: number;
   score: number;
+  growth?: number;
+  efficiency?: number;
 }
 
 export interface SuperAdminAnalytics {
@@ -506,7 +544,15 @@ export interface SuperAdminAnalytics {
   activeTenants: number;
   totalStations: number;
   totalRevenue: number;
+  salesVolume?: number;
   revenueGrowth: number;
+  monthlyGrowth?: any[];
+  topTenants?: Array<{
+    id: string;
+    name: string;
+    revenue: number;
+    stationsCount: number;
+  }>;
   topPerformingTenants: Array<{
     tenantId: string;
     tenantName: string;
@@ -536,8 +582,10 @@ export interface FuelDelivery {
   stationName: string;
   fuelType: 'petrol' | 'diesel' | 'premium';
   quantity: number;
+  volume?: number;
   deliveryDate: string;
   supplierName: string;
+  deliveredBy?: string;
   invoiceNumber: string;
   pricePerLiter: number;
   totalAmount: number;
@@ -548,8 +596,10 @@ export interface CreateFuelDeliveryRequest {
   stationId: string;
   fuelType: 'petrol' | 'diesel' | 'premium';
   quantity: number;
+  volume?: number;
   deliveryDate: string;
   supplierName: string;
+  deliveredBy?: string;
   invoiceNumber: string;
   pricePerLiter: number;
 }
@@ -573,6 +623,7 @@ export interface ReconciliationRecord {
 export interface CreateReconciliationRequest {
   stationId: string;
   reconciliationDate: string;
+  date?: string;
   declaredCash: number;
   notes?: string;
 }
@@ -585,8 +636,8 @@ export interface Tenant {
   planId: string;
   planName: string;
   createdAt: string;
-  users: User[];
-  stations: Station[];
+  users?: User[];
+  stations?: Station[];
   userCount: number;
   stationCount: number;
 }
@@ -615,9 +666,13 @@ export interface Plan {
   name: string;
   description: string;
   price: number;
+  priceMonthly?: number;
+  priceYearly?: number;
   features: string[];
   maxStations: number;
   maxUsers: number;
+  maxPumpsPerStation?: number;
+  maxNozzlesPerPump?: number;
   isActive: boolean;
   createdAt: string;
 }
@@ -653,279 +708,11 @@ export interface SuperAdminSummary {
     id: string;
     name: string;
     createdAt: string;
+    status?: string;
   }>;
   tenantsByPlan: Array<{
     planName: string;
     count: number;
+    percentage?: number;
   }>;
-}
-
-/*
-BACKEND API REQUIREMENTS - Please implement these endpoints:
-
-1. ATTENDANT ENDPOINTS:
-   GET /api/v1/attendant/stations - Get stations assigned to current attendant
-   GET /api/v1/attendant/pumps?stationId={id} - Get pumps for assigned stations
-   GET /api/v1/attendant/nozzles?pumpId={id} - Get nozzles for assigned pumps
-   GET /api/v1/attendant/creditors?stationId={id} - Get creditors for assigned stations
-   POST /api/v1/attendant/cash-reports - Submit cash report
-   GET /api/v1/attendant/cash-reports - Get cash reports with filters
-   GET /api/v1/attendant/alerts - Get system alerts for attendant
-   PUT /api/v1/attendant/alerts/{id}/acknowledge - Acknowledge alert
-
-2. FUEL PRICE VALIDATION ENDPOINTS:
-   GET /api/v1/fuel-prices/validate/{stationId} - Check missing fuel prices for station
-   GET /api/v1/fuel-prices/missing - Get all stations with missing prices
-   GET /api/v1/nozzle-readings/can-create/{nozzleId} - Check if reading can be created
-
-3. SYSTEM ALERTS ENDPOINTS:
-   GET /api/v1/alerts/summary - Get alert counts by priority
-   POST /api/v1/alerts - Create system alert
-   
-4. ALERT SCENARIOS TO IMPLEMENT:
-   - No reading recorded for nozzle in 24+ hours (priority: medium)
-   - No fuel price set for active nozzle (priority: high)
-   - Creditor exceeding 90% of credit limit (priority: high)
-   - Station inactive for 24+ hours (priority: medium)
-   - Pump maintenance overdue (priority: low)
-   - Large volume discrepancy in readings (priority: critical)
-   - Cash report not submitted for shift (priority: medium)
-
-5. VALIDATION RULES:
-   - Prevent reading creation if no fuel price exists for nozzle fuel type
-   - Prevent sale calculation if fuel price is older than 7 days
-   - Warn if creditor approaching credit limit
-*/
-
-// Fix missing properties in existing types
-export interface Alert {
-  id: string;
-  type: 'warning' | 'error' | 'info';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
-  message: string;
-  stationId?: string;
-  stationName?: string;
-  nozzleId?: string;
-  createdAt: string;
-  read: boolean;
-  severity?: 'low' | 'medium' | 'high' | 'critical'; // Alias for priority
-}
-
-// Extend Plan interface with missing properties
-export interface Plan {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  priceMonthly?: number;
-  priceYearly?: number;
-  features: string[];
-  maxStations: number;
-  maxUsers: number;
-  maxPumpsPerStation?: number;
-  maxNozzlesPerPump?: number;
-  isActive: boolean;
-  createdAt: string;
-}
-
-// Extend SalesSummary with missing fields
-export interface SalesSummary {
-  totalRevenue: number;
-  totalSales?: number; // Alias for totalRevenue
-  totalVolume: number;
-  salesCount: number;
-  transactionCount?: number; // Alias for salesCount
-  averageTicketSize: number;
-  cashSales: number;
-  creditSales: number;
-  growthPercentage: number;
-  totalProfit?: number;
-  profitMargin?: number;
-}
-
-// Extend PaymentMethodBreakdown
-export interface PaymentMethodBreakdown {
-  method: string;
-  paymentMethod?: string; // Alias for method
-  amount: number;
-  percentage: number;
-  count: number;
-}
-
-// Extend FuelTypeBreakdown
-export interface FuelTypeBreakdown {
-  fuelType: string;
-  volume: number;
-  revenue: number;
-  amount?: number; // Alias for revenue
-  percentage: number;
-}
-
-// Extend TopCreditor
-export interface TopCreditor {
-  id: string;
-  name: string;
-  partyName?: string; // Alias for name
-  outstandingAmount: number;
-  creditLimit: number;
-  utilizationPercentage: number;
-}
-
-// Extend DailySalesTrend
-export interface DailySalesTrend {
-  date: string;
-  revenue: number;
-  amount?: number; // Alias for revenue
-  volume: number;
-  salesCount: number;
-}
-
-// Extend Station with metrics
-export interface Station {
-  id: string;
-  name: string;
-  address: string;
-  status: "active" | "inactive" | "maintenance";
-  manager?: string;
-  attendantCount: number;
-  pumpCount: number;
-  createdAt: string;
-  todaySales?: number;
-  monthlySales?: number;
-  salesGrowth?: number;
-  activePumps?: number;
-  totalPumps?: number;
-  pumps?: Pump[];
-  metrics?: {
-    totalSales: number;
-    activePumps: number;
-    totalPumps: number;
-    totalVolume?: number;
-    transactionCount?: number;
-  };
-}
-
-// Extend SuperAdminAnalytics
-export interface SuperAdminAnalytics {
-  totalTenants: number;
-  activeTenants: number;
-  totalStations: number;
-  totalRevenue: number;
-  salesVolume?: number;
-  revenueGrowth: number;
-  monthlyGrowth?: number;
-  topPerformingTenants: Array<{
-    tenantId: string;
-    tenantName: string;
-    revenue: number;
-    stationCount: number;
-  }>;
-}
-
-// Extend PeakHour
-export interface PeakHour {
-  hour: number;
-  timeRange?: string;
-  averageRevenue: number;
-  avgSales?: number; // Alias for averageRevenue
-  averageVolume: number;
-  averageSalesCount: number;
-}
-
-// Extend StationRanking
-export interface StationRanking {
-  rank: number;
-  stationId: string;
-  id?: string; // Alias for stationId
-  stationName: string;
-  name?: string; // Alias for stationName
-  revenue: number;
-  sales?: number; // Alias for revenue
-  volume: number;
-  salesCount: number;
-  score: number;
-  growth?: number;
-  efficiency?: number;
-}
-
-// Extend CreditPayment
-export interface CreditPayment {
-  id: string;
-  creditorId: string;
-  amount: number;
-  paymentDate: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
-  reference?: string;
-  referenceNumber?: string; // Alias for reference
-  notes?: string;
-  createdAt: string;
-}
-
-// Extend FuelDelivery
-export interface FuelDelivery {
-  id: string;
-  stationId: string;
-  stationName: string;
-  fuelType: 'petrol' | 'diesel' | 'premium';
-  quantity: number;
-  volume?: number; // Alias for quantity
-  deliveryDate: string;
-  supplierName: string;
-  deliveredBy?: string;
-  invoiceNumber: string;
-  pricePerLiter: number;
-  totalAmount: number;
-  createdAt: string;
-}
-
-// Extend CreateFuelDeliveryRequest
-export interface CreateFuelDeliveryRequest {
-  stationId: string;
-  fuelType: 'petrol' | 'diesel' | 'premium';
-  quantity: number;
-  volume?: number; // Alias for quantity
-  deliveryDate: string;
-  supplierName: string;
-  deliveredBy?: string;
-  invoiceNumber: string;
-  pricePerLiter: number;
-}
-
-// Extend CreateReconciliationRequest
-export interface CreateReconciliationRequest {
-  stationId: string;
-  reconciliationDate: string;
-  date?: string; // Alias for reconciliationDate
-  declaredCash: number;
-  notes?: string;
-}
-
-// Extend SalesReportFilters (alias for SalesFilters)
-export interface SalesReportFilters extends SalesFilters {
-  startDate?: string; // Alias for dateFrom
-  endDate?: string;   // Alias for dateTo
-}
-
-// Extend SalesReportData
-export interface SalesReportData {
-  id: string;
-  date: string;
-  stationName: string;
-  nozzleNumber: number;
-  fuelType: string;
-  volume: number;
-  pricePerLiter: number;
-  pricePerLitre?: number; // Alias for pricePerLiter
-  totalAmount: number;
-  amount?: number; // Alias for totalAmount
-  paymentMethod: string;
-  creditorName?: string;
-  attendant?: string;
-}
-
-// Export ResetPasswordRequest type
-export interface ResetPasswordRequest {
-  password: string;
-  token?: string;
 }
