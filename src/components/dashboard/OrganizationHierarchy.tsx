@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -122,7 +123,8 @@ export function OrganizationHierarchy() {
                   <CollapsibleContent>
                     <div className="px-4 pb-4">
                       <div className="ml-6 border-l-2 border-gray-200 pl-4 space-y-2">
-                        {/* Placeholder for pumps - would need pump API */}\n                        <div className="flex items-center gap-2 p-2 bg-blue-50 rounded">
+                        {/* Placeholder for pumps - would need pump API */}
+                        <div className="flex items-center gap-2 p-2 bg-blue-50 rounded">
                           <Fuel className="h-4 w-4 text-blue-600" />
                           <span className="text-sm">
                             {station.pumpCount} pumps configured
@@ -145,13 +147,13 @@ export function OrganizationHierarchy() {
                             </div>
                             <div className="text-center p-2 bg-blue-50 rounded">
                               <div className="text-lg font-bold text-blue-600">
-                                {station.metrics.totalVolume.toLocaleString()}L
+                                {station.metrics.totalVolume ? `${station.metrics.totalVolume.toLocaleString()}L` : 'N/A'}
                               </div>
                               <div className="text-xs text-muted-foreground">Volume</div>
                             </div>
                             <div className="text-center p-2 bg-purple-50 rounded">
                               <div className="text-lg font-bold text-purple-600">
-                                {station.metrics.transactionCount}
+                                {station.metrics.transactionCount || 0}
                               </div>
                               <div className="text-xs text-muted-foreground">Transactions</div>
                             </div>

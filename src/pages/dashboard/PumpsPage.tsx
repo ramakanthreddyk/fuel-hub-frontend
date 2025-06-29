@@ -83,7 +83,7 @@ export default function PumpsPage() {
   const mobileStats = [
     { title: 'Total', value: pumps?.length || 0, icon: Fuel, color: 'text-blue-600' },
     { title: 'Active', value: pumps?.filter(p => p.status === 'active').length || 0, icon: Activity, color: 'text-green-600' },
-    { title: 'Nozzles', value: pumps?.reduce((sum, pump) => sum + pump.nozzleCount, 0) || 0, icon: Settings, color: 'text-purple-600' },
+    { title: 'Nozzles', value: pumps?.reduce((sum, pump) => sum + (pump.nozzleCount || 0), 0) || 0, icon: Settings, color: 'text-purple-600' },
     { title: 'Maintenance', value: pumps?.filter(p => p.status === 'maintenance').length || 0, icon: Settings, color: 'text-orange-600' }
   ];
 
@@ -184,7 +184,7 @@ export default function PumpsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {pumps?.reduce((sum, pump) => sum + pump.nozzleCount, 0) || 0}
+              {pumps?.reduce((sum, pump) => sum + (pump.nozzleCount || 0), 0) || 0}
             </div>
           </CardContent>
         </Card>
@@ -206,7 +206,10 @@ export default function PumpsPage() {
         {pumps?.map((pump) => (
           <EnhancedFuelPumpCard
             key={pump.id}
-            pump={pump}
+            pump={{
+              ...pump,
+              nozzleCount: pump.nozzleCount || 0
+            }}
             onViewNozzles={() => {
               window.location.href = `/dashboard/stations/${stationId}/pumps/${pump.id}/nozzles`;
             }}

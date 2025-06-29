@@ -20,8 +20,9 @@ export default function CreateTenantPage() {
   const [formData, setFormData] = useState<CreateTenantRequest>({
     name: '',
     planId: 'basic',
-    adminEmail: '',
-    adminPassword: ''
+    ownerName: '',
+    ownerEmail: '',
+    ownerPassword: ''
   });
 
   const createTenantMutation = useMutation({
@@ -30,7 +31,7 @@ export default function CreateTenantPage() {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
       toast({
         title: "Success",
-        description: "Tenant created successfully with admin user",
+        description: "Tenant created successfully with owner user",
       });
       navigate('/superadmin/tenants');
     },
@@ -46,7 +47,7 @@ export default function CreateTenantPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.adminEmail || !formData.adminPassword) {
+    if (!formData.name || !formData.ownerEmail || !formData.ownerPassword || !formData.ownerName) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -67,7 +68,7 @@ export default function CreateTenantPage() {
         </Button>
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Create New Tenant</h1>
-          <p className="text-muted-foreground">Add a new tenant organization with admin user</p>
+          <p className="text-muted-foreground">Add a new tenant organization with owner user</p>
         </div>
       </div>
 
@@ -109,24 +110,35 @@ export default function CreateTenantPage() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="adminEmail">Admin Email *</Label>
+              <Label htmlFor="ownerName">Owner Name *</Label>
               <Input
-                id="adminEmail"
-                type="email"
-                value={formData.adminEmail}
-                onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-                placeholder="admin@example.com"
+                id="ownerName"
+                value={formData.ownerName}
+                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+                placeholder="Enter owner full name"
                 required
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="adminPassword">Admin Password *</Label>
+              <Label htmlFor="ownerEmail">Owner Email *</Label>
               <Input
-                id="adminPassword"
+                id="ownerEmail"
+                type="email"
+                value={formData.ownerEmail}
+                onChange={(e) => setFormData({ ...formData, ownerEmail: e.target.value })}
+                placeholder="owner@example.com"
+                required
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="ownerPassword">Owner Password *</Label>
+              <Input
+                id="ownerPassword"
                 type="password"
-                value={formData.adminPassword}
-                onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
+                value={formData.ownerPassword}
+                onChange={(e) => setFormData({ ...formData, ownerPassword: e.target.value })}
                 placeholder="Enter secure password"
                 required
               />
@@ -135,7 +147,7 @@ export default function CreateTenantPage() {
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <h4 className="font-medium text-blue-900 mb-2">Data Isolation</h4>
               <p className="text-sm text-blue-700">
-                All tenant data is securely isolated using tenant_id (UUID). The admin user will have full access to manage this tenant's resources including stations, users, and operations data.
+                All tenant data is securely isolated using tenant_id (UUID). The owner user will have full access to manage this tenant's resources including stations, users, and operations data.
               </p>
             </div>
 

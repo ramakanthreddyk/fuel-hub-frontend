@@ -1,98 +1,133 @@
 
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useContractCreateStation } from '@/hooks/useContractStations';
+import { useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
-import type { CreateStationRequest } from '@/api/api-contract';
+import { useToast } from '@/hooks/use-toast';
+import { stationsApi } from '@/api/stations';
+import { CreateStationRequest } from '@/api/api-contract';
 
-export default function CreateStationDialog() {
+interface CreateStationDialogProps {
+  children?: React.ReactNode;
+}
+
+export default function CreateStationDialog({ children }: CreateStationDialogProps) {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<CreateStationRequest>({
-    name: '',
-    address: '',
-    status: 'active',
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const form = useForm<CreateStationRequest>({
+    defaultValues: {
+      name: '',
+      address: '',
+      status: 'active'
+    }
   });
 
-  const createStation = useContractCreateStation();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      await createStation.mutateAsync(formData);
-      setFormData({ name: '', address: '', status: 'active' });
+  const createStationMutation = useMutation({
+    mutationFn: stationsApi.createStation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stations'] });
+      queryClient.invalidateQueries({ queryKey: ['stations-with-metrics'] });
       setOpen(false);
-    } catch (error) {
-      console.error('Error creating station:', error);
+      form.reset();
+      toast({
+        title: "Success",
+        description: "Station created successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create station",
+        variant: "destructive",
+      });
     }
-  };
+  });
 
-  const handleInputChange = (field: keyof CreateStationRequest, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const onSubmit = (data: CreateStationRequest) => {
+    createStationMutation.mutate(data);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Station
-        </Button>
+        {children || (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Station
+          </Button>
+        )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Station</DialogTitle>
+          <DialogTitle>Create New Station</DialogTitle>
+          <DialogDescription>
+            Add a new fuel station to your network
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Station Name</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Enter station name"
-              required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Station Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter station name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => handleInputChange('address', e.target.value)}
-              placeholder="Enter station address"
-              required
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter station address" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value: 'active' | 'inactive' | 'maintenance') => handleInputChange('status', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="maintenance">Maintenance</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={createStation.isPending}>
-              {createStation.isPending ? 'Creating...' : 'Create Station'}
-            </Button>
-          </div>
-        </form>
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="maintenance">Maintenance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button type="submit" disabled={createStationMutation.isPending}>
+                {createStationMutation.isPending ? "Creating..." : "Create Station"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
