@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -43,6 +44,7 @@ import SuperAdminUsersPage from '@/pages/superadmin/UsersPage';
 
 // Layouts
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { SuperAdminLayout } from '@/components/layout/SuperAdminLayout';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,88 +58,64 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <AuthProvider>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
+      <ThemeProvider defaultTheme="system" storageKey="fuelsync-theme">
+        <Router>
+          <AuthProvider>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
 
-            {/* SuperAdmin Routes */}
-            <Route path="/superadmin/overview" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <OverviewPage />
-              </RequireAuth>
-            } />
-            <Route path="/superadmin/tenants" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <TenantsPage />
-              </RequireAuth>
-            } />
-            <Route path="/superadmin/tenants/:tenantId" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <TenantDetailsPage />
-              </RequireAuth>
-            } />
-            <Route path="/superadmin/tenants/:tenantId/settings" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <TenantSettingsPage />
-              </RequireAuth>
-            } />
-            <Route path="/superadmin/tenants/create" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <CreateTenantPage />
-              </RequireAuth>
-            } />
-            <Route path="/superadmin/plans" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <PlansPage />
-              </RequireAuth>
-            } />
-            <Route path="/superadmin/analytics" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <AnalyticsPage />
-              </RequireAuth>
-            } />
-            <Route path="/superadmin/users" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <SuperAdminUsersPage />
-              </RequireAuth>
-            } />
-            <Route path="/superadmin" element={<Navigate to="/superadmin/overview" replace />} />
+              {/* SuperAdmin Routes with Layout */}
+              <Route path="/superadmin" element={
+                <RequireAuth allowedRoles={['superadmin']}>
+                  <SuperAdminLayout />
+                </RequireAuth>
+              }>
+                <Route index element={<Navigate to="/superadmin/overview" replace />} />
+                <Route path="overview" element={<OverviewPage />} />
+                <Route path="tenants" element={<TenantsPage />} />
+                <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
+                <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
+                <Route path="tenants/create" element={<CreateTenantPage />} />
+                <Route path="plans" element={<PlansPage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="users" element={<SuperAdminUsersPage />} />
+              </Route>
 
-            {/* Dashboard Routes with Layout */}
-            <Route path="/dashboard" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout />
-              </RequireAuth>
-            }>
-              <Route index element={<SummaryPage />} />
-              <Route path="stations" element={<StationsPage />} />
-              <Route path="pumps" element={<PumpsPage />} />
-              <Route path="nozzles" element={<NozzlesPage />} />
-              <Route path="readings" element={<ReadingsPage />} />
-              <Route path="readings/new" element={<NewReadingPage />} />
-              <Route path="fuel-prices" element={<FuelPricesPage />} />
-              <Route path="creditors" element={<CreditorsPage />} />
-              <Route path="creditors/:creditorId/payments" element={<CreditorPaymentsPage />} />
-              <Route path="sales" element={<SalesPage />} />
-              <Route path="reports" element={<ReportsPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="alerts" element={<AlertsPage />} />
-              <Route path="reconciliation" element={<ReconciliationPage />} />
-              <Route path="inventory" element={<InventoryPage />} />
-              <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
-            </Route>
+              {/* Dashboard Routes with Layout */}
+              <Route path="/dashboard" element={
+                <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                  <DashboardLayout />
+                </RequireAuth>
+              }>
+                <Route index element={<SummaryPage />} />
+                <Route path="stations" element={<StationsPage />} />
+                <Route path="pumps" element={<PumpsPage />} />
+                <Route path="nozzles" element={<NozzlesPage />} />
+                <Route path="readings" element={<ReadingsPage />} />
+                <Route path="readings/new" element={<NewReadingPage />} />
+                <Route path="fuel-prices" element={<FuelPricesPage />} />
+                <Route path="creditors" element={<CreditorsPage />} />
+                <Route path="creditors/:creditorId/payments" element={<CreditorPaymentsPage />} />
+                <Route path="sales" element={<SalesPage />} />
+                <Route path="reports" element={<ReportsPage />} />
+                <Route path="users" element={<UsersPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="alerts" element={<AlertsPage />} />
+                <Route path="reconciliation" element={<ReconciliationPage />} />
+                <Route path="inventory" element={<InventoryPage />} />
+                <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
+              </Route>
 
-            {/* Catch all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-        </AuthProvider>
-      </Router>
+              {/* Catch all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </AuthProvider>
+        </Router>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

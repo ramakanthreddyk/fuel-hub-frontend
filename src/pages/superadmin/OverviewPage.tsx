@@ -72,7 +72,7 @@ export default function SuperAdminOverviewPage() {
     
     return (
       <>
-        {/* Enhanced Key Metrics - Using correct field names */}
+        {/* Enhanced Key Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <EnhancedMetricsCard
             title="Total Tenants"
@@ -284,19 +284,17 @@ export default function SuperAdminOverviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            Platform Dashboard
-          </h1>
-          <p className="text-muted-foreground text-sm md:text-base">
-            Platform overview and system metrics
-          </p>
-        </div>
-
-        {renderContent()}
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          Platform Dashboard
+        </h1>
+        <p className="text-muted-foreground text-sm md:text-base">
+          Platform overview and system metrics
+        </p>
       </div>
+
+      {renderContent()}
     </div>
   );
 }

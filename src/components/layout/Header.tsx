@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap } from 'lucide-react';
 
@@ -81,6 +82,9 @@ export function Header() {
         </div>
         
         <div className="flex items-center gap-4">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Role Badge - shown on larger screens */}
           {user?.role && (
             <Badge className={`${roleDetails.color} border-0 hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium shadow-sm`}>
