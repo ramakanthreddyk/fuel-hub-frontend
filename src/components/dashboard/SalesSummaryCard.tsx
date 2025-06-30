@@ -45,24 +45,24 @@ export function SalesSummaryCard({ filters = {} }: SalesSummaryCardProps) {
           <DollarSign className="h-4 w-4 text-purple-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-purple-600">₹{summary?.totalSales?.toLocaleString() || 0}</div>
+          <div className="text-2xl font-bold text-purple-600">₹{summary?.totalRevenue?.toLocaleString() || 0}</div>
           <div className="flex items-center text-xs text-muted-foreground mt-1">
             <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-            {summary?.transactionCount || 0} transactions • {summary?.totalVolume?.toLocaleString() || 0}L sold
+            {summary?.salesCount || 0} transactions • {summary?.totalVolume?.toLocaleString() || 0}L sold
           </div>
         </CardContent>
       </Card>
 
       <Card className="bg-gradient-to-br from-white to-green-50 border-green-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Profit Metrics</CardTitle>
+          <CardTitle className="text-sm font-medium">Growth Metrics</CardTitle>
           <TrendingUp className="h-4 w-4 text-green-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">₹{summary?.totalProfit?.toLocaleString() || 0}</div>
+          <div className="text-2xl font-bold text-green-600">{summary?.growthPercentage?.toFixed(1) || 0}%</div>
           <div className="flex items-center text-xs text-muted-foreground mt-1">
             <Percent className="h-3 w-3 mr-1 text-green-500" />
-            {summary?.profitMargin?.toFixed(1) || 0}% margin
+            Growth vs previous period
           </div>
         </CardContent>
       </Card>

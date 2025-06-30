@@ -32,7 +32,7 @@ export const useFuelTypeBreakdown = (filters: DashboardFilters = {}) => {
 export const useTopCreditors = (limit: number = 5, filters: DashboardFilters = {}) => {
   return useQuery({
     queryKey: ['dashboard', 'top-creditors', limit, filters],
-    queryFn: () => dashboardApi.getTopCreditors(limit, filters),
+    queryFn: () => dashboardApi.getTopCreditors(limit),
   });
 };
 

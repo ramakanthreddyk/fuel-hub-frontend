@@ -38,7 +38,7 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
   }
 
   const chartData = breakdown.map(item => ({
-    name: item.paymentMethod,
+    name: item.method,
     value: item.amount,
     percentage: item.percentage,
   }));

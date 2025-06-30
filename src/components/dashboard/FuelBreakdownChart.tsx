@@ -33,12 +33,12 @@ export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
   const chartData = breakdown.map(item => ({
     fuelType: item.fuelType,
     volume: item.volume,
-    amount: item.amount,
+    revenue: item.revenue,
   }));
 
   const chartConfig = {
     volume: { label: 'Volume (L)', color: '#3b82f6' },
-    amount: { label: 'Amount (₹)', color: '#22c55e' },
+    revenue: { label: 'Revenue (₹)', color: '#22c55e' },
   };
 
   return (

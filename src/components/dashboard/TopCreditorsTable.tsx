@@ -83,7 +83,7 @@ export function TopCreditorsTable({ filters = {} }: TopCreditorsTableProps) {
 
               return (
                 <TableRow key={creditor.id}>
-                  <TableCell className="font-medium">{creditor.partyName}</TableCell>
+                  <TableCell className="font-medium">{creditor.name}</TableCell>
                   <TableCell className="font-mono">₹{creditor.outstandingAmount.toLocaleString()}</TableCell>
                   <TableCell className="font-mono">
                     {creditor.creditLimit ? `₹${creditor.creditLimit.toLocaleString()}` : 'No limit'}

@@ -28,9 +28,9 @@ export interface FuelBreakdown {
 export interface TopCreditor {
   id: string;
   name: string;
-  totalDebt: number;
-  lastPayment: string;
-  status: 'active' | 'overdue' | 'settled';
+  outstandingAmount: number;
+  creditLimit: number;
+  utilizationPercentage: number;
 }
 
 export interface RecentSale {
@@ -46,17 +46,22 @@ export interface RecentSale {
 export interface StationMetric {
   id: string;
   name: string;
-  location: string;
-  todaysSales: number;
+  location?: string;
+  todaySales: number;
+  monthlySales: number;
+  salesGrowth: number;
   activePumps: number;
-  status: 'active' | 'inactive';
+  totalPumps: number;
+  status: 'active' | 'inactive' | 'maintenance';
 }
 
 export interface SalesSummary {
-  totalSales: number;
   totalRevenue: number;
-  averageTransactionValue: number;
-  transactionCount: number;
+  totalVolume: number;
+  salesCount: number;
+  averageTicketSize: number;
+  cashSales: number;
+  creditSales: number;
   growthPercentage: number;
 }
 
@@ -64,6 +69,7 @@ export interface PaymentMethodBreakdown {
   method: string;
   amount: number;
   percentage: number;
+  count: number;
 }
 
 export interface FuelTypeBreakdown {
@@ -71,6 +77,13 @@ export interface FuelTypeBreakdown {
   volume: number;
   revenue: number;
   percentage: number;
+}
+
+export interface DailySalesTrend {
+  date: string;
+  revenue: number;
+  volume: number;
+  salesCount: number;
 }
 
 export class DashboardApiError extends Error {
@@ -82,6 +95,7 @@ export class DashboardApiError extends Error {
 
 const handleApiError = (error: any, defaultMessage: string) => {
   const errorMessage = error.response?.data?.message || defaultMessage;
+  console.error('Dashboard API Error:', errorMessage);
   throw new DashboardApiError(errorMessage, error.response?.status);
 };
 
@@ -170,11 +184,11 @@ export const dashboardApi = {
     }
   },
 
-  getDailySalesTrend: async (days: number = 7, filters: any = {}): Promise<SalesTrend[]> => {
+  getDailySalesTrend: async (days: number = 7, filters: any = {}): Promise<DailySalesTrend[]> => {
     try {
       const params = new URLSearchParams({ days: days.toString(), ...filters });
       const response = await apiClient.get(`/dashboard/daily-trend?${params}`);
-      return extractApiArray<SalesTrend>(response);
+      return extractApiArray<DailySalesTrend>(response);
     } catch (error: any) {
       handleApiError(error, 'Failed to fetch daily sales trend');
     }
