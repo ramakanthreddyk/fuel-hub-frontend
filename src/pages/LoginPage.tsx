@@ -30,16 +30,10 @@ export default function LoginPage() {
     setIsLoading(true);
     setLoginAttemptType(isAdminLoginRoute ? 'admin' : 'regular');
 
-    console.log('[LOGIN-PAGE] Form submitted with email:', email);
-    console.log('[LOGIN-PAGE] Login route type:', isAdminLoginRoute ? 'SuperAdmin Route' : 'Regular Route');
-
     try {
       await login(email, password, isAdminLoginRoute);
-      console.log('[LOGIN-PAGE] Login successful');
-      
       // Navigation is handled by AuthContext
     } catch (error: any) {
-      console.error('[LOGIN-PAGE] Login failed:', error);
       setLoginAttemptType(null);
       toast({
         title: "Login Failed",

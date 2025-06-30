@@ -1,14 +1,14 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from '@/api/auth';
+import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/auth';
 
 export type UserRole = 'superadmin' | 'owner' | 'manager' | 'attendant';
 
 export interface User {
   id: string;
-  name: string;
   email: string;
+  name: string;
   role: UserRole;
   tenantId?: string;
   tenantName?: string;
@@ -16,162 +16,110 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
-  login: (email: string, password: string, forceAdminRoute?: boolean) => Promise<void>;
-  logout: () => void;
   isLoading: boolean;
-  isAuthenticated: boolean;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  setToken: React.Dispatch<React.SetStateAction<string | null>>;
+  login: (email: string, password: string, isAdminLogin?: boolean) => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Initialize auth state on mount
   useEffect(() => {
-    // Check for existing auth on app load
     const initializeAuth = async () => {
       try {
-        const storedToken = localStorage.getItem('fuelsync_token');
+        const token = localStorage.getItem('fuelsync_token');
         const storedUser = localStorage.getItem('fuelsync_user');
         
-        console.log('[AUTH-CONTEXT] Initializing auth:', {
-          hasStoredToken: !!storedToken,
-          hasStoredUser: !!storedUser
-        });
-        
-        if (storedToken && storedUser) {
-          // Validate token by checking if it's not expired
+        if (token && storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          
+          // Verify token is still valid
           try {
-            const payload = JSON.parse(atob(storedToken.split('.')[1]));
-            const currentTime = Date.now() / 1000;
-            
-            console.log('[AUTH-CONTEXT] Token validation:', {
-              tokenExp: payload.exp,
-              currentTime,
-              isExpired: payload.exp && payload.exp <= currentTime
-            });
-            
-            if (payload.exp && payload.exp > currentTime) {
-              // Token is still valid
-              const parsedUser = JSON.parse(storedUser);
-              setToken(storedToken);
-              setUser(parsedUser);
-              console.log('[AUTH-CONTEXT] Restored valid session for user:', parsedUser.role);
-            } else {
-              // Token expired, clear storage
-              console.log('[AUTH-CONTEXT] Token expired, clearing session');
-              localStorage.removeItem('fuelsync_token');
-              localStorage.removeItem('fuelsync_user');
-            }
+            const currentUser = await getCurrentUser();
+            setUser(currentUser);
           } catch (error) {
-            // Invalid token format, clear storage
-            console.log('[AUTH-CONTEXT] Invalid token format, clearing session:', error);
+            // Token invalid, clear storage
             localStorage.removeItem('fuelsync_token');
             localStorage.removeItem('fuelsync_user');
+            setUser(null);
           }
         }
       } catch (error) {
-        console.error('[AUTH-CONTEXT] Error initializing auth:', error);
+        // Error parsing stored data, clear it
+        localStorage.removeItem('fuelsync_token');
+        localStorage.removeItem('fuelsync_user');
+        setUser(null);
       } finally {
         setIsLoading(false);
-        console.log('[AUTH-CONTEXT] Auth initialization complete');
       }
     };
 
     initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string, forceAdminRoute: boolean = false) => {
-    setIsLoading(true);
-    console.log(`[AUTH-CONTEXT] Login attempt for email: ${email}`);
-    console.log(`[AUTH-CONTEXT] Force admin route: ${forceAdminRoute}`);
-    
+  const login = async (email: string, password: string, isAdminLogin = false) => {
     try {
-      console.log('[AUTH-CONTEXT] Sending login request to API');
-      const response = await authApi.login({ email, password }, forceAdminRoute);
+      const response = await apiLogin(email, password, isAdminLogin);
       
-      console.log('[AUTH-CONTEXT] Login response received:', {
-        token: response.token ? '✓ Present' : '✗ Missing',
-        user: response.user ? '✓ Present' : '✗ Missing',
-        role: response.user?.role,
-        isSuperAdmin: response.user?.role === 'superadmin'
-      });
+      const { user: authUser, token } = response;
       
-      setUser(response.user);
-      setToken(response.token);
-      localStorage.setItem('fuelsync_token', response.token);
-      localStorage.setItem('fuelsync_user', JSON.stringify(response.user));
+      // Store auth data
+      localStorage.setItem('fuelsync_token', token);
+      localStorage.setItem('fuelsync_user', JSON.stringify(authUser));
       
-      // Role-based redirect with SuperAdmin flag
-      console.log(`[AUTH-CONTEXT] Redirecting user with role: ${response.user.role}`);
+      setUser(authUser);
       
-      if (response.user.role === 'superadmin') {
-        console.log('[AUTH-CONTEXT] 🔱 SuperAdmin detected! Using admin routes without tenant context');
-        navigate('/superadmin/overview');
+      // Navigate based on role
+      if (authUser.role === 'superadmin') {
+        navigate('/superadmin', { replace: true });
       } else {
-        console.log('[AUTH-CONTEXT] Regular user detected, using tenant-scoped routes');
-        switch (response.user.role) {
-          case 'attendant':
-            navigate('/dashboard/readings/new');
-            break;
-          default:
-            navigate('/dashboard');
-        }
+        navigate('/dashboard', { replace: true });
       }
-    } catch (error) {
-      console.error('[AUTH-CONTEXT] Login failed:', error);
-      console.log('[AUTH-CONTEXT] Error details:', error.response?.data || error.message);
-      throw error;
-    } finally {
-      setIsLoading(false);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Login failed');
     }
   };
 
-  const logout = () => {
-    console.log('[AUTH-CONTEXT] Logging out user');
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('fuelsync_token');
-    localStorage.removeItem('fuelsync_user');
-    navigate('/login');
+  const logout = async () => {
+    try {
+      await apiLogout();
+    } catch (error) {
+      // Continue with logout even if API call fails
+    } finally {
+      localStorage.removeItem('fuelsync_token');
+      localStorage.removeItem('fuelsync_user');
+      setUser(null);
+      navigate('/login', { replace: true });
+    }
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
-    token,
+    isLoading,
     login,
     logout,
-    isLoading,
-    isAuthenticated: !!user && !!token,
-    setUser,
-    setToken
   };
 
-  console.log('[AUTH-CONTEXT] Current auth state:', {
-    hasUser: !!user,
-    hasToken: !!token,
-    isAuthenticated: !!user && !!token,
-    isLoading,
-    userRole: user?.role
-  });
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

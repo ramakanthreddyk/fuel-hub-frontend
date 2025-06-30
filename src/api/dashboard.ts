@@ -1,116 +1,116 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { 
-  SalesSummary, 
-  PaymentMethodBreakdown, 
-  FuelTypeBreakdown, 
-  TopCreditor,
-  DailySalesTrend,
-  StationMetric,
-  ApiResponse 
-} from './api-contract';
 
-interface DashboardFilters {
-  stationId?: string;
-  dateFrom?: string;
-  dateTo?: string;
+export interface DashboardMetrics {
+  totalStations: number;
+  activePumps: number;
+  todaysSales: number;
+  totalRevenue: number;
+  fuelInventory: number;
+  activeAlerts: number;
+  averagePrice: number;
+  salesGrowth: number;
 }
 
-export const dashboardApi = {
-  // Get monthly sales summary
-  getSalesSummary: async (range: string = 'monthly', filters: DashboardFilters = {}): Promise<SalesSummary> => {
-    const params = new URLSearchParams({ range });
-    if (filters.stationId) params.append('stationId', filters.stationId);
-    if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-    if (filters.dateTo) params.append('dateTo', filters.dateTo);
-    
-    const response = await apiClient.get(`/dashboard/sales-summary?${params}`);
-    return extractApiData<SalesSummary>(response);
-  },
+export interface SalesTrend {
+  date: string;
+  sales: number;
+  revenue: number;
+}
 
-  // Get payment method breakdown
-  getPaymentMethodBreakdown: async (filters: DashboardFilters = {}): Promise<PaymentMethodBreakdown[]> => {
-    try {
-      const params = new URLSearchParams();
-      if (filters.stationId) params.append('stationId', filters.stationId);
-      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-      if (filters.dateTo) params.append('dateTo', filters.dateTo);
-      
-      const response = await apiClient.get(`/dashboard/payment-methods?${params}`);
-      return extractApiArray<PaymentMethodBreakdown>(response);
-    } catch (error) {
-      console.error('Error fetching payment method breakdown:', error);
-      return [];
-    }
-  },
+export interface FuelBreakdown {
+  fuelType: string;
+  volume: number;
+  revenue: number;
+  percentage: number;
+}
 
-  // Get fuel type breakdown
-  getFuelTypeBreakdown: async (filters: DashboardFilters = {}): Promise<FuelTypeBreakdown[]> => {
-    try {
-      const params = new URLSearchParams();
-      if (filters.stationId) params.append('stationId', filters.stationId);
-      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-      if (filters.dateTo) params.append('dateTo', filters.dateTo);
-      
-      const response = await apiClient.get(`/dashboard/fuel-breakdown?${params}`);
-      return extractApiArray<FuelTypeBreakdown>(response);
-    } catch (error) {
-      console.error('Error fetching fuel type breakdown:', error);
-      return [];
-    }
-  },
+export interface TopCreditor {
+  id: string;
+  name: string;
+  totalDebt: number;
+  lastPayment: string;
+  status: 'active' | 'overdue' | 'settled';
+}
 
-  // Get top creditors by outstanding amount
-  getTopCreditors: async (limit: number = 5, filters: DashboardFilters = {}): Promise<TopCreditor[]> => {
-    try {
-      const params = new URLSearchParams({ limit: limit.toString() });
-      if (filters.stationId) params.append('stationId', filters.stationId);
-      
-      const response = await apiClient.get(`/dashboard/top-creditors?${params}`);
-      return extractApiArray<TopCreditor>(response);
-    } catch (error) {
-      console.error('Error fetching top creditors:', error);
-      return [];
-    }
-  },
+export interface RecentSale {
+  id: string;
+  stationName: string;
+  fuelType: string;
+  quantity: number;
+  amount: number;
+  timestamp: string;
+  attendant: string;
+}
 
-  // Get daily sales trend
-  getDailySalesTrend: async (days: number = 7, filters: DashboardFilters = {}): Promise<DailySalesTrend[]> => {
-    try {
-      const params = new URLSearchParams({ days: days.toString() });
-      if (filters.stationId) params.append('stationId', filters.stationId);
-      
-      const response = await apiClient.get(`/dashboard/sales-trend?${params}`);
-      return extractApiArray<DailySalesTrend>(response);
-    } catch (error) {
-      console.error('Error fetching daily sales trend:', error);
-      return [];
-    }
-  },
+export class DashboardApiError extends Error {
+  constructor(message: string, public statusCode?: number) {
+    super(message);
+    this.name = 'DashboardApiError';
+  }
+}
 
-  // Get station metrics
-  getStationMetrics: async (): Promise<StationMetric[]> => {
-    try {
-      const response = await apiClient.get('/stations?includeMetrics=true');
-      const stations = extractApiArray(response);
-      
-      // Transform backend response to match StationMetric interface
-      return stations.map((station: any) => ({
-        id: station.id,
-        name: station.name,
-        todaySales: station.metrics?.totalSales || 0,
-        monthlySales: station.metrics?.totalSales || 0, // Backend doesn't separate today/monthly yet
-        salesGrowth: 0, // Backend doesn't provide growth calculation yet
-        activePumps: station.pumpCount || 0,
-        totalPumps: station.pumpCount || 0,
-        status: station.status || 'active'
-      }));
-    } catch (error) {
-      console.error('Error fetching station metrics:', error);
-      return [];
-    }
+/**
+ * Fetch dashboard metrics
+ */
+export const getDashboardMetrics = async (): Promise<DashboardMetrics> => {
+  try {
+    const response = await apiClient.get('/dashboard/metrics');
+    return extractApiData<DashboardMetrics>(response);
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to fetch dashboard metrics';
+    throw new DashboardApiError(errorMessage, error.response?.status);
   }
 };
 
-// Export types for backward compatibility
-export type { DashboardFilters };
+/**
+ * Fetch sales trend data
+ */
+export const getSalesTrend = async (days: number = 7): Promise<SalesTrend[]> => {
+  try {
+    const response = await apiClient.get(`/dashboard/sales-trend?days=${days}`);
+    return extractApiArray<SalesTrend>(response);
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to fetch sales trend';
+    throw new DashboardApiError(errorMessage, error.response?.status);
+  }
+};
+
+/**
+ * Fetch fuel breakdown data
+ */
+export const getFuelBreakdown = async (): Promise<FuelBreakdown[]> => {
+  try {
+    const response = await apiClient.get('/dashboard/fuel-breakdown');
+    return extractApiArray<FuelBreakdown>(response);
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to fetch fuel breakdown';
+    throw new DashboardApiError(errorMessage, error.response?.status);
+  }
+};
+
+/**
+ * Fetch top creditors
+ */
+export const getTopCreditors = async (limit: number = 5): Promise<TopCreditor[]> => {
+  try {
+    const response = await apiClient.get(`/dashboard/top-creditors?limit=${limit}`);
+    return extractApiArray<TopCreditor>(response);
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to fetch top creditors';
+    throw new DashboardApiError(errorMessage, error.response?.status);
+  }
+};
+
+/**
+ * Fetch recent sales
+ */
+export const getRecentSales = async (limit: number = 10): Promise<RecentSale[]> => {
+  try {
+    const response = await apiClient.get(`/dashboard/recent-sales?limit=${limit}`);
+    return extractApiArray<RecentSale>(response);
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to fetch recent sales';
+    throw new DashboardApiError(errorMessage, error.response?.status);
+  }
+};
