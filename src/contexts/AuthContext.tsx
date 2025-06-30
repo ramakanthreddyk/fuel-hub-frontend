@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/api/auth';
+import { authApi } from '@/api/auth';
 
 export type UserRole = 'superadmin' | 'owner' | 'manager' | 'attendant';
 
@@ -17,6 +16,8 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
+  token: string | null;
   login: (email: string, password: string, isAdminLogin?: boolean) => Promise<void>;
   logout: () => void;
 }
@@ -32,6 +33,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  const token = localStorage.getItem('fuelsync_token');
+  const isAuthenticated = !!user && !!token;
+
   // Initialize auth state on mount
   useEffect(() => {
     const initializeAuth = async () => {
@@ -41,20 +45,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         if (token && storedUser) {
           const parsedUser = JSON.parse(storedUser);
-          
-          // Verify token is still valid
-          try {
-            const currentUser = await getCurrentUser();
-            setUser(currentUser);
-          } catch (error) {
-            // Token invalid, clear storage
-            localStorage.removeItem('fuelsync_token');
-            localStorage.removeItem('fuelsync_user');
-            setUser(null);
-          }
+          setUser(parsedUser);
         }
       } catch (error) {
-        // Error parsing stored data, clear it
         localStorage.removeItem('fuelsync_token');
         localStorage.removeItem('fuelsync_user');
         setUser(null);
@@ -68,7 +61,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string, isAdminLogin = false) => {
     try {
-      const response = await apiLogin(email, password, isAdminLogin);
+      const response = await authApi.login({ email, password }, isAdminLogin);
       
       const { user: authUser, token } = response;
       
@@ -91,7 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      await apiLogout();
+      await authApi.logout();
     } catch (error) {
       // Continue with logout even if API call fails
     } finally {
@@ -105,6 +98,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextType = {
     user,
     isLoading,
+    isAuthenticated,
+    token,
     login,
     logout,
   };

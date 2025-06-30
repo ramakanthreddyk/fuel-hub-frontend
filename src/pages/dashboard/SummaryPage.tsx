@@ -13,6 +13,7 @@ import { useStationMetrics } from '@/hooks/useDashboard';
 import { DateRange } from 'react-day-picker';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Filter } from 'lucide-react';
+import type { StationMetric } from '@/api/dashboard';
 
 export default function SummaryPage() {
   const [selectedStation, setSelectedStation] = useState<string | undefined>();
@@ -24,6 +25,9 @@ export default function SummaryPage() {
     dateFrom: dateRange?.from?.toISOString(),
     dateTo: dateRange?.to?.toISOString(),
   };
+
+  // Ensure stationMetrics is properly typed
+  const typedStationMetrics: StationMetric[] = Array.isArray(stationMetrics) ? stationMetrics : [];
 
   return (
     <div className="space-y-6">
@@ -53,7 +57,7 @@ export default function SummaryPage() {
       </div>
 
       {/* Station Metrics Overview */}
-      {!selectedStation && stationMetrics.length > 0 && (
+      {!selectedStation && typedStationMetrics.length > 0 && (
         <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -63,7 +67,7 @@ export default function SummaryPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {stationMetrics.slice(0, 6).map((station) => (
+              {typedStationMetrics.slice(0, 6).map((station) => (
                 <StationMetricsCard
                   key={station.id}
                   station={station}
