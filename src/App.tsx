@@ -12,6 +12,9 @@ import LoginPage from '@/pages/LoginPage';
 import NotFound from '@/pages/NotFound';
 import Unauthorized from '@/pages/Unauthorized';
 
+// Setup Pages
+import SetupWizardPage from '@/pages/setup/SetupWizardPage';
+
 // Dashboard Pages  
 import SummaryPage from '@/pages/dashboard/SummaryPage';
 import StationsPage from '@/pages/dashboard/StationsPage';
@@ -56,6 +59,13 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
+
+            {/* Setup Wizard Route */}
+            <Route path="/setup" element={
+              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
+                <SetupWizardPage />
+              </RequireAuth>
+            } />
 
             {/* SuperAdmin Routes with Layout */}
             <Route path="/superadmin" element={
