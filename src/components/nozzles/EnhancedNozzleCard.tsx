@@ -1,9 +1,20 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Settings, Activity, AlertTriangle, Plus } from 'lucide-react';
-import { Nozzle } from '@/api/nozzles';
+
+interface Nozzle {
+  id: string;
+  pumpId?: string;
+  pump_id?: string;
+  nozzleNumber?: number;
+  nozzle_number?: number;
+  fuelType?: string;
+  fuel_type?: string;
+  status: string;
+  createdAt?: string;
+  created_at?: string;
+}
 
 interface EnhancedNozzleCardProps {
   nozzle: Nozzle;
@@ -11,8 +22,13 @@ interface EnhancedNozzleCardProps {
 }
 
 export function EnhancedNozzleCard({ nozzle, onTakeReading }: EnhancedNozzleCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  // Handle both snake_case and camelCase properties
+  const nozzleNumber = nozzle.nozzleNumber || nozzle.nozzle_number || 0;
+  const fuelType = nozzle.fuelType || nozzle.fuel_type || 'unknown';
+  const status = nozzle.status || 'inactive';
+
+  const getStatusColor = (statusValue: string) => {
+    switch (statusValue) {
       case 'active': return 'bg-green-100 text-green-800';
       case 'maintenance': return 'bg-yellow-100 text-yellow-800';
       case 'inactive': return 'bg-red-100 text-red-800';
@@ -20,8 +36,8 @@ export function EnhancedNozzleCard({ nozzle, onTakeReading }: EnhancedNozzleCard
     }
   };
 
-  const getFuelTypeColor = (fuelType: string) => {
-    switch (fuelType) {
+  const getFuelTypeColor = (fuelTypeValue: string) => {
+    switch (fuelTypeValue) {
       case 'petrol': return 'text-blue-600';
       case 'diesel': return 'text-green-600';
       case 'premium': return 'text-purple-600';
@@ -29,8 +45,8 @@ export function EnhancedNozzleCard({ nozzle, onTakeReading }: EnhancedNozzleCard
     }
   };
 
-  const getFuelTypeIcon = (fuelType: string) => {
-    switch (fuelType) {
+  const getFuelTypeIcon = (fuelTypeValue: string) => {
+    switch (fuelTypeValue) {
       case 'petrol': return '⛽';
       case 'diesel': return '🚛';
       case 'premium': return '✨';
@@ -43,26 +59,26 @@ export function EnhancedNozzleCard({ nozzle, onTakeReading }: EnhancedNozzleCard
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <span className="text-2xl">{getFuelTypeIcon(nozzle.fuelType)}</span>
-            Nozzle #{nozzle.nozzleNumber}
+            <span className="text-2xl">{getFuelTypeIcon(fuelType)}</span>
+            Nozzle #{nozzleNumber}
           </CardTitle>
-          <Badge className={getStatusColor(nozzle.status)}>
-            {nozzle.status}
+          <Badge className={getStatusColor(status)}>
+            {status}
           </Badge>
         </div>
-        <CardDescription className={`capitalize font-medium ${getFuelTypeColor(nozzle.fuelType)}`}>
-          {nozzle.fuelType}
+        <CardDescription className={`capitalize font-medium ${getFuelTypeColor(fuelType)}`}>
+          {fuelType}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Activity className="h-4 w-4" />
-            <span>Status: {nozzle.status}</span>
+            <span>Status: {status}</span>
           </div>
           
           <div className="flex gap-2">
-            {nozzle.status === 'active' ? (
+            {status === 'active' ? (
               <Button 
                 onClick={() => onTakeReading(nozzle.id)} 
                 size="sm" 
