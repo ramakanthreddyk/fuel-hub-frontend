@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 
@@ -16,7 +17,7 @@ interface DataMappingProviderProps {
 export function DataMappingProvider({ children }: DataMappingProviderProps) {
   const { isAuthenticated, isLoading } = useAuth();
 
-  const mapApiData = <T>(data: any, mapping?: Record<string, string>): T => {
+  const mapApiData = <T,>(data: any, mapping?: Record<string, string>): T => {
     if (!data || typeof data !== 'object') {
       return data;
     }
@@ -44,7 +45,7 @@ export function DataMappingProvider({ children }: DataMappingProviderProps) {
     return mappedData as T;
   };
 
-  const mapArrayData = <T>(data: any[], mapping?: Record<string, string>): T[] => {
+  const mapArrayData = <T,>(data: any[], mapping?: Record<string, string>): T[] => {
     if (!Array.isArray(data)) {
       return [];
     }
