@@ -234,6 +234,9 @@ All error responses follow this format:
 ```
 
 ### POST /pumps
+**Purpose:** Create new pump
+**Roles Required:** owner only
+
 **Request Body:**
 ```typescript
 {
@@ -266,6 +269,9 @@ All error responses follow this format:
 ```
 
 ### POST /nozzles
+**Purpose:** Create new nozzle
+**Roles Required:** owner only
+
 **Request Body:**
 ```typescript
 {
@@ -275,6 +281,22 @@ All error responses follow this format:
   status?: "active" | "inactive" | "maintenance"; // Optional, defaults to 'active'
 }
 ```
+
+### PUT /pumps/:id
+**Purpose:** Update pump details
+**Roles Required:** owner only
+
+### DELETE /pumps/:id
+**Purpose:** Delete pump
+**Roles Required:** owner only
+
+### PUT /nozzles/:id
+**Purpose:** Update nozzle details
+**Roles Required:** owner only
+
+### DELETE /nozzles/:id
+**Purpose:** Delete nozzle
+**Roles Required:** owner only
 
 ---
 

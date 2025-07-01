@@ -346,8 +346,15 @@ paths:
     post:
       summary: Create pump
       responses:
-        '200':
-          $ref: '#/components/responses/Success'
+        '201':
+          description: Pump created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Pump'
         default:
           $ref: '#/components/responses/Error'
       requestBody:
@@ -355,7 +362,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateTenantRequest'
+              $ref: '#/components/schemas/CreatePumpRequest'
     get:
       summary: List pumps
       description: Returns pumps with `nozzleCount` per pump.
@@ -409,8 +416,15 @@ paths:
     post:
       summary: Create nozzle
       responses:
-        '200':
-          $ref: '#/components/responses/Success'
+        '201':
+          description: Nozzle created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Nozzle'
         default:
           $ref: '#/components/responses/Error'
       requestBody:
@@ -418,7 +432,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CreateNozzleRequest'
     get:
       summary: List nozzles
       parameters:
@@ -2144,11 +2158,19 @@ paths:
       properties:
         pumpId:
           type: string
+          description: ID of the pump to which this nozzle belongs
         nozzleNumber:
           type: number
+          description: Unique number for the nozzle within the pump
         fuelType:
           type: string
           enum: [petrol, diesel, premium]
+          description: Type of fuel dispensed by this nozzle
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+          description: Current operational status of the nozzle
+          default: active
     Pump:
       type: object
       properties:
