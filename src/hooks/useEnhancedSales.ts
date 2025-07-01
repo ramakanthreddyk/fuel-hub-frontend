@@ -1,85 +1,71 @@
 
-import { useMemo } from 'react';
-import { useSales } from './useSales';
-import { useDataMapping } from '@/contexts/DataMappingContext';
-import { SalesFilters } from '@/api/sales';
-import { formatSafeNumber, formatSafeDate } from '@/utils/formatters';
+import { useQuery } from '@tanstack/react-query';
+import { salesApi, SalesFilters } from '@/api/sales';
+import { stationsApi } from '@/api/stations';
+import { nozzlesApi } from '@/api/nozzles';
+import type { Sale } from '@/api/api-contract';
 
-export interface EnhancedSale {
-  id: string;
-  nozzleId: string;
-  stationId: string;
-  volume: number;
-  fuelType: string;
-  fuelPrice: number;
-  amount: number;
-  paymentMethod: string;
-  creditorId?: string;
-  status: 'draft' | 'posted';
-  recordedAt: string;
-  createdAt: string;
-  station: {
+export interface EnhancedSale extends Sale {
+  station?: {
     name: string;
   };
-  nozzle: {
+  nozzle?: {
     nozzleNumber: number;
-    fuelType: string;
   };
 }
 
 export const useEnhancedSales = (filters: SalesFilters = {}) => {
-  const { data: rawSales = [], isLoading: salesLoading, error } = useSales(filters);
-  const { 
-    getStationByNozzleId, 
-    getNozzleNumber, 
-    getNozzleFuelType,
-    isLoading: mappingLoading 
-  } = useDataMapping();
+  const { data: stations = [] } = useQuery({
+    queryKey: ['stations'],
+    queryFn: () => stationsApi.getStations(),
+    staleTime: 300000, // 5 minutes
+  });
 
-  const enhancedSales = useMemo(() => {
-    if (mappingLoading || salesLoading) return [];
-    
-    console.log('[ENHANCED-SALES] Processing raw sales:', rawSales.length);
-    
-    return rawSales.map((sale: any): EnhancedSale => {
-      const nozzleId = sale.nozzle_id || sale.nozzleId || '';
-      const volume = typeof sale.volume === 'string' ? parseFloat(sale.volume) : (sale.volume || 0);
-      const amount = typeof sale.amount === 'string' ? parseFloat(sale.amount) : (sale.amount || 0);
+  return useQuery({
+    queryKey: ['enhanced-sales', filters],
+    queryFn: async (): Promise<EnhancedSale[]> => {
+      console.log('[USE-ENHANCED-SALES] Fetching sales with filters:', filters);
       
-      // Calculate fuel price from volume and amount
-      const fuelPrice = volume > 0 ? amount / volume : 0;
+      const sales = await salesApi.getSales(filters);
+      console.log('[USE-ENHANCED-SALES] Raw sales count:', sales.length);
       
-      const enhanced: EnhancedSale = {
-        id: sale.id,
-        nozzleId: nozzleId,
-        stationId: sale.station_id || sale.stationId || '',
-        volume: isNaN(volume) ? 0 : volume,
-        fuelType: getNozzleFuelType(nozzleId),
-        fuelPrice: isNaN(fuelPrice) ? 0 : fuelPrice,
-        amount: isNaN(amount) ? 0 : amount,
-        paymentMethod: sale.payment_method || sale.paymentMethod || 'cash',
-        creditorId: sale.creditor_id || sale.creditorId,
-        status: sale.status || 'posted',
-        recordedAt: sale.recorded_at || sale.recordedAt || new Date().toISOString(),
-        createdAt: sale.created_at || sale.createdAt || new Date().toISOString(),
-        station: {
-          name: getStationByNozzleId(nozzleId),
-        },
-        nozzle: {
-          nozzleNumber: getNozzleNumber(nozzleId),
-          fuelType: getNozzleFuelType(nozzleId),
-        },
-      };
+      // Enhance sales with station and nozzle data
+      const enhancedSales: EnhancedSale[] = await Promise.all(
+        sales.map(async (sale) => {
+          const enhancedSale: EnhancedSale = { ...sale };
+          
+          // Find station by ID
+          if (sale.stationId) {
+            const station = stations.find(s => s.id === sale.stationId);
+            if (station) {
+              enhancedSale.station = { name: station.name };
+            }
+          }
+          
+          // Try to get nozzle data if we have nozzleId
+          if (sale.nozzleId) {
+            try {
+              const nozzle = await nozzlesApi.getNozzle(sale.nozzleId);
+              if (nozzle) {
+                enhancedSale.nozzle = { nozzleNumber: nozzle.nozzleNumber };
+                // Update fuel type from nozzle if not set
+                if (!enhancedSale.fuelType || enhancedSale.fuelType === 'petrol') {
+                  enhancedSale.fuelType = nozzle.fuelType;
+                }
+              }
+            } catch (error) {
+              console.warn('[USE-ENHANCED-SALES] Failed to fetch nozzle data:', sale.nozzleId);
+            }
+          }
+          
+          return enhancedSale;
+        })
+      );
       
-      return enhanced;
-    });
-  }, [rawSales, mappingLoading, salesLoading, getStationByNozzleId, getNozzleNumber, getNozzleFuelType]);
-
-  console.log('[ENHANCED-SALES] Enhanced sales result:', enhancedSales.length);
-
-  return {
-    data: enhancedSales,
-    isLoading: salesLoading || mappingLoading,
-    error,
-  };
+      console.log('[USE-ENHANCED-SALES] Enhanced sales count:', enhancedSales.length);
+      return enhancedSales;
+    },
+    retry: 1,
+    staleTime: 30000, // 30 seconds
+  });
 };

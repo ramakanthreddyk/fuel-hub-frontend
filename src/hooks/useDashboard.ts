@@ -10,42 +10,54 @@ interface DashboardFilters {
 
 export const useSalesSummary = (range: string = 'monthly', filters: DashboardFilters = {}) => {
   return useQuery({
-    queryKey: ['dashboard', 'sales-summary', range, filters],
+    queryKey: ['sales-summary', range, filters],
     queryFn: () => dashboardApi.getSalesSummary(range, filters),
+    retry: 1,
+    staleTime: 60000, // 1 minute
   });
 };
 
 export const usePaymentMethodBreakdown = (filters: DashboardFilters = {}) => {
   return useQuery({
-    queryKey: ['dashboard', 'payment-methods', filters],
+    queryKey: ['payment-methods', filters],
     queryFn: () => dashboardApi.getPaymentMethodBreakdown(filters),
+    retry: 1,
+    staleTime: 60000,
   });
 };
 
 export const useFuelTypeBreakdown = (filters: DashboardFilters = {}) => {
   return useQuery({
-    queryKey: ['dashboard', 'fuel-breakdown', filters],
+    queryKey: ['fuel-breakdown', filters],
     queryFn: () => dashboardApi.getFuelTypeBreakdown(filters),
+    retry: 1,
+    staleTime: 60000,
   });
 };
 
 export const useTopCreditors = (limit: number = 5, filters: DashboardFilters = {}) => {
   return useQuery({
-    queryKey: ['dashboard', 'top-creditors', limit, filters],
+    queryKey: ['top-creditors', limit, filters],
     queryFn: () => dashboardApi.getTopCreditors(limit),
+    retry: 1,
+    staleTime: 60000,
   });
 };
 
 export const useDailySalesTrend = (days: number = 7, filters: DashboardFilters = {}) => {
   return useQuery({
-    queryKey: ['dashboard', 'sales-trend', days, filters],
+    queryKey: ['sales-trend', days, filters],
     queryFn: () => dashboardApi.getDailySalesTrend(days, filters),
+    retry: 1,
+    staleTime: 60000,
   });
 };
 
 export const useStationMetrics = () => {
   return useQuery({
-    queryKey: ['stations', 'metrics'],
-    queryFn: dashboardApi.getStationMetrics,
+    queryKey: ['station-metrics'],
+    queryFn: () => dashboardApi.getStationMetrics(),
+    retry: 1,
+    staleTime: 60000,
   });
 };

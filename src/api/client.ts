@@ -35,14 +35,6 @@ apiClient.interceptors.request.use(
           if (user.role !== 'superadmin' && user.tenantId) {
             config.headers['x-tenant-id'] = user.tenantId;
           }
-          // For SuperAdmin accessing general admin routes, don't add tenant header
-          else if (user.role === 'superadmin' && isGeneralAdminRoute) {
-            // No tenant header needed for superadmin admin routes
-          }
-          // For SuperAdmin accessing non-admin routes, they might need tenant context for specific operations
-          else if (user.role === 'superadmin' && !isGeneralAdminRoute) {
-            // No tenant header by default for superadmin
-          }
         } catch (error) {
           console.error('[API-CLIENT] Error parsing stored user:', error);
         }
@@ -66,7 +58,6 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       const errorMessage = error.response?.data?.message || '';
       const isAuthEndpoint = error.config?.url?.includes('/auth/');
-      const currentPath = window.location.pathname;
       
       // Only logout for actual authentication failures, not permission issues
       const isLegitimateAuthFailure = 
@@ -78,10 +69,7 @@ apiClient.interceptors.response.use(
         errorMessage.toLowerCase().includes('jwt') ||
         errorMessage.toLowerCase().includes('token');
       
-      // NEVER log out for dashboard routes that might return 401 for permission reasons
-      const isDashboardRoute = currentPath.startsWith('/dashboard') || currentPath.startsWith('/superadmin');
-      
-      if (isLegitimateAuthFailure && !isDashboardRoute) {
+      if (isLegitimateAuthFailure) {
         localStorage.removeItem('fuelsync_token');
         localStorage.removeItem('fuelsync_user');
         // Only redirect if we're not already on the login page

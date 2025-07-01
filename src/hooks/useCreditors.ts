@@ -7,6 +7,8 @@ export const useCreditors = () => {
   return useQuery({
     queryKey: ['creditors'],
     queryFn: creditorsApi.getCreditors,
+    retry: 1,
+    staleTime: 30000,
   });
 };
 
@@ -24,17 +26,21 @@ export const useCreateCreditor = () => {
 
   return useMutation({
     mutationFn: (data: CreateCreditorRequest) => creditorsApi.createCreditor(data),
-    onSuccess: () => {
+    onSuccess: (newCreditor) => {
+      // Invalidate and refetch creditors list
       queryClient.invalidateQueries({ queryKey: ['creditors'] });
+      
+      // Show success message
       toast({
         title: "Success",
-        description: "Creditor created successfully",
+        description: `Creditor "${newCreditor.partyName}" created successfully`,
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Failed to create creditor:', error);
       toast({
         title: "Error",
-        description: "Failed to create creditor",
+        description: error.response?.data?.message || "Failed to create creditor",
         variant: "destructive",
       });
     },
@@ -63,10 +69,11 @@ export const useCreatePayment = () => {
         description: "Payment recorded successfully",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Failed to record payment:', error);
       toast({
         title: "Error",
-        description: "Failed to record payment",
+        description: error.response?.data?.message || "Failed to record payment",
         variant: "destructive",
       });
     },

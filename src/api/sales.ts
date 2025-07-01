@@ -9,22 +9,25 @@ const transformSale = (backendSale: any): Sale => {
   
   return {
     id: backendSale.id,
-    nozzleId: backendSale.nozzle_id,
-    stationId: backendSale.station_id || '', // Backend might not send this directly
+    nozzleId: backendSale.nozzle_id || backendSale.nozzleId,
+    stationId: backendSale.station_id || backendSale.stationId || '',
     volume: isNaN(volume) ? 0 : volume,
-    fuelType: backendSale.fuel_type || 'petrol', // Default or will be mapped via nozzle
-    fuelPrice: volume > 0 ? amount / volume : 0, // Calculate price per liter
+    fuelType: backendSale.fuel_type || backendSale.fuelType || 'petrol',
+    fuelPrice: volume > 0 ? amount / volume : 0,
     amount: isNaN(amount) ? 0 : amount,
-    paymentMethod: backendSale.payment_method || 'cash',
-    creditorId: backendSale.creditor_id,
+    paymentMethod: backendSale.payment_method || backendSale.paymentMethod || 'cash',
+    creditorId: backendSale.creditor_id || backendSale.creditorId,
     status: backendSale.status || 'posted',
-    recordedAt: backendSale.recorded_at || new Date().toISOString(),
-    createdAt: backendSale.created_at || new Date().toISOString(),
+    recordedAt: backendSale.recorded_at || backendSale.recordedAt || new Date().toISOString(),
+    createdAt: backendSale.created_at || backendSale.createdAt || new Date().toISOString(),
+    // Include nested objects if present
+    station: backendSale.station,
+    nozzle: backendSale.nozzle,
   };
 };
 
 export const salesApi = {
-  // Get sales with filters
+  // Get sales with filters - using correct endpoint from API spec
   getSales: async (filters: SalesFilters = {}): Promise<Sale[]> => {
     try {
       const params = new URLSearchParams();
@@ -47,40 +50,29 @@ export const salesApi = {
       
       let rawSales = extractApiArray<any>(response, 'sales');
       
-      // If no sales found, try different extraction methods
+      // If no sales found with standard extraction, try alternatives
       if (rawSales.length === 0 && response.data) {
-        console.log('[SALES-API] No sales found with standard extraction, trying alternatives');
+        console.log('[SALES-API] Trying alternative extraction methods');
         
-        // Try direct array access
         if (Array.isArray(response.data)) {
-          console.log('[SALES-API] Response data is direct array');
           rawSales = response.data;
-        }
-        
-        // Try other common response patterns
-        if (response.data.data && Array.isArray(response.data.data)) {
-          console.log('[SALES-API] Using response.data.data array');
+        } else if (response.data.data && Array.isArray(response.data.data)) {
           rawSales = response.data.data;
-        }
-        
-        if (response.data.results && Array.isArray(response.data.results)) {
-          console.log('[SALES-API] Using response.data.results array');
+        } else if (response.data.results && Array.isArray(response.data.results)) {
           rawSales = response.data.results;
         }
       }
       
       // Transform backend data to frontend format
       const transformedSales = rawSales.map(transformSale);
-      console.log(`[SALES-API] Transformed ${transformedSales.length} sales from response`);
+      console.log(`[SALES-API] Transformed ${transformedSales.length} sales`);
       
       return transformedSales;
     } catch (error: any) {
       console.error('[SALES-API] Error fetching sales:', error);
       console.error('[SALES-API] Error response:', error.response?.data);
-      console.error('[SALES-API] Error status:', error.response?.status);
-      console.error('[SALES-API] Error config:', error.config);
       
-      // Return empty array instead of throwing to prevent app crashes
+      // Return empty array instead of throwing
       return [];
     }
   }

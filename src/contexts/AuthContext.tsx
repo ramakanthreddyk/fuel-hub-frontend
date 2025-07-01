@@ -64,6 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string, isAdminLogin = false) => {
     try {
+      setIsLoading(true);
       const response = await authApi.login({ email, password }, isAdminLogin);
       
       const { user: authUser, token } = response;
@@ -74,15 +75,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       setUser(authUser);
       
-      // Navigate based on role
+      // Navigate based on role with proper route
       if (authUser.role === 'superadmin') {
         navigate('/superadmin', { replace: true });
       } else {
+        // For owner, manager, attendant - go to dashboard summary
         navigate('/dashboard', { replace: true });
       }
     } catch (error: any) {
       console.error('[AUTH-CONTEXT] Login error:', error);
       throw new Error(error.response?.data?.message || 'Login failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
