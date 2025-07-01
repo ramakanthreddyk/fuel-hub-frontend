@@ -3,7 +3,7 @@ import { apiClient, extractApiData, extractApiArray } from './client';
 import type { Pump, CreatePumpRequest, ApiResponse } from './api-contract';
 
 export const pumpsApi = {
-  // Get pumps for a station
+  // Get pumps for a station - Fix: accept string parameter
   getPumps: async (stationId: string): Promise<Pump[]> => {
     try {
       const response = await apiClient.get(`/pumps?stationId=${stationId}`);

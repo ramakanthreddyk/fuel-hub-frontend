@@ -24,10 +24,10 @@ export default function StationDetailsPage() {
     enabled: !!stationId,
   });
 
-  // Fetch pumps for this station
+  // Fetch pumps for this station - Fix: pass stationId string directly
   const { data: pumps = [] } = useQuery({
     queryKey: ['pumps', stationId],
-    queryFn: () => pumpsApi.getPumps({ stationId: stationId! }),
+    queryFn: () => pumpsApi.getPumps(stationId!),
     enabled: !!stationId,
   });
 
@@ -160,10 +160,10 @@ export default function StationDetailsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Phone</CardTitle>
+            <CardTitle className="text-sm font-medium">Attendants</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-medium">{station.phone || 'Not set'}</div>
+            <div className="text-lg font-medium">{station.attendantCount || 0}</div>
           </CardContent>
         </Card>
 
@@ -172,7 +172,7 @@ export default function StationDetailsPage() {
             <CardTitle className="text-sm font-medium">Manager</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-medium">{station.managerName || 'Not assigned'}</div>
+            <div className="text-lg font-medium">{station.manager || 'Not assigned'}</div>
           </CardContent>
         </Card>
       </div>
@@ -212,7 +212,7 @@ export default function StationDetailsPage() {
               {pumps.map((pump) => (
                 <Card key={pump.id} className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">{pump.name}</h4>
+                    <h4 className="font-semibold">{pump.label}</h4>
                     <Badge 
                       variant={pump.status === 'active' ? 'default' : 'secondary'}
                       className={
