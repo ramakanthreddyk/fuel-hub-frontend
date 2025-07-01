@@ -1,3 +1,4 @@
+
 # FuelSync Hub - Frontend-Backend API Contract
 
 ## Overview
@@ -16,6 +17,31 @@ x-tenant-id: <tenant_uuid>
 ## Base URL
 All endpoints are prefixed with `/api/v1`
 
+## Response Format Standardization
+
+### Successful Responses
+All successful responses follow this format:
+```typescript
+{
+  success: true;
+  data: T; // Actual response data
+  message?: string; // Optional success message
+}
+```
+
+### Error Responses
+All error responses follow this format:
+```typescript
+{
+  success: false;
+  message: string; // Error description
+  details?: Array<{
+    field: string;
+    message: string;
+  }>; // Validation errors
+}
+```
+
 ---
 
 ## 1. AUTHENTICATION ENDPOINTS
@@ -33,14 +59,17 @@ All endpoints are prefixed with `/api/v1`
 **Expected Response:**
 ```typescript
 {
-  token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: "superadmin" | "owner" | "manager" | "attendant";
-    tenantId?: string;      // UUID for data isolation
-    tenantName?: string;    // Display name only
+  success: true;
+  data: {
+    token: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      role: "superadmin" | "owner" | "manager" | "attendant";
+      tenantId?: string;      // UUID for data isolation
+      tenantName?: string;    // Display name only
+    };
   };
 }
 ```
@@ -56,15 +85,18 @@ All endpoints are prefixed with `/api/v1`
 **Expected Response:**
 ```typescript
 {
-  users: Array<{
-    id: string;
-    name: string;
-    email: string;
-    role: "owner" | "manager" | "attendant";
-    createdAt: string;
-    stationId?: string;
-    stationName?: string;
-  }>;
+  success: true;
+  data: {
+    users: Array<{
+      id: string;
+      name: string;
+      email: string;
+      role: "owner" | "manager" | "attendant";
+      createdAt: string;
+      stationId?: string;
+      stationName?: string;
+    }>;
+  };
 }
 ```
 
@@ -75,13 +107,16 @@ All endpoints are prefixed with `/api/v1`
 **Expected Response:**
 ```typescript
 {
-  id: string;
-  name: string;
-  email: string;
-  role: "owner" | "manager" | "attendant";
-  createdAt: string;
-  stationId?: string;
-  stationName?: string;
+  success: true;
+  data: {
+    id: string;
+    name: string;
+    email: string;
+    role: "owner" | "manager" | "attendant";
+    createdAt: string;
+    stationId?: string;
+    stationName?: string;
+  };
 }
 ```
 
@@ -96,18 +131,7 @@ All endpoints are prefixed with `/api/v1`
   email: string;
   password: string;
   role: "manager" | "attendant";
-  stationId?: string;
-}
-```
-
-**Expected Response:**
-```typescript
-{
-  id: string;
-  name: string;
-  email: string;
-  role: "manager" | "attendant";
-  createdAt: string;
+  stationId?: string; // Optional station assignment
 }
 ```
 
@@ -136,143 +160,266 @@ All endpoints are prefixed with `/api/v1`
 }
 ```
 
-### POST /users/:id/reset-password
-**Purpose:** Reset user password (admin action)
+---
+
+## 3. STATION MANAGEMENT
+
+### GET /stations
+**Query Parameters:**
+- `includeMetrics?: boolean` - Include sales metrics
+
+**Expected Response:**
+```typescript
+{
+  success: true;
+  data: {
+    stations: Array<{
+      id: string;
+      name: string;
+      address: string;
+      status: "active" | "inactive" | "maintenance";
+      manager?: string;
+      attendantCount: number;
+      pumpCount: number;
+      createdAt: string;
+      // If includeMetrics=true:
+      todaySales?: number;
+      monthlySales?: number;
+      salesGrowth?: number;
+      activePumps?: number;
+      totalPumps?: number;
+      lastActivity?: string;
+      efficiency?: number;
+    }>;
+  };
+}
+```
+
+### POST /stations
+**Purpose:** Create new station
 **Roles Required:** owner only
 
 **Request Body:**
 ```typescript
 {
-  newPassword: string;
-}
-```
-
-### DELETE /users/:id
-**Purpose:** Delete user
-**Roles Required:** owner only
-
----
-
-## 3. SUPERADMIN ENDPOINTS
-
-### GET /admin/organizations
-**Purpose:** List all tenant organizations
-**Role Required:** superadmin
-
-**Expected Response:**
-```typescript
-Array<{
-  id: string;                    // tenant_id (UUID)
-  name: string;                  // Display name
-  planName: string;
-  status: "active" | "suspended" | "cancelled";
-  createdAt: string;
-  adminUser?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-}>
-```
-
-### POST /admin/organizations
-**Purpose:** Create new tenant organization
-**Role Required:** superadmin
-
-**Request Body:**
-```typescript
-{
-  name: string;           // Organization display name
-  planId: string;         // Subscription plan ID
-  adminEmail: string;     // Admin user email
-  adminPassword: string;  // Admin user password
-}
-```
-
-**Expected Response:**
-```typescript
-{
-  id: string;        // tenant_id (UUID)
   name: string;
-  planId: string;
-  status: "active";
-  createdAt: string;
-  adminUser: {
-    id: string;
-    email: string;
-    name: string;
-  };
+  address: string;
+  status?: "active" | "inactive" | "maintenance"; // Optional, defaults to 'active'
 }
-```
-
-### PUT /admin/organizations/:id/status
-**Purpose:** Update tenant status
-**Role Required:** superadmin
-
-**Request Body:**
-```typescript
-{
-  status: "active" | "suspended" | "cancelled";
-}
-```
-
-### GET /admin/plans
-**Purpose:** List all subscription plans
-**Role Required:** superadmin
-
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  name: string;
-  maxStations: number;
-  maxPumpsPerStation: number;
-  maxNozzlesPerPump: number;
-  priceMonthly: number;
-  priceYearly: number;
-  features: string[];
-}>
-```
-
-### POST /admin/plans
-**Purpose:** Create new subscription plan
-**Role Required:** superadmin
-
-**Request Body:**
-```typescript
-{
-  name: string;
-  maxStations: number;
-  maxPumpsPerStation: number;
-  maxNozzlesPerPump: number;
-  priceMonthly: number;
-  priceYearly: number;
-  features: string[];
-}
-```
-
-### GET /admin/users
-**Purpose:** List all admin users
-**Role Required:** superadmin
-
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  name: string;
-  email: string;
-  role: "superadmin";
-  createdAt: string;
-  lastLogin?: string;
-}>
 ```
 
 ---
 
-## 4. DASHBOARD ENDPOINTS
+## 4. PUMP & NOZZLE MANAGEMENT
+
+### GET /pumps
+**Query Parameters:**
+- `stationId?: string` - Filter by station
+
+**Expected Response:**
+```typescript
+{
+  success: true;
+  data: {
+    pumps: Array<{
+      id: string;
+      label: string;
+      serialNumber: string;
+      status: "active" | "inactive" | "maintenance";
+      stationId: string;
+      nozzleCount?: number;
+    }>;
+  };
+}
+```
+
+### POST /pumps
+**Request Body:**
+```typescript
+{
+  label: string;
+  serialNumber: string;
+  status?: "active" | "inactive" | "maintenance"; // Optional, defaults to 'active'
+  stationId: string;
+}
+```
+
+### GET /nozzles
+**Query Parameters:**
+- `pumpId?: string` - Filter by pump
+
+**Expected Response:**
+```typescript
+{
+  success: true;
+  data: {
+    nozzles: Array<{
+      id: string;
+      nozzleNumber: number;
+      fuelType: "petrol" | "diesel" | "premium";
+      status: "active" | "inactive" | "maintenance";
+      pumpId: string;
+      createdAt: string;
+    }>;
+  };
+}
+```
+
+### POST /nozzles
+**Request Body:**
+```typescript
+{
+  pumpId: string;
+  nozzleNumber: number;
+  fuelType: "petrol" | "diesel" | "premium";
+  status?: "active" | "inactive" | "maintenance"; // Optional, defaults to 'active'
+}
+```
+
+---
+
+## 5. READINGS & SALES
+
+### POST /nozzle-readings
+**Request Body:**
+```typescript
+{
+  nozzleId: string;
+  reading: number;
+  recordedAt?: string; // Optional, defaults to current time
+  paymentMethod: "cash" | "card" | "upi" | "credit";
+  creditorId?: string; // Required if paymentMethod is 'credit'
+}
+```
+
+**Expected Response:**
+```typescript
+{
+  success: true;
+  data: {
+    id: string;
+    nozzleId: string;
+    reading: number;
+    recordedAt: string;
+    paymentMethod: string;
+    creditorId?: string;
+    createdAt: string;
+    // Calculated fields
+    volume?: number;
+    amount?: number;
+    pricePerLitre?: number;
+  };
+}
+```
+
+### GET /sales
+**Query Parameters:**
+- `stationId?: string`
+- `startDate?: string` / `dateFrom?: string`
+- `endDate?: string` / `dateTo?: string`
+- `paymentMethod?: string`
+
+**Expected Response:**
+```typescript
+{
+  success: true;
+  data: {
+    sales: Array<{
+      id: string;
+      nozzleId: string;
+      stationId: string;
+      volume: number;
+      fuelType: string;
+      fuelPrice: number;
+      amount: number;
+      paymentMethod: string;
+      creditorId?: string;
+      status: "posted" | "draft";
+      recordedAt: string;
+      createdAt: string;
+    }>;
+  };
+}
+```
+
+---
+
+## 6. FUEL PRICE MANAGEMENT
+
+### GET /fuel-prices
+**Expected Response:**
+```typescript
+{
+  success: true;
+  data: {
+    prices: Array<{
+      id: string;
+      stationId: string;
+      fuelType: "petrol" | "diesel" | "premium";
+      price: number;
+      validFrom: string;
+      createdAt: string;
+      stationName?: string;
+    }>;
+  };
+}
+```
+
+### POST /fuel-prices
+**Request Body:**
+```typescript
+{
+  stationId: string;
+  fuelType: "petrol" | "diesel" | "premium";
+  price: number;
+  validFrom?: string; // Optional, defaults to current date
+}
+```
+
+---
+
+## 7. CREDITOR MANAGEMENT
+
+### GET /creditors
+**Expected Response:**
+```typescript
+{
+  success: true;
+  data: {
+    creditors: Array<{
+      id: string;
+      partyName: string;
+      contactPerson?: string;
+      phoneNumber?: string;
+      creditLimit?: number;
+      outstandingAmount: number;
+      paymentTerms?: string;
+      notes?: string;
+      createdAt: string;
+    }>;
+  };
+}
+```
+
+### POST /credit-payments
+**Request Body:**
+```typescript
+{
+  creditorId: string;
+  amount: number;
+  paymentDate?: string; // Optional, defaults to current date
+  paymentMethod: "cash" | "card" | "upi" | "credit";
+  reference?: string;
+  referenceNumber?: string;
+  notes?: string;
+}
+```
+
+---
+
+## 8. DASHBOARD ENDPOINTS
 
 ### GET /dashboard/sales-summary
-**Purpose:** Get sales overview with profit metrics
 **Query Parameters:**
 - `range`: "daily" | "weekly" | "monthly" | "yearly"
 - `stationId?`: string (optional station filter)
@@ -282,183 +429,287 @@ Array<{
 **Expected Response:**
 ```typescript
 {
-  totalSales: number;
-  totalVolume: number;
-  transactionCount: number;
-  totalProfit: number;
-  profitMargin: number;
-  period: string;
+  success: true;
+  data: {
+    totalRevenue: number;
+    totalVolume: number;
+    salesCount: number;
+    averageTicketSize: number;
+    cashSales: number;
+    creditSales: number;
+    growthPercentage: number;
+    totalProfit?: number;
+    profitMargin?: number;
+    period?: string;
+    previousPeriodRevenue?: number;
+  };
 }
 ```
 
 ### GET /dashboard/payment-methods
-**Query Parameters:** Same as sales-summary
 **Expected Response:**
 ```typescript
-Array<{
-  paymentMethod: "cash" | "card" | "upi" | "credit";
-  amount: number;
-  percentage: number;
-}>
-```
-
-### GET /dashboard/fuel-breakdown
-**Expected Response:**
-```typescript
-Array<{
-  fuelType: "petrol" | "diesel" | "premium";
-  volume: number;
-  amount: number;
-}>
-```
-
-### GET /dashboard/top-creditors
-**Query Parameters:** `limit?: number`, station filters
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  partyName: string;
-  outstandingAmount: number;
-  creditLimit?: number;
-}>
-```
-
-### GET /dashboard/sales-trend
-**Query Parameters:** `days?: number`, station filters
-**Expected Response:**
-```typescript
-Array<{
-  date: string; // ISO date
-  amount: number;
-  volume: number;
-}>
+{
+  success: true;
+  data: {
+    paymentMethods: Array<{
+      method: string;
+      amount: number;
+      percentage: number;
+      count: number;
+    }>;
+  };
+}
 ```
 
 ---
 
-## 5. STATION MANAGEMENT
+## 9. ATTENDANT ENDPOINTS
 
-### GET /stations
-**Query Parameters:**
-- `includeMetrics?: boolean`
+### GET /attendant/stations
+**Purpose:** Get assigned stations for attendant
+**Role Required:** attendant
 
-**Expected Response:**
-```typescript
-Array<{
-  id: string;
-  name: string;
-  address: string;
-  status: "active" | "inactive" | "maintenance";
-  manager?: string;
-  attendantCount: number;
-  pumpCount: number;
-  createdAt: string;
-  // If includeMetrics=true:
-  todaySales?: number;
-  monthlySales?: number;
-  salesGrowth?: number;
-  activePumps?: number;
-  totalPumps?: number;
-}>
-```
-
-### GET /stations/:id
 **Expected Response:**
 ```typescript
 {
-  id: string;
-  name: string;
-  address: string;
-  status: "active" | "inactive" | "maintenance";
-  manager?: string;
-  attendantCount: number;
-  pumpCount: number;
-  createdAt: string;
+  success: true;
+  data: {
+    stations: Array<{
+      id: string;
+      name: string;
+      address: string;
+      status: "active" | "inactive" | "maintenance";
+      assignedAt: string;
+    }>;
+  };
 }
 ```
 
-### GET /pumps
-**Query Parameters:**
-- `stationId?: string`
-
-**Expected Response:**
+### POST /attendant/cash-reports
+**Request Body:**
 ```typescript
-Array<{
-  id: string;
-  label: string;
-  serialNumber: string;
-  status: "active" | "inactive" | "maintenance";
+{
   stationId: string;
-}>
+  cashAmount: number;
+  reportDate?: string; // Optional, defaults to current date
+  shift: "morning" | "afternoon" | "night";
+  notes?: string;
+}
 ```
 
-### GET /nozzles
-**Query Parameters:**
-- `pumpId?: string`
+### GET /attendant/alerts
+**Expected Response:**
+```typescript
+{
+  success: true;
+  data: {
+    alerts: Array<{
+      id: string;
+      type: "warning" | "error" | "info";
+      priority: "low" | "medium" | "high" | "critical";
+      title: string;
+      message: string;
+      stationId?: string;
+      stationName?: string;
+      createdAt: string;
+      acknowledged: boolean;
+      isActive?: boolean;
+    }>;
+  };
+}
+```
+
+---
+
+## 10. SUPERADMIN ENDPOINTS
+
+### GET /admin/tenants
+**Purpose:** List all tenant organizations
+**Role Required:** superadmin
 
 **Expected Response:**
 ```typescript
-Array<{
-  id: string;
-  nozzleNumber: number;
-  fuelType: "petrol" | "diesel" | "premium";
-  status: "active" | "inactive" | "maintenance";
-  pumpId: string;
-}>
+{
+  success: true;
+  data: {
+    tenants: Array<{
+      id: string;
+      name: string;
+      planName: string;
+      status: "active" | "suspended" | "cancelled";
+      createdAt: string;
+      userCount: number;
+      stationCount: number;
+      lastActivity?: string;
+      billingStatus?: "current" | "overdue" | "suspended";
+    }>;
+  };
+}
+```
+
+### POST /admin/tenants
+**Request Body:**
+```typescript
+{
+  name: string;
+  planId: string;
+  ownerName: string; // or adminName
+  ownerEmail: string; // or adminEmail  
+  ownerPassword: string; // or adminPassword
+}
+```
+
+### GET /admin/plans
+**Expected Response:**
+```typescript
+{
+  success: true;
+  data: {
+    plans: Array<{
+      id: string;
+      name: string;
+      description: string;
+      price: number;
+      priceMonthly?: number;
+      priceYearly?: number;
+      maxStations: number;
+      maxUsers: number;
+      maxPumpsPerStation?: number;
+      maxNozzlesPerPump?: number;
+      features: string[];
+      isActive: boolean;
+      createdAt: string;
+      tenantCount?: number;
+      isPopular?: boolean;
+    }>;
+  };
+}
 ```
 
 ---
 
-## 6. ERROR HANDLING
+## FIELD MAPPING REFERENCE
 
-All endpoints should return consistent error responses:
+### Database to API Field Mapping
+The backend should convert these `snake_case` database fields to `camelCase` API responses:
 
-### 400 Bad Request
+- `station_id` → `stationId`
+- `pump_id` → `pumpId`
+- `nozzle_id` → `nozzleId`
+- `fuel_type` → `fuelType`
+- `payment_method` → `paymentMethod`
+- `creditor_id` → `creditorId`
+- `recorded_at` → `recordedAt`
+- `created_at` → `createdAt`
+- `updated_at` → `updatedAt`
+- `valid_from` → `validFrom`
+- `party_name` → `partyName`
+- `contact_person` → `contactPerson`
+- `phone_number` → `phoneNumber`
+- `credit_limit` → `creditLimit`
+- `outstanding_amount` → `outstandingAmount`
+- `payment_terms` → `paymentTerms`
+- `payment_date` → `paymentDate`
+- `reference_number` → `referenceNumber`
+- `tenant_id` → `tenantId`
+- `tenant_name` → `tenantName`
+
+## ENHANCED FEATURES RECOMMENDATIONS
+
+### 1. Pagination Support
+Add to all list endpoints:
 ```typescript
+// Query parameters
 {
-  success: false;
-  message: string;
-  details?: Array<{
-    field: string;
-    message: string;
-  }>;
+  page?: number;
+  limit?: number;
+  offset?: number;
+}
+
+// Response format
+{
+  success: true;
+  data: {
+    items: Array<T>;
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  };
 }
 ```
 
-### 401 Unauthorized
+### 2. Advanced Filtering
+Support filter operators:
+```
+GET /sales?filter[amount][gte]=100&filter[date][between]=2024-01-01,2024-01-31
+```
+
+### 3. Field Selection
+Support field selection to reduce payload:
+```
+GET /stations?fields=id,name,status
+```
+
+### 4. Sorting
+Support sorting on list endpoints:
+```
+GET /sales?sortBy=createdAt&sortOrder=desc
+```
+
+## ERROR HANDLING
+
+### HTTP Status Codes
+- `200` - Success
+- `201` - Created
+- `400` - Bad Request (validation errors)
+- `401` - Unauthorized (invalid/expired token)
+- `403` - Forbidden (insufficient permissions)
+- `404` - Not Found
+- `409` - Conflict (duplicate resource)
+- `422` - Unprocessable Entity (business logic errors)
+- `500` - Internal Server Error
+
+### Error Response Examples
+
+**Validation Error (400):**
 ```typescript
 {
   success: false;
-  message: "Invalid or expired token" | "User not found: email@domain.com";
+  message: "Validation failed";
+  details: [
+    {
+      field: "email";
+      message: "Email is required";
+    },
+    {
+      field: "password";
+      message: "Password must be at least 8 characters";
+    }
+  ];
 }
 ```
 
-### 403 Forbidden
+**Authorization Error (401):**
 ```typescript
 {
   success: false;
-  message: "Insufficient permissions";
+  message: "Invalid or expired token";
 }
 ```
 
-### 404 Not Found
+**Business Logic Error (422):**
 ```typescript
 {
   success: false;
-  message: "Resource not found";
+  message: "Cannot delete station with active pumps";
 }
 ```
-
-### 500 Internal Server Error
-```typescript
-{
-  success: false;
-  message: "An unexpected error occurred";
-}
-```
-
----
 
 ## TENANT CONTEXT & DATA ISOLATION
 
@@ -486,34 +737,16 @@ All endpoints should return consistent error responses:
 - **Manager**: Limited tenant access (tenant_id in JWT)  
 - **Attendant**: Basic tenant access (tenant_id in JWT)
 
-### Automatic User Creation
-
-When a tenant is created:
-- An owner user is automatically created
-- Email format: provided admin email
-- Password: provided admin password
-- Role: `owner`
-- tenantId: assigned automatically
-
 ---
 
-## REMOVED CONCEPTS
+## NOTES FOR IMPLEMENTATION
 
-The following concepts have been completely removed from the API:
-
-❌ **schema_name, schemaName, tenant_schema**
-❌ **Dynamic schema switching endpoints**
-❌ **Schema-based routing or filtering**
-❌ **Per-tenant database schemas**
-
----
-
-## Notes for Frontend Implementation
-
-1. **Tenant Context**: Use `tenantId` for all data operations, `tenantName` for display only
-2. **API Headers**: Always include `x-tenant-id` from auth context (handled by apiClient)
-3. **State Management**: Track tenants by `tenantId` (UUID), not schema names
-4. **Error Handling**: Handle 403 Forbidden responses gracefully
-5. **SuperAdmin Features**: Only show cross-tenant features to superadmin users
+1. **Consistency**: All responses should follow the standardized format
+2. **Field Naming**: Use camelCase in API responses, convert from snake_case internally
+3. **Optional Fields**: Many create request fields should be optional with sensible defaults
+4. **Validation**: Implement proper validation with detailed error messages
+5. **Performance**: Consider pagination for large datasets
+6. **Security**: Always validate tenant context and user permissions
+7. **Backward Compatibility**: Support field aliases where needed during migration
 
 **Remember: All data isolation is by tenant_id (UUID), not DB schema.**
