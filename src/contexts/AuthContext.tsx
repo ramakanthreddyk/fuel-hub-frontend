@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/api/auth';
@@ -20,6 +21,7 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string, isAdminLogin?: boolean) => Promise<void>;
   logout: () => void;
+  getCurrentUser: () => User | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(parsedUser);
         }
       } catch (error) {
+        console.error('[AUTH-CONTEXT] Error initializing auth:', error);
         localStorage.removeItem('fuelsync_token');
         localStorage.removeItem('fuelsync_user');
         setUser(null);
@@ -78,6 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         navigate('/dashboard', { replace: true });
       }
     } catch (error: any) {
+      console.error('[AUTH-CONTEXT] Login error:', error);
       throw new Error(error.response?.data?.message || 'Login failed');
     }
   };
@@ -86,6 +90,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await authApi.logout();
     } catch (error) {
+      console.error('[AUTH-CONTEXT] Logout error:', error);
       // Continue with logout even if API call fails
     } finally {
       localStorage.removeItem('fuelsync_token');
@@ -95,6 +100,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const getCurrentUser = () => {
+    return user;
+  };
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -102,6 +111,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     token,
     login,
     logout,
+    getCurrentUser,
   };
 
   return (

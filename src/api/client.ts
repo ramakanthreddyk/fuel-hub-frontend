@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 // Get the backend URL from environment variables
@@ -35,28 +34,20 @@ apiClient.interceptors.request.use(
           // For regular users (owner, manager, attendant), ALWAYS add tenant header
           if (user.role !== 'superadmin' && user.tenantId) {
             config.headers['x-tenant-id'] = user.tenantId;
-            console.log(`[API-CLIENT] Adding tenant header for ${user.role}:`, user.tenantId);
           }
           // For SuperAdmin accessing general admin routes, don't add tenant header
           else if (user.role === 'superadmin' && isGeneralAdminRoute) {
-            console.log(`[API-CLIENT] SuperAdmin accessing admin route - no tenant header needed`);
+            // No tenant header needed for superadmin admin routes
           }
           // For SuperAdmin accessing non-admin routes, they might need tenant context for specific operations
           else if (user.role === 'superadmin' && !isGeneralAdminRoute) {
-            console.log(`[API-CLIENT] SuperAdmin accessing tenant route - no tenant header by default`);
+            // No tenant header by default for superadmin
           }
         } catch (error) {
           console.error('[API-CLIENT] Error parsing stored user:', error);
         }
       }
     }
-
-    console.log(`[API-CLIENT] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, {
-      hasAuth: !!config.headers.Authorization,
-      hasTenant: !!config.headers['x-tenant-id'],
-      isAdminAuth: isAdminAuthRoute,
-      isGeneralAdmin: isGeneralAdminRoute
-    });
 
     return config;
   },
@@ -68,24 +59,14 @@ apiClient.interceptors.request.use(
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(`[API-CLIENT] Response ${response.status} for ${response.config.url}`);
     return response;
   },
   (error) => {
-    console.error(`[API-CLIENT] Error ${error.response?.status} for ${error.config?.url}:`, error.response?.data);
-    
     // Handle 401 errors more carefully - only logout for legitimate auth failures
     if (error.response?.status === 401) {
       const errorMessage = error.response?.data?.message || '';
       const isAuthEndpoint = error.config?.url?.includes('/auth/');
       const currentPath = window.location.pathname;
-      
-      console.log('[API-CLIENT] 401 Error Analysis:', {
-        errorMessage,
-        isAuthEndpoint,
-        currentPath,
-        url: error.config?.url
-      });
       
       // Only logout for actual authentication failures, not permission issues
       const isLegitimateAuthFailure = 
@@ -101,18 +82,12 @@ apiClient.interceptors.response.use(
       const isDashboardRoute = currentPath.startsWith('/dashboard') || currentPath.startsWith('/superadmin');
       
       if (isLegitimateAuthFailure && !isDashboardRoute) {
-        console.log('[API-CLIENT] Legitimate auth failure - clearing auth and redirecting');
         localStorage.removeItem('fuelsync_token');
         localStorage.removeItem('fuelsync_user');
         // Only redirect if we're not already on the login page
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }
-      } else {
-        console.log('[API-CLIENT] 401 error but likely permission/tenant issue or dashboard route - not logging out');
-        console.log('[API-CLIENT] Error details:', errorMessage);
-        console.log('[API-CLIENT] URL:', error.config?.url);
-        console.log('[API-CLIENT] Current path:', currentPath);
       }
     }
     
