@@ -1,11 +1,16 @@
 
+
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 
 interface DataMappingContextType {
-  mapApiData: <T>(data: any, mapping?: Record<string, string>) => T;
-  mapArrayData: <T>(data: any[], mapping?: Record<string, string>) => T[];
+  mapApiData: <T,>(data: any, mapping?: Record<string, string>) => T;
+  mapArrayData: <T,>(data: any[], mapping?: Record<string, string>) => T[];
+  getStationByNozzleId: (nozzleId: string) => string;
+  getNozzleNumber: (nozzleId: string) => number;
+  getNozzleFuelType: (nozzleId: string) => string;
   isReady: boolean;
+  isLoading: boolean;
 }
 
 const DataMappingContext = createContext<DataMappingContextType | undefined>(undefined);
@@ -15,7 +20,7 @@ interface DataMappingProviderProps {
 }
 
 export function DataMappingProvider({ children }: DataMappingProviderProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const mapApiData = <T,>(data: any, mapping?: Record<string, string>): T => {
     if (!data || typeof data !== 'object') {
@@ -53,10 +58,31 @@ export function DataMappingProvider({ children }: DataMappingProviderProps) {
     return data.map(item => mapApiData<T>(item, mapping));
   };
 
+  // Simple placeholder implementations for nozzle/station mapping
+  const getStationByNozzleId = (nozzleId: string): string => {
+    // TODO: Implement actual station lookup logic
+    return `Station-${nozzleId.slice(-2)}`;
+  };
+
+  const getNozzleNumber = (nozzleId: string): number => {
+    // TODO: Implement actual nozzle number lookup
+    const match = nozzleId.match(/(\d+)$/);
+    return match ? parseInt(match[1], 10) : 1;
+  };
+
+  const getNozzleFuelType = (nozzleId: string): string => {
+    // TODO: Implement actual fuel type lookup
+    return 'petrol'; // Default fuel type
+  };
+
   const value: DataMappingContextType = {
     mapApiData,
     mapArrayData,
-    isReady: isAuthenticated && !isLoading,
+    getStationByNozzleId,
+    getNozzleNumber,
+    getNozzleFuelType,
+    isReady: isAuthenticated && !authLoading,
+    isLoading: authLoading,
   };
 
   return (
@@ -73,3 +99,4 @@ export function useDataMapping() {
   }
   return context;
 }
+

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ import { SalesTrendChart } from '@/components/dashboard/SalesTrendChart';
 import { ProfitMetricsCard } from '@/components/dashboard/ProfitMetricsCard';
 import { TopCreditorsTable } from '@/components/dashboard/TopCreditorsTable';
 import { StationMetricsCard } from '@/components/dashboard/StationMetricsCard';
+import { StationMetricsList } from '@/components/dashboard/StationMetricsList';
 
 // Filters
 import { SearchableStationSelector } from '@/components/filters/SearchableStationSelector';
@@ -173,7 +173,7 @@ export default function SummaryPage() {
 
       {/* Station Metrics and Top Creditors */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <StationMetricsCard />
+        <StationMetricsList />
         <TopCreditorsTable filters={filters} />
       </div>
 
