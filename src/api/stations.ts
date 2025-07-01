@@ -38,9 +38,10 @@ export const stationsApi = {
     }
   },
   
-  // Get station by ID
+  // Get station by ID - FIXED: This should use /stations/{stationId}
   getStation: async (stationId: string): Promise<Station> => {
     try {
+      console.log(`Fetching station details for ID: ${stationId}`);
       const response = await apiClient.get(`/stations/${stationId}`);
       return extractApiData<Station>(response);
     } catch (error) {
