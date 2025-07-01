@@ -328,6 +328,20 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/stations/{stationId}/efficiency:
+    get:
+      summary: Get station efficiency metrics
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
   /api/v1/pumps:
     post:
       summary: Create pump
@@ -1032,6 +1046,20 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/reconciliation/{id}/approve:
+    post:
+      summary: Approve reconciliation record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
   /api/v1/reconciliation/daily-summary:
     get:
       summary: Daily nozzle reading summary
@@ -1094,6 +1122,14 @@ paths:
   /api/v1/dashboard/sales-trend:
     get:
       summary: Dashboard sales trend
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/dashboard/system-health:
+    get:
+      summary: Get system health metrics
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -1396,6 +1432,14 @@ paths:
           application/json:
             schema:
               type: object
+  /api/v1/setup-status:
+    get:
+      summary: Check tenant setup status
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
   /api/v1/stations/compare:
     get:
       summary: Compare station performance
@@ -1664,8 +1708,13 @@ paths:
           schema:
             type: object
             properties:
+              success:
+                type: boolean
+                example: true
               data:
                 type: object
+              message:
+                type: string
     Error:
       description: Error response
       content:
@@ -1677,6 +1726,15 @@ paths:
                 type: boolean
               message:
                 type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                    message:
+                      type: string
     NotFound:
       description: Route not found
       content:
