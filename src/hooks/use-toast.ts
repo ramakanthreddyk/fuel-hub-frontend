@@ -21,3 +21,6 @@ export function useToast() {
     },
   };
 }
+
+// Export toast directly for convenience
+export { toast };
