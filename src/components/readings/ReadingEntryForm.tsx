@@ -127,7 +127,7 @@ export function ReadingEntryForm() {
   const { data: canCreateReading } = useCanCreateReading(selectedNozzle);
   const { data: stationPriceValidation } = useStationPriceValidation(selectedStation);
 
-  const selectedNozzleData = nozzles?.find(n => n.id === selectedNozzle);
+  const selectedNozzleData = Array.isArray(nozzles) ? nozzles.find(n => n.id === selectedNozzle) : null;
   const minReading = latestReading?.reading || 0;
 
   // Check if we can create reading
@@ -148,8 +148,10 @@ export function ReadingEntryForm() {
           <Alert className="mb-6 border-red-200 bg-red-50">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              <strong>Missing Fuel Prices!</strong> This station is missing fuel prices for: {' '}
-              {stationPriceValidation.missingFuelTypes.join(', ')}. {' '}
+              <strong>Missing Fuel Prices!</strong> This station is missing fuel prices. {' '}
+              {stationPriceValidation.missingFuelTypes && Array.isArray(stationPriceValidation.missingFuelTypes) ? 
+                `Missing types: ${stationPriceValidation.missingFuelTypes.join(', ')}. ` : 
+                ''}
               <Link to="/dashboard/fuel-prices" className="underline font-medium">
                 Update fuel prices here
               </Link> before recording readings.
@@ -221,7 +223,7 @@ export function ReadingEntryForm() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {nozzles?.map((nozzle) => (
+                        {Array.isArray(nozzles) && nozzles.map((nozzle) => (
                           <SelectItem key={nozzle.id} value={nozzle.id}>
                             Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
                           </SelectItem>
