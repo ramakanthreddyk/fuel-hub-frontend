@@ -65,9 +65,12 @@ Owners operate within their tenant schema (`<tenant_id>`). Common tables:
 ## Sample Flow – Daily Operations
 1. Owner logs in and fetches dashboard metrics.
 2. Adds a new station via `POST /stations` if under plan limits.
-3. Records daily nozzle readings for each nozzle.
-4. Generates reconciliation summary with `GET /reconciliation/daily-summary`.
-5. Reviews alerts with `GET /alerts` and inventory with `GET /inventory`.
+3. Creates pumps for the station via `POST /pumps`.
+4. Adds nozzles to pumps via `POST /nozzles`.
+5. Sets fuel prices via `POST /fuel-prices`.
+6. Records daily nozzle readings for each nozzle.
+7. Generates reconciliation summary with `GET /reconciliation/daily-summary`.
+8. Reviews alerts with `GET /alerts` and inventory with `GET /inventory`.
 
 ## Error Handling
 - `403` if JWT role not owner.
