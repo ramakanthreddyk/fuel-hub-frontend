@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
 import { pumpsApi } from '@/api/pumps';
 import { nozzlesApi } from '@/api/nozzles';
+import { ownerService } from '@/api/contract/owner.service';
 
 const createNozzleSchema = z.object({
   pumpId: z.string().min(1, 'Pump selection is required'),
@@ -28,6 +29,11 @@ type CreateNozzleForm = z.infer<typeof createNozzleSchema>;
 export default function CreateNozzlePage() {
   const navigate = useNavigate();
   
+  // Extract pumpId from URL if present
+  const queryParams = new URLSearchParams(window.location.search);
+  const pumpIdFromUrl = queryParams.get('pumpId');
+  const stationIdFromUrl = queryParams.get('stationId');
+  
   const { data: pumps = [], isLoading: pumpsLoading } = useQuery({
     queryKey: ['pumps-all'],
     queryFn: async () => {
@@ -40,7 +46,7 @@ export default function CreateNozzlePage() {
   const form = useForm<CreateNozzleForm>({
     resolver: zodResolver(createNozzleSchema),
     defaultValues: {
-      pumpId: '',
+      pumpId: pumpIdFromUrl || '',
       nozzleNumber: 1,
       fuelType: 'petrol',
     },
@@ -48,19 +54,37 @@ export default function CreateNozzlePage() {
 
   const onSubmit = async (data: CreateNozzleForm) => {
     try {
-      await nozzlesApi.createNozzle({
-        pumpId: data.pumpId,
-        nozzleNumber: data.nozzleNumber,
-        fuelType: data.fuelType,
-        status: 'active',
-      });
+      // Try using the owner service first (for owner role)
+      try {
+        await ownerService.createNozzle({
+          pumpId: data.pumpId,
+          nozzleNumber: data.nozzleNumber,
+          fuelType: data.fuelType,
+          status: 'active',
+        });
+      } catch (ownerError) {
+        // Fall back to nozzlesApi if owner service fails
+        await nozzlesApi.createNozzle({
+          pumpId: data.pumpId,
+          nozzleNumber: data.nozzleNumber,
+          fuelType: data.fuelType,
+          status: 'active',
+        });
+      }
       
       toast({
         title: "Success",
         description: "Nozzle created successfully",
       });
       
-      navigate('/setup');
+      // If we came from a specific pump page, go back there
+      if (pumpIdFromUrl && stationIdFromUrl) {
+        navigate(`/dashboard/nozzles?pumpId=${pumpIdFromUrl}&stationId=${stationIdFromUrl}`);
+      } else if (stationIdFromUrl) {
+        navigate(`/dashboard/pumps?stationId=${stationIdFromUrl}`);
+      } else {
+        navigate('/setup');
+      }
     } catch (error: any) {
       toast({
         title: "Error",

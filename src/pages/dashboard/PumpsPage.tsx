@@ -12,7 +12,7 @@ import { Plus, Fuel, Settings, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { pumpsApi } from '@/api/pumps';
 import { stationsApi } from '@/api/stations';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { EnhancedFuelPumpCard } from '@/components/pumps/EnhancedFuelPumpCard';
 import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
 
@@ -21,6 +21,12 @@ export default function PumpsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  
+  // Check for stationId in query params if not in route params
+  const queryParams = new URLSearchParams(window.location.search);
+  const stationIdFromQuery = queryParams.get('stationId');
+  const effectiveStationId = stationId || stationIdFromQuery;
 
   const form = useForm({
     defaultValues: {
@@ -31,23 +37,23 @@ export default function PumpsPage() {
 
   // Fetch station details
   const { data: station } = useQuery({
-    queryKey: ['station', stationId],
-    queryFn: () => stationsApi.getStation(stationId!),
-    enabled: !!stationId
+    queryKey: ['station', effectiveStationId],
+    queryFn: () => stationsApi.getStation(effectiveStationId!),
+    enabled: !!effectiveStationId
   });
 
   // Fetch pumps for this station
   const { data: pumps, isLoading } = useQuery({
-    queryKey: ['pumps', stationId],
-    queryFn: () => pumpsApi.getPumps(stationId!),
-    enabled: !!stationId
+    queryKey: ['pumps', effectiveStationId],
+    queryFn: () => pumpsApi.getPumps(effectiveStationId!),
+    enabled: !!effectiveStationId
   });
 
   // Create pump mutation
   const createPumpMutation = useMutation({
     mutationFn: pumpsApi.createPump,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pumps', stationId] });
+      queryClient.invalidateQueries({ queryKey: ['pumps', effectiveStationId] });
       setIsAddDialogOpen(false);
       form.reset();
       toast({
@@ -65,7 +71,7 @@ export default function PumpsPage() {
   });
 
   const onSubmit = (data: any) => {
-    createPumpMutation.mutate({ ...data, stationId: stationId! });
+    createPumpMutation.mutate({ ...data, stationId: effectiveStationId! });
   };
 
   const handleViewNozzles = (pumpId: string) => {
@@ -76,8 +82,49 @@ export default function PumpsPage() {
     // Handle pump settings
   };
 
-  if (!stationId) {
-    return <div>Station ID not found</div>;
+  if (!effectiveStationId) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Pumps</h1>
+            <p className="text-muted-foreground text-sm md:text-base">
+              Please select a station to manage its pumps
+            </p>
+          </div>
+          <Button asChild>
+            <Link to="/dashboard/pumps/create">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Pump
+            </Link>
+          </Button>
+        </div>
+        
+        <Card className="p-8 text-center">
+          <CardContent className="pt-6">
+            <Fuel className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No Station Selected</h3>
+            <p className="text-muted-foreground mb-6">
+              Please select a station from the stations page or create a new pump directly.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild variant="outline">
+                <Link to="/dashboard/stations">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  View Stations
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link to="/dashboard/pumps/create">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Pump
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const mobileStats = [
@@ -211,7 +258,7 @@ export default function PumpsPage() {
               nozzleCount: pump.nozzleCount || 0
             }}
             onViewNozzles={() => {
-              window.location.href = `/dashboard/stations/${stationId}/pumps/${pump.id}/nozzles`;
+              navigate(`/dashboard/nozzles?pumpId=${pump.id}&stationId=${effectiveStationId}`);
             }}
             onSettings={() => handleSettings(pump.id)}
           />

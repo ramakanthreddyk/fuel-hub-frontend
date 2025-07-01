@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useContractStations } from '@/hooks/useContractStations';
 import { toast } from '@/hooks/use-toast';
 import { pumpsApi } from '@/api/pumps';
+import { ownerService } from '@/api/contract/owner.service';
 
 const createPumpSchema = z.object({
   label: z.string().min(1, 'Pump label is required'),
@@ -25,31 +26,51 @@ type CreatePumpForm = z.infer<typeof createPumpSchema>;
 export default function CreatePumpPage() {
   const navigate = useNavigate();
   const { data: stations = [], isLoading: stationsLoading } = useContractStations();
+  
+  // Extract stationId from URL if present
+  const queryParams = new URLSearchParams(window.location.search);
+  const stationIdFromUrl = queryParams.get('stationId');
 
   const form = useForm<CreatePumpForm>({
     resolver: zodResolver(createPumpSchema),
     defaultValues: {
       label: '',
-      stationId: '',
+      stationId: stationIdFromUrl || '',
       serialNumber: '',
     },
   });
 
   const onSubmit = async (data: CreatePumpForm) => {
     try {
-      await pumpsApi.createPump({
-        label: data.label,
-        stationId: data.stationId,
-        serialNumber: data.serialNumber,
-        status: 'active',
-      });
+      // Try using the owner service first (for owner role)
+      try {
+        await ownerService.createPump({
+          label: data.label,
+          stationId: data.stationId,
+          serialNumber: data.serialNumber,
+          status: 'active',
+        });
+      } catch (ownerError) {
+        // Fall back to pumpsApi if owner service fails
+        await pumpsApi.createPump({
+          label: data.label,
+          stationId: data.stationId,
+          serialNumber: data.serialNumber,
+          status: 'active',
+        });
+      }
       
       toast({
         title: "Success",
         description: "Pump created successfully",
       });
       
-      navigate('/setup');
+      // If we came from a specific station page, go back there
+      if (stationIdFromUrl) {
+        navigate(`/dashboard/stations/${stationIdFromUrl}/pumps`);
+      } else {
+        navigate('/setup');
+      }
     } catch (error: any) {
       toast({
         title: "Error",

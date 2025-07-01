@@ -1,117 +1,200 @@
+/**
+ * @file NozzlesPage.tsx
+ * @description Page component for managing nozzles for a specific pump
+ */
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { Plus, Settings, ArrowLeft, Activity } from 'lucide-react';
+import { Plus, Settings, ArrowLeft, Activity, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { nozzlesApi, CreateNozzleRequest } from '@/api/nozzles';
-import { pumpsApi } from '@/api/pumps';
-import { Link } from 'react-router-dom';
 import { EnhancedNozzleCard } from '@/components/nozzles/EnhancedNozzleCard';
 import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
-import { useStationPriceValidation } from '@/hooks/useFuelPriceValidation';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { DollarSign } from 'lucide-react';
+import { useApiHook } from '@/hooks/useApiHook';
 
+/**
+ * Nozzle interface matching the API response
+ */
+interface Nozzle {
+  id: string;
+  pump_id?: string;
+  pumpId?: string;
+  nozzle_number?: number;
+  nozzleNumber?: number;
+  fuel_type?: string;
+  fuelType?: string;
+  status: string;
+  created_at?: string;
+  createdAt?: string;
+}
+
+/**
+ * NozzlesPage component for managing nozzles for a specific pump
+ */
 export default function NozzlesPage() {
-  const { stationId, pumpId } = useParams<{ stationId: string; pumpId: string }>();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  const form = useForm<CreateNozzleRequest>({
+  const { toast } = useToast();
+  const { fetchData, createMutation, endpoints } = useApiHook();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  
+  // Extract query parameters
+  const queryParams = new URLSearchParams(window.location.search);
+  const pumpId = queryParams.get('pumpId');
+  const stationId = queryParams.get('stationId');
+  
+  // Form setup
+  const form = useForm({
     defaultValues: {
       pumpId: pumpId || '',
       nozzleNumber: 1,
-      fuelType: 'petrol'
+      fuelType: 'petrol',
+      status: 'active'
     }
   });
-
+  
   // Fetch pump details
-  const { data: pump } = useQuery({
-    queryKey: ['pump', pumpId],
-    queryFn: () => pumpsApi.getPump(pumpId!),
-    enabled: !!pumpId
-  });
-
-  // Fetch nozzles for this pump
-  const { data: nozzles, isLoading } = useQuery({
-    queryKey: ['nozzles', pumpId],
-    queryFn: () => nozzlesApi.getNozzles(pumpId!),
-    enabled: !!pumpId
-  });
-
-  // Create nozzle mutation
-  const createNozzleMutation = useMutation({
-    mutationFn: nozzlesApi.createNozzle,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['nozzles', pumpId] });
-      queryClient.invalidateQueries({ queryKey: ['pumps', stationId] });
-      setIsAddDialogOpen(false);
-      form.reset();
-      toast({
-        title: "Success",
-        description: "Nozzle created successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create nozzle",
-        variant: "destructive",
-      });
+  const { data: pump, isLoading: pumpLoading } = fetchData(
+    `${endpoints.pumps}/${pumpId || ''}`,
+    ['pump', pumpId],
+    { enabled: !!pumpId }
+  );
+  
+  // Fetch nozzles
+  const { data: nozzles = [], isLoading: nozzlesLoading } = fetchData<any>(
+    `${endpoints.nozzles}?pumpId=${pumpId || ''}`,
+    ['nozzles', pumpId],
+    { 
+      enabled: !!pumpId,
+      select: (data) => {
+        // Handle different response formats
+        if (data.nozzles) return data.nozzles;
+        if (Array.isArray(data)) return data;
+        return [];
+      }
     }
-  });
-
-  const onSubmit = (data: CreateNozzleRequest) => {
-    createNozzleMutation.mutate(data);
-  };
-
-  const handleTakeReading = (nozzleId: string) => {
-    navigate('/dashboard/readings/new', { 
-      state: { 
-        preselected: { 
-          stationId, 
-          pumpId, 
-          nozzleId 
-        } 
-      } 
-    });
-  };
-
-  if (!stationId || !pumpId) {
-    return <div>Station ID or Pump ID not found</div>;
-  }
-
-  const canAddNozzles = pump?.status === 'active';
-
+  );
+  
+  // Create nozzle mutation
+  const createNozzleMutation = createMutation<any, any>(
+    endpoints.nozzles,
+    {
+      invalidateQueries: [['nozzles', pumpId]],
+      onSuccess: () => {
+        setIsAddDialogOpen(false);
+        form.reset({
+          pumpId: pumpId || '',
+          nozzleNumber: 1,
+          fuelType: 'petrol',
+          status: 'active'
+        });
+        toast({
+          title: "Success",
+          description: "Nozzle created successfully",
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create nozzle",
+          variant: "destructive",
+        });
+      }
+    }
+  );
+  
+  // Handle form submission
+  const onSubmit = (data: any) => createNozzleMutation.mutate(data);
+  
+  // Helper function to get property value (handles both camelCase and snake_case)
+  const getProp = (obj: any, camelProp: string, snakeProp: string) => 
+    obj?.[camelProp] || obj?.[snakeProp];
+  
+  // Prepare stats data
+  const getFilteredCount = (prop: string, value: string) => 
+    nozzles?.filter((n: any) => 
+      getProp(n, prop, prop.replace(/[A-Z]/g, c => `_${c.toLowerCase()}`)) === value
+    ).length || 0;
+  
   const mobileStats = [
     { title: 'Total', value: nozzles?.length || 0, icon: Settings, color: 'text-blue-600' },
-    { title: 'Active', value: nozzles?.filter(n => n.status === 'active').length || 0, icon: Activity, color: 'text-green-600' },
-    { title: 'Petrol', value: nozzles?.filter(n => n.fuelType === 'petrol').length || 0, icon: Settings, color: 'text-purple-600' },
-    { title: 'Diesel', value: nozzles?.filter(n => n.fuelType === 'diesel').length || 0, icon: Settings, color: 'text-orange-600' }
+    { title: 'Active', value: getFilteredCount('status', 'active'), icon: Activity, color: 'text-green-600' },
+    { title: 'Petrol', value: getFilteredCount('fuelType', 'petrol'), icon: Settings, color: 'text-purple-600' },
+    { title: 'Diesel', value: getFilteredCount('fuelType', 'diesel'), icon: Settings, color: 'text-orange-600' }
   ];
-
-  // Add fuel price validation
-  const { data: priceValidation } = useStationPriceValidation(stationId!);
-
+  
+  // Loading state
+  if (pumpId && (pumpLoading || nozzlesLoading)) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+  
+  // No pump selected state
+  if (!pumpId) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Nozzles</h1>
+            <p className="text-muted-foreground text-sm md:text-base">
+              Please select a pump to manage its nozzles
+            </p>
+          </div>
+          <Button asChild>
+            <Link to="/dashboard/nozzles/create">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Nozzle
+            </Link>
+          </Button>
+        </div>
+        
+        <Card className="p-8 text-center">
+          <CardContent className="pt-6">
+            <Settings className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No Pump Selected</h3>
+            <p className="text-muted-foreground mb-6">
+              Please select a pump from the pumps page or create a new nozzle directly.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild variant="outline">
+                <Link to="/dashboard/pumps">
+                  <Settings className="mr-2 h-4 w-4" />
+                  View Pumps
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link to="/dashboard/nozzles/create">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Nozzle
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  const canAddNozzles = pump?.status === 'active';
+  
+  // Main UI
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center space-x-2 mb-2">
             <Button asChild variant="ghost" size="sm">
-              <Link to={`/dashboard/stations/${stationId}/pumps`}>
+              <Link to={stationId ? `/dashboard/pumps?stationId=${stationId}` : "/dashboard/pumps"}>
                 <ArrowLeft className="h-4 w-4 mr-1" />
-                Back
+                Back to Pumps
               </Link>
             </Button>
           </div>
@@ -191,20 +274,6 @@ export default function NozzlesPage() {
         </Dialog>
       </div>
 
-      {/* Fuel Price Warning */}
-      {priceValidation && !priceValidation.hasActivePrices && (
-        <Alert className="border-orange-200 bg-orange-50">
-          <DollarSign className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800">
-            <strong>Missing Fuel Prices:</strong> This station is missing prices for {priceValidation.missingFuelTypes.join(', ')}. 
-            Readings cannot be recorded without fuel prices. 
-            <Link to="/dashboard/fuel-prices" className="underline font-medium ml-1">
-              Set prices here
-            </Link>.
-          </AlertDescription>
-        </Alert>
-      )}
-
       {!canAddNozzles && (
         <Card className="border-orange-200 bg-orange-50">
           <CardContent className="pt-4">
@@ -221,62 +290,64 @@ export default function NozzlesPage() {
 
       {/* Desktop Stats Cards */}
       <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Nozzles</CardTitle>
-            <Settings className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{nozzles?.length || 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Nozzles</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {nozzles?.filter(n => n.status === 'active').length || 0}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Petrol Nozzles</CardTitle>
-            <Settings className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {nozzles?.filter(n => n.fuelType === 'petrol').length || 0}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Diesel Nozzles</CardTitle>
-            <Settings className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {nozzles?.filter(n => n.fuelType === 'diesel').length || 0}
-            </div>
-          </CardContent>
-        </Card>
+        {mobileStats.map((stat, index) => (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.title} Nozzles</CardTitle>
+              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Nozzles Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {nozzles?.map((nozzle) => (
+        {nozzles?.map((nozzle: Nozzle) => (
           <EnhancedNozzleCard 
             key={nozzle.id} 
             nozzle={nozzle} 
-            onTakeReading={handleTakeReading}
+            onTakeReading={() => {
+              navigate('/dashboard/readings/new', { 
+                state: { 
+                  preselected: { 
+                    stationId: stationId, 
+                    pumpId: pumpId, 
+                    nozzleId: nozzle.id 
+                  } 
+                } 
+              });
+            }}
           />
         ))}
       </div>
       
-      {nozzles?.length === 0 && !isLoading && (
+      {/* Debug info */}
+      {process.env.NODE_ENV === 'development' && (
+        <Card className="border-dashed border-gray-300 mb-4">
+          <CardHeader>
+            <CardTitle className="text-sm">Debug Information</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs">
+            <p>Pump ID: {pumpId || 'None'}</p>
+            <p>Station ID: {stationId || 'None'}</p>
+            <p>Nozzles count: {nozzles?.length || 0}</p>
+            <p>Endpoint: {endpoints.nozzles}?pumpId={pumpId}</p>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => fetchData(`${endpoints.nozzles}?pumpId=${pumpId || ''}`, ['nozzles', pumpId], { refetch: true })}
+              className="mt-2"
+            >
+              Refresh Nozzles
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+      
+      {nozzles?.length === 0 && !nozzlesLoading && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Settings className="h-12 w-12 text-muted-foreground mb-4" />
