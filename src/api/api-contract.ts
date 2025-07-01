@@ -81,6 +81,11 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface ResetPasswordRequest {
+  newPassword: string;
+  confirmPassword: string;
+}
+
 // =============================================================================
 // STATION MANAGEMENT TYPES
 // =============================================================================
@@ -147,6 +152,12 @@ export interface CreateNozzleRequest {
   status?: 'active' | 'inactive' | 'maintenance'; // Optional, defaults to 'active'
 }
 
+export interface UpdateNozzleRequest {
+  nozzleNumber?: number;
+  fuelType?: 'petrol' | 'diesel' | 'premium';
+  status?: 'active' | 'inactive' | 'maintenance';
+}
+
 // =============================================================================
 // READINGS & SALES TYPES
 // =============================================================================
@@ -186,6 +197,7 @@ export interface Sale {
   status: 'posted' | 'draft';
   recordedAt: string;
   createdAt: string;
+  stationName?: string;
 }
 
 // =============================================================================
@@ -209,6 +221,16 @@ export interface CreateFuelPriceRequest {
   validFrom?: string; // Optional, defaults to current date
 }
 
+export interface FuelPriceValidation {
+  stationId: string;
+  missingPrices: Array<{
+    fuelType: string;
+    message: string;
+  }>;
+  hasValidPrices: boolean;
+  lastUpdated?: string;
+}
+
 // =============================================================================
 // CREDITOR TYPES
 // =============================================================================
@@ -216,6 +238,7 @@ export interface CreateFuelPriceRequest {
 export interface Creditor {
   id: string;
   partyName: string;
+  name?: string; // Alias for partyName for backward compatibility
   contactPerson?: string;
   phoneNumber?: string;
   creditLimit?: number;
@@ -223,6 +246,7 @@ export interface Creditor {
   paymentTerms?: string;
   notes?: string;
   createdAt: string;
+  lastPaymentDate?: string;
 }
 
 export interface CreateCreditorRequest {
@@ -268,6 +292,27 @@ export interface AttendantStation {
   assignedAt: string;
 }
 
+export interface AttendantPump {
+  id: string;
+  label: string;
+  serialNumber: string;
+  status: 'active' | 'inactive' | 'maintenance';
+  stationId: string;
+  stationName: string;
+  nozzleCount: number;
+}
+
+export interface AttendantNozzle {
+  id: string;
+  nozzleNumber: number;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  status: 'active' | 'inactive' | 'maintenance';
+  pumpId: string;
+  pumpLabel: string;
+  stationId: string;
+  stationName: string;
+}
+
 export interface CashReport {
   id: string;
   stationId: string;
@@ -297,6 +342,7 @@ export interface SystemAlert {
   id: string;
   type: 'warning' | 'error' | 'info';
   priority: 'low' | 'medium' | 'high' | 'critical';
+  severity?: 'low' | 'medium' | 'high' | 'critical'; // Alias for priority
   title: string;
   message: string;
   stationId?: string;
@@ -306,6 +352,16 @@ export interface SystemAlert {
   acknowledgedBy?: string;
   acknowledgedAt?: string;
   isActive?: boolean;
+  read?: boolean; // For UI state
+}
+
+export interface AlertSummary {
+  total: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  unacknowledged: number;
 }
 
 // =============================================================================
@@ -324,6 +380,7 @@ export interface SalesSummary {
   profitMargin?: number;
   period?: string;
   previousPeriodRevenue?: number;
+  revenue?: number; // Alias for totalRevenue
 }
 
 export interface PaymentMethodBreakdown {
@@ -369,6 +426,8 @@ export interface Tenant {
   stationCount: number;
   lastActivity?: string;
   billingStatus?: 'current' | 'overdue' | 'suspended';
+  users?: number; // Alias for userCount
+  stations?: number; // Alias for stationCount
 }
 
 export interface CreateTenantRequest {
@@ -379,12 +438,27 @@ export interface CreateTenantRequest {
   ownerPassword: string;
 }
 
+export interface UpdateTenantStatusRequest {
+  status: 'active' | 'suspended' | 'cancelled';
+}
+
+export interface TenantDetailsResponse extends Tenant {
+  owner?: User;
+  plan?: Plan;
+  recentActivity?: Array<{
+    type: string;
+    description: string;
+    timestamp: string;
+  }>;
+}
+
 export interface Plan {
   id: string;
   name: string;
   description: string;
   price: number;
   priceYearly?: number;
+  priceMonthly?: number; // Alias for price
   maxStations: number;
   maxUsers: number;
   maxPumpsPerStation?: number;
@@ -425,6 +499,7 @@ export interface CreateSuperAdminRequest {
   email: string;
   password: string;
   permissions?: string[];
+  role?: 'superadmin'; // For form compatibility
 }
 
 export interface SuperAdminSummary {
@@ -445,6 +520,20 @@ export interface SuperAdminSummary {
     responseTime: number;
     errorRate: number;
   };
+  // Additional fields for backward compatibility
+  tenantCount?: number; // Alias for totalTenants
+  activeTenantCount?: number; // Alias for activeTenants
+  totalUsers?: number;
+  signupsThisMonth?: number;
+  tenantsByPlan?: Array<{
+    planName: string;
+    count: number;
+  }>;
+  recentTenants?: Array<{
+    id: string;
+    name: string;
+    createdAt: string;
+  }>;
 }
 
 // =============================================================================
@@ -469,6 +558,7 @@ export interface FuelDelivery {
   stationName: string;
   fuelType: 'petrol' | 'diesel' | 'premium';
   quantity: number;
+  volume?: number; // Alias for quantity
   deliveryDate: string;
   supplierName: string;
   invoiceNumber: string;
@@ -477,6 +567,7 @@ export interface FuelDelivery {
   createdAt: string;
   status?: 'pending' | 'delivered' | 'confirmed';
   receivedBy?: string;
+  deliveredBy?: string; // For form compatibility
 }
 
 export interface CreateFuelDeliveryRequest {
@@ -519,6 +610,163 @@ export interface CreateReconciliationRequest {
   notes?: string;
 }
 
+export interface DailyReadingSummary {
+  date: string;
+  stationId: string;
+  stationName: string;
+  totalSales: number;
+  totalCash: number;
+  totalCredit: number;
+  readingCount: number;
+  fuelBreakdown: Array<{
+    fuelType: string;
+    volume: number;
+    revenue: number;
+  }>;
+}
+
+// =============================================================================
+// ANALYTICS & REPORTS TYPES
+// =============================================================================
+
+export interface StationComparison {
+  stationId: string;
+  stationName: string;
+  revenue: number;
+  volume: number;
+  salesCount: number;
+  growth: number;
+  efficiency: number;
+  period: string;
+}
+
+export interface StationComparisonParams {
+  stationIds: string[];
+  period?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface HourlySales {
+  hour: number;
+  sales: number;
+  volume: number;
+  count: number;
+  date: string;
+}
+
+export interface PeakHour {
+  hour: number;
+  averageSales: number;
+  dayOfWeek?: string;
+  isWeekend: boolean;
+}
+
+export interface FuelPerformance {
+  fuelType: string;
+  totalVolume: number;
+  totalRevenue: number;
+  averagePrice: number;
+  salesCount: number;
+  growth: number;
+  marketShare: number;
+}
+
+export interface StationRanking {
+  rank: number;
+  stationId: string;
+  stationName: string;
+  revenue: number;
+  growth: number;
+  efficiency: number;
+  score: number;
+}
+
+export interface SuperAdminAnalytics {
+  overview: {
+    totalTenants: number;
+    totalRevenue: number;
+    totalStations: number;
+    growth: number;
+  };
+  tenantPerformance: Array<{
+    tenantId: string;
+    tenantName: string;
+    revenue: number;
+    growth: number;
+    stationCount: number;
+  }>;
+  revenueByPlan: Array<{
+    planName: string;
+    revenue: number;
+    tenantCount: number;
+  }>;
+  systemMetrics: {
+    uptime: number;
+    responseTime: number;
+    errorRate: number;
+  };
+}
+
+// =============================================================================
+// REPORT TYPES
+// =============================================================================
+
+export interface SalesReportData {
+  id: string;
+  date: string;
+  stationName: string;
+  nozzleNumber: number;
+  fuelType: string;
+  volume: number;
+  pricePerLitre: number;
+  totalAmount: number;
+  amount?: number; // Alias for totalAmount
+  paymentMethod: string;
+  creditorName?: string;
+  attendantName?: string;
+  attendant?: string; // Alias for attendantName
+}
+
+export interface SalesReportFilters {
+  stationId?: string;
+  startDate?: string;
+  endDate?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  paymentMethod?: string;
+  fuelType?: string;
+  groupBy?: string;
+}
+
+export interface SalesReportSummary {
+  totalRevenue: number;
+  totalVolume: number;
+  salesCount: number;
+  averageTicketSize: number;
+  period: string;
+  revenue?: number; // Alias for totalRevenue
+}
+
+export interface SalesReportExportFilters extends SalesReportFilters {
+  format: 'csv' | 'excel' | 'pdf';
+  includeCharts?: boolean;
+}
+
+export interface ExportReportRequest {
+  reportType: 'sales' | 'inventory' | 'reconciliation';
+  filters: Record<string, any>;
+  format: 'csv' | 'excel' | 'pdf';
+  includeCharts?: boolean;
+}
+
+export interface ScheduleReportRequest {
+  reportType: 'sales' | 'inventory' | 'reconciliation';
+  frequency: 'daily' | 'weekly' | 'monthly';
+  recipients: string[];
+  filters: Record<string, any>;
+}
+
 // =============================================================================
 // FILTER & QUERY TYPES
 // =============================================================================
@@ -547,36 +795,17 @@ export interface FuelInventoryParams {
 }
 
 // =============================================================================
-// REPORT TYPES
-// =============================================================================
-
-export interface SalesReportData {
-  id: string;
-  date: string;
-  stationName: string;
-  nozzleNumber: number;
-  fuelType: string;
-  volume: number;
-  pricePerLitre: number;
-  totalAmount: number;
-  paymentMethod: string;
-  creditorName?: string;
-  attendantName?: string;
-}
-
-export interface ExportReportRequest {
-  reportType: 'sales' | 'inventory' | 'reconciliation';
-  filters: Record<string, any>;
-  format: 'csv' | 'excel' | 'pdf';
-  includeCharts?: boolean;
-}
-
-// =============================================================================
 // TYPE ALIASES FOR BACKWARD COMPATIBILITY
 // =============================================================================
 
 export type AuthResponse = LoginResponse;
 export type Alert = SystemAlert;
 export type TopCreditor = Creditor;
-export type DailySalesTrend = { date: string; revenue: number; volume: number; salesCount: number };
+export type DailySalesTrend = { 
+  date: string; 
+  revenue: number; 
+  volume: number; 
+  salesCount: number;
+  dayOfWeek?: string;
+};
 export type StationComparison = StationMetric;

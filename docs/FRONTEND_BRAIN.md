@@ -21,6 +21,20 @@ UI Components (src/components/*)
 Pages (src/pages/*)
 ```
 
+## ⚠️ IMPORTANT NOTICE
+
+The `src/api/api-contract.ts` file has grown to over 583 lines and needs refactoring. After completing the current migration phase, it should be split into focused modules:
+
+```
+src/api/contract/
+├── auth.types.ts
+├── stations.types.ts  
+├── users.types.ts
+├── analytics.types.ts
+├── reports.types.ts
+└── index.ts (re-exports all)
+```
+
 ---
 
 ## Persona Journey Mapping
@@ -121,13 +135,15 @@ export const useItems = () => {
 ```
 src/
 ├── api/
-│   ├── api-contract.ts           # Single contract file
+│   ├── api-contract.ts           # Single contract file (NEEDS REFACTORING)
 │   ├── contract-client.ts        # Contract-compliant client
 │   └── contract/
 │       ├── auth.service.ts       # ✅ Implemented
 │       ├── stations.service.ts   # ✅ Implemented
 │       ├── attendant.service.ts  # ✅ Implemented
 │       ├── superadmin.service.ts # ✅ Implemented
+│       ├── manager.service.ts    # ✅ Implemented
+│       ├── owner.service.ts      # ✅ Implemented
 │       └── [other].service.ts    # ⚠️ To implement
 ├── hooks/
 │   ├── useContractAuth.ts        # ✅ Implemented
@@ -154,15 +170,17 @@ src/api/
 
 ## Migration Checklist
 
-### Phase 1: Core Services (In Progress)
+### Phase 1: Core Services (Completed)
 - [x] AuthService - Contract aligned
 - [x] StationsService - Contract aligned
 - [x] SuperAdminService - Contract aligned
 - [x] AttendantService - Contract aligned
+- [x] ManagerService - Contract aligned
+- [x] OwnerService - Contract aligned
+
+### Phase 2: Feature Services (In Progress)
 - [ ] DashboardService - Needs migration
 - [ ] UsersService - Needs migration
-
-### Phase 2: Feature Services (Pending)
 - [ ] PumpsService - From legacy to contract
 - [ ] NozzlesService - From legacy to contract
 - [ ] ReadingsService - From legacy to contract
@@ -179,6 +197,12 @@ src/api/
 - [ ] Update all forms to handle optional fields per OpenAPI spec
 - [ ] Add proper loading states and error handling
 - [ ] Implement contract-compliant validation
+
+### Phase 5: Refactoring (Critical)
+- [ ] Split `api-contract.ts` into focused type modules
+- [ ] Implement automated type generation from OpenAPI spec
+- [ ] Remove legacy API files after migration
+- [ ] Clean up redundant type aliases
 
 ---
 
@@ -253,6 +277,8 @@ headers: {
 - SuperAdmin operations
 - Station management
 - Attendant operations
+- Manager operations (new)
+- Owner operations (new)
 
 ### ⚠️ Partially Compliant
 - Dashboard operations (uses legacy API)
@@ -280,13 +306,14 @@ headers: {
 ## Next Steps
 
 1. **Complete Service Migration**: Finish migrating all legacy API services to contract services
-2. **Implement Type Generation**: Add automated type generation from OpenAPI spec
-3. **Update All Hooks**: Migrate remaining hooks to use contract services
-4. **Component Updates**: Update all forms and components for contract compliance
-5. **E2E Testing**: Validate all persona journeys work end-to-end
+2. **Refactor api-contract.ts**: Split into focused type modules (CRITICAL - 583+ lines)
+3. **Implement Type Generation**: Add automated type generation from OpenAPI spec
+4. **Update All Hooks**: Migrate remaining hooks to use contract services
+5. **Component Updates**: Update all forms and components for contract compliance
+6. **E2E Testing**: Validate all persona journeys work end-to-end
 
-**Last Updated**: Contract alignment phase  
-**Next Review**: After completing service migration
+**Last Updated**: Contract alignment phase - Type compatibility fixes  
+**Next Review**: After completing service migration and api-contract refactoring
 
 ---
 
