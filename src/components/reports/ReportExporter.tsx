@@ -64,11 +64,11 @@ export function ReportExporter({ stationId, dateRange }: ReportExporterProps) {
     try {
       await scheduleReport({
         reportType: reportType as 'sales' | 'inventory' | 'reconciliation',
-        schedule: 'weekly',
+        frequency: 'weekly',
+        recipients: [],
         filters: {
           stationId,
         },
-        recipients: [],
       });
       
       toast({

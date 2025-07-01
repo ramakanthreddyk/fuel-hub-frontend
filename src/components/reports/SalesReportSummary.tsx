@@ -9,14 +9,25 @@ interface SalesReportSummaryProps {
 
 export function SalesReportSummary({ summary }: SalesReportSummaryProps) {
   const getTopFuelType = () => {
-    const entries = Object.entries(summary.fuelTypeBreakdown);
-    if (entries.length === 0) return 'N/A';
+    if (!summary.fuelTypeBreakdown || summary.fuelTypeBreakdown.length === 0) return 'N/A';
     
-    const topEntry = entries.reduce((max, current) => 
-      current[1].revenue > max[1].revenue ? current : max
+    const topEntry = summary.fuelTypeBreakdown.reduce((max, current) => 
+      current.revenue > max.revenue ? current : max
     );
     
-    return topEntry[0];
+    return topEntry.fuelType;
+  };
+
+  const getCashSalesAmount = () => {
+    if (!summary.paymentMethodBreakdown || summary.paymentMethodBreakdown.length === 0) {
+      return 0;
+    }
+    
+    const cashEntry = summary.paymentMethodBreakdown.find(entry => 
+      entry.method.toLowerCase() === 'cash'
+    );
+    
+    return cashEntry ? cashEntry.amount : 0;
   };
 
   return (
@@ -57,7 +68,7 @@ export function SalesReportSummary({ summary }: SalesReportSummaryProps) {
           <CreditCard className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">₹{(summary.paymentMethodBreakdown.cash || 0).toLocaleString()}</div>
+          <div className="text-2xl font-bold">₹{getCashSalesAmount().toLocaleString()}</div>
         </CardContent>
       </Card>
     </div>

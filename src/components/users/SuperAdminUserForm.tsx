@@ -24,7 +24,7 @@ export function SuperAdminUserForm({ user, onSubmit, onCancel, isLoading }: Supe
   });
 
   const handleFormSubmit = (data: CreateSuperAdminRequest) => {
-    onSubmit({ ...data, role: 'superadmin' });
+    onSubmit(data);
   };
 
   return (

@@ -13,7 +13,9 @@ interface ResetPasswordFormProps {
 }
 
 export function ResetPasswordForm({ onSubmit, onCancel, isLoading }: ResetPasswordFormProps) {
-  const { register, handleSubmit, formState: { errors } } = useForm<ResetPasswordRequest>();
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<ResetPasswordRequest>();
+
+  const newPassword = watch('newPassword');
 
   const handleFormSubmit = (data: ResetPasswordRequest) => {
     onSubmit(data);
@@ -27,15 +29,31 @@ export function ResetPasswordForm({ onSubmit, onCancel, isLoading }: ResetPasswo
       <CardContent>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">New Password</Label>
+            <Label htmlFor="newPassword">New Password</Label>
             <Input
-              id="password"
+              id="newPassword"
               type="password"
-              {...register('password', { required: 'New password is required' })}
+              {...register('newPassword', { required: 'New password is required' })}
               placeholder="Enter new password"
             />
-            {errors.password && (
-              <p className="text-sm text-red-600">{errors.password.message}</p>
+            {errors.newPassword && (
+              <p className="text-sm text-red-600">{errors.newPassword.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              {...register('confirmPassword', { 
+                required: 'Please confirm your password',
+                validate: (value) => value === newPassword || 'Passwords do not match'
+              })}
+              placeholder="Confirm new password"
+            />
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
             )}
           </div>
 
