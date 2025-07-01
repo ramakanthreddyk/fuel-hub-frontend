@@ -20,7 +20,9 @@ import SummaryPage from '@/pages/dashboard/SummaryPage';
 import StationsPage from '@/pages/dashboard/StationsPage';
 import StationDetailsPage from '@/pages/dashboard/StationDetailsPage';
 import PumpsPage from '@/pages/dashboard/PumpsPage';
+import CreatePumpPage from '@/pages/dashboard/CreatePumpPage';
 import NozzlesPage from '@/pages/dashboard/NozzlesPage';
+import CreateNozzlePage from '@/pages/dashboard/CreateNozzlePage';
 import ReadingsPage from '@/pages/dashboard/ReadingsPage';
 import NewReadingPage from '@/pages/dashboard/NewReadingPage';
 import FuelPricesPage from '@/pages/dashboard/FuelPricesPage';
@@ -94,7 +96,9 @@ function App() {
               <Route path="stations" element={<StationsPage />} />
               <Route path="stations/:stationId" element={<StationDetailsPage />} />
               <Route path="pumps" element={<PumpsPage />} />
+              <Route path="pumps/create" element={<CreatePumpPage />} />
               <Route path="nozzles" element={<NozzlesPage />} />
+              <Route path="nozzles/create" element={<CreateNozzlePage />} />
               <Route path="readings" element={<ReadingsPage />} />
               <Route path="readings/new" element={<NewReadingPage />} />
               <Route path="fuel-prices" element={<FuelPricesPage />} />

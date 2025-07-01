@@ -3,10 +3,11 @@ import { apiClient, extractApiData, extractApiArray } from './client';
 import type { Pump, CreatePumpRequest, ApiResponse } from './api-contract';
 
 export const pumpsApi = {
-  // Get pumps for a station - Fix: accept string parameter
+  // Get pumps for a station - Fix: accept string parameter or 'all'
   getPumps: async (stationId: string): Promise<Pump[]> => {
     try {
-      const response = await apiClient.get(`/pumps?stationId=${stationId}`);
+      const url = stationId === 'all' ? '/pumps' : `/pumps?stationId=${stationId}`;
+      const response = await apiClient.get(url);
       return extractApiArray<Pump>(response, 'pumps');
     } catch (error) {
       console.error('Error fetching pumps:', error);
