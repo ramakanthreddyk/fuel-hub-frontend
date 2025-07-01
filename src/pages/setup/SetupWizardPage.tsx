@@ -23,16 +23,16 @@ export default function SetupWizardPage() {
   const navigate = useNavigate();
   const { data: setupStatus, isLoading, error, refetch } = useSetupStatus();
 
-  // Redirect to dashboard if setup is complete
+  // Don't automatically redirect if setup is complete
+  // This allows users to revisit the setup wizard if needed
   useEffect(() => {
     if (setupStatus?.completed) {
       toast({
-        title: "Setup Complete!",
-        description: "You're ready to start managing your fuel stations.",
+        title: "Setup Status",
+        description: "Your initial setup is complete. You can continue to manage your stations, pumps, and nozzles.",
       });
-      navigate('/dashboard');
     }
-  }, [setupStatus?.completed, navigate]);
+  }, [setupStatus?.completed]);
 
   if (isLoading) {
     return (
@@ -92,7 +92,7 @@ export default function SetupWizardPage() {
       id: 'nozzle',
       title: 'Setup Nozzles',
       description: 'Configure nozzles for different fuel types on your pumps',
-      route: '/dashboard/nozzles/create',
+      route: '/dashboard/nozzles',
       completed: setupStatus.hasNozzle,
       disabled: !setupStatus.hasPump,
       prerequisite: 'Please add a pump first',
@@ -137,10 +137,10 @@ export default function SetupWizardPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Welcome to FuelSync Hub
+            FuelSync Hub Setup Wizard
           </h1>
           <p className="text-muted-foreground text-lg">
-            Let's get your fuel station management system set up in 4 simple steps
+            Follow these 4 simple steps to set up your fuel station management system
           </p>
         </div>
 
@@ -223,6 +223,40 @@ export default function SetupWizardPage() {
                 💡 <strong>Tip:</strong> Complete these steps in order to ensure your fuel station management system works correctly. 
                 Each step builds on the previous one.
               </p>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Help Section */}
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Need Help?</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="font-medium mb-1">Having trouble with setup?</h3>
+                <p className="text-sm text-muted-foreground">
+                  If you're experiencing issues with the setup process, here are some common solutions:
+                </p>
+                <ul className="list-disc pl-5 mt-2 text-sm space-y-1">
+                  <li>Make sure you create a station first before adding pumps</li>
+                  <li>Make sure you create pumps before adding nozzles</li>
+                  <li>If you can't see your nozzles, try refreshing the page</li>
+                  <li>Make sure your pumps are set to "active" status</li>
+                </ul>
+              </div>
+              <div className="flex justify-center gap-4">
+                <Button variant="outline" onClick={() => navigate('/dashboard/stations')}>
+                  Go to Stations
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/dashboard/pumps')}>  
+                  Go to Pumps
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/dashboard/nozzles')}>  
+                  Go to Nozzles
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
