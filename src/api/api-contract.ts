@@ -1,4 +1,3 @@
-
 /**
  * FuelSync Hub - API Contract
  * 
@@ -107,6 +106,9 @@ export interface Station {
   totalPumps?: number;
   lastActivity?: string;
   efficiency?: number;
+  // For hierarchical display
+  pumps?: Pump[];
+  users?: User[];
 }
 
 export interface CreateStationRequest {
@@ -127,6 +129,8 @@ export interface Pump {
   stationId: string;
   nozzleCount?: number;
   createdAt: string;
+  // For hierarchical display
+  nozzles?: Nozzle[];
 }
 
 export interface CreatePumpRequest {
@@ -229,6 +233,9 @@ export interface FuelPriceValidation {
   }>;
   hasValidPrices: boolean;
   lastUpdated?: string;
+  // For legacy compatibility
+  missingFuelTypes?: string[];
+  hasActivePrices?: boolean;
 }
 
 // =============================================================================
@@ -499,7 +506,6 @@ export interface CreateSuperAdminRequest {
   email: string;
   password: string;
   permissions?: string[];
-  role?: 'superadmin'; // For form compatibility
 }
 
 export interface SuperAdminSummary {
@@ -623,22 +629,22 @@ export interface DailyReadingSummary {
     volume: number;
     revenue: number;
   }>;
+  // Legacy fields for components
+  nozzleId?: string;
+  nozzleNumber?: number;
+  fuelType?: string;
+  previousReading?: number;
+  currentReading?: number;
+  deltaVolume?: number;
+  pricePerLitre?: number;
+  saleValue?: number;
+  paymentMethod?: string;
+  cashDeclared?: number;
 }
 
 // =============================================================================
 // ANALYTICS & REPORTS TYPES
 // =============================================================================
-
-export interface StationComparison {
-  stationId: string;
-  stationName: string;
-  revenue: number;
-  volume: number;
-  salesCount: number;
-  growth: number;
-  efficiency: number;
-  period: string;
-}
 
 export interface StationComparisonParams {
   stationIds: string[];
@@ -660,6 +666,9 @@ export interface PeakHour {
   averageSales: number;
   dayOfWeek?: string;
   isWeekend: boolean;
+  // Legacy fields
+  timeRange?: string;
+  avgSales?: number;
 }
 
 export interface FuelPerformance {
@@ -680,6 +689,11 @@ export interface StationRanking {
   growth: number;
   efficiency: number;
   score: number;
+  // Legacy fields
+  id?: string;
+  name?: string;
+  sales?: number;
+  volume?: number;
 }
 
 export interface SuperAdminAnalytics {
@@ -706,6 +720,18 @@ export interface SuperAdminAnalytics {
     responseTime: number;
     errorRate: number;
   };
+  // Legacy fields for components
+  totalTenants?: number;
+  activeTenants?: number;
+  totalStations?: number;
+  totalRevenue?: number;
+  salesVolume?: number;
+  monthlyGrowth?: number;
+  topTenants?: Array<{
+    tenantId: string;
+    tenantName: string;
+    revenue: number;
+  }>;
 }
 
 // =============================================================================
@@ -746,6 +772,11 @@ export interface SalesReportSummary {
   averageTicketSize: number;
   period: string;
   revenue?: number; // Alias for totalRevenue
+  fuelTypeBreakdown?: Array<{
+    fuelType: string;
+    volume: number;
+    revenue: number;
+  }>;
 }
 
 export interface SalesReportExportFilters extends SalesReportFilters {
@@ -765,6 +796,7 @@ export interface ScheduleReportRequest {
   frequency: 'daily' | 'weekly' | 'monthly';
   recipients: string[];
   filters: Record<string, any>;
+  schedule?: string; // For legacy compatibility
 }
 
 // =============================================================================
@@ -808,4 +840,4 @@ export type DailySalesTrend = {
   salesCount: number;
   dayOfWeek?: string;
 };
-export type StationComparison = StationMetric;
+// Remove duplicate StationComparison alias - use StationMetric instead

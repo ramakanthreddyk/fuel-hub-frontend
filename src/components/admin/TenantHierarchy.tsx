@@ -78,12 +78,14 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
     }
   };
 
-  // Safely access arrays with fallbacks
-  const users = tenant.users || [];
-  const stations = tenant.stations || [];
-  const userCount = tenant.userCount || users.length;
-  const stationCount = tenant.stationCount || stations.length;
-  const totalPumps = stations.reduce((sum, s) => sum + (s.pumpCount || 0), 0);
+  // Handle both array and number types for backward compatibility
+  const users = Array.isArray(tenant.users) ? tenant.users : [];
+  const stations = Array.isArray(tenant.stations) ? tenant.stations : [];
+  const userCount = tenant.userCount || (Array.isArray(tenant.users) ? tenant.users.length : 0);
+  const stationCount = tenant.stationCount || (Array.isArray(tenant.stations) ? tenant.stations.length : 0);
+  const totalPumps = Array.isArray(tenant.stations) 
+    ? tenant.stations.reduce((sum, s) => sum + (s.pumpCount || 0), 0)
+    : 0;
 
   return (
     <div className="space-y-6">
