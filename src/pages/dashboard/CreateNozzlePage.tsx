@@ -18,7 +18,7 @@ import { nozzlesApi } from '@/api/nozzles';
 const createNozzleSchema = z.object({
   pumpId: z.string().min(1, 'Pump selection is required'),
   nozzleNumber: z.number().min(1, 'Nozzle number must be at least 1'),
-  fuelType: z.enum(['petrol', 'diesel', 'kerosene'], {
+  fuelType: z.enum(['petrol', 'diesel', 'premium'], {
     required_error: 'Fuel type is required',
   }),
 });
@@ -107,13 +107,13 @@ export default function CreateNozzlePage() {
 
   const pumpOptions = pumps.map(pump => ({
     value: pump.id,
-    label: `${pump.label || pump.name} (${pump.pumpNumber})`,
+    label: `${pump.label} (${pump.serialNumber})`,
   }));
 
   const fuelTypeOptions = [
     { value: 'petrol', label: 'Petrol' },
     { value: 'diesel', label: 'Diesel' },
-    { value: 'kerosene', label: 'Kerosene' },
+    { value: 'premium', label: 'Premium' },
   ];
 
   return (

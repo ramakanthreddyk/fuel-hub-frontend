@@ -15,9 +15,9 @@ import { toast } from '@/hooks/use-toast';
 import { pumpsApi } from '@/api/pumps';
 
 const createPumpSchema = z.object({
-  name: z.string().min(1, 'Pump name is required'),
+  label: z.string().min(1, 'Pump label is required'),
   stationId: z.string().min(1, 'Station selection is required'),
-  pumpNumber: z.number().min(1, 'Pump number must be at least 1'),
+  serialNumber: z.string().min(1, 'Serial number is required'),
 });
 
 type CreatePumpForm = z.infer<typeof createPumpSchema>;
@@ -29,18 +29,18 @@ export default function CreatePumpPage() {
   const form = useForm<CreatePumpForm>({
     resolver: zodResolver(createPumpSchema),
     defaultValues: {
-      name: '',
+      label: '',
       stationId: '',
-      pumpNumber: 1,
+      serialNumber: '',
     },
   });
 
   const onSubmit = async (data: CreatePumpForm) => {
     try {
       await pumpsApi.createPump({
-        name: data.name,
+        label: data.label,
         stationId: data.stationId,
-        pumpNumber: data.pumpNumber,
+        serialNumber: data.serialNumber,
         status: 'active',
       });
       
@@ -131,13 +131,13 @@ export default function CreatePumpPage() {
 
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="label"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pump Name *</FormLabel>
+                      <FormLabel>Pump Label *</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter pump name"
+                          placeholder="Enter pump label"
                           {...field}
                         />
                       </FormControl>
@@ -148,17 +148,14 @@ export default function CreatePumpPage() {
 
                 <FormField
                   control={form.control}
-                  name="pumpNumber"
+                  name="serialNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pump Number *</FormLabel>
+                      <FormLabel>Serial Number *</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          min="1"
-                          placeholder="Enter pump number"
+                          placeholder="Enter serial number"
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                         />
                       </FormControl>
                       <FormMessage />
