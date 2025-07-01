@@ -1,4 +1,3 @@
-
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { Sale, SalesFilters, ApiResponse } from './api-contract';
 
@@ -21,7 +20,6 @@ const transformSale = (backendSale: any): Sale => {
     recordedAt: backendSale.recorded_at || backendSale.recordedAt || new Date().toISOString(),
     createdAt: backendSale.created_at || backendSale.createdAt || new Date().toISOString(),
     // Include nested objects if present
-    station: backendSale.station,
     nozzle: backendSale.nozzle,
   };
 };

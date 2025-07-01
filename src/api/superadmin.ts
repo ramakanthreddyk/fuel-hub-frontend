@@ -25,13 +25,19 @@ export const superadminApi = {
     
     // Map the actual backend response to our expected format
     return {
+      totalTenants: rawData.tenantCount || rawData.totalTenants || 0,
+      activeTenants: rawData.activeTenantCount || rawData.activeTenants || 0,
+      totalStations: rawData.totalStations || 0,
+      totalRevenue: rawData.totalRevenue || 0,
+      revenueGrowth: rawData.revenueGrowth || 0,
+      topPerformingTenants: rawData.topPerformingTenants || [],
+      // Legacy compatibility fields
       tenantCount: rawData.tenantCount || 0,
       activeTenantCount: rawData.activeTenantCount || 0,
+      totalUsers: rawData.totalUsers || 0,
+      signupsThisMonth: rawData.signupsThisMonth || 0,
       planCount: rawData.planCount || 0,
       adminCount: rawData.adminCount || 0,
-      totalUsers: rawData.totalUsers || 0,
-      totalStations: rawData.totalStations || 0,
-      signupsThisMonth: rawData.signupsThisMonth || 0,
       recentTenants: rawData.recentTenants || [],
       tenantsByPlan: rawData.tenantsByPlan || []
     };

@@ -1,3 +1,4 @@
+
 /**
  * FuelSync Hub - API Contract
  * 
@@ -202,6 +203,8 @@ export interface Sale {
   recordedAt: string;
   createdAt: string;
   stationName?: string;
+  // Include nested objects if present
+  nozzle?: any;
 }
 
 // =============================================================================
@@ -433,8 +436,9 @@ export interface Tenant {
   stationCount: number;
   lastActivity?: string;
   billingStatus?: 'current' | 'overdue' | 'suspended';
-  users?: number; // Alias for userCount
-  stations?: number; // Alias for stationCount
+  // For hierarchical display - these can be arrays OR numbers for backward compatibility
+  users?: User[] | number; 
+  stations?: Station[] | number; 
 }
 
 export interface CreateTenantRequest {
@@ -531,14 +535,18 @@ export interface SuperAdminSummary {
   activeTenantCount?: number; // Alias for activeTenants
   totalUsers?: number;
   signupsThisMonth?: number;
+  planCount?: number;
+  adminCount?: number;
   tenantsByPlan?: Array<{
     planName: string;
     count: number;
+    percentage?: number;
   }>;
   recentTenants?: Array<{
     id: string;
     name: string;
     createdAt: string;
+    status?: string;
   }>;
 }
 
@@ -585,6 +593,7 @@ export interface CreateFuelDeliveryRequest {
   invoiceNumber: string;
   pricePerLiter: number;
   receivedBy?: string;
+  deliveredBy?: string; // For form compatibility
 }
 
 // =============================================================================
@@ -614,6 +623,7 @@ export interface CreateReconciliationRequest {
   reconciliationDate?: string; // Optional, defaults to current date
   declaredCash: number;
   notes?: string;
+  totalExpected?: number; // For form compatibility
 }
 
 export interface DailyReadingSummary {
@@ -645,6 +655,17 @@ export interface DailyReadingSummary {
 // =============================================================================
 // ANALYTICS & REPORTS TYPES
 // =============================================================================
+
+export interface StationComparison {
+  stationId: string;
+  stationName: string;
+  revenue: number;
+  volume: number;
+  salesCount: number;
+  growth: number;
+  efficiency: number;
+  period: string;
+}
 
 export interface StationComparisonParams {
   stationIds: string[];
@@ -709,6 +730,10 @@ export interface SuperAdminAnalytics {
     revenue: number;
     growth: number;
     stationCount: number;
+    // Add legacy compatibility fields
+    id?: string;
+    name?: string;
+    stationsCount?: number;
   }>;
   revenueByPlan: Array<{
     planName: string;
@@ -726,11 +751,17 @@ export interface SuperAdminAnalytics {
   totalStations?: number;
   totalRevenue?: number;
   salesVolume?: number;
-  monthlyGrowth?: number;
+  monthlyGrowth?: Array<{
+    month: string;
+    tenants: number;
+  }>;
   topTenants?: Array<{
     tenantId: string;
     tenantName: string;
     revenue: number;
+    id?: string;
+    name?: string;
+    stationsCount?: number;
   }>;
 }
 
@@ -776,6 +807,11 @@ export interface SalesReportSummary {
     fuelType: string;
     volume: number;
     revenue: number;
+  }>;
+  paymentMethodBreakdown?: Array<{
+    method: string;
+    amount: number;
+    percentage: number;
   }>;
 }
 
@@ -840,4 +876,3 @@ export type DailySalesTrend = {
   salesCount: number;
   dayOfWeek?: string;
 };
-// Remove duplicate StationComparison alias - use StationMetric instead

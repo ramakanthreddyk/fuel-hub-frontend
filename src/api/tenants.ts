@@ -1,4 +1,3 @@
-
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { 
   Tenant, 
@@ -39,8 +38,6 @@ export const tenantsApi = {
         createdAt: tenant.createdAt,
         userCount: tenant.userCount || 0,
         stationCount: tenant.stationCount || 0,
-        users: [],
-        stations: []
       }));
     } catch (error) {
       console.error('Error fetching tenants:', error);
@@ -66,10 +63,10 @@ export const tenantsApi = {
         planId: tenantData.planId,
         planName: tenantData.planName,
         createdAt: tenantData.createdAt,
-        users: tenantData.users || [],
-        stations: tenantData.stations || [],
         userCount: tenantData.userCount || 0,
-        stationCount: tenantData.stationCount || 0
+        stationCount: tenantData.stationCount || 0,
+        users: tenantData.users || [],
+        stations: tenantData.stations || []
       };
     } catch (error) {
       console.error(`Error fetching tenant details for ${tenantId}:`, error);
@@ -95,8 +92,6 @@ export const tenantsApi = {
         planId: newTenant.planId,
         planName: newTenant.planName,
         createdAt: newTenant.createdAt,
-        users: [],
-        stations: [],
         userCount: 0,
         stationCount: 0
       };
@@ -124,8 +119,6 @@ export const tenantsApi = {
         planId: updatedTenant.planId,
         planName: updatedTenant.planName,
         createdAt: updatedTenant.createdAt,
-        users: [],
-        stations: [],
         userCount: updatedTenant.userCount || 0,
         stationCount: updatedTenant.stationCount || 0
       };
