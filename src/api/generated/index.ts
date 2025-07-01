@@ -1,44 +1,23 @@
 
-// Generated API types - exports from existing api-contract
-export * from '../api-contract';
+/**
+ * Generated API Exports
+ * 
+ * This file exports all contract types and services.
+ * It serves as the main entry point for all frontend API usage.
+ */
 
-// Re-export commonly used types
-export type {
-  ApiResponse,
-  ApiErrorResponse,
-  User,
-  Station,
-  Pump,
-  Nozzle,
-  FuelPrice,
-  Creditor,
-  Sale,
-  Tenant,
-  Plan,
-  AdminUser,
-  CreateUserRequest,
-  CreateStationRequest,
-  CreatePumpRequest,
-  CreateNozzleRequest,
-  CreateReadingRequest,
-  CreateFuelPriceRequest,
-  CreateCreditorRequest,
-  CreateTenantRequest,
-  CreatePlanRequest,
-  CreateSuperAdminRequest,
-  SalesSummary,
-  PaymentMethodBreakdown,
-  SystemAlert,
-  AttendantStation,
-  CashReport,
-  CreateCashReportRequest,
-  SuperAdminSummary
-} from '../api-contract';
+// Export all types from the single contract file
+export * from '../api-contract';
 
 // Export contract services
 export { authService } from '../contract/auth.service';
 export { stationsService } from '../contract/stations.service';
 export { attendantService } from '../contract/attendant.service';
 export { superAdminService } from '../contract/superadmin.service';
-export { ownerService } from '../contract/owner.service';
-export { managerService } from '../contract/manager.service';
+
+// Export contract client
+export { contractClient } from '../contract-client';
+
+// Export hooks
+export { useContractLogin, useContractLogout } from '../../hooks/useContractAuth';
+export { useContractStations } from '../../hooks/useContractStations';
