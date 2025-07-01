@@ -5,6 +5,15 @@
 import { useApi, API_CONFIG } from '@/contexts/ApiContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+// Helper function to ensure array data
+const ensureArray = (data: any): any[] => {
+  if (Array.isArray(data)) return data;
+  if (data?.data?.nozzles && Array.isArray(data.data.nozzles)) return data.data.nozzles;
+  if (data?.nozzles && Array.isArray(data.nozzles)) return data.nozzles;
+  if (data?.data && Array.isArray(data.data)) return data.data;
+  return [];
+};
+
 /**
  * Hook for common API operations
  */
@@ -15,10 +24,19 @@ export function useApiHook() {
   /**
    * Fetch data from an API endpoint
    */
-  const fetchData = <T,>(endpoint: string, queryKey: any[], options?: RequestInit) => {
+  const fetchData = <T,>(endpoint: string, queryKey: any[], options?: any) => {
     return useQuery<T>({
       queryKey,
-      queryFn: () => fetchApi<T>(endpoint, options)
+      queryFn: () => fetchApi<T>(endpoint, options),
+      ...options,
+      // Add default select function for array data if endpoint contains certain keywords
+      select: options?.select || (
+        endpoint.includes('nozzles') || 
+        endpoint.includes('pumps') || 
+        endpoint.includes('stations') ? 
+        (data: any) => ensureArray(data) as unknown as T : 
+        undefined
+      )
     });
   };
 
