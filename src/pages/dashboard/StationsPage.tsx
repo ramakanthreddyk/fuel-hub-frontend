@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Building2, MapPin, Fuel, Plus, Settings, Loader2 } from 'lucide-react';
+import { Building2, MapPin, Fuel, Plus, Settings, Loader2, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useStationsWithMetrics } from '@/hooks/useStations';
 import CreateStationDialog from '@/components/dashboard/CreateStationDialog';
@@ -178,12 +178,12 @@ export default function StationsPage() {
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" asChild className="flex-1">
                       <Link to={`/dashboard/stations/${station.id}`}>
-                        <Settings className="mr-2 h-3 w-3" />
-                        Manage
+                        <Eye className="mr-2 h-3 w-3" />
+                        View Details
                       </Link>
                     </Button>
                     <Button variant="outline" size="sm" asChild className="flex-1">
-                      <Link to={`/dashboard/stations/${station.id}/pumps`}>
+                      <Link to={`/dashboard/pumps?stationId=${station.id}`}>
                         <Fuel className="mr-2 h-3 w-3" />
                         Pumps
                       </Link>

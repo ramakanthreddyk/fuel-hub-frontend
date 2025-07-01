@@ -15,6 +15,7 @@ import Unauthorized from '@/pages/Unauthorized';
 // Dashboard Pages  
 import SummaryPage from '@/pages/dashboard/SummaryPage';
 import StationsPage from '@/pages/dashboard/StationsPage';
+import StationDetailsPage from '@/pages/dashboard/StationDetailsPage';
 import PumpsPage from '@/pages/dashboard/PumpsPage';
 import NozzlesPage from '@/pages/dashboard/NozzlesPage';
 import ReadingsPage from '@/pages/dashboard/ReadingsPage';
@@ -81,6 +82,7 @@ function App() {
             }>
               <Route index element={<SummaryPage />} />
               <Route path="stations" element={<StationsPage />} />
+              <Route path="stations/:stationId" element={<StationDetailsPage />} />
               <Route path="pumps" element={<PumpsPage />} />
               <Route path="nozzles" element={<NozzlesPage />} />
               <Route path="readings" element={<ReadingsPage />} />

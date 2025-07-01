@@ -14,6 +14,8 @@ export const apiClient = axios.create({
 // Request interceptor to add auth token and tenant context
 apiClient.interceptors.request.use(
   (config) => {
+    console.log(`[API-CLIENT] Making request to: ${config.method?.toUpperCase()} ${config.url}`);
+    
     // Add auth token if available
     const token = localStorage.getItem('fuelsync_token');
     if (token) {
@@ -34,6 +36,7 @@ apiClient.interceptors.request.use(
           // For regular users (owner, manager, attendant), ALWAYS add tenant header
           if (user.role !== 'superadmin' && user.tenantId) {
             config.headers['x-tenant-id'] = user.tenantId;
+            console.log(`[API-CLIENT] Added tenant header: ${user.tenantId}`);
           }
         } catch (error) {
           console.error('[API-CLIENT] Error parsing stored user:', error);
@@ -51,9 +54,17 @@ apiClient.interceptors.request.use(
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => {
+    console.log(`[API-CLIENT] Response received from: ${response.config.url}`, response.status);
     return response;
   },
   (error) => {
+    console.error(`[API-CLIENT] Request failed:`, {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message
+    });
+
     // Handle 401 errors more carefully - only logout for legitimate auth failures
     if (error.response?.status === 401) {
       const errorMessage = error.response?.data?.message || '';
