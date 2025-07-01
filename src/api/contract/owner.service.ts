@@ -13,6 +13,9 @@ import type {
   CreateStationRequest,
   Pump,
   CreatePumpRequest,
+  Nozzle,
+  CreateNozzleRequest,
+  UpdateNozzleRequest,
   FuelPrice,
   CreateFuelPriceRequest,
   Creditor,
@@ -111,6 +114,31 @@ export class OwnerService {
    */
   async deletePump(id: string): Promise<void> {
     return contractClient.delete(`/pumps/${id}`);
+  }
+  
+  // Nozzle Management
+  /**
+   * Create new nozzle
+   * POST /nozzles
+   */
+  async createNozzle(data: CreateNozzleRequest): Promise<Nozzle> {
+    return contractClient.post<Nozzle>('/nozzles', data);
+  }
+  
+  /**
+   * Update nozzle
+   * PUT /nozzles/{id}
+   */
+  async updateNozzle(id: string, data: UpdateNozzleRequest): Promise<Nozzle> {
+    return contractClient.put<Nozzle>(`/nozzles/${id}`, data);
+  }
+  
+  /**
+   * Delete nozzle
+   * DELETE /nozzles/{id}
+   */
+  async deleteNozzle(id: string): Promise<void> {
+    return contractClient.delete(`/nozzles/${id}`);
   }
 
   // Fuel Price Management
