@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -129,7 +128,7 @@ export default function UsersPage() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: 'superadmin'
+        permissions: formData.permissions
       };
 
       await createUser(userData);
@@ -146,7 +145,7 @@ export default function UsersPage() {
       const userData = {
         name: formData.name,
         email: formData.email,
-        role: formData.role,
+        permissions: formData.permissions,
       };
 
       await updateUser({ userId: selectedUser.id, userData });
