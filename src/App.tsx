@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ApiProvider } from '@/contexts/ApiContext';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -55,7 +56,8 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="fuelsync-theme">
       <Router>
-        <AuthProvider>
+        <ApiProvider>
+          <AuthProvider>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
@@ -119,6 +121,7 @@ function App() {
           </Routes>
           <Toaster />
         </AuthProvider>
+        </ApiProvider>
       </Router>
     </ThemeProvider>
   );
