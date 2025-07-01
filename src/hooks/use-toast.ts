@@ -1,5 +1,5 @@
 
-import { toast } from 'sonner';
+import { toast as sonnerToast } from 'sonner';
 
 // Simple toast hook that works with sonner
 export function useToast() {
@@ -10,11 +10,11 @@ export function useToast() {
       variant?: 'default' | 'destructive';
     }) => {
       if (options.variant === 'destructive') {
-        toast.error(options.title || 'Error', {
+        sonnerToast.error(options.title || 'Error', {
           description: options.description,
         });
       } else {
-        toast.success(options.title || 'Success', {
+        sonnerToast.success(options.title || 'Success', {
           description: options.description,
         });
       }
@@ -22,5 +22,19 @@ export function useToast() {
   };
 }
 
-// Export toast directly for convenience
-export { toast };
+// Export a direct toast function that matches the expected API
+export const toast = (options: {
+  title?: string;
+  description?: string;
+  variant?: 'default' | 'destructive';
+}) => {
+  if (options.variant === 'destructive') {
+    sonnerToast.error(options.title || 'Error', {
+      description: options.description,
+    });
+  } else {
+    sonnerToast.success(options.title || 'Success', {
+      description: options.description,
+    });
+  }
+};
