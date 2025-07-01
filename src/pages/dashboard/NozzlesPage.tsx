@@ -66,19 +66,19 @@ export default function NozzlesPage() {
   );
   
   // Fetch nozzles
-  const { data: nozzles = [], isLoading: nozzlesLoading } = fetchData<any>(
+  const { data: nozzlesData = [], isLoading: nozzlesLoading } = fetchData<any>(
     `${endpoints.nozzles}?pumpId=${pumpId || ''}`,
     ['nozzles', pumpId],
     { 
-      enabled: !!pumpId,
-      select: (data) => {
-        // Handle different response formats
-        if (data.nozzles) return data.nozzles;
-        if (Array.isArray(data)) return data;
-        return [];
-      }
+      enabled: !!pumpId
     }
   );
+  
+  // Ensure nozzles is always an array
+  const nozzles = Array.isArray(nozzlesData) ? nozzlesData : 
+                  nozzlesData?.nozzles && Array.isArray(nozzlesData.nozzles) ? nozzlesData.nozzles : 
+                  nozzlesData?.data?.nozzles && Array.isArray(nozzlesData.data.nozzles) ? nozzlesData.data.nozzles : 
+                  [];
   
   // Create nozzle mutation
   const createNozzleMutation = createMutation<any, any>(
@@ -116,13 +116,15 @@ export default function NozzlesPage() {
     obj?.[camelProp] || obj?.[snakeProp];
   
   // Prepare stats data
-  const getFilteredCount = (prop: string, value: string) => 
-    nozzles?.filter((n: any) => 
+  const getFilteredCount = (prop: string, value: string) => {
+    if (!Array.isArray(nozzles)) return 0;
+    return nozzles.filter((n: any) => 
       getProp(n, prop, prop.replace(/[A-Z]/g, c => `_${c.toLowerCase()}`)) === value
     ).length || 0;
+  };
   
   const mobileStats = [
-    { title: 'Total', value: nozzles?.length || 0, icon: Settings, color: 'text-blue-600' },
+    { title: 'Total', value: Array.isArray(nozzles) ? nozzles.length : 0, icon: Settings, color: 'text-blue-600' },
     { title: 'Active', value: getFilteredCount('status', 'active'), icon: Activity, color: 'text-green-600' },
     { title: 'Petrol', value: getFilteredCount('fuelType', 'petrol'), icon: Settings, color: 'text-purple-600' },
     { title: 'Diesel', value: getFilteredCount('fuelType', 'diesel'), icon: Settings, color: 'text-orange-600' }
@@ -183,7 +185,34 @@ export default function NozzlesPage() {
     );
   }
   
-  const canAddNozzles = pump?.status === 'active';
+  // Check if pump is active using a more comprehensive approach
+  const isPumpActive = () => {
+    // If pump data is missing, assume it's not active
+    if (!pump) return false;
+    
+    // Check various possible status representations
+    if (typeof pump.status === 'string') {
+      return pump.status.toLowerCase() === 'active';
+    }
+    
+    if (typeof pump.status === 'boolean') {
+      return pump.status === true;
+    }
+    
+    // Check alternative fields
+    if (typeof pump.isActive === 'boolean') {
+      return pump.isActive === true;
+    }
+    
+    if (typeof pump.active === 'boolean') {
+      return pump.active === true;
+    }
+    
+    // If we have a pump object but no recognizable status field, assume it's active
+    return true;
+  };
+  
+  const canAddNozzles = isPumpActive();
   
   // Main UI
   return (
@@ -305,7 +334,7 @@ export default function NozzlesPage() {
 
       {/* Nozzles Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {nozzles?.map((nozzle: Nozzle) => (
+        {Array.isArray(nozzles) && nozzles.map((nozzle: Nozzle) => (
           <EnhancedNozzleCard 
             key={nozzle.id} 
             nozzle={nozzle} 
@@ -324,30 +353,9 @@ export default function NozzlesPage() {
         ))}
       </div>
       
-      {/* Debug info */}
-      {process.env.NODE_ENV === 'development' && (
-        <Card className="border-dashed border-gray-300 mb-4">
-          <CardHeader>
-            <CardTitle className="text-sm">Debug Information</CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs">
-            <p>Pump ID: {pumpId || 'None'}</p>
-            <p>Station ID: {stationId || 'None'}</p>
-            <p>Nozzles count: {nozzles?.length || 0}</p>
-            <p>Endpoint: {endpoints.nozzles}?pumpId={pumpId}</p>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => fetchData(`${endpoints.nozzles}?pumpId=${pumpId || ''}`, ['nozzles', pumpId], { refetch: true })}
-              className="mt-2"
-            >
-              Refresh Nozzles
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {/* Debug info removed */}
       
-      {nozzles?.length === 0 && !nozzlesLoading && (
+      {(!Array.isArray(nozzles) || nozzles.length === 0) && !nozzlesLoading && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Settings className="h-12 w-12 text-muted-foreground mb-4" />
