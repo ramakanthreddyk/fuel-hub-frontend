@@ -21,7 +21,7 @@ export default function ComponentTemplate() {
   
   // Fetch data example
   const { data = [], isLoading } = fetchData<DataItem[]>(
-    endpoints.someEndpoint,
+    endpoints.stations, // Example endpoint
     ['some-data'],
     {
       // Additional options
@@ -36,7 +36,7 @@ export default function ComponentTemplate() {
   
   // Create mutation example
   const mutation = createMutation<DataItem, { name: string }>(
-    endpoints.someEndpoint,
+    endpoints.stations, // Example endpoint
     {
       method: 'POST',
       invalidateQueries: [['some-data']],

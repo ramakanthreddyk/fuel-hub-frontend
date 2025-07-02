@@ -21,8 +21,14 @@ UI Components (src/components/*)
 Pages (src/pages/*)
 ```
 
-## ⚠️ IMPORTANT NOTICE
+## ⚠️ CRITICAL ISSUES REQUIRING IMMEDIATE ATTENTION
 
+### 1. Schema Mismatches Found
+- **Pump Fields**: OpenAPI uses different field names than current frontend implementation
+- **Nozzle Fuel Types**: OpenAPI doesn't include `kerosene`, frontend using invalid enum
+- **User Properties**: Inconsistent naming between OpenAPI and frontend types
+
+### 2. Large Files Needing Refactoring
 The `src/api/api-contract.ts` file has grown to over 583 lines and needs refactoring. After completing the current migration phase, it should be split into focused modules:
 
 ```
@@ -285,11 +291,12 @@ headers: {
 - User management (uses legacy API)
 - Reports (uses legacy API)
 
-### ❌ Not Compliant
-- Pump management (legacy API only)
-- Nozzle management (legacy API only)
-- Reading operations (legacy API only)
-- Fuel price management (legacy API only)
+### ❌ Not Compliant (CRITICAL)
+- **Pump management** - Schema mismatch (field names), legacy API only
+- **Nozzle management** - Schema mismatch (fuel types), legacy API only  
+- **Reading operations** - No contract service, legacy API only
+- **Fuel price management** - No contract service, legacy API only
+- **Mixed API Usage** - Components using both contract and legacy APIs
 
 ---
 
@@ -303,14 +310,22 @@ headers: {
 
 ---
 
-## Next Steps
+## Next Steps (PRIORITIZED)
 
-1. **Complete Service Migration**: Finish migrating all legacy API services to contract services
+### 🔥 URGENT (This Sprint)
+1. **Fix Schema Mismatches**: Align Pump/Nozzle schemas with OpenAPI spec
 2. **Refactor api-contract.ts**: Split into focused type modules (CRITICAL - 583+ lines)
-3. **Implement Type Generation**: Add automated type generation from OpenAPI spec
-4. **Update All Hooks**: Migrate remaining hooks to use contract services
-5. **Component Updates**: Update all forms and components for contract compliance
-6. **E2E Testing**: Validate all persona journeys work end-to-end
+3. **Complete Core Service Migration**: Finish Pumps, Nozzles, Readings services
+
+### 📋 HIGH PRIORITY (Next Sprint)  
+4. **Implement Type Generation**: Add automated type generation from OpenAPI spec
+5. **Update All Hooks**: Migrate remaining hooks to use contract services
+6. **Component Audit**: Update all forms for contract compliance
+
+### 🎯 MEDIUM PRIORITY (Following Sprint)
+7. **E2E Testing**: Validate all persona journeys work end-to-end
+8. **Performance Optimization**: Implement caching strategies
+9. **Documentation**: Complete migration of all docs to contract-first approach
 
 **Last Updated**: Contract alignment phase - Type compatibility fixes  
 **Next Review**: After completing service migration and api-contract refactoring

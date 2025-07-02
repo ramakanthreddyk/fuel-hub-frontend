@@ -191,21 +191,21 @@ export default function NozzlesPage() {
     if (!pump) return false;
     
     // Check various possible status representations
-    if (typeof pump.status === 'string') {
-      return pump.status.toLowerCase() === 'active';
+    if (typeof (pump as any).status === 'string') {
+      return (pump as any).status.toLowerCase() === 'active';
     }
     
-    if (typeof pump.status === 'boolean') {
-      return pump.status === true;
+    if (typeof (pump as any).status === 'boolean') {
+      return (pump as any).status === true;
     }
     
     // Check alternative fields
-    if (typeof pump.isActive === 'boolean') {
-      return pump.isActive === true;
+    if (typeof (pump as any).isActive === 'boolean') {
+      return (pump as any).isActive === true;
     }
     
-    if (typeof pump.active === 'boolean') {
-      return pump.active === true;
+    if (typeof (pump as any).active === 'boolean') {
+      return (pump as any).active === true;
     }
     
     // If we have a pump object but no recognizable status field, assume it's active
@@ -229,10 +229,10 @@ export default function NozzlesPage() {
           </div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Nozzles</h1>
           <p className="text-muted-foreground text-sm md:text-base hidden md:block">
-            Manage nozzles for {pump?.label || 'Pump'}
+            Manage nozzles for {(pump as any)?.label || 'Pump'}
           </p>
           <p className="text-muted-foreground text-sm md:hidden">
-            {pump?.label || 'Pump'} nozzles
+            {(pump as any)?.label || 'Pump'} nozzles
           </p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -246,7 +246,7 @@ export default function NozzlesPage() {
             <DialogHeader>
               <DialogTitle>Add New Nozzle</DialogTitle>
               <DialogDescription>
-                Add a new nozzle to {pump?.label}
+                Add a new nozzle to {(pump as any)?.label}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>

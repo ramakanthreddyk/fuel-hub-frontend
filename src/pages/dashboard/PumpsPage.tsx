@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
-import { Plus, Fuel, Settings, Activity } from 'lucide-react';
+import { Plus, Fuel, Settings, Activity, Building2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { pumpsApi } from '@/api/pumps';
 import { stationsApi } from '@/api/stations';
