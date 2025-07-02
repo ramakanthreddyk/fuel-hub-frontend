@@ -49,9 +49,6 @@ export const TenantActions: React.FC<TenantActionsProps> = ({
 
   return (
     <div className="flex items-center space-x-2">
-      <Badge className={getStatusColor(tenant.status)}>
-        {tenant.status}
-      </Badge>
 
       <Button
         variant="outline"
