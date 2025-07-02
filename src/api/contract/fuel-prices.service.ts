@@ -20,12 +20,17 @@ export const fuelPricesService = {
       // Handle different response structures from backend
       let rawPrices: any[] = [];
       
-      if (response.data?.prices) {
-        rawPrices = response.data.prices;
-      } else if (response.data && Array.isArray(response.data)) {
-        rawPrices = response.data;
-      } else if (response.prices) {
-        rawPrices = response.prices;
+      // Type-safe response handling
+      const responseData = response as any;
+      
+      if (responseData?.data?.prices) {
+        rawPrices = responseData.data.prices;
+      } else if (responseData?.data && Array.isArray(responseData.data)) {
+        rawPrices = responseData.data;
+      } else if (responseData?.prices) {
+        rawPrices = responseData.prices;
+      } else if (Array.isArray(responseData)) {
+        rawPrices = responseData;
       }
       
       console.log('[FUEL-PRICES-SERVICE] Raw prices:', rawPrices);
@@ -96,6 +101,7 @@ export const fuelPricesService = {
    */
   async getStationsMissingPrices(): Promise<any[]> {
     const response = await contractClient.get('/fuel-prices/missing');
-    return response.stations || response.data?.stations || [];
+    const responseData = response as any;
+    return responseData?.stations || responseData?.data?.stations || [];
   }
 };
