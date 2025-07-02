@@ -10,14 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { stationsApi } from '@/api/stations';
-import { pumpsApi } from '@/api/pumps';
-import { nozzlesApi } from '@/api/nozzles';
 import { creditorsApi } from '@/api/creditors';
 import { useCreateContractReading, useContractLatestReading, useContractCanCreateReading } from '@/hooks/useContractReadings';
 import { useContractPumps } from '@/hooks/useContractPumps';
 import { useContractNozzles } from '@/hooks/useContractNozzles';
 import { useStationPriceValidation } from '@/hooks/useFuelPriceValidation';
-import { CreateReadingRequest } from '@/api/readings';
+import { CreateReadingRequest } from '@/api/api-contract';
 import { AlertTriangle, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -189,7 +187,7 @@ export function ReadingEntryForm() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
+                <div className="space-y-2">
                 <Label htmlFor="pump">Pump</Label>
                 <Select value={selectedPump} onValueChange={setSelectedPump} disabled={!selectedStation}>
                   <SelectTrigger>
@@ -223,7 +221,7 @@ export function ReadingEntryForm() {
                       <SelectContent className="bg-background border shadow-lg z-50">
                         {Array.isArray(nozzles) && nozzles.length > 0 ? nozzles.map((nozzle) => (
                           <SelectItem key={nozzle.id} value={nozzle.id}>
-                            Nozzle {nozzle.nozzleNumber || nozzle.nozzle_number} ({nozzle.fuelType || nozzle.fuel_type})
+                            Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
                           </SelectItem>
                         )) : (
                           <SelectItem value="" disabled>

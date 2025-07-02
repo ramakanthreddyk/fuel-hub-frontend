@@ -122,24 +122,30 @@ const normalizeData = (data: any) => ({
 - `src/pages/dashboard/CreatePumpPage.tsx`
 - `src/pages/dashboard/CreateNozzlePage.tsx`
 
-### Issue #2: API Contract Drift (RESOLVED)
+### Issue #2: API Contract Drift (COMPLETED ✅)
 **Date**: 2025-01-02
 **Problem**: Frontend types don't match OpenAPI specification
 **Root Cause**: Manual type definitions instead of generated types
 **Resolution**: 
 - ✅ Fixed critical schema mismatches (pump `name` vs `label`)
-- ✅ Created contract-aligned services for pumps, nozzles, readings
+- ✅ Created contract-aligned services for pumps, nozzles, readings, fuel-prices
 - ✅ Updated all components to use correct field names
 - ✅ Implemented new React Query hooks for contract services
 - ✅ Fixed ReadingEntryForm nozzle dropdown issue
+- ✅ Migrated all pump/nozzle/reading operations to contract services
+- ✅ Created comprehensive backend requirements documentation
 
 **Files Changed**:
 - `src/api/api-contract.ts` - Updated Pump interface to use `name`
 - `src/api/contract/pumps.service.ts` - New contract service
 - `src/api/contract/nozzles.service.ts` - New contract service  
 - `src/api/contract/readings.service.ts` - New contract service
+- `src/api/contract/fuel-prices.service.ts` - New contract service
 - `src/hooks/useContract*.ts` - New contract hooks
-- `src/components/readings/ReadingEntryForm.tsx` - Fixed nozzle dropdown
+- `src/components/readings/ReadingEntryForm.tsx` - Fully migrated to contract services
+- `docs/BACKEND_REQUIREMENTS.md` - Backend expectations documented
+
+**Status**: All core data flows now use contract-first architecture
 
 ## Development Workflow
 
