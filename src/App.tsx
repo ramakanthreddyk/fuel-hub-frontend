@@ -32,6 +32,7 @@ import SuperAdminTenantsPage from './pages/superadmin/TenantsPage';
 import SuperAdminUsersPage from './pages/superadmin/UsersPage';
 import SuperAdminPlansPage from './pages/superadmin/PlansPage';
 import SuperAdminAnalyticsPage from './pages/superadmin/AnalyticsPage';
+import TenantSettingsPage from './pages/superadmin/TenantSettingsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,6 +95,7 @@ function App() {
                   <Route index element={<Navigate to="/superadmin/overview" replace />} />
                   <Route path="overview" element={<SuperAdminOverviewPage />} />
                   <Route path="tenants" element={<SuperAdminTenantsPage />} />
+                  <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
                   <Route path="users" element={<SuperAdminUsersPage />} />
                   <Route path="plans" element={<SuperAdminPlansPage />} />
                   <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
