@@ -42,6 +42,9 @@ const normalizeNozzle = (nozzle: any): Nozzle => {
   };
 };
 
+// API base URL
+const API_URL = 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
+
 export const nozzlesApi = {
   getNozzles: async (pumpId: string): Promise<Nozzle[]> => {
     console.log('Fetching nozzles for pump:', pumpId);
@@ -52,35 +55,15 @@ export const nozzlesApi = {
     }
     
     try {
-      // Try using apiClient first
-      try {
-        console.log('Attempting to fetch nozzles with apiClient');
-        const response = await apiClient.get(`/nozzles?pumpId=${pumpId}`);
-        console.log('apiClient response:', response);
-        
-        if (response.data) {
-          // Handle array response
-          if (Array.isArray(response.data)) {
-            return response.data.map(normalizeNozzle);
-          }
-          // Handle object with nozzles array
-          if (response.data.nozzles && Array.isArray(response.data.nozzles)) {
-            return response.data.nozzles.map(normalizeNozzle);
-          }
-        }
-      } catch (apiError) {
-        console.log('apiClient error, falling back to fetch:', apiError);
-      }
-      
-      // Fall back to direct fetch
-      console.log('Using direct fetch for nozzles');
+      // Get auth info
       const token = localStorage.getItem('fuelsync_token');
       const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
       const tenantId = user.tenantId || '';
       
-      console.log('Auth headers:', { token: !!token, tenantId });
+      console.log(`Fetching nozzles from ${API_URL}/api/v1/nozzles?pumpId=${pumpId}`);
       
-      const response = await fetch(`/api/v1/nozzles?pumpId=${pumpId}`, {
+      // Make direct API call
+      const response = await fetch(`${API_URL}/api/v1/nozzles?pumpId=${pumpId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -99,29 +82,19 @@ export const nozzlesApi = {
       const result = await response.json();
       console.log('Raw nozzles response:', result);
       
-      // Try to extract nozzles from different possible response formats
+      // Extract nozzles from response
       let nozzlesArray = [];
       
-      // Format 1: { success: true, data: { nozzles: [...] } }
       if (result.success && result.data && result.data.nozzles) {
         nozzlesArray = result.data.nozzles;
-        console.log('Found nozzles in result.data.nozzles:', nozzlesArray.length);
-      }
-      // Format 2: { nozzles: [...] }
-      else if (result.nozzles) {
+      } else if (result.nozzles) {
         nozzlesArray = result.nozzles;
-        console.log('Found nozzles in result.nozzles:', nozzlesArray.length);
-      }
-      // Format 3: [...] (array directly)
-      else if (Array.isArray(result)) {
+      } else if (Array.isArray(result)) {
         nozzlesArray = result;
-        console.log('Result is directly an array:', nozzlesArray.length);
       }
       
       // Normalize all nozzles
-      const normalizedNozzles = nozzlesArray.map(normalizeNozzle);
-      console.log('Returning normalized nozzles:', normalizedNozzles.length);
-      return normalizedNozzles;
+      return nozzlesArray.map(normalizeNozzle);
     } catch (error) {
       console.error('Error in getNozzles:', error);
       return [];
@@ -130,8 +103,21 @@ export const nozzlesApi = {
 
   getNozzle: async (id: string): Promise<Nozzle | null> => {
     try {
-      const response = await apiClient.get(`/nozzles/${id}`);
-      return normalizeNozzle(response.data);
+      const token = localStorage.getItem('fuelsync_token');
+      const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
+      const tenantId = user.tenantId || '';
+      
+      const response = await fetch(`${API_URL}/api/v1/nozzles/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-tenant-id': tenantId,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) return null;
+      const data = await response.json();
+      return normalizeNozzle(data);
     } catch (error) {
       console.error('Error in getNozzle:', error);
       return null;
@@ -140,8 +126,27 @@ export const nozzlesApi = {
 
   createNozzle: async (nozzleData: CreateNozzleRequest): Promise<Nozzle | null> => {
     try {
-      const response = await apiClient.post('/nozzles', nozzleData);
-      return normalizeNozzle(response.data);
+      const token = localStorage.getItem('fuelsync_token');
+      const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
+      const tenantId = user.tenantId || '';
+      
+      const response = await fetch(`${API_URL}/api/v1/nozzles`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-tenant-id': tenantId,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(nozzleData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return normalizeNozzle(data);
     } catch (error) {
       console.error('Error in createNozzle:', error);
       throw error;
@@ -150,8 +155,27 @@ export const nozzlesApi = {
 
   updateNozzle: async (id: string, nozzleData: UpdateNozzleRequest): Promise<Nozzle | null> => {
     try {
-      const response = await apiClient.put(`/nozzles/${id}`, nozzleData);
-      return normalizeNozzle(response.data);
+      const token = localStorage.getItem('fuelsync_token');
+      const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
+      const tenantId = user.tenantId || '';
+      
+      const response = await fetch(`${API_URL}/api/v1/nozzles/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-tenant-id': tenantId,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(nozzleData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return normalizeNozzle(data);
     } catch (error) {
       console.error('Error in updateNozzle:', error);
       throw error;
@@ -160,7 +184,22 @@ export const nozzlesApi = {
 
   deleteNozzle: async (id: string): Promise<void> => {
     try {
-      await apiClient.delete(`/nozzles/${id}`);
+      const token = localStorage.getItem('fuelsync_token');
+      const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
+      const tenantId = user.tenantId || '';
+      
+      const response = await fetch(`${API_URL}/api/v1/nozzles/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-tenant-id': tenantId,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
     } catch (error) {
       console.error('Error in deleteNozzle:', error);
       throw error;
