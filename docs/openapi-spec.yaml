@@ -164,6 +164,8 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/Success'
+        '409':
+          $ref: '#/components/responses/Error'
         default:
           $ref: '#/components/responses/Error'
   /api/v1/users/{userId}/change-password:
@@ -298,6 +300,8 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/Success'
+        '409':
+          $ref: '#/components/responses/Error'
         default:
           $ref: '#/components/responses/Error'
   /api/v1/stations/{stationId}/metrics:
@@ -346,15 +350,8 @@ paths:
     post:
       summary: Create pump
       responses:
-        '201':
-          description: Pump created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Pump'
+        '200':
+          $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
       requestBody:
@@ -404,7 +401,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateTenantRequest'
+              $ref: '#/components/schemas/CreatePumpRequest'
     delete:
       summary: Delete pump
       responses:
@@ -416,15 +413,10 @@ paths:
     post:
       summary: Create nozzle
       responses:
-        '201':
-          description: Nozzle created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Nozzle'
+        '200':
+          $ref: '#/components/responses/Success'
+        '409':
+          $ref: '#/components/responses/Error'
         default:
           $ref: '#/components/responses/Error'
       requestBody:
@@ -473,7 +465,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CreateNozzleRequest'
     delete:
       summary: Delete nozzle
       responses:
@@ -2152,25 +2144,20 @@ paths:
         createdAt:
           type: string
           format: date-time
-    CreateNozzleRequest:
-      type: object
-      required: [pumpId, nozzleNumber, fuelType]
-      properties:
-        pumpId:
-          type: string
-          description: ID of the pump to which this nozzle belongs
-        nozzleNumber:
-          type: number
-          description: Unique number for the nozzle within the pump
-        fuelType:
-          type: string
-          enum: [petrol, diesel, premium]
-          description: Type of fuel dispensed by this nozzle
-        status:
-          type: string
-          enum: [active, inactive, maintenance]
-          description: Current operational status of the nozzle
-          default: active
+  CreateNozzleRequest:
+    type: object
+    required: [pumpId, nozzleNumber, fuelType]
+    properties:
+      pumpId:
+        type: string
+      nozzleNumber:
+        type: number
+      fuelType:
+        type: string
+        enum: [petrol, diesel, premium]
+      status:
+        type: string
+        enum: [active, inactive, maintenance]
     Pump:
       type: object
       properties:
