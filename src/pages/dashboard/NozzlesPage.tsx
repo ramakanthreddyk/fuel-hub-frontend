@@ -229,10 +229,10 @@ export default function NozzlesPage() {
           </div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Nozzles</h1>
           <p className="text-muted-foreground text-sm md:text-base hidden md:block">
-            Manage nozzles for {(pump as any)?.label || 'Pump'}
+            Manage nozzles for {(pump as any)?.name || 'Pump'}
           </p>
           <p className="text-muted-foreground text-sm md:hidden">
-            {(pump as any)?.label || 'Pump'} nozzles
+            {(pump as any)?.name || 'Pump'} nozzles
           </p>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -246,7 +246,7 @@ export default function NozzlesPage() {
             <DialogHeader>
               <DialogTitle>Add New Nozzle</DialogTitle>
               <DialogDescription>
-                Add a new nozzle to {(pump as any)?.label}
+                Add a new nozzle to {(pump as any)?.name}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
