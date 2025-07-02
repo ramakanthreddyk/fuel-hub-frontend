@@ -30,7 +30,7 @@ export default function PumpsPage() {
 
   const form = useForm({
     defaultValues: {
-      label: '',
+      name: '',
       serialNumber: ''
     }
   });
@@ -39,14 +39,21 @@ export default function PumpsPage() {
   const { data: station } = useQuery({
     queryKey: ['station', effectiveStationId],
     queryFn: () => stationsApi.getStation(effectiveStationId!),
-    enabled: !!effectiveStationId
+    enabled: !!effectiveStationId,
+    retry: 2,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true // Always refetch when component mounts
   });
 
   // Fetch pumps for this station
-  const { data: pumps, isLoading } = useQuery({
+  const { data: pumps, isLoading, refetch } = useQuery({
     queryKey: ['pumps', effectiveStationId],
     queryFn: () => pumpsApi.getPumps(effectiveStationId!),
-    enabled: !!effectiveStationId
+    enabled: !!effectiveStationId,
+    retry: 2,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnWindowFocus: true // Refetch when window regains focus
   });
 
   // Create pump mutation
@@ -164,12 +171,12 @@ export default function PumpsPage() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="label"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pump Label</FormLabel>
+                      <FormLabel>Pump Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter pump label" {...field} />
+                        <Input placeholder="Enter pump name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -263,6 +270,18 @@ export default function PumpsPage() {
             onSettings={() => handleSettings(pump.id)}
           />
         ))}
+      </div>
+
+      {/* Add a refresh button */}
+      <div className="flex justify-end mb-4">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => refetch()}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Loading...' : 'Refresh Pumps'}
+        </Button>
       </div>
 
       {pumps?.length === 0 && !isLoading && (
