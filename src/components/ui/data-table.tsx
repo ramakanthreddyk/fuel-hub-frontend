@@ -140,7 +140,7 @@ export function DataTable<T = any>({
           </div>
         )}
         <div className="border rounded-lg p-8 text-center">
-          <LoadingSpinner size="lg" label="Loading table data..." />
+          <LoadingSpinner size="lg" />
         </div>
       </div>
     );
