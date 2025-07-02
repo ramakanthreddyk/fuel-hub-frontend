@@ -63,9 +63,14 @@ export function ReadingEntryForm() {
     enabled: !!selectedStation,
   });
 
-  const { data: nozzles } = useQuery({
+  const { data: nozzles = [] } = useQuery({
     queryKey: ['nozzles', selectedPump],
-    queryFn: () => nozzlesApi.getNozzles(selectedPump),
+    queryFn: async () => {
+      if (!selectedPump) return [];
+      const result = await nozzlesApi.getNozzles(selectedPump);
+      console.log('[READING-FORM] Fetched nozzles:', result);
+      return Array.isArray(result) ? result : [];
+    },
     enabled: !!selectedPump,
   });
 
@@ -227,12 +232,16 @@ export function ReadingEntryForm() {
                           <SelectValue placeholder="Select nozzle" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        {Array.isArray(nozzles) && nozzles.map((nozzle) => (
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {Array.isArray(nozzles) && nozzles.length > 0 ? nozzles.map((nozzle) => (
                           <SelectItem key={nozzle.id} value={nozzle.id}>
-                            Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
+                            Nozzle {nozzle.nozzleNumber || nozzle.nozzle_number} ({nozzle.fuelType || nozzle.fuel_type})
                           </SelectItem>
-                        ))}
+                        )) : (
+                          <SelectItem value="" disabled>
+                            No nozzles available
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
