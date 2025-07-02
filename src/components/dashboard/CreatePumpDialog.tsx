@@ -16,7 +16,7 @@ interface CreatePumpDialogProps {
 export function CreatePumpDialog({ stationId, children }: CreatePumpDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    label: '',
+    name: '',
     serialNumber: ''
   });
 
@@ -28,7 +28,7 @@ export function CreatePumpDialog({ stationId, children }: CreatePumpDialogProps)
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pumps', stationId] });
       setOpen(false);
-      setFormData({ label: '', serialNumber: '' });
+      setFormData({ name: '', serialNumber: '' });
       toast({
         title: "Success",
         description: "Pump created successfully",
@@ -45,10 +45,10 @@ export function CreatePumpDialog({ stationId, children }: CreatePumpDialogProps)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.label.trim()) {
+    if (!formData.name.trim()) {
       toast({
         title: "Error",
-        description: "Pump label is required",
+        description: "Pump name is required",
         variant: "destructive",
       });
       return;
@@ -75,11 +75,11 @@ export function CreatePumpDialog({ stationId, children }: CreatePumpDialogProps)
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="label">Pump Label *</Label>
+            <Label htmlFor="name">Pump Name *</Label>
             <Input
-              id="label"
-              value={formData.label}
-              onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g., Pump 1, A1, etc."
               required
             />
