@@ -48,8 +48,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="fuelsync-ui-theme">
-        <AuthProvider>
-          <Router>
+        <Router>
+          <AuthProvider>
             <div className="min-h-screen bg-background">
               <Routes>
                 {/* Root Landing Route */}
@@ -105,8 +105,8 @@ function App() {
               
               <Toaster />
             </div>
-          </Router>
-        </AuthProvider>
+          </AuthProvider>
+        </Router>
       </ThemeProvider>
     </QueryClientProvider>
   );
