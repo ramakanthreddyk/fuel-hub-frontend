@@ -1,129 +1,109 @@
 
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import { ApiProvider } from '@/contexts/ApiContext';
-import { RequireAuth } from '@/components/auth/RequireAuth';
-import { Toaster } from '@/components/ui/toaster';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { Toaster } from './components/ui/toaster';
+
+// Layout Components
+import { DashboardLayout } from './components/layout/DashboardLayout';
+import { SuperAdminLayout } from './components/layout/SuperAdminLayout';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 // Pages
-import LandingPage from '@/pages/LandingPage';
-import LoginPage from '@/pages/LoginPage';
-import NotFound from '@/pages/NotFound';
-import Unauthorized from '@/pages/Unauthorized';
-
-// Setup Pages
-import SetupWizardPage from '@/pages/setup/SetupWizardPage';
-
-// Dashboard Pages  
-import SummaryPage from '@/pages/dashboard/SummaryPage';
-import StationsPage from '@/pages/dashboard/StationsPage';
-import StationDetailsPage from '@/pages/dashboard/StationDetailsPage';
-import PumpsPage from '@/pages/dashboard/PumpsPage';
-import CreatePumpPage from '@/pages/dashboard/CreatePumpPage';
-import NozzlesPage from '@/pages/dashboard/NozzlesPage';
-import CreateNozzlePage from '@/pages/dashboard/CreateNozzlePage';
-import ReadingsPage from '@/pages/dashboard/ReadingsPage';
-import NewReadingPage from '@/pages/dashboard/NewReadingPage';
-import FuelPricesPage from '@/pages/dashboard/FuelPricesPage';
-import CreditorsPage from '@/pages/dashboard/CreditorsPage';
-import CreditorPaymentsPage from '@/pages/dashboard/CreditorPaymentsPage';
-import SalesPage from '@/pages/dashboard/SalesPage';
-import ReportsPage from '@/pages/dashboard/ReportsPage';
-import UsersPage from '@/pages/dashboard/UsersPage';
-import SettingsPage from '@/pages/dashboard/SettingsPage';
-import AlertsPage from '@/pages/dashboard/AlertsPage';
-import ReconciliationPage from '@/pages/dashboard/ReconciliationPage';
-import InventoryPage from '@/pages/dashboard/InventoryPage';
-import FuelDeliveriesPage from '@/pages/dashboard/FuelDeliveriesPage';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
+import StationsPage from './pages/dashboard/StationsPage';
+import CreateStationPage from './pages/dashboard/CreateStationPage';
+import PumpsPage from './pages/dashboard/PumpsPage';
+import CreatePumpPage from './pages/dashboard/CreatePumpPage';
+import FuelPricesPage from './pages/dashboard/FuelPricesPage';
+import ReadingsPage from './pages/dashboard/ReadingsPage';
+import NewReadingPage from './pages/dashboard/NewReadingPage';
+import FuelInventoryPage from './pages/dashboard/FuelInventoryPage';
+import AnalyticsPage from './pages/dashboard/AnalyticsPage';
+import UsersPage from './pages/dashboard/UsersPage';
+import SettingsPage from './pages/dashboard/SettingsPage';
 
 // SuperAdmin Pages
-import OverviewPage from '@/pages/superadmin/OverviewPage';
-import TenantsPage from '@/pages/superadmin/TenantsPage';
-import TenantDetailsPage from '@/pages/superadmin/TenantDetailsPage';
-import CreateTenantPage from '@/pages/superadmin/CreateTenantPage';
-import TenantSettingsPage from '@/pages/superadmin/TenantSettingsPage';
-import PlansPage from '@/pages/superadmin/PlansPage';
-import AnalyticsPage from '@/pages/superadmin/AnalyticsPage';
-import SuperAdminUsersPage from '@/pages/superadmin/UsersPage';
+import SuperAdminOverviewPage from './pages/superadmin/OverviewPage';
+import SuperAdminTenantsPage from './pages/superadmin/TenantsPage';
+import SuperAdminUsersPage from './pages/superadmin/UsersPage';
+import SuperAdminPlansPage from './pages/superadmin/PlansPage';
+import SuperAdminAnalyticsPage from './pages/superadmin/AnalyticsPage';
 
-// Layouts
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { SuperAdminLayout } from '@/components/layout/SuperAdminLayout';
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="fuelsync-theme">
-      <Router>
-        <ApiProvider>
-          <AuthProvider>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light" storageKey="fuelsync-ui-theme">
+        <AuthProvider>
+          <Router>
+            <div className="min-h-screen bg-background">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/login/admin" element={<LoginPage />} />
+                
+                {/* Dashboard Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={['owner', 'manager', 'attendant']}>
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<DashboardPage />} />
+                  <Route path="stations" element={<StationsPage />} />
+                  <Route path="stations/new" element={<CreateStationPage />} />
+                  <Route path="pumps" element={<PumpsPage />} />
+                  <Route path="pumps/new" element={<CreatePumpPage />} />
+                  <Route path="fuel-prices" element={<FuelPricesPage />} />
+                  <Route path="readings" element={<ReadingsPage />} />
+                  <Route path="readings/new" element={<NewReadingPage />} />
+                  <Route path="fuel-inventory" element={<FuelInventoryPage />} />
+                  <Route path="analytics" element={<AnalyticsPage />} />
+                  <Route path="users" element={<UsersPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                </Route>
 
-            {/* Setup Wizard Route */}
-            <Route path="/setup" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <SetupWizardPage />
-              </RequireAuth>
-            } />
+                {/* SuperAdmin Routes */}
+                <Route
+                  path="/superadmin"
+                  element={
+                    <ProtectedRoute allowedRoles={['superadmin']}>
+                      <SuperAdminLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/superadmin/overview" replace />} />
+                  <Route path="overview" element={<SuperAdminOverviewPage />} />
+                  <Route path="tenants" element={<SuperAdminTenantsPage />} />
+                  <Route path="users" element={<SuperAdminUsersPage />} />
+                  <Route path="plans" element={<SuperAdminPlansPage />} />
+                  <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
+                </Route>
 
-            {/* SuperAdmin Routes with Layout */}
-            <Route path="/superadmin" element={
-              <RequireAuth allowedRoles={['superadmin']}>
-                <SuperAdminLayout />
-              </RequireAuth>
-            }>
-              <Route index element={<Navigate to="/superadmin/overview" replace />} />
-              <Route path="overview" element={<OverviewPage />} />
-              <Route path="tenants" element={<TenantsPage />} />
-              <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
-              <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
-              <Route path="tenants/create" element={<CreateTenantPage />} />
-              <Route path="plans" element={<PlansPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="users" element={<SuperAdminUsersPage />} />
-            </Route>
-
-            {/* Dashboard Routes with Layout */}
-            <Route path="/dashboard" element={
-              <RequireAuth allowedRoles={['owner', 'manager', 'attendant']}>
-                <DashboardLayout />
-              </RequireAuth>
-            }>
-              <Route index element={<SummaryPage />} />
-              <Route path="stations" element={<StationsPage />} />
-              <Route path="stations/:stationId" element={<StationDetailsPage />} />
-              <Route path="pumps" element={<PumpsPage />} />
-              <Route path="pumps/create" element={<CreatePumpPage />} />
-              <Route path="nozzles" element={<NozzlesPage />} />
-              <Route path="nozzles/create" element={<CreateNozzlePage />} />
-              <Route path="readings" element={<ReadingsPage />} />
-              <Route path="readings/new" element={<NewReadingPage />} />
-              <Route path="fuel-prices" element={<FuelPricesPage />} />
-              <Route path="creditors" element={<CreditorsPage />} />
-              <Route path="creditors/:creditorId/payments" element={<CreditorPaymentsPage />} />
-              <Route path="sales" element={<SalesPage />} />
-              <Route path="reports" element={<ReportsPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="alerts" element={<AlertsPage />} />
-              <Route path="reconciliation" element={<ReconciliationPage />} />
-              <Route path="inventory" element={<InventoryPage />} />
-              <Route path="fuel-deliveries" element={<FuelDeliveriesPage />} />
-            </Route>
-
-            {/* Catch all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
+                {/* Default Redirects */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+              
+              <Toaster />
+            </div>
+          </Router>
         </AuthProvider>
-        </ApiProvider>
-      </Router>
-    </ThemeProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

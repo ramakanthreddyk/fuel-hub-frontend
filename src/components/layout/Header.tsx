@@ -14,10 +14,12 @@ import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Header() {
   const { user, logout } = useAuth();
   const { isMobile } = useSidebar();
+  const navigate = useNavigate();
 
   const getRoleDetails = (role: string) => {
     switch (role) {
@@ -66,14 +68,22 @@ export function Header() {
       .slice(0, 2);
   };
 
+  const handleSettingsClick = () => {
+    if (user?.role === 'superadmin') {
+      navigate('/superadmin/settings');
+    } else {
+      navigate('/dashboard/settings');
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 shadow-sm">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-4">
-          <SidebarTrigger className="h-8 w-8" />
+    <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 shadow-sm dark:bg-gray-950/95 dark:border-gray-800">
+      <div className="flex h-14 md:h-16 items-center justify-between px-4">
+        <div className="flex items-center gap-2 md:gap-4">
+          <SidebarTrigger className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-800" />
           
-          {/* Breadcrumb or Page Title */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Page Title - Hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-2">
             <div className="h-6 w-px bg-border" />
             <span className="text-sm font-medium text-muted-foreground">
               {user?.role === 'superadmin' ? 'Platform Management' : 'Dashboard'}
@@ -81,24 +91,24 @@ export function Header() {
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* Role Badge - shown on larger screens */}
+          {/* Role Badge - responsive sizing */}
           {user?.role && (
-            <Badge className={`${roleDetails.color} border-0 hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium shadow-sm`}>
+            <Badge className={`${roleDetails.color} border-0 flex items-center gap-1 px-2 py-1 text-xs font-medium shadow-sm hidden sm:flex`}>
               <RoleIcon className="h-3 w-3" />
-              <span className="hidden lg:inline">{roleDetails.label}</span>
-              <span className="lg:hidden">{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</span>
+              <span className="hidden md:inline">{roleDetails.label}</span>
+              <span className="md:hidden">{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</span>
             </Badge>
           )}
 
           {/* Tenant Info - for non-superadmin users */}
           {user?.tenantName && user.role !== 'superadmin' && (
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg border">
-              <Building2 className="h-3 w-3 text-slate-600" />
-              <span className="text-xs font-medium text-slate-700 truncate max-w-32">
+            <div className="hidden lg:flex items-center gap-2 px-2 py-1 bg-slate-50 dark:bg-slate-800 rounded-lg border text-xs">
+              <Building2 className="h-3 w-3 text-slate-600 dark:text-slate-400" />
+              <span className="font-medium text-slate-700 dark:text-slate-300 truncate max-w-24">
                 {user.tenantName}
               </span>
             </div>
@@ -107,61 +117,39 @@ export function Header() {
           {/* User Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full ring-2 ring-transparent hover:ring-purple-200 transition-all">
-                <Avatar className="h-9 w-9">
+              <Button variant="ghost" className="relative h-8 w-8 md:h-10 md:w-10 rounded-full ring-2 ring-transparent hover:ring-purple-200 transition-all">
+                <Avatar className="h-7 w-7 md:h-9 md:w-9">
                   <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`} alt={user?.name} />
-                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-sm font-semibold">
+                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-xs md:text-sm font-semibold">
                     {user?.name ? getInitials(user.name) : 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64" align="end" forceMount>
+            <DropdownMenuContent className="w-56 md:w-64" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`} alt={user?.name} />
-                      <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-xs font-semibold">
-                        {user?.name ? getInitials(user.name) : 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <p className="text-sm font-medium leading-none">{user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground mt-1">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Badge className={`${roleDetails.color} border-0 flex items-center gap-1 px-2 py-0.5 text-xs font-medium`}>
-                      <RoleIcon className="h-3 w-3" />
-                      {roleDetails.label}
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{user?.name}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user?.email}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge className={`${roleDetails.color} border-0 text-xs px-2 py-0.5`}>
+                      <RoleIcon className="h-3 w-3 mr-1" />
+                      {user?.role}
                     </Badge>
                   </div>
-
-                  {user?.tenantName && user.role !== 'superadmin' && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Building2 className="h-3 w-3" />
-                      <span className="truncate">{user.tenantName}</span>
-                    </div>
-                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem onClick={handleSettingsClick}>
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Account Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600 focus:text-red-600">
+              <DropdownMenuItem onClick={logout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign out</span>
+                <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

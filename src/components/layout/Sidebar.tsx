@@ -4,24 +4,15 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Fuel,
+  LayoutDashboard,
+  Building2,
   Gauge,
-  DollarSign,
+  BarChart3,
   Users,
   Settings,
   FileText,
-  Building2,
-  BarChart3,
-  Package,
-  Calculator,
-  TrendingUp,
-  CreditCard,
-  Truck,
-  Database,
-  UserPlus,
-  Plus,
-  Home,
-  PieChart,
-  AlertTriangle
+  DollarSign,
+  Package
 } from 'lucide-react';
 import {
   Sidebar,
@@ -38,204 +29,138 @@ import {
 } from '@/components/ui/sidebar';
 
 const getMenuItems = (role: string) => {
-  switch (role) {
-    case 'superadmin':
-      return [
-        {
-          title: "Platform Overview",
-          url: "/superadmin/overview",
-          icon: PieChart,
-          color: "text-purple-600",
-          bgColor: "bg-purple-50"
-        },
-        {
-          title: "Tenant Organizations",
-          url: "/superadmin/tenants",
-          icon: Building2,
-          color: "text-blue-600",
-          bgColor: "bg-blue-50"
-        },
-        {
-          title: "User Management",
-          url: "/superadmin/users",
-          icon: Users,
-          color: "text-green-600",
-          bgColor: "bg-green-50"
-        },
-        {
-          title: "Subscription Plans",
-          url: "/superadmin/plans",
-          icon: Package,
-          color: "text-orange-600",
-          bgColor: "bg-orange-50"
-        },
-        {
-          title: "Platform Analytics",
-          url: "/superadmin/analytics",
-          icon: BarChart3,
-          color: "text-indigo-600",
-          bgColor: "bg-indigo-50"
-        }
-      ];
-    
-    case 'owner':
-      return [
-        {
-          title: "Fuel Stations",
-          url: "/dashboard/stations",
-          icon: Building2,
-          color: "text-blue-600",
-          bgColor: "bg-blue-50"
-        },
-        {
-          title: "New Reading",
-          url: "/dashboard/readings/new",
-          icon: Plus,
-          color: "text-green-600",
-          bgColor: "bg-green-50"
-        },
-        {
-          title: "Sales & Revenue",
-          url: "/dashboard/sales",
-          icon: TrendingUp,
-          color: "text-emerald-600",
-          bgColor: "bg-emerald-50"
-        },
-        {
-          title: "Daily Reconciliation",
-          url: "/dashboard/reconciliation",
-          icon: Calculator,
-          color: "text-indigo-600",
-          bgColor: "bg-indigo-50"
-        },
-        {
-          title: "Credit Management",
-          url: "/dashboard/creditors",
-          icon: CreditCard,
-          color: "text-red-600",
-          bgColor: "bg-red-50"
-        },
-        {
-          title: "Fuel Pricing",
-          url: "/dashboard/fuel-prices",
-          icon: Fuel,
-          color: "text-amber-600",
-          bgColor: "bg-amber-50"
-        },
-        {
-          title: "Fuel Deliveries",
-          url: "/dashboard/fuel-deliveries",
-          icon: Truck,
-          color: "text-cyan-600",
-          bgColor: "bg-cyan-50"
-        },
-        {
-          title: "Inventory Tracking",
-          url: "/dashboard/fuel-inventory",
-          icon: Database,
-          color: "text-teal-600",
-          bgColor: "bg-teal-50"
-        },
-        {
-          title: "System Alerts",
-          url: "/dashboard/alerts",
-          icon: AlertTriangle,
-          color: "text-orange-600",
-          bgColor: "bg-orange-50"
-        }
-      ];
-    
-    case 'manager':
-      return [
-        {
-          title: "Fuel Stations",
-          url: "/dashboard/stations",
-          icon: Building2,
-          color: "text-blue-600",
-          bgColor: "bg-blue-50"
-        },
-        {
-          title: "New Reading",
-          url: "/dashboard/readings/new",
-          icon: Plus,
-          color: "text-green-600",
-          bgColor: "bg-green-50"
-        },
-        {
-          title: "Sales & Revenue",
-          url: "/dashboard/sales",
-          icon: TrendingUp,
-          color: "text-emerald-600",
-          bgColor: "bg-emerald-50"
-        },
-        {
-          title: "Daily Reconciliation",
-          url: "/dashboard/reconciliation",
-          icon: Calculator,
-          color: "text-indigo-600",
-          bgColor: "bg-indigo-50"
-        },
-        {
-          title: "Credit Management",
-          url: "/dashboard/creditors",
-          icon: CreditCard,
-          color: "text-red-600",
-          bgColor: "bg-red-50"
-        },
-        {
-          title: "Fuel Pricing",
-          url: "/dashboard/fuel-prices",
-          icon: Fuel,
-          color: "text-amber-600",
-          bgColor: "bg-amber-50"
-        },
-        {
-          title: "Fuel Deliveries",
-          url: "/dashboard/fuel-deliveries",
-          icon: Truck,
-          color: "text-cyan-600",
-          bgColor: "bg-cyan-50"
-        },
-        {
-          title: "Inventory Tracking",
-          url: "/dashboard/fuel-inventory",
-          icon: Database,
-          color: "text-teal-600",
-          bgColor: "bg-teal-50"
-        }
-      ];
-    
-    case 'attendant':
-      return [
-        {
-          title: "New Reading Entry",
-          url: "/dashboard/readings/new",
-          icon: Plus,
-          color: "text-green-600",
-          bgColor: "bg-green-50"
-        },
-        {
-          title: "Credit Sales", 
-          url: "/dashboard/creditors",
-          icon: CreditCard,
-          color: "text-purple-600",
-          bgColor: "bg-purple-50"
-        }
-      ];
-    
-    default:
-      return [];
-  }
+  const baseItems = [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: LayoutDashboard,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50 dark:bg-blue-950"
+    }
+  ];
+
+  const roleSpecificItems = {
+    owner: [
+      {
+        title: "Stations",
+        url: "/dashboard/stations",
+        icon: Building2,
+        color: "text-green-600",
+        bgColor: "bg-green-50 dark:bg-green-950"
+      },
+      {
+        title: "Pumps & Nozzles",
+        url: "/dashboard/pumps",
+        icon: Gauge,
+        color: "text-purple-600",
+        bgColor: "bg-purple-50 dark:bg-purple-950"
+      },
+      {
+        title: "Fuel Prices",
+        url: "/dashboard/fuel-prices",
+        icon: DollarSign,
+        color: "text-yellow-600",
+        bgColor: "bg-yellow-50 dark:bg-yellow-950"
+      },
+      {
+        title: "Readings",
+        url: "/dashboard/readings",
+        icon: FileText,
+        color: "text-indigo-600",
+        bgColor: "bg-indigo-50 dark:bg-indigo-950"
+      },
+      {
+        title: "Fuel Inventory",
+        url: "/dashboard/fuel-inventory",
+        icon: Package,
+        color: "text-orange-600",
+        bgColor: "bg-orange-50 dark:bg-orange-950"
+      },
+      {
+        title: "Analytics",
+        url: "/dashboard/analytics",
+        icon: BarChart3,
+        color: "text-pink-600",
+        bgColor: "bg-pink-50 dark:bg-pink-950"
+      },
+      {
+        title: "User Management",
+        url: "/dashboard/users",
+        icon: Users,
+        color: "text-cyan-600",
+        bgColor: "bg-cyan-50 dark:bg-cyan-950"
+      }
+    ],
+    manager: [
+      {
+        title: "Stations",
+        url: "/dashboard/stations",
+        icon: Building2,
+        color: "text-green-600",
+        bgColor: "bg-green-50 dark:bg-green-950"
+      },
+      {
+        title: "Readings",
+        url: "/dashboard/readings",
+        icon: FileText,
+        color: "text-indigo-600",
+        bgColor: "bg-indigo-50 dark:bg-indigo-950"
+      },
+      {
+        title: "Fuel Inventory",
+        url: "/dashboard/fuel-inventory",
+        icon: Package,
+        color: "text-orange-600",
+        bgColor: "bg-orange-50 dark:bg-orange-950"
+      },
+      {
+        title: "Analytics",
+        url: "/dashboard/analytics",
+        icon: BarChart3,
+        color: "text-pink-600",
+        bgColor: "bg-pink-50 dark:bg-pink-950"
+      }
+    ],
+    attendant: [
+      {
+        title: "Readings",
+        url: "/dashboard/readings",
+        icon: FileText,
+        color: "text-indigo-600",
+        bgColor: "bg-indigo-50 dark:bg-indigo-950"
+      },
+      {
+        title: "Fuel Inventory",
+        url: "/dashboard/fuel-inventory",
+        icon: Package,
+        color: "text-orange-600",
+        bgColor: "bg-orange-50 dark:bg-orange-950"
+      }
+    ]
+  };
+
+  const settingsItem = {
+    title: "Settings",
+    url: "/dashboard/settings",
+    icon: Settings,
+    color: "text-gray-600",
+    bgColor: "bg-gray-50 dark:bg-gray-950"
+  };
+
+  return [
+    ...baseItems,
+    ...(roleSpecificItems[role as keyof typeof roleSpecificItems] || []),
+    settingsItem
+  ];
 };
 
 export function AppSidebar() {
   const { user } = useAuth();
   const location = useLocation();
   const { setOpenMobile, isMobile } = useSidebar();
-  
-  const menuItems = getMenuItems(user?.role || '');
 
-  // Close mobile sidebar when a menu item is clicked
+  const menuItems = getMenuItems(user?.role || 'attendant');
+
   const handleMenuItemClick = () => {
     if (isMobile) {
       setOpenMobile(false);
@@ -243,39 +168,27 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r-0 shadow-xl">
-      <SidebarHeader className="p-6 bg-gradient-to-br from-slate-50 to-blue-50">
+    <Sidebar className="border-r-0 shadow-xl bg-white dark:bg-gray-950">
+      <SidebarHeader className="p-6 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-lg">
+          <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
             <Fuel className="h-6 w-6 text-white" />
           </div>
           <div className="flex-1">
-            <span className="font-bold text-xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               FuelSync Hub
             </span>
             <div className="text-xs text-muted-foreground font-medium">
-              Fuel Station ERP
+              {user?.tenantName || 'Dashboard'}
             </div>
           </div>
         </div>
-        
-        {/* Tenant info moved to smaller section */}
-        {user?.tenantName && user.role !== 'superadmin' && (
-          <div className="p-3 bg-white/80 backdrop-blur-sm rounded-lg border border-white/20 shadow-sm">
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-1">
-              Organization
-            </div>
-            <div className="font-semibold text-sm text-gray-800 truncate">
-              {user.tenantName}
-            </div>
-          </div>
-        )}
       </SidebarHeader>
       
       <SidebarContent className="px-3 py-4">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
-            {user?.role === 'superadmin' ? 'Platform Management' : 'Navigation'}
+            Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
@@ -289,13 +202,13 @@ export function AppSidebar() {
                         "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group hover:shadow-md",
                         location.pathname === item.url 
                           ? `${item.bgColor} ${item.color} font-semibold shadow-sm border border-current/20` 
-                          : "hover:bg-gray-50 text-gray-700 hover:text-gray-900"
+                          : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
                       )}
                     >
                       <div className={cn(
                         "p-2 rounded-lg transition-all duration-200",
                         location.pathname === item.url 
-                          ? `${item.color} bg-white/80 shadow-sm` 
+                          ? `${item.color} bg-white/80 dark:bg-gray-900/80 shadow-sm` 
                           : `${item.color} ${item.bgColor} group-hover:shadow-sm`
                       )}>
                         <item.icon className="h-4 w-4" />
@@ -312,7 +225,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 border-t border-gray-100">
+      <SidebarFooter className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950 border-t border-gray-100 dark:border-gray-800">
         <div className="text-center space-y-2">
           <div className="text-xs text-muted-foreground font-medium">
             Powered by FuelSync Hub
