@@ -131,7 +131,7 @@ export default function CreateNozzlePage() {
 
   const pumpOptions = pumps.map(pump => ({
     value: pump.id,
-    label: `${pump.label} (${pump.serialNumber})`,
+    label: `${pump.name} (${pump.serialNumber})`,
   }));
 
   const fuelTypeOptions = [

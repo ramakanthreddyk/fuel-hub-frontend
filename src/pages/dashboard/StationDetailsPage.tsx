@@ -212,7 +212,7 @@ export default function StationDetailsPage() {
               {pumps.map((pump) => (
                 <Card key={pump.id} className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">{pump.label}</h4>
+                    <h4 className="font-semibold">{pump.name}</h4>
                     <Badge 
                       variant={pump.status === 'active' ? 'default' : 'secondary'}
                       className={

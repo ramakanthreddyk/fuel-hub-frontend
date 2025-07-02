@@ -13,8 +13,10 @@ import { stationsApi } from '@/api/stations';
 import { pumpsApi } from '@/api/pumps';
 import { nozzlesApi } from '@/api/nozzles';
 import { creditorsApi } from '@/api/creditors';
-import { useCreateReading, useLatestReading } from '@/hooks/useReadings';
-import { useCanCreateReading, useStationPriceValidation } from '@/hooks/useFuelPriceValidation';
+import { useCreateContractReading, useContractLatestReading, useContractCanCreateReading } from '@/hooks/useContractReadings';
+import { useContractPumps } from '@/hooks/useContractPumps';
+import { useContractNozzles } from '@/hooks/useContractNozzles';
+import { useStationPriceValidation } from '@/hooks/useFuelPriceValidation';
 import { CreateReadingRequest } from '@/api/readings';
 import { AlertTriangle, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -49,37 +51,23 @@ export function ReadingEntryForm() {
     },
   });
 
-  const createReading = useCreateReading();
+  const createReading = useCreateContractReading();
 
-  // Fetch data for dropdowns
+  // Fetch data for dropdowns using contract services
   const { data: stations } = useQuery({
     queryKey: ['stations'],
     queryFn: () => stationsApi.getStations(),
   });
 
-  const { data: pumps } = useQuery({
-    queryKey: ['pumps', selectedStation],
-    queryFn: () => pumpsApi.getPumps(selectedStation),
-    enabled: !!selectedStation,
-  });
-
-  const { data: nozzles = [] } = useQuery({
-    queryKey: ['nozzles', selectedPump],
-    queryFn: async () => {
-      if (!selectedPump) return [];
-      const result = await nozzlesApi.getNozzles(selectedPump);
-      console.log('[READING-FORM] Fetched nozzles:', result);
-      return Array.isArray(result) ? result : [];
-    },
-    enabled: !!selectedPump,
-  });
+  const { data: pumps } = useContractPumps(selectedStation);
+  const { data: nozzles = [] } = useContractNozzles(selectedPump);
 
   const { data: creditors } = useQuery({
     queryKey: ['creditors'],
     queryFn: creditorsApi.getCreditors,
   });
 
-  const { data: latestReading } = useLatestReading(selectedNozzle);
+  const { data: latestReading } = useContractLatestReading(selectedNozzle);
 
   const paymentMethod = form.watch('paymentMethod');
 
@@ -129,7 +117,7 @@ export function ReadingEntryForm() {
   };
 
   // Add fuel price validation with better error handling
-  const { data: canCreateReading, isLoading: loadingCanCreate } = useCanCreateReading(selectedNozzle);
+  const { data: canCreateReading, isLoading: loadingCanCreate } = useContractCanCreateReading(selectedNozzle);
   const { data: stationPriceValidation, isLoading: loadingPriceValidation } = useStationPriceValidation(selectedStation);
   
   // Debug validation data
@@ -210,7 +198,7 @@ export function ReadingEntryForm() {
                   <SelectContent>
                     {pumps?.map((pump) => (
                       <SelectItem key={pump.id} value={pump.id}>
-                        {pump.label} {pump.serialNumber ? `(${pump.serialNumber})` : ''}
+                        {pump.name} {pump.serialNumber ? `(${pump.serialNumber})` : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>

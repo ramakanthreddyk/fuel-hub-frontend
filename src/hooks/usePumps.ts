@@ -35,7 +35,7 @@ export const useCreatePump = () => {
       
       toast({
         title: "Success",
-        description: `Pump "${newPump.label}" created successfully`,
+        description: `Pump "${newPump.name}" created successfully`,
       });
     },
     onError: (error: any) => {

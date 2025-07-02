@@ -124,7 +124,7 @@ export interface CreateStationRequest {
 
 export interface Pump {
   id: string;
-  label: string;
+  name: string;
   serialNumber: string;
   status: 'active' | 'inactive' | 'maintenance';
   stationId: string;
@@ -135,7 +135,7 @@ export interface Pump {
 }
 
 export interface CreatePumpRequest {
-  label: string;
+  name: string;
   serialNumber: string;
   status?: 'active' | 'inactive' | 'maintenance'; // Optional, defaults to 'active'
   stationId: string;
@@ -304,7 +304,7 @@ export interface AttendantStation {
 
 export interface AttendantPump {
   id: string;
-  label: string;
+  name: string;
   serialNumber: string;
   status: 'active' | 'inactive' | 'maintenance';
   stationId: string;
@@ -318,7 +318,7 @@ export interface AttendantNozzle {
   fuelType: 'petrol' | 'diesel' | 'premium';
   status: 'active' | 'inactive' | 'maintenance';
   pumpId: string;
-  pumpLabel: string;
+  pumpName: string;
   stationId: string;
   stationName: string;
 }

@@ -208,7 +208,7 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
                                     <div className="flex items-center gap-2">
                                       <Fuel className="h-4 w-4 text-blue-600" />
                                       <div className="text-left">
-                                        <div className="font-medium">{pump.label}</div>
+                                        <div className="font-medium">{pump.name}</div>
                                         <div className="text-sm text-muted-foreground">
                                           {pump.nozzleCount || 0} nozzles
                                           {pump.serialNumber && ` • SN: ${pump.serialNumber}`}

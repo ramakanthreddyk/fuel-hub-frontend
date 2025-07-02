@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 interface Pump {
   id: string;
-  label: string;
+  name: string;
   serialNumber?: string;
   status: 'active' | 'inactive' | 'maintenance';
   nozzleCount: number;
@@ -65,7 +65,7 @@ export function EnhancedFuelPumpCard({ pump, onViewNozzles, onSettings }: Enhanc
               )}
             </div>
             <div>
-              <CardTitle className="text-lg font-bold text-gray-900">{pump.label}</CardTitle>
+              <CardTitle className="text-lg font-bold text-gray-900">{pump.name}</CardTitle>
               {pump.serialNumber && (
                 <p className="text-sm text-gray-500 font-medium">S/N: {pump.serialNumber}</p>
               )}
@@ -89,7 +89,7 @@ export function EnhancedFuelPumpCard({ pump, onViewNozzles, onSettings }: Enhanc
                 <div className="absolute top-3 left-2 right-2 h-8 bg-black rounded border border-slate-500 flex items-center justify-center">
                   <div className="text-green-400 font-mono text-xs text-center leading-tight">
                     <div className="text-[8px] opacity-75">PUMP</div>
-                    <div className="font-bold">{pump.label}</div>
+                    <div className="font-bold">{pump.name}</div>
                   </div>
                 </div>
                 

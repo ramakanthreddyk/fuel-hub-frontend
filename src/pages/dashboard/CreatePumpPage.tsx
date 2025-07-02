@@ -16,7 +16,7 @@ import { pumpsApi } from '@/api/pumps';
 import { ownerService } from '@/api/contract/owner.service';
 
 const createPumpSchema = z.object({
-  label: z.string().min(1, 'Pump label is required'),
+  name: z.string().min(1, 'Pump name is required'),
   stationId: z.string().min(1, 'Station selection is required'),
   serialNumber: z.string().min(1, 'Serial number is required'),
 });
@@ -34,7 +34,7 @@ export default function CreatePumpPage() {
   const form = useForm<CreatePumpForm>({
     resolver: zodResolver(createPumpSchema),
     defaultValues: {
-      label: '',
+      name: '',
       stationId: stationIdFromUrl || '',
       serialNumber: '',
     },
@@ -42,23 +42,12 @@ export default function CreatePumpPage() {
 
   const onSubmit = async (data: CreatePumpForm) => {
     try {
-      // Try using the owner service first (for owner role)
-      try {
-        await ownerService.createPump({
-          label: data.label,
-          stationId: data.stationId,
-          serialNumber: data.serialNumber,
-          status: 'active',
-        });
-      } catch (ownerError) {
-        // Fall back to pumpsApi if owner service fails
-        await pumpsApi.createPump({
-          label: data.label,
-          stationId: data.stationId,
-          serialNumber: data.serialNumber,
-          status: 'active',
-        });
-      }
+      // Use contract-compliant API call (OpenAPI uses 'name' field)
+      await pumpsApi.createPump({
+        name: data.name,
+        stationId: data.stationId,
+        serialNumber: data.serialNumber,
+      });
       
       toast({
         title: "Success",
@@ -152,13 +141,13 @@ export default function CreatePumpPage() {
 
                 <FormField
                   control={form.control}
-                  name="label"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pump Label *</FormLabel>
+                      <FormLabel>Pump Name *</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter pump label"
+                          placeholder="Enter pump name"
                           {...field}
                         />
                       </FormControl>

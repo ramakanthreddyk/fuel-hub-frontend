@@ -122,18 +122,24 @@ const normalizeData = (data: any) => ({
 - `src/pages/dashboard/CreatePumpPage.tsx`
 - `src/pages/dashboard/CreateNozzlePage.tsx`
 
-### Issue #2: API Contract Drift
+### Issue #2: API Contract Drift (RESOLVED)
 **Date**: 2025-01-02
 **Problem**: Frontend types don't match OpenAPI specification
 **Root Cause**: Manual type definitions instead of generated types
 **Resolution**: 
-- Identified critical schema mismatches
-- Created migration strategy for gradual alignment
-- Implemented dual API support during transition
+- ✅ Fixed critical schema mismatches (pump `name` vs `label`)
+- ✅ Created contract-aligned services for pumps, nozzles, readings
+- ✅ Updated all components to use correct field names
+- ✅ Implemented new React Query hooks for contract services
+- ✅ Fixed ReadingEntryForm nozzle dropdown issue
 
-**Next Steps**:
-- Implement automated type generation from OpenAPI spec
-- Complete service migration to contract-first approach
+**Files Changed**:
+- `src/api/api-contract.ts` - Updated Pump interface to use `name`
+- `src/api/contract/pumps.service.ts` - New contract service
+- `src/api/contract/nozzles.service.ts` - New contract service  
+- `src/api/contract/readings.service.ts` - New contract service
+- `src/hooks/useContract*.ts` - New contract hooks
+- `src/components/readings/ReadingEntryForm.tsx` - Fixed nozzle dropdown
 
 ## Development Workflow
 
