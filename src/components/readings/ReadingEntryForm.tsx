@@ -123,16 +123,20 @@ export function ReadingEntryForm() {
     }
   };
 
-  // Add fuel price validation
-  const { data: canCreateReading } = useCanCreateReading(selectedNozzle);
-  const { data: stationPriceValidation } = useStationPriceValidation(selectedStation);
+  // Add fuel price validation with better error handling
+  const { data: canCreateReading, isLoading: loadingCanCreate } = useCanCreateReading(selectedNozzle);
+  const { data: stationPriceValidation, isLoading: loadingPriceValidation } = useStationPriceValidation(selectedStation);
+  
+  // Debug validation data
+  console.log('Station price validation:', stationPriceValidation);
+  console.log('Can create reading:', canCreateReading);
 
   const selectedNozzleData = Array.isArray(nozzles) ? nozzles.find(n => n.id === selectedNozzle) : null;
   const minReading = latestReading?.reading || 0;
 
-  // Check if we can create reading
-  const canSubmit = canCreateReading?.canCreate !== false;
-  const hasMissingPrices = !canCreateReading?.canCreate && canCreateReading?.missingPrice;
+  // Check if we can create reading - default to true if data is still loading
+  const canSubmit = loadingCanCreate ? true : canCreateReading?.canCreate !== false;
+  const hasMissingPrices = !loadingCanCreate && !canCreateReading?.canCreate && canCreateReading?.missingPrice;
 
   return (
     <Card className="max-w-5xl mx-auto">
@@ -144,14 +148,15 @@ export function ReadingEntryForm() {
       </CardHeader>
       <CardContent>
         {/* Fuel Price Warnings */}
-        {stationPriceValidation && !stationPriceValidation.hasActivePrices && (
+        {/* Only show warning if we have selected a station and validation data shows missing prices */}
+        {selectedStation && stationPriceValidation && stationPriceValidation.hasActivePrices === false && (
           <Alert className="mb-6 border-red-200 bg-red-50">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              <strong>Missing Fuel Prices!</strong> This station is missing fuel prices. {' '}
-              {stationPriceValidation.missingFuelTypes && Array.isArray(stationPriceValidation.missingFuelTypes) ? 
-                `Missing types: ${stationPriceValidation.missingFuelTypes.join(', ')}. ` : 
-                ''}
+              <strong>Missing Fuel Prices!</strong>{' '}
+              {stationPriceValidation.missingFuelTypes && Array.isArray(stationPriceValidation.missingFuelTypes) && stationPriceValidation.missingFuelTypes.length > 0 ? 
+                `This station is missing prices for: ${stationPriceValidation.missingFuelTypes.join(', ')}. ` : 
+                'This station has no active fuel prices. '}
               <Link to="/dashboard/fuel-prices" className="underline font-medium">
                 Update fuel prices here
               </Link> before recording readings.
@@ -159,7 +164,7 @@ export function ReadingEntryForm() {
           </Alert>
         )}
 
-        {hasMissingPrices && (
+        {selectedNozzle && hasMissingPrices && (
           <Alert className="mb-6 border-orange-200 bg-orange-50">
             <DollarSign className="h-4 w-4 text-orange-600" />
             <AlertDescription className="text-orange-800">
