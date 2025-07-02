@@ -1,7 +1,10 @@
 import axios from 'axios';
 
-// Get the backend URL from environment variables or use the Azure URL
+// Get the backend URL from environment variables or use the correct API URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
+
+// Log the API base URL for debugging
+console.log(`[API-CLIENT] Using API base URL: ${API_BASE_URL}/api/v1`);
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
@@ -55,6 +58,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     console.log(`[API-CLIENT] Response received from: ${response.config.url}`, response.status);
+    console.log('[API-CLIENT] Response data:', response.data);
     return response;
   },
   (error) => {
