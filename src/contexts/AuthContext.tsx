@@ -48,6 +48,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (token && storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
+          console.log('[AUTH-CONTEXT] User restored from storage:', parsedUser);
+        } else {
+          console.log('[AUTH-CONTEXT] No stored auth data found');
         }
       } catch (error) {
         console.error('[AUTH-CONTEXT] Error initializing auth:', error);
@@ -65,6 +68,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string, isAdminLogin = false) => {
     try {
       setIsLoading(true);
+      console.log('[AUTH-CONTEXT] Attempting login:', { email, isAdminLogin });
+      
       const response = await authApi.login({ email, password }, isAdminLogin);
       
       const { user: authUser, token } = response;
@@ -74,12 +79,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem('fuelsync_user', JSON.stringify(authUser));
       
       setUser(authUser);
+      console.log('[AUTH-CONTEXT] Login successful:', authUser);
       
       // Navigate based on role with proper route
       if (authUser.role === 'superadmin') {
-        navigate('/superadmin', { replace: true });
+        navigate('/superadmin/overview', { replace: true });
       } else {
-        // For owner, manager, attendant - go to dashboard summary
+        // For owner, manager, attendant - go to dashboard
         navigate('/dashboard', { replace: true });
       }
     } catch (error: any) {
@@ -92,6 +98,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
+      console.log('[AUTH-CONTEXT] Logging out user');
       await authApi.logout();
     } catch (error) {
       console.error('[AUTH-CONTEXT] Logout error:', error);

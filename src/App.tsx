@@ -11,6 +11,7 @@ import { SuperAdminLayout } from './components/layout/SuperAdminLayout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 // Pages
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import StationsPage from './pages/dashboard/StationsPage';
@@ -42,6 +43,8 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  console.log('[APP] App component mounting');
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="fuelsync-ui-theme">
@@ -49,6 +52,9 @@ function App() {
           <Router>
             <div className="min-h-screen bg-background">
               <Routes>
+                {/* Root Landing Route */}
+                <Route path="/" element={<LandingPage />} />
+                
                 {/* Public Routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/login/admin" element={<LoginPage />} />
@@ -93,9 +99,8 @@ function App() {
                   <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
                 </Route>
 
-                {/* Default Redirects */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="*" element={<Navigate to="/login" replace />} />
+                {/* Fallback Route */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
               
               <Toaster />

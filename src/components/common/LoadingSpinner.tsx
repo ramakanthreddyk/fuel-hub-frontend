@@ -1,45 +1,26 @@
 
-import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
-  label?: string;
 }
 
-/**
- * Accessible loading spinner component with customizable size and labeling
- * 
- * @param size - Size variant: 'sm' (16px), 'md' (24px), 'lg' (32px)
- * @param className - Additional CSS classes
- * @param label - Accessible label for screen readers
- */
-export function LoadingSpinner({ 
-  size = 'md', 
-  className, 
-  label = 'Loading...' 
-}: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
-    md: 'h-6 w-6', 
-    lg: 'h-8 w-8'
+    md: 'h-8 w-8',
+    lg: 'h-12 w-12'
   };
 
   return (
-    <div 
-      className="flex items-center justify-center"
-      role="status"
-      aria-label={label}
-    >
-      <Loader2 
+    <div className={cn('flex items-center justify-center', className)}>
+      <div
         className={cn(
-          'animate-spin text-muted-foreground',
-          sizeClasses[size],
-          className
+          'animate-spin rounded-full border-2 border-blue-200 border-t-blue-600',
+          sizeClasses[size]
         )}
       />
-      <span className="sr-only">{label}</span>
     </div>
   );
 }
