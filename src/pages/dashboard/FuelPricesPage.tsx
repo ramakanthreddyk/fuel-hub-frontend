@@ -1,26 +1,32 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, RefreshCw } from 'lucide-react';
 import { FuelPriceTable } from '@/components/fuel-prices/FuelPriceTable';
 import { FuelPriceForm } from '@/components/fuel-prices/FuelPriceForm';
 import { PageHeader } from '@/components/ui/page-header';
 import { TooltipWrapper } from '@/components/ui/tooltip-wrapper';
+import { useFuelPrices } from '@/hooks/useFuelPrices';
 
 /**
  * Fuel Prices management page
  * 
  * Features:
  * - Toggle between table view and form
- * - Accessible page structure with proper headings
- * - Responsive layout with mobile-friendly actions
+ * - Responsive layout for mobile/tablet/desktop
+ * - Real-time data with refresh capability
  * - Clear user feedback and navigation
  */
 export default function FuelPricesPage() {
   const [showForm, setShowForm] = useState(false);
+  const { refetch, isLoading } = useFuelPrices();
 
   const handleToggleForm = () => {
     setShowForm(!showForm);
+  };
+
+  const handleRefresh = () => {
+    refetch();
   };
 
   return (
@@ -29,39 +35,56 @@ export default function FuelPricesPage() {
         title="Fuel Prices"
         description="Manage and monitor fuel pricing across all stations"
         actions={
-          <TooltipWrapper 
-            content={showForm ? "Cancel price update" : "Update fuel prices"}
-          >
-            <Button 
-              onClick={handleToggleForm}
-              variant={showForm ? 'outline' : 'default'}
-              aria-label={showForm ? 'Cancel price update' : 'Update fuel prices'}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <TooltipWrapper content="Refresh fuel prices">
+              <Button 
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+                disabled={isLoading}
+                aria-label="Refresh fuel prices"
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
+              </Button>
+            </TooltipWrapper>
+            
+            <TooltipWrapper 
+              content={showForm ? "Cancel price update" : "Update fuel prices"}
             >
-              {showForm ? (
-                <>
-                  <X className="mr-2 h-4 w-4" />
-                  Cancel
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Update Prices
-                </>
-              )}
-            </Button>
-          </TooltipWrapper>
+              <Button 
+                onClick={handleToggleForm}
+                variant={showForm ? 'outline' : 'default'}
+                size="sm"
+                aria-label={showForm ? 'Cancel price update' : 'Update fuel prices'}
+              >
+                {showForm ? (
+                  <>
+                    <X className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Cancel</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Update Prices</span>
+                    <span className="sm:hidden">Add</span>
+                  </>
+                )}
+              </Button>
+            </TooltipWrapper>
+          </div>
         }
       />
 
       {/* Price Update Form */}
       {showForm && (
-        <div className="max-w-4xl">
+        <div className="w-full">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-foreground">
               Update Fuel Prices
             </h2>
             <p className="text-sm text-muted-foreground">
-              Set new prices that will apply to all stations
+              Set new prices that will apply to the selected station
             </p>
           </div>
           <FuelPriceForm />

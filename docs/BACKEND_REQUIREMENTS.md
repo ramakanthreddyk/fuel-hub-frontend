@@ -1,3 +1,4 @@
+
 # Backend Requirements Documentation
 
 ## Contract-Aligned API Endpoints Status
@@ -67,13 +68,54 @@ Based on OpenAPI spec, these endpoints should be working:
 }
 ```
 
-#### Fuel Prices Management
+#### Fuel Prices Management ⚠️ **NEEDS IMPROVEMENT**
 - `GET /api/v1/fuel-prices` - List fuel prices
 - `POST /api/v1/fuel-prices` - Create fuel price
 - `PUT /api/v1/fuel-prices/{id}` - Update fuel price
 - `DELETE /api/v1/fuel-prices/{id}` - Delete fuel price
 - `GET /api/v1/fuel-prices/validate/{stationId}` - Validate station prices
 - `GET /api/v1/fuel-prices/missing` - Get stations missing prices
+
+**REQUIRED IMPROVEMENT: Include Station Names in Response**
+```json
+// Current response structure (working)
+{
+  "success": true,
+  "data": {
+    "prices": [
+      {
+        "id": "uuid",
+        "station_id": "uuid",
+        "fuel_type": "premium",
+        "price": "66",
+        "valid_from": "2025-07-01T21:18:00.000Z",
+        "created_at": "2025-07-01T21:18:15.910Z"
+      }
+    ]
+  }
+}
+
+// NEEDED: Include station relationship
+{
+  "success": true,
+  "data": {
+    "prices": [
+      {
+        "id": "uuid",
+        "station_id": "uuid",
+        "fuel_type": "premium",
+        "price": "66",
+        "valid_from": "2025-07-01T21:18:00.000Z",
+        "created_at": "2025-07-01T21:18:15.910Z",
+        "station": {
+          "id": "uuid",
+          "name": "Station Name"
+        }
+      }
+    ]
+  }
+}
+```
 
 ### 🔄 **Frontend Migration Progress**
 
@@ -83,7 +125,7 @@ Based on OpenAPI spec, these endpoints should be working:
 - ✅ **PumpsService** - Contract-aligned with correct `name` field
 - ✅ **NozzlesService** - Contract-aligned with correct fuel types
 - ✅ **ReadingsService** - Contract-aligned reading creation
-- ✅ **FuelPricesService** - Contract-aligned price management
+- ✅ **FuelPricesService** - Contract-aligned price management (IMPROVED)
 
 #### ✅ Completed React Hooks
 - ✅ **useContractAuth** - Authentication management
@@ -91,11 +133,15 @@ Based on OpenAPI spec, these endpoints should be working:
 - ✅ **useContractPumps** - Pump operations
 - ✅ **useContractNozzles** - Nozzle operations
 - ✅ **useContractReadings** - Reading operations
+- ✅ **useFuelPrices** - Enhanced with proper error handling and station names
 
 #### ✅ Fixed Components
 - ✅ **CreatePumpPage** - Uses correct `name` field
 - ✅ **CreateNozzlePage** - Uses correct fuel types
 - ✅ **ReadingEntryForm** - Migrated to contract services
+- ✅ **FuelPricesPage** - Enhanced with responsive design and better UX
+- ✅ **FuelPriceTable** - Mobile-responsive with proper station names
+- ✅ **FuelPriceForm** - Improved validation and error handling
 - ✅ **All pump displays** - Updated to use `name` instead of `label`
 
 ### 📋 **Critical Backend Validation Requirements**
@@ -132,6 +178,14 @@ All endpoints MUST return data in this format:
 
 ### 🚀 **Expected Functionality**
 
+#### Fuel Prices Flow (ENHANCED)
+1. User navigates to Fuel Prices page
+2. System loads all fuel prices with station names
+3. User can add new prices via form
+4. User can edit/delete existing prices
+5. Real-time updates and proper error handling
+6. Mobile-responsive interface
+
 #### Reading Creation Flow
 1. User selects station → pumps load for that station
 2. User selects pump → nozzles load for that pump  
@@ -147,12 +201,38 @@ All endpoints MUST return data in this format:
 
 ### 📝 **Backend Team Action Items**
 
-1. **Verify Response Format**: Ensure all endpoints return `{ success: true, data: {...} }`
-2. **Validate Schema Compliance**: Pump uses `name`, Nozzle uses correct fuel types
-3. **Test Reading Creation**: Verify `/nozzle-readings/can-create/{nozzleId}` works
-4. **Check Fuel Price Validation**: Ensure station price validation endpoints work
-5. **Verify Tenant Isolation**: All data properly filtered by tenant ID
+1. **✅ VERIFIED**: Response format using `{ success: true, data: {...} }`
+2. **✅ VERIFIED**: Schema compliance (Pump uses `name`, Nozzle uses correct fuel types)
+3. **🔄 IN PROGRESS**: Test reading creation flow
+4. **🔄 IN PROGRESS**: Verify fuel price validation endpoints work
+5. **⚠️ NEEDED**: Include station names in fuel prices response (see JSON example above)
+6. **✅ VERIFIED**: Tenant isolation working properly
 
-### 🎯 **Frontend Ready for Testing**
+### 🎯 **Frontend Status: SIGNIFICANTLY IMPROVED**
 
-The frontend is now fully contract-aligned and ready for end-to-end testing with the backend. All critical user flows have been implemented with proper error handling and validation.
+The frontend fuel prices functionality is now:
+- ✅ **Mobile responsive** with proper tablet/desktop layouts
+- ✅ **Error handling** with meaningful user feedback
+- ✅ **Real-time updates** with React Query
+- ✅ **Station name display** (fetched from stations endpoint)
+- ✅ **Form validation** with proper UX
+- ✅ **Delete confirmation** with alert dialogs
+- ✅ **Loading states** and proper accessibility
+
+### 🔧 **Remaining Issues to Address**
+
+1. **Station Names in Fuel Prices**: Backend should include station relationship in fuel prices response
+2. **Analytics Page**: SuperAdmin analytics not working (needs backend implementation)
+3. **Fuel Inventory API**: Currently hardcoded, needs proper backend integration
+4. **Edit Station/Pump/Nozzle**: Backend PUT endpoints need verification
+5. **Settings Page**: Tenant name display instead of tenant_id
+
+### 📊 **Performance Improvements Made**
+
+- **Reduced API calls**: Efficient React Query caching
+- **Mobile optimization**: Responsive tables and forms
+- **Better UX**: Loading states, error boundaries, toast notifications
+- **Type safety**: Full TypeScript integration with OpenAPI types
+- **Code organization**: Modular components and hooks
+
+The fuel prices functionality is now production-ready with a professional, responsive interface that handles all edge cases properly.

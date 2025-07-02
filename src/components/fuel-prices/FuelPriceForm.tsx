@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateFuelPrice } from '@/hooks/useFuelPrices';
 import { useStations } from '@/hooks/useStations';
+import { AlertCircle, Building2, Fuel, Calendar } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function FuelPriceForm() {
   const [stationId, setStationId] = useState('');
@@ -15,65 +17,124 @@ export function FuelPriceForm() {
   const [validFrom, setValidFrom] = useState(new Date().toISOString().slice(0, 16));
   
   const createFuelPrice = useCreateFuelPrice();
-  const { data: stations = [] } = useStations();
+  const { data: stations = [], isLoading: stationsLoading, error: stationsError } = useStations();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!stationId || !price || Number(price) <= 0) return;
+    if (!stationId || !price || Number(price) <= 0) {
+      return;
+    }
 
-    createFuelPrice.mutate({
-      stationId,
-      fuelType,
-      price: Number(price),
-      validFrom,
-    });
+    try {
+      await createFuelPrice.mutateAsync({
+        stationId,
+        fuelType,
+        price: Number(price),
+        validFrom,
+      });
 
-    // Reset form on success
-    setPrice('');
-    setValidFrom(new Date().toISOString().slice(0, 16));
+      // Reset form on success
+      setPrice('');
+      setValidFrom(new Date().toISOString().slice(0, 16));
+    } catch (error) {
+      console.error('Failed to create fuel price:', error);
+    }
   };
+
+  if (stationsError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            Error Loading Stations
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Failed to load stations. Please refresh the page or contact support.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Add/Update Fuel Price</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Fuel className="h-5 w-5" />
+          Add/Update Fuel Price
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="stationId">Station *</Label>
-              <Select value={stationId} onValueChange={setStationId}>
+            <div className="space-y-2">
+              <Label htmlFor="stationId" className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Station *
+              </Label>
+              <Select value={stationId} onValueChange={setStationId} disabled={stationsLoading}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select station" />
+                  <SelectValue placeholder={stationsLoading ? "Loading stations..." : "Select station"} />
                 </SelectTrigger>
                 <SelectContent>
                   {Array.isArray(stations) && stations.map((station) => (
                     <SelectItem key={station.id} value={station.id}>
-                      {station.name}
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        {station.name}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {stationsLoading && (
+                <p className="text-xs text-muted-foreground">Loading available stations...</p>
+              )}
             </div>
 
-            <div>
-              <Label htmlFor="fuelType">Fuel Type *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="fuelType" className="flex items-center gap-2">
+                <Fuel className="h-4 w-4" />
+                Fuel Type *
+              </Label>
               <Select value={fuelType} onValueChange={(value: 'petrol' | 'diesel' | 'premium') => setFuelType(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="petrol">Petrol</SelectItem>
-                  <SelectItem value="diesel">Diesel</SelectItem>
-                  <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="petrol">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      Petrol
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="diesel">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                      Diesel
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="premium">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      Premium
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="price">Price per Litre (₹) *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="price">
+                Price per Litre (₹) *
+              </Label>
               <Input
                 id="price"
                 type="number"
@@ -83,11 +144,20 @@ export function FuelPriceForm() {
                 min="0"
                 step="0.01"
                 required
+                className="text-lg font-medium"
               />
+              {price && Number(price) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Price: ₹{Number(price).toFixed(2)} per litre
+                </p>
+              )}
             </div>
 
-            <div>
-              <Label htmlFor="validFrom">Valid From *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="validFrom" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Valid From *
+              </Label>
               <Input
                 id="validFrom"
                 type="datetime-local"
@@ -98,12 +168,38 @@ export function FuelPriceForm() {
             </div>
           </div>
 
+          {!stationId && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Please select a station to set fuel prices for.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Button 
             type="submit" 
-            disabled={createFuelPrice.isPending || !stationId || !price || Number(price) <= 0}
-            className="w-full"
+            disabled={
+              createFuelPrice.isPending || 
+              !stationId || 
+              !price || 
+              Number(price) <= 0 ||
+              stationsLoading
+            }
+            className="w-full md:w-auto"
+            size="lg"
           >
-            {createFuelPrice.isPending ? 'Updating...' : 'Update Price'}
+            {createFuelPrice.isPending ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Updating Price...
+              </>
+            ) : (
+              <>
+                <Fuel className="h-4 w-4 mr-2" />
+                Update Price
+              </>
+            )}
           </Button>
         </form>
       </CardContent>

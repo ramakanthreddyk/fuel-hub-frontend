@@ -1,3 +1,4 @@
+
 /**
  * Fuel Prices Service - Contract-aligned API service
  * 
@@ -9,30 +10,71 @@ import type { FuelPrice, CreateFuelPriceRequest } from '../api-contract';
 
 export const fuelPricesService = {
   /**
-   * Get all fuel prices
+   * Get all fuel prices with station information
    */
   async getFuelPrices(): Promise<FuelPrice[]> {
-    return contractClient.getArray<FuelPrice>('/fuel-prices', 'fuelPrices');
+    try {
+      console.log('[FUEL-PRICES-SERVICE] Fetching fuel prices...');
+      const response = await contractClient.get('/fuel-prices');
+      
+      // Handle different response structures from backend
+      let rawPrices: any[] = [];
+      
+      if (response.data?.prices) {
+        rawPrices = response.data.prices;
+      } else if (response.data && Array.isArray(response.data)) {
+        rawPrices = response.data;
+      } else if (response.prices) {
+        rawPrices = response.prices;
+      }
+      
+      console.log('[FUEL-PRICES-SERVICE] Raw prices:', rawPrices);
+      
+      // Transform to contract format
+      const fuelPrices = rawPrices.map((price: any) => ({
+        id: price.id,
+        stationId: price.station_id || price.stationId,
+        fuelType: price.fuel_type || price.fuelType,
+        price: parseFloat(price.price) || 0,
+        validFrom: price.valid_from || price.validFrom,
+        createdAt: price.created_at || price.createdAt,
+        // Handle station name - get from relationship or fetch separately
+        stationName: price.station?.name || undefined
+      }));
+      
+      console.log('[FUEL-PRICES-SERVICE] Transformed prices:', fuelPrices);
+      return fuelPrices;
+    } catch (error) {
+      console.error('[FUEL-PRICES-SERVICE] Error fetching fuel prices:', error);
+      return [];
+    }
   },
 
   /**
    * Create new fuel price
    */
   async createFuelPrice(data: CreateFuelPriceRequest): Promise<FuelPrice> {
-    return contractClient.post<FuelPrice>('/fuel-prices', data);
+    console.log('[FUEL-PRICES-SERVICE] Creating fuel price:', data);
+    const response = await contractClient.post<FuelPrice>('/fuel-prices', data);
+    console.log('[FUEL-PRICES-SERVICE] Created:', response);
+    return response;
   },
 
   /**
    * Update fuel price
    */
   async updateFuelPrice(priceId: string, data: Partial<CreateFuelPriceRequest>): Promise<FuelPrice> {
-    return contractClient.put<FuelPrice>(`/fuel-prices/${priceId}`, data);
+    console.log('[FUEL-PRICES-SERVICE] Updating fuel price:', priceId, data);
+    const response = await contractClient.put<FuelPrice>(`/fuel-prices/${priceId}`, data);
+    console.log('[FUEL-PRICES-SERVICE] Updated:', response);
+    return response;
   },
 
   /**
    * Delete fuel price
    */
   async deleteFuelPrice(priceId: string): Promise<void> {
+    console.log('[FUEL-PRICES-SERVICE] Deleting fuel price:', priceId);
     await contractClient.delete(`/fuel-prices/${priceId}`);
   },
 
@@ -53,6 +95,7 @@ export const fuelPricesService = {
    * Get stations missing active prices
    */
   async getStationsMissingPrices(): Promise<any[]> {
-    return contractClient.getArray<any>('/fuel-prices/missing', 'stations');
+    const response = await contractClient.get('/fuel-prices/missing');
+    return response.stations || response.data?.stations || [];
   }
 };

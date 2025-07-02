@@ -1,14 +1,15 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fuelPricesApi, CreateFuelPriceRequest } from '@/api/fuel-prices';
+import { fuelPricesService } from '@/api/contract/fuel-prices.service';
 import { useToast } from '@/hooks/use-toast';
+import type { CreateFuelPriceRequest } from '@/api/api-contract';
 
 export const useFuelPrices = () => {
   return useQuery({
     queryKey: ['fuel-prices'],
     queryFn: async () => {
       console.log('[USE-FUEL-PRICES] Fetching fuel prices...');
-      const result = await fuelPricesApi.getFuelPrices();
+      const result = await fuelPricesService.getFuelPrices();
       console.log('[USE-FUEL-PRICES] Hook result:', result);
       return result;
     },
@@ -22,31 +23,32 @@ export const useCreateFuelPrice = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: CreateFuelPriceRequest) => fuelPricesApi.createFuelPrice(data),
+    mutationFn: (data: CreateFuelPriceRequest) => fuelPricesService.createFuelPrice(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
+      queryClient.invalidateQueries({ queryKey: ['stations'] }); // Refresh station data too
       toast({
         title: "Success",
         description: "Fuel price created successfully",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('[USE-FUEL-PRICES] Create error:', error);
       toast({
         title: "Error",
-        description: "Failed to create fuel price",
+        description: error?.message || "Failed to create fuel price",
         variant: "destructive",
       });
     },
   });
 };
 
-// Updated to use generic object for update as per OpenAPI spec
 export const useUpdateFuelPrice = (id: string) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: object) => fuelPricesApi.updateFuelPrice(id, data),
+    mutationFn: (data: Partial<CreateFuelPriceRequest>) => fuelPricesService.updateFuelPrice(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
       toast({
@@ -54,10 +56,35 @@ export const useUpdateFuelPrice = (id: string) => {
         description: "Fuel price updated successfully",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('[USE-FUEL-PRICES] Update error:', error);
       toast({
         title: "Error",
-        description: "Failed to update fuel price",
+        description: error?.message || "Failed to update fuel price",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDeleteFuelPrice = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => fuelPricesService.deleteFuelPrice(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
+      toast({
+        title: "Success",
+        description: "Fuel price deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      console.error('[USE-FUEL-PRICES] Delete error:', error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to delete fuel price",
         variant: "destructive",
       });
     },
