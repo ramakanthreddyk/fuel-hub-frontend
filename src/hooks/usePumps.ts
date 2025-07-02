@@ -8,8 +8,11 @@ export const usePumps = (stationId: string) => {
     queryKey: ['pumps', stationId],
     queryFn: () => pumpsApi.getPumps(stationId),
     enabled: !!stationId,
-    retry: 1,
-    staleTime: 60000,
+    retry: 2,
+    staleTime: 0, // Always consider data stale
+    cacheTime: 1000, // Short cache time
+    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 };
 
@@ -18,6 +21,9 @@ export const usePump = (pumpId: string) => {
     queryKey: ['pumps', pumpId],
     queryFn: () => pumpsApi.getPump(pumpId),
     enabled: !!pumpId,
+    retry: 2,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true, // Always refetch when component mounts
   });
 };
 
