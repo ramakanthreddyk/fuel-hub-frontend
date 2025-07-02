@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '@/api/auth';
 
 export type UserRole = 'superadmin' | 'owner' | 'manager' | 'attendant';
@@ -34,6 +34,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const token = localStorage.getItem('fuelsync_token');
   const isAuthenticated = !!user && !!token;
@@ -81,12 +82,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(authUser);
       console.log('[AUTH-CONTEXT] Login successful:', authUser);
       
-      // Navigate based on role with proper route
+      // Navigate based on role - avoid redirecting if already on correct page
+      const currentPath = location.pathname;
+      
       if (authUser.role === 'superadmin') {
-        navigate('/superadmin/overview', { replace: true });
+        if (!currentPath.startsWith('/superadmin')) {
+          navigate('/superadmin/overview', { replace: true });
+        }
       } else {
         // For owner, manager, attendant - go to dashboard
-        navigate('/dashboard', { replace: true });
+        if (!currentPath.startsWith('/dashboard')) {
+          navigate('/dashboard', { replace: true });
+        }
       }
     } catch (error: any) {
       console.error('[AUTH-CONTEXT] Login error:', error);
@@ -107,7 +114,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem('fuelsync_token');
       localStorage.removeItem('fuelsync_user');
       setUser(null);
-      navigate('/login', { replace: true });
+      // Only navigate to login if not already there
+      if (!location.pathname.includes('/login') && location.pathname !== '/') {
+        navigate('/', { replace: true });
+      }
     }
   };
 
