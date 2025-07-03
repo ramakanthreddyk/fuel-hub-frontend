@@ -338,7 +338,10 @@ export default function NozzlesPage() {
             {nozzles.map((nozzle) => (
               <NozzleCard
                 key={nozzle.id}
-                nozzle={nozzle}
+                nozzle={{
+                  ...nozzle,
+                  nozzleNumber: nozzle.nozzleNumber || 0, // Provide default value
+                }}
                 onEdit={handleEditNozzle}
                 onDelete={handleDeleteNozzle}
                 onRecordReading={handleRecordReading}

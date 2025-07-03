@@ -7,19 +7,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stationsApi, CreateStationData, UpdateStationData } from '@/api/stations';
 
 /**
- * Hook to fetch all stations or a specific station
+ * Hook to fetch all stations
  * @returns Query result with stations data
  */
-export const useStations = (stationId?: string) => {
+export const useStations = () => {
   return useQuery({
-    queryKey: stationId ? ['station', stationId] : ['stations'],
-    queryFn: () => {
-      if (stationId) {
-        return stationsApi.getStation(stationId);
-      } else {
-        return stationsApi.getStations();
-      }
-    },
+    queryKey: ['stations'],
+    queryFn: () => stationsApi.getStations(),
     gcTime: 60000, // 1 minute
   });
 };

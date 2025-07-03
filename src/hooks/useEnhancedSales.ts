@@ -1,7 +1,26 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { salesApi } from '@/api/sales';
-import { pumpsApi } from '@/api/pumps';
+import { usePumps } from '@/hooks/api/usePumps';
+
+// Export the enhanced sale type
+export interface EnhancedSale {
+  id: string;
+  nozzleId: string;
+  stationId: string;
+  pumpId?: string;
+  reading: number;
+  volume: number;
+  amount: number;
+  fuelType: string;
+  fuelPrice: number;
+  paymentMethod: string;
+  recordedAt: string;
+  status: string;
+  pump?: any;
+  station?: any;
+  nozzle?: any;
+}
 
 export const useEnhancedSales = (filters: any = {}) => {
   const { data: sales = [], isLoading: salesLoading, error: salesError } = useQuery({
@@ -9,12 +28,13 @@ export const useEnhancedSales = (filters: any = {}) => {
     queryFn: () => salesApi.getSales(filters),
   });
 
-  const { data: pumps = [], isLoading: pumpsLoading } = useQuery({
-    queryKey: ['pumps'],
-    queryFn: () => pumpsApi.getPumps(),
-  });
+  // Get unique station IDs from sales to fetch pumps
+  const stationIds = [...new Set(sales.map(sale => sale.stationId).filter(Boolean))];
+  const firstStationId = stationIds[0];
 
-  const enhancedSales = sales.map(sale => ({
+  const { data: pumps = [], isLoading: pumpsLoading } = usePumps(firstStationId);
+
+  const enhancedSales: EnhancedSale[] = sales.map(sale => ({
     ...sale,
     pump: pumps.find(p => p.id === sale.pumpId),
   }));

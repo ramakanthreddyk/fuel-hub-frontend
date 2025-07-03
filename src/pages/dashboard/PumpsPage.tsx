@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PumpCard } from '@/components/pumps/PumpCard';
 import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
 import { usePumps } from '@/hooks/api/usePumps';
-import { useStations } from '@/hooks/api/useStations';
+import { useStations, useStation } from '@/hooks/api/useStations';
 import { navigateBack } from '@/utils/navigation';
 
 export default function PumpsPage() {
@@ -45,8 +45,8 @@ export default function PumpsPage() {
   // Fetch all stations
   const { data: stations = [], isLoading: stationsLoading } = useStations();
   
-  // Fetch station details if we have a stationId
-  const { data: station } = useStations(effectiveStationId);
+  // Fetch specific station details if we have a stationId
+  const { data: station } = useStation(effectiveStationId);
   
   // Fetch pumps for selected station
   const { data: pumps = [], isLoading: pumpsLoading, refetch } = usePumps(effectiveStationId);
@@ -256,7 +256,7 @@ export default function PumpsPage() {
             <DialogHeader>
               <DialogTitle>Add New Pump</DialogTitle>
               <DialogDescription>
-                Add a new pump to {station?.name}
+                Add a new pump to {station?.name || 'selected station'}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
