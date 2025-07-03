@@ -1,4 +1,7 @@
-
+/**
+ * @file components/layout/Sidebar.tsx
+ * @description Main sidebar navigation component with role-based items
+ */
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +15,9 @@ import {
   Settings,
   FileText,
   DollarSign,
-  Package
+  Package,
+  FileSpreadsheet,
+  CreditCard
 } from 'lucide-react';
 import {
   Sidebar,
@@ -39,104 +44,173 @@ const getMenuItems = (role: string) => {
     }
   ];
 
+  const attendantItems = [
+    {
+      title: "Record Reading",
+      url: "/dashboard/readings/new",
+      icon: FileText,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50 dark:bg-indigo-950"
+    },
+    {
+      title: "Cash Report",
+      url: "/dashboard/cash-report/new",
+      icon: DollarSign,
+      color: "text-green-600",
+      bgColor: "bg-green-50 dark:bg-green-950"
+    },
+    {
+      title: "Cash History",
+      url: "/dashboard/cash-reports",
+      icon: CreditCard,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50 dark:bg-purple-950"
+    },
+    {
+      title: "Readings",
+      url: "/dashboard/readings",
+      icon: FileText,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50 dark:bg-orange-950"
+    }
+  ];
+
+  const managerItems = [
+    {
+      title: "Stations",
+      url: "/dashboard/stations",
+      icon: Building2,
+      color: "text-green-600",
+      bgColor: "bg-green-50 dark:bg-green-950"
+    },
+    {
+      title: "Pumps",
+      url: "/dashboard/pumps",
+      icon: Gauge,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50 dark:bg-purple-950"
+    },
+    {
+      title: "Nozzles",
+      url: "/dashboard/nozzles",
+      icon: Gauge,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50 dark:bg-indigo-950"
+    },
+    {
+      title: "Readings",
+      url: "/dashboard/readings",
+      icon: FileText,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50 dark:bg-indigo-950"
+    },
+    {
+      title: "Cash Reports",
+      url: "/dashboard/cash-reports",
+      icon: DollarSign,
+      color: "text-green-600",
+      bgColor: "bg-green-50 dark:bg-green-950"
+    },
+    {
+      title: "Fuel Inventory",
+      url: "/dashboard/fuel-inventory",
+      icon: Package,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50 dark:bg-orange-950"
+    },
+    {
+      title: "Reports",
+      url: "/dashboard/reports",
+      icon: FileSpreadsheet,
+      color: "text-teal-600",
+      bgColor: "bg-teal-50 dark:bg-teal-950"
+    },
+    {
+      title: "Analytics",
+      url: "/dashboard/analytics",
+      icon: BarChart3,
+      color: "text-pink-600",
+      bgColor: "bg-pink-50 dark:bg-pink-950"
+    }
+  ];
+
+  const ownerItems = [
+    {
+      title: "Stations",
+      url: "/dashboard/stations",
+      icon: Building2,
+      color: "text-green-600",
+      bgColor: "bg-green-50 dark:bg-green-950"
+    },
+    {
+      title: "Pumps",
+      url: "/dashboard/pumps",
+      icon: Gauge,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50 dark:bg-purple-950"
+    },
+    {
+      title: "Nozzles",
+      url: "/dashboard/nozzles",
+      icon: Gauge,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50 dark:bg-indigo-950"
+    },
+    {
+      title: "Fuel Prices",
+      url: "/dashboard/fuel-prices",
+      icon: DollarSign,
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-50 dark:bg-yellow-950"
+    },
+    {
+      title: "Readings",
+      url: "/dashboard/readings",
+      icon: FileText,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50 dark:bg-indigo-950"
+    },
+    {
+      title: "Cash Reports",
+      url: "/dashboard/cash-reports",
+      icon: DollarSign,
+      color: "text-green-600",
+      bgColor: "bg-green-50 dark:bg-green-950"
+    },
+    {
+      title: "Fuel Inventory",
+      url: "/dashboard/fuel-inventory",
+      icon: Package,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50 dark:bg-orange-950"
+    },
+    {
+      title: "Reports",
+      url: "/dashboard/reports",
+      icon: FileSpreadsheet,
+      color: "text-teal-600",
+      bgColor: "bg-teal-50 dark:bg-teal-950"
+    },
+    {
+      title: "Analytics",
+      url: "/dashboard/analytics",
+      icon: BarChart3,
+      color: "text-pink-600",
+      bgColor: "bg-pink-50 dark:bg-pink-950"
+    },
+    {
+      title: "User Management",
+      url: "/dashboard/users",
+      icon: Users,
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-50 dark:bg-cyan-950"
+    }
+  ];
+
   const roleSpecificItems = {
-    owner: [
-      {
-        title: "Stations",
-        url: "/dashboard/stations",
-        icon: Building2,
-        color: "text-green-600",
-        bgColor: "bg-green-50 dark:bg-green-950"
-      },
-      {
-        title: "Pumps & Nozzles",
-        url: "/dashboard/pumps",
-        icon: Gauge,
-        color: "text-purple-600",
-        bgColor: "bg-purple-50 dark:bg-purple-950"
-      },
-      {
-        title: "Fuel Prices",
-        url: "/dashboard/fuel-prices",
-        icon: DollarSign,
-        color: "text-yellow-600",
-        bgColor: "bg-yellow-50 dark:bg-yellow-950"
-      },
-      {
-        title: "Readings",
-        url: "/dashboard/readings",
-        icon: FileText,
-        color: "text-indigo-600",
-        bgColor: "bg-indigo-50 dark:bg-indigo-950"
-      },
-      {
-        title: "Fuel Inventory",
-        url: "/dashboard/fuel-inventory",
-        icon: Package,
-        color: "text-orange-600",
-        bgColor: "bg-orange-50 dark:bg-orange-950"
-      },
-      {
-        title: "Analytics",
-        url: "/dashboard/analytics",
-        icon: BarChart3,
-        color: "text-pink-600",
-        bgColor: "bg-pink-50 dark:bg-pink-950"
-      },
-      {
-        title: "User Management",
-        url: "/dashboard/users",
-        icon: Users,
-        color: "text-cyan-600",
-        bgColor: "bg-cyan-50 dark:bg-cyan-950"
-      }
-    ],
-    manager: [
-      {
-        title: "Stations",
-        url: "/dashboard/stations",
-        icon: Building2,
-        color: "text-green-600",
-        bgColor: "bg-green-50 dark:bg-green-950"
-      },
-      {
-        title: "Readings",
-        url: "/dashboard/readings",
-        icon: FileText,
-        color: "text-indigo-600",
-        bgColor: "bg-indigo-50 dark:bg-indigo-950"
-      },
-      {
-        title: "Fuel Inventory",
-        url: "/dashboard/fuel-inventory",
-        icon: Package,
-        color: "text-orange-600",
-        bgColor: "bg-orange-50 dark:bg-orange-950"
-      },
-      {
-        title: "Analytics",
-        url: "/dashboard/analytics",
-        icon: BarChart3,
-        color: "text-pink-600",
-        bgColor: "bg-pink-50 dark:bg-pink-950"
-      }
-    ],
-    attendant: [
-      {
-        title: "Readings",
-        url: "/dashboard/readings",
-        icon: FileText,
-        color: "text-indigo-600",
-        bgColor: "bg-indigo-50 dark:bg-indigo-950"
-      },
-      {
-        title: "Fuel Inventory",
-        url: "/dashboard/fuel-inventory",
-        icon: Package,
-        color: "text-orange-600",
-        bgColor: "bg-orange-50 dark:bg-orange-950"
-      }
-    ]
+    owner: ownerItems,
+    manager: managerItems,
+    attendant: attendantItems
   };
 
   const settingsItem = {
