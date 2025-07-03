@@ -21,7 +21,7 @@ export default function CashReportsListPage() {
   const lastMonth = format(subDays(new Date(), 30), 'yyyy-MM-dd');
   
   // State
-  const [selectedStationId, setSelectedStationId] = useState<string>('');
+  const [selectedStationId, setSelectedStationId] = useState<string>('all-stations');
   const [startDate, setStartDate] = useState<string>(lastMonth);
   const [endDate, setEndDate] = useState<string>(today);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -34,12 +34,7 @@ export default function CashReportsListPage() {
     data: cashReports = [], 
     isLoading: reportsLoading,
     refetch
-  } = useCashReports(selectedStationId || undefined, startDate, endDate);
-  
-  // Set default station if not selected
-  if (!selectedStationId && stations.length > 0 && !stationsLoading) {
-    setSelectedStationId(stations[0].id);
-  }
+  } = useCashReports(selectedStationId === 'all-stations' ? undefined : selectedStationId, startDate, endDate);
   
   // Handle refresh
   const handleRefresh = async () => {
@@ -104,7 +99,7 @@ export default function CashReportsListPage() {
                   <SelectValue placeholder="All Stations" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Stations</SelectItem>
+                  <SelectItem value="all-stations">All Stations</SelectItem>
                   {stations.map((station) => (
                     <SelectItem key={station.id} value={station.id}>
                       {station.name}
