@@ -18,42 +18,27 @@ export const stationsApi = {
       const params = includeMetrics ? '?includeMetrics=true' : '';
       console.log(`[STATIONS-API] Fetching stations with URL: /stations${params}`);
       
-      // Use direct fetch with the correct API URL to ensure it always hits the backend
-      const apiUrl = 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
-      const token = localStorage.getItem('fuelsync_token');
-      const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
-      const tenantId = user.tenantId || '';
-      
-      console.log(`[STATIONS-API] Making direct fetch to ${apiUrl}/api/v1/stations${params}`);
-      
-      const response = await fetch(`${apiUrl}/api/v1/stations${params}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'x-tenant-id': tenantId,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('[STATIONS-API] Raw response:', result);
+      // Use apiClient to ensure proper headers are set
+      const response = await apiClient.get(`/stations${params}`);
       
       // Extract stations from different possible response formats
-      let stationsArray = [];
+      let stationsArray: StationWithMetrics[] = [];
       
-      if (result.success && result.data && result.data.stations) {
-        stationsArray = result.data.stations;
-      } else if (result.stations) {
-        stationsArray = result.stations;
-      } else if (Array.isArray(result)) {
-        stationsArray = result;
-      } else if (result.data && Array.isArray(result.data)) {
-        stationsArray = result.data;
+      if (response.data?.data?.stations) {
+        // Format: { data: { stations: [...] } }
+        stationsArray = response.data.data.stations;
+      } else if (response.data?.stations) {
+        // Format: { stations: [...] }
+        stationsArray = response.data.stations;
+      } else if (Array.isArray(response.data)) {
+        // Format: [...]
+        stationsArray = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        // Format: { data: [...] }
+        stationsArray = response.data.data;
+      } else {
+        // Use the helper function as fallback
+        stationsArray = extractApiArray<StationWithMetrics>(response, 'stations');
       }
       
       console.log(`[STATIONS-API] Successfully fetched ${stationsArray.length} stations`);

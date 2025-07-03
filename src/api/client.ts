@@ -1,10 +1,11 @@
+/**
+ * @file client.ts
+ * @description Centralized API client
+ */
 import axios from 'axios';
 
 // Get the backend URL from environment variables or use the correct API URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
-
-// Log the API base URL for debugging
-console.log(`[API-CLIENT] Using API base URL: ${API_BASE_URL}/api/v1`);
+const API_BASE_URL = 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
@@ -12,38 +13,28 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 seconds
 });
 
 // Request interceptor to add auth token and tenant context
 apiClient.interceptors.request.use(
   (config) => {
-    console.log(`[API-CLIENT] Making request to: ${config.method?.toUpperCase()} ${config.url}`);
-    
     // Add auth token if available
     const token = localStorage.getItem('fuelsync_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Add tenant context for non-admin routes
-    const isAdminAuthRoute = config.url?.includes('/admin/auth/');
-    const isGeneralAdminRoute = config.url?.startsWith('/admin/') && !isAdminAuthRoute;
-    
-    if (!isAdminAuthRoute) {
-      // Get tenant ID from stored user data
-      const storedUser = localStorage.getItem('fuelsync_user');
-      if (storedUser) {
-        try {
-          const user = JSON.parse(storedUser);
-          
-          // For regular users (owner, manager, attendant), ALWAYS add tenant header
-          if (user.role !== 'superadmin' && user.tenantId) {
-            config.headers['x-tenant-id'] = user.tenantId;
-            console.log(`[API-CLIENT] Added tenant header: ${user.tenantId}`);
-          }
-        } catch (error) {
-          console.error('[API-CLIENT] Error parsing stored user:', error);
+    // Add tenant context
+    const storedUser = localStorage.getItem('fuelsync_user');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        if (user.tenantId) {
+          config.headers['x-tenant-id'] = user.tenantId;
         }
+      } catch (error) {
+        console.error('[API-CLIENT] Error parsing stored user:', error);
       }
     }
 
@@ -57,8 +48,6 @@ apiClient.interceptors.request.use(
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(`[API-CLIENT] Response received from: ${response.config.url}`, response.status);
-    console.log('[API-CLIENT] Response data:', response.data);
     return response;
   },
   (error) => {
@@ -68,64 +57,44 @@ apiClient.interceptors.response.use(
       status: error.response?.status,
       message: error.response?.data?.message || error.message
     });
-
-    // Handle 401 errors more carefully - only logout for legitimate auth failures
-    if (error.response?.status === 401) {
-      const errorMessage = error.response?.data?.message || '';
-      const isAuthEndpoint = error.config?.url?.includes('/auth/');
-      
-      // Only logout for actual authentication failures, not permission issues
-      const isLegitimateAuthFailure = 
-        isAuthEndpoint || 
-        errorMessage.toLowerCase().includes('invalid token') || 
-        errorMessage.toLowerCase().includes('token expired') ||
-        errorMessage.toLowerCase().includes('unauthorized access') ||
-        errorMessage.toLowerCase().includes('authentication failed') ||
-        errorMessage.toLowerCase().includes('jwt') ||
-        errorMessage.toLowerCase().includes('token');
-      
-      if (isLegitimateAuthFailure) {
-        localStorage.removeItem('fuelsync_token');
-        localStorage.removeItem('fuelsync_user');
-        // Only redirect if we're not already on the login page
-        if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
-        }
-      }
-    }
     
     return Promise.reject(error);
   }
 );
 
-// Helper function to extract data from API responses
-export const extractApiData = <T>(response: any): T => {
-  // Handle direct data responses (common pattern)
-  if (response.data && typeof response.data === 'object') {
-    // If response has a 'data' property, use that
-    if ('data' in response.data) {
-      return response.data.data;
-    }
-    // Otherwise use the entire response.data
-    return response.data;
+/**
+ * Extract data from API response
+ * @param response Axios response object
+ * @returns Extracted data
+ */
+export function extractApiData<T>(response: any): T {
+  // Handle different response formats
+  if (response.data?.data) {
+    return response.data.data as T;
   }
   
-  // Fallback to response.data
-  return response.data;
-};
+  if (response.data?.success && response.data?.data) {
+    return response.data.data as T;
+  }
+  
+  return response.data as T;
+}
 
-// Helper function to extract array data from API responses
-export const extractApiArray = <T>(response: any, arrayKey?: string): T[] => {
+/**
+ * Extract array data from API response
+ * @param response Axios response object
+ * @param arrayKey Optional key to extract array from
+ * @returns Extracted array
+ */
+export function extractApiArray<T>(response: any, arrayKey?: string): T[] {
   const data = extractApiData(response);
   
   // If arrayKey is provided, try to get the array from that property
   if (arrayKey && data && typeof data === 'object' && arrayKey in data) {
-    const arrayData = data[arrayKey];
+    const arrayData = data[arrayKey as keyof typeof data];
     return Array.isArray(arrayData) ? arrayData : [];
   }
   
   // Otherwise, assume the data itself is the array
   return Array.isArray(data) ? data : [];
-};
-
-export default apiClient;
+}

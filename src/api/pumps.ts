@@ -14,7 +14,26 @@ export const pumpsApi = {
       const response = await apiClient.get(url);
       
       // Extract pumps from response using the helper function
-      const pumps = extractApiArray<Pump>(response, 'pumps');
+      // Try different possible response formats
+      let pumps: Pump[] = [];
+      
+      if (response.data?.data?.pumps) {
+        // Format: { data: { pumps: [...] } }
+        pumps = response.data.data.pumps;
+      } else if (response.data?.pumps) {
+        // Format: { pumps: [...] }
+        pumps = response.data.pumps;
+      } else if (Array.isArray(response.data)) {
+        // Format: [...]
+        pumps = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        // Format: { data: [...] }
+        pumps = response.data.data;
+      } else {
+        // Use the helper function as fallback
+        pumps = extractApiArray<Pump>(response, 'pumps');
+      }
+      
       console.log(`[PUMPS-API] Successfully fetched ${pumps.length} pumps`);
       
       return pumps;
