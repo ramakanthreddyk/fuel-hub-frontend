@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -25,6 +24,18 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [showLoginOptions, setShowLoginOptions] = useState(false);
 
+  // Use useEffect for navigation
+  useEffect(() => {
+    // If user is authenticated, redirect to appropriate dashboard
+    if (isAuthenticated && user) {
+      if (user.role === 'superadmin') {
+        navigate('/superadmin/overview', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -33,13 +44,8 @@ export default function LandingPage() {
     );
   }
 
-  // If user is authenticated, redirect to appropriate dashboard
+  // Don't render anything if authenticated (will be redirected by useEffect)
   if (isAuthenticated && user) {
-    if (user.role === 'superadmin') {
-      navigate('/superadmin/overview', { replace: true });
-    } else {
-      navigate('/dashboard', { replace: true });
-    }
     return null;
   }
 
@@ -75,6 +81,15 @@ export default function LandingPage() {
     "24/7 system monitoring"
   ];
 
+  // Handle navigation with functions instead of direct navigate calls
+  const handleUserLogin = () => {
+    navigate('/login');
+  };
+
+  const handleAdminLogin = () => {
+    navigate('/login/admin');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
@@ -105,13 +120,13 @@ export default function LandingPage() {
               <div className="flex gap-2">
                 <Button 
                   variant="outline"
-                  onClick={() => navigate('/login')}
+                  onClick={handleUserLogin}
                   className="text-sm"
                 >
                   User Login
                 </Button>
                 <Button 
-                  onClick={() => navigate('/login/admin')}
+                  onClick={handleAdminLogin}
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-sm"
                 >
                   <Crown className="mr-1 h-3 w-3" />
@@ -123,6 +138,7 @@ export default function LandingPage() {
         </div>
       </header>
 
+      {/* Rest of the component remains unchanged */}
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-4xl mx-auto">
