@@ -1,11 +1,14 @@
-
+/**
+ * @file FuelPriceTable.tsx
+ * @description Table component for displaying fuel prices
+ * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
+ * @see docs/journeys/MANAGER.md - Manager journey for setting fuel prices
+ */
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useFuelPrices, useDeleteFuelPrice } from '@/hooks/useFuelPrices';
-import { useStations } from '@/hooks/useStations';
 import { format } from 'date-fns';
-import { Edit, Trash2, Building2, Fuel, AlertCircle } from 'lucide-react';
+import { Edit, Trash2, Building2, Fuel, AlertCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import {
   AlertDialog,
@@ -18,6 +21,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+
+// Import new API hooks
+import { useFuelPrices, useDeleteFuelPrice } from '@/hooks/api/useFuelPrices';
+import { useStations } from '@/hooks/api/useStations';
 
 export function FuelPriceTable() {
   const { data: fuelPrices = [], isLoading, error } = useFuelPrices();
@@ -36,7 +43,7 @@ export function FuelPriceTable() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <span className="ml-2 text-muted-foreground">Loading fuel prices...</span>
           </div>
         </CardContent>
@@ -55,8 +62,11 @@ export function FuelPriceTable() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            Failed to load fuel prices. Please try again.
+            Failed to load fuel prices: {(error as Error).message}
           </p>
+          <div className="flex justify-center">
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -94,16 +104,29 @@ export function FuelPriceTable() {
   };
 
   const getStationName = (stationId: string) => {
-    const station = stations.find(s => s.id === stationId);
+    const station = stations?.find(s => s.id === stationId);
     return station?.name || 'Unknown Station';
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     setDeletingId(id);
-    try {
-      await deleteFuelPrice.mutateAsync(id);
-    } finally {
-      setDeletingId(null);
+    deleteFuelPrice.mutate({ id, stationId: fuelPrices.find(p => p.id === id)?.stationId || '' }, {
+      onSettled: () => {
+        setDeletingId(null);
+      }
+    });
+  };
+
+  // Helper function to safely format price
+  const formatPrice = (price: any): string => {
+    if (typeof price === 'number') {
+      return price.toFixed(2);
+    } else if (typeof price === 'string') {
+      const numPrice = parseFloat(price);
+      return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+    } else {
+      console.warn('Invalid price format:', price);
+      return '0.00';
     }
   };
 
@@ -145,7 +168,7 @@ export function FuelPriceTable() {
                         </Badge>
                       </td>
                       <td className="p-3">
-                        <div className="font-semibold text-lg">₹{price.price.toFixed(2)}</div>
+                        <div className="font-semibold text-lg">₹{formatPrice(price.price)}</div>
                         <div className="text-xs text-muted-foreground">per litre</div>
                       </td>
                       <td className="p-3">
@@ -217,7 +240,7 @@ export function FuelPriceTable() {
                 
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <div className="text-xl font-bold">₹{price.price.toFixed(2)}</div>
+                    <div className="text-xl font-bold">₹{formatPrice(price.price)}</div>
                     <div className="text-xs text-muted-foreground">per litre</div>
                   </div>
                   <div className="text-right">
