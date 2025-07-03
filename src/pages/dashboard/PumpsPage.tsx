@@ -379,9 +379,11 @@ export default function PumpsPage() {
             <div key={pump.id} className="overflow-hidden">
               <PumpCard
                 pump={{
-                  ...pump,
+                  id: pump.id,
+                  name: pump.name,
+                  serialNumber: pump.serialNumber,
+                  status: pump.status,
                   nozzleCount: pump.nozzleCount || 0,
-                  stationName: station?.name || 'Unknown Station'
                 }}
                 onViewNozzles={() => handleViewNozzles(pump.id)}
                 onSettings={() => handlePumpSettings(pump.id)}

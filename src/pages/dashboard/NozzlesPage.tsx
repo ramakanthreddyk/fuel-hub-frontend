@@ -356,7 +356,7 @@ export default function NozzlesPage() {
                     nozzleNumber: nozzle.nozzleNumber || 0,
                     fuelType: nozzle.fuelType || 'petrol',
                     status: nozzle.status,
-                    pumpName: pump?.name || 'Unknown Pump',
+                    serialNumber: nozzle.serialNumber,
                   }}
                   onEdit={handleEditNozzle}
                   onDelete={handleDeleteNozzle}
