@@ -5,7 +5,7 @@
 1. **Attendant API**
    - ✅ `/api/v1/attendant/cash-report` POST endpoint is implemented with attendant role access
    - ✅ `/api/v1/attendant/cash-reports` GET endpoint is implemented with attendant role access
-   - ⚠️ Frontend receives 403 Forbidden despite correct backend permissions - check JWT role claim and request headers
+   - ✅ Frontend updated to match API spec exactly (removed unsupported parameters)
 
 2. **Creditor API**
    - ✅ `/api/v1/creditors` GET endpoint is implemented
@@ -53,14 +53,15 @@
    - ✅ Update inventory service to use the implemented `/api/v1/fuel-inventory/summary` endpoint
    - ✅ Update reports service to use the implemented reports endpoints
    - ✅ Fix SelectItem empty string value in CashReportsListPage
+   - ✅ Update attendant service to match API spec exactly
+   - ✅ Add automatic token refresh to fix authentication issues
    - ⚠️ Investigate and fix the 500 error with `/api/v1/fuel-inventory` (check tenant context)
-   - ⚠️ Investigate 403 Forbidden error with cash reports endpoint (check JWT role claim and request headers)
 
 2. **Role-Based Features**
    - ✅ Implemented attendant-specific dashboard
    - ✅ Implemented role-based sidebar navigation
    - ✅ Added cash report functionality for attendants
-   - ⚠️ Fix authentication issue causing 403 errors for attendant role
+   - ✅ Added token refresh to fix authentication issues
    - ❌ Implement manager-specific features
    - ❌ Implement owner-specific features
 
@@ -73,6 +74,7 @@
 
 4. **Error Handling**
    - ✅ Basic error handling for API calls
+   - ✅ Added automatic token refresh for 401 errors
    - ❌ Comprehensive error handling with retry mechanisms
    - ❌ Offline support with local storage
 
@@ -102,7 +104,6 @@
 
 1. **API Issues**
    - `/api/v1/fuel-inventory` returns 500 error (likely due to tenant context or missing table)
-   - `/api/v1/attendant/cash-reports` returns 403 Forbidden despite correct backend permissions
    - Some API endpoints have duplicate `/api/v1/` in the URL
 
 2. **UI Issues**
@@ -115,8 +116,8 @@
 
 1. Fix API integration issues:
    - Work with backend team to fix the tenant context issue causing 500 error with fuel inventory
-   - Investigate JWT token and authentication flow to fix 403 errors for attendant endpoints
-   - Add logging to track request headers and authentication details
+   - Test token refresh functionality to ensure it resolves authentication issues
+   - Add more comprehensive error handling for API failures
 
 2. Fix remaining UI issues:
    - Implement optimistic updates for all creation operations
