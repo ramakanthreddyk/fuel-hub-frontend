@@ -41,16 +41,12 @@ apiClient.interceptors.request.use(
     // Add tenant context
     const storedUser = localStorage.getItem('fuelsync_user');
     let tenantId = DEFAULT_TENANT_ID; // Default tenant ID
-    let role = 'attendant'; // Default role
     
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         if (user.tenantId) {
           tenantId = user.tenantId;
-        }
-        if (user.role) {
-          role = user.role;
         }
       } catch (error) {
         console.error('[API-CLIENT] Error parsing stored user:', error);
@@ -60,9 +56,6 @@ apiClient.interceptors.request.use(
     // Always include tenant ID header
     config.headers['x-tenant-id'] = tenantId;
     
-    // Add role for debugging
-    config.headers['x-user-role'] = role;
-    
     // Log request details in development
     if (process.env.NODE_ENV === 'development') {
       console.log('[API-CLIENT] Request:', {
@@ -70,7 +63,6 @@ apiClient.interceptors.request.use(
         method: config.method,
         headers: {
           'x-tenant-id': config.headers['x-tenant-id'],
-          'x-user-role': config.headers['x-user-role'],
           'Authorization': config.headers.Authorization ? 'Bearer [TOKEN]' : 'None'
         }
       });
@@ -149,8 +141,7 @@ apiClient.interceptors.response.use(
       method: error.config?.method,
       status: error.response?.status,
       message: error.response?.data?.message || error.message,
-      tenantId: error.config?.headers?.['x-tenant-id'] || 'Not provided',
-      role: error.config?.headers?.['x-user-role'] || 'Not provided'
+      tenantId: error.config?.headers?.['x-tenant-id'] || 'Not provided'
     });
     
     return Promise.reject(error);
