@@ -1371,6 +1371,14 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/fuel-inventory/summary:
+    get:
+      summary: Fuel inventory totals by fuel type
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
   /api/v1/inventory:
     get:
       summary: Current part inventory
@@ -1629,7 +1637,7 @@ paths:
           $ref: '#/components/responses/Error'
   /api/v1/attendant/cash-report:
     post:
-      summary: Submit cash and credit totals
+      summary: Submit daily cash total and credit sales breakdown
       requestBody:
         required: true
         content:
@@ -1644,8 +1652,21 @@ paths:
                   format: date
                 cashAmount:
                   type: number
-                creditAmount:
-                  type: number
+                creditEntries:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      creditorId:
+                        type: string
+                      fuelType:
+                        type: string
+                        enum: [petrol, diesel]
+                      litres:
+                        type: number
+                      amount:
+                        type: number
+                    required: [creditorId, fuelType]
               required:
                 - stationId
                 - date
@@ -2196,6 +2217,8 @@ paths:
           type: string
         nozzleId:
           type: string
+        previousReading:
+          type: number
         reading:
           type: number
         recordedAt:
