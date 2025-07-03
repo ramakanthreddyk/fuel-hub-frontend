@@ -339,8 +339,13 @@ export default function NozzlesPage() {
               <NozzleCard
                 key={nozzle.id}
                 nozzle={{
-                  ...nozzle,
-                  nozzleNumber: nozzle.nozzleNumber || 0, // Provide default value
+                  id: nozzle.id,
+                  // Safely handle the nozzle number with fallback
+                  nozzleNumber: nozzle.nozzleNumber || nozzle.nozzle_number || 0,
+                  // Safely handle fuel type with fallback
+                  fuelType: nozzle.fuelType || nozzle.fuel_type || 'petrol',
+                  status: nozzle.status,
+                  serialNumber: nozzle.serialNumber,
                 }}
                 onEdit={handleEditNozzle}
                 onDelete={handleDeleteNozzle}

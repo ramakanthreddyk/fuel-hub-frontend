@@ -9,7 +9,7 @@ export interface EnhancedSale {
   nozzleId: string;
   stationId: string;
   pumpId?: string;
-  reading: number;
+  reading?: number; // Make reading optional since it's not always available
   volume: number;
   amount: number;
   fuelType: string;
@@ -36,7 +36,10 @@ export const useEnhancedSales = (filters: any = {}) => {
 
   const enhancedSales: EnhancedSale[] = sales.map(sale => ({
     ...sale,
-    pump: pumps.find(p => p.id === sale.pumpId),
+    // Add missing reading property (defaulting to 0 if not available)
+    reading: 0,
+    // Find pump by matching station and any available pump identifier
+    pump: pumps.find(p => p.stationId === sale.stationId),
   }));
 
   return {
