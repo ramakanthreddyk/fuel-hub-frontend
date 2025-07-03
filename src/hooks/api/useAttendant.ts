@@ -22,15 +22,13 @@ export const useSubmitCashReport = () => {
 
 /**
  * Hook to fetch cash reports
- * @param stationId Optional station ID to filter by
- * @param startDate Optional start date to filter by
- * @param endDate Optional end date to filter by
  * @returns Query result with cash reports
  */
-export const useCashReports = (stationId?: string, startDate?: string, endDate?: string) => {
+export const useCashReports = () => {
   return useQuery({
-    queryKey: ['cash-reports', stationId, startDate, endDate],
-    queryFn: () => attendantService.getCashReports(stationId, startDate, endDate),
-    staleTime: 60000 // 1 minute
+    queryKey: ['cash-reports'],
+    queryFn: () => attendantService.getCashReports(),
+    staleTime: 60000, // 1 minute
+    retry: false // Don't retry on error to avoid multiple 403 errors
   });
 };
