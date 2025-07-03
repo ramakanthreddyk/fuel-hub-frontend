@@ -44,8 +44,8 @@ export function OrganizationHierarchy() {
         status: (station.status === 'active' || station.status === 'inactive' || station.status === 'maintenance') 
           ? station.status 
           : 'active' as const,
-        pumpCount: station.pumpCount || 0,
-        attendantCount: station.attendantCount || 0,
+        pumpCount: (station as any).pumpCount || 0,
+        attendantCount: (station as any).attendantCount || 0,
       }))
     : [];
 

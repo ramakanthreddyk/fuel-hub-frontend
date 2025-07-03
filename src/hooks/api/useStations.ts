@@ -20,7 +20,7 @@ export const useStations = (stationId?: string) => {
         return stationsApi.getStations();
       }
     },
-    staleTime: 60000, // 1 minute
+    gcTime: 60000, // 1 minute
   });
 };
 
@@ -34,7 +34,7 @@ export const useStation = (id: string) => {
     queryKey: ['station', id],
     queryFn: () => stationsApi.getStation(id),
     enabled: !!id,
-    staleTime: 60000, // 1 minute
+    gcTime: 60000, // 1 minute
   });
 };
 

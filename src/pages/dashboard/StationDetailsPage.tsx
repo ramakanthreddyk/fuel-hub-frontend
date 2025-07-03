@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stationsApi } from '@/api/stations';
@@ -6,7 +5,7 @@ import { pumpsApi } from '@/api/pumps';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, Trash2, Fuel, Settings } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Fuel, Settings, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorFallback } from '@/components/common/ErrorFallback';
@@ -175,6 +174,31 @@ export default function StationDetailsPage() {
             <div className="text-lg font-medium">{station.manager || 'Not assigned'}</div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Staff Information */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">Staff Information</h3>
+            <p className="text-muted-foreground">Manage station personnel</p>
+          </div>
+          <Button variant="outline" size="sm">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Staff
+          </Button>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-4 border rounded-lg">
+            <div className="text-sm text-muted-foreground">Total Attendants</div>
+            <div className="text-2xl font-bold">{(station as any).attendantCount || 0}</div>
+          </div>
+          <div className="p-4 border rounded-lg">
+            <div className="text-sm text-muted-foreground">Station Manager</div>
+            <div className="text-lg font-medium">{(station as any).manager || 'Not Assigned'}</div>
+          </div>
+        </div>
       </div>
 
       {/* Actions */}

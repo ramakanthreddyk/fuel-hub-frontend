@@ -1,83 +1,51 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { pumpsApi, CreatePumpRequest } from '@/api/pumps';
-import { useToast } from '@/hooks/use-toast';
+import { pumpsApi } from '@/api/pumps';
 
-export const usePumps = (stationId: string) => {
+export const usePumps = (stationId?: string) => {
   return useQuery({
     queryKey: ['pumps', stationId],
     queryFn: () => pumpsApi.getPumps(stationId),
     enabled: !!stationId,
-    retry: 2,
     staleTime: 0, // Always consider data stale
-    cacheTime: 1000, // Short cache time
+    gcTime: 1000, // Short cache time
     refetchOnMount: true, // Always refetch when component mounts
     refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 };
 
-export const usePump = (pumpId: string) => {
-  return useQuery({
-    queryKey: ['pumps', pumpId],
-    queryFn: () => pumpsApi.getPump(pumpId),
-    enabled: !!pumpId,
-    retry: 2,
-    staleTime: 0, // Always consider data stale
-    refetchOnMount: true, // Always refetch when component mounts
+export const useCreatePump = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: pumpsApi.createPump,
+    onSuccess: (pump) => {
+      queryClient.invalidateQueries({ queryKey: ['pumps', pump.stationId] });
+      queryClient.invalidateQueries({ queryKey: ['stations'] });
+    },
   });
 };
 
-export const useCreatePump = () => {
+export const useUpdatePump = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
+  
   return useMutation({
-    mutationFn: (data: CreatePumpRequest) => pumpsApi.createPump(data),
-    onSuccess: (newPump) => {
-      // Invalidate pumps for the station
-      queryClient.invalidateQueries({ queryKey: ['pumps', newPump.stationId] });
-      // Also invalidate stations to update pump counts
-      queryClient.invalidateQueries({ queryKey: ['stations'] });
-      
-      toast({
-        title: "Success",
-        description: `Pump "${newPump.name}" created successfully`,
-      });
-    },
-    onError: (error: any) => {
-      console.error('Failed to create pump:', error);
-      toast({
-        title: "Error", 
-        description: error.response?.data?.message || "Failed to create pump",
-        variant: "destructive",
-      });
+    mutationFn: ({ id, data }: { id: string; data: any }) => pumpsApi.updatePump(id, data),
+    onSuccess: (pump) => {
+      queryClient.invalidateQueries({ queryKey: ['pump', pump.id] });
+      queryClient.invalidateQueries({ queryKey: ['pumps', pump.stationId] });
     },
   });
 };
 
 export const useDeletePump = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
+  
   return useMutation({
-    mutationFn: (pumpId: string) => pumpsApi.deletePump(pumpId),
+    mutationFn: pumpsApi.deletePump,
     onSuccess: () => {
-      // Invalidate all pump-related queries
       queryClient.invalidateQueries({ queryKey: ['pumps'] });
       queryClient.invalidateQueries({ queryKey: ['stations'] });
-      
-      toast({
-        title: "Success",
-        description: "Pump deleted successfully",
-      });
-    },
-    onError: (error: any) => {
-      console.error('Failed to delete pump:', error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to delete pump", 
-        variant: "destructive",
-      });
     },
   });
 };

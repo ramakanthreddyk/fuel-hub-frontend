@@ -1,26 +1,6 @@
 
-/**
- * @file api/stations.ts
- * @description Stations API service
- */
-import { useApi } from '@/contexts/ApiContext';
-import { API_CONFIG } from '@/contexts/ApiContext';
-
-export interface Station {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  phone?: string;
-  email?: string;
-  managerName?: string;
-  description?: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { apiClient, extractApiData, extractApiArray } from './client';
+import type { Station, ApiResponse } from './api-contract';
 
 export interface CreateStationData {
   name: string;
@@ -30,125 +10,58 @@ export interface CreateStationData {
   postalCode: string;
   phone?: string;
   email?: string;
-  managerName?: string;
-  description?: string;
+  managerId?: string;
+  status?: 'active' | 'inactive' | 'maintenance';
+}
+
+export interface UpdateStationData {
+  name?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  phone?: string;
+  email?: string;
+  managerId?: string;
+  status?: 'active' | 'inactive' | 'maintenance';
 }
 
 export const stationsApi = {
-  /**
-   * Get all stations
-   */
-  getStations: async (): Promise<Station[]> => {
-    const token = localStorage.getItem('fuelsync_token');
-    const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
-    
-    const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.stations}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'x-tenant-id': user.tenantId || '',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch stations');
+  // Get all stations
+  getStations: async (includeMetrics = false): Promise<Station[]> => {
+    try {
+      const params = includeMetrics ? { includeMetrics: 'true' } : {};
+      const response = await apiClient.get('/stations', { params });
+      return extractApiArray<Station>(response, 'stations');
+    } catch (error) {
+      console.error('Error fetching stations:', error);
+      return [];
     }
-
-    const data = await response.json();
-    return data.data || data;
   },
 
-  /**
-   * Get station by ID
-   */
+  // Get station by ID
   getStation: async (id: string): Promise<Station> => {
-    const token = localStorage.getItem('fuelsync_token');
-    const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
-    
-    const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.stations}/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'x-tenant-id': user.tenantId || '',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch station');
-    }
-
-    const data = await response.json();
-    return data.data || data;
+    const response = await apiClient.get(`/stations/${id}`);
+    return extractApiData<Station>(response);
   },
 
-  /**
-   * Create a new station
-   */
-  createStation: async (stationData: CreateStationData): Promise<Station> => {
-    const token = localStorage.getItem('fuelsync_token');
-    const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
-    
-    const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.stations}`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'x-tenant-id': user.tenantId || '',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(stationData),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to create station');
-    }
-
-    const data = await response.json();
-    return data.data || data;
+  // Create station
+  createStation: async (data: CreateStationData): Promise<Station> => {
+    const response = await apiClient.post('/stations', data);
+    return extractApiData<Station>(response);
   },
 
-  /**
-   * Update a station
-   */
-  updateStation: async (id: string, stationData: Partial<CreateStationData>): Promise<Station> => {
-    const token = localStorage.getItem('fuelsync_token');
-    const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
-    
-    const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.stations}/${id}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'x-tenant-id': user.tenantId || '',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(stationData),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update station');
-    }
-
-    const data = await response.json();
-    return data.data || data;
+  // Update station
+  updateStation: async (id: string, data: UpdateStationData): Promise<Station> => {
+    const response = await apiClient.put(`/stations/${id}`, data);
+    return extractApiData<Station>(response);
   },
 
-  /**
-   * Delete a station
-   */
+  // Delete station
   deleteStation: async (id: string): Promise<void> => {
-    const token = localStorage.getItem('fuelsync_token');
-    const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
-    
-    const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.stations}/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'x-tenant-id': user.tenantId || '',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to delete station');
-    }
-  },
+    await apiClient.delete(`/stations/${id}`);
+  }
 };
+
+// Export types for backward compatibility
+export type { Station, CreateStationData, UpdateStationData };

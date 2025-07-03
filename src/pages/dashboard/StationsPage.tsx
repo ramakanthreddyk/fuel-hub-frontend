@@ -1,200 +1,141 @@
-
+/**
+ * @file pages/dashboard/StationsPage.tsx
+ * @description Page for managing fuel stations
+ */
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Building2, MapPin, Fuel, Plus, Settings, Loader2, Eye } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useStationsWithMetrics } from '@/hooks/useStations';
-import CreateStationDialog from '@/components/dashboard/CreateStationDialog';
-import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
+import { Plus, Eye, Fuel } from 'lucide-react';
+import { useStations } from '@/hooks/api/useStations';
 
 export default function StationsPage() {
-  const { data: stations, isLoading, error } = useStationsWithMetrics();
+  const [searchTerm, setSearchTerm] = useState('');
+  const { data: stations = [], isLoading, error } = useStations();
+
+  // Transform stations data to ensure all properties exist
+  const stationsWithDefaults = stations.map(station => ({
+    ...station,
+    pumpCount: (station as any).pumpCount || 0,
+    metrics: (station as any).metrics || { totalSales: 0, activePumps: 0, totalPumps: 0 }
+  }));
+
+  const filteredStations = stationsWithDefaults.filter(station =>
+    station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    station.address.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-500 p-8">
-        Error loading stations: {error.message}
+      <div className="text-center py-8">
+        <h2 className="text-xl font-semibold mb-2">Error loading stations</h2>
+        <p className="text-muted-foreground">Please try again later.</p>
       </div>
     );
   }
 
-  const stationsList = stations || [];
-  const totalPumps = stationsList.reduce((sum, station) => sum + (station.pumpCount || 0), 0);
-  const totalSales = stationsList.reduce((sum, station) => sum + (station.metrics?.totalSales || 0), 0);
-
-  const mobileStats = [
-    { title: 'Stations', value: stationsList.length, icon: Building2, color: 'text-blue-600' },
-    { title: 'Pumps', value: totalPumps, icon: Fuel, color: 'text-green-600' },
-    { title: 'Sales', value: `₹${totalSales.toLocaleString()}`, icon: Building2, color: 'text-purple-600' },
-    { title: 'Active', value: stationsList.filter(s => s.status === 'active').length, icon: Building2, color: 'text-emerald-600' }
-  ];
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Stations</h1>
-          <p className="text-muted-foreground text-sm md:text-base hidden md:block">
-            Manage your fuel stations and monitor their performance
-          </p>
-          <p className="text-muted-foreground text-sm md:hidden">
-            Manage stations
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold">Fuel Stations</h1>
+          <p className="text-muted-foreground">
+            Manage your fuel stations and their details.
           </p>
         </div>
-        <div className="flex gap-2">
-          <CreateStationDialog>
-            <Button size="sm" className="md:hidden">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </CreateStationDialog>
-          <div className="hidden md:block">
-            <CreateStationDialog />
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="relative w-full md:w-auto">
+            <Label htmlFor="search" className="sr-only">
+              Search stations
+            </Label>
+            <Input
+              id="search"
+              type="search"
+              placeholder="Search stations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
+          <Button asChild>
+            <Link to="/dashboard/stations/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Station
+            </Link>
+          </Button>
         </div>
       </div>
 
-      {/* Mobile Stats Card */}
-      <MobileStatsCard stats={mobileStats} />
-
-      {/* Desktop Stats Cards */}
-      <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Stations</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stationsList.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {stationsList.filter(s => s.status === 'active').length} active
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Pumps</CardTitle>
-            <Fuel className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalPumps}</div>
-            <p className="text-xs text-muted-foreground">
-              Across all stations
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{totalSales.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              Combined revenue
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg per Station</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ₹{stationsList.length > 0 ? Math.round(totalSales / stationsList.length).toLocaleString() : '0'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Average sales
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Stations Grid */}
-      <div className="grid gap-4 md:gap-6">
-        {stationsList.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">No stations yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Get started by adding your first fuel station
-            </p>
-            <CreateStationDialog>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add First Station
-              </Button>
-            </CreateStationDialog>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {stationsList.map((station) => (
-              <Card key={station.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{station.name}</CardTitle>
-                      <CardDescription className="flex items-center gap-1 mt-1">
-                        <MapPin className="h-3 w-3" />
-                        {station.address}
-                      </CardDescription>
-                    </div>
-                    <Badge 
-                      variant={station.status === 'active' ? 'default' : 'secondary'}
-                      className={
-                        station.status === 'active' ? 'bg-green-100 text-green-800' :
-                        station.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }
-                    >
-                      {station.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">Pumps</div>
-                      <div className="font-semibold">{station.pumpCount || 0}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Sales</div>
-                      <div className="font-semibold">₹{(station.metrics?.totalSales || 0).toLocaleString()}</div>
-                    </div>
+      {stations.length === 0 ? (
+        <div className="text-center py-8">
+          <h3 className="text-lg font-semibold mb-2">No Stations Added Yet</h3>
+          <p className="text-muted-foreground mb-4">
+            Get started by adding your first fuel station.
+          </p>
+          <Button asChild>
+            <Link to="/dashboard/stations/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Station
+            </Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredStations.map((station) => (
+            <Card key={station.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">{station.name}</CardTitle>
+                  <Badge variant={station.status === 'active' ? 'default' : 'secondary'}>
+                    {station.status}
+                  </Badge>
+                </div>
+                <CardDescription>{station.address}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Pumps:</span>
+                    <span className="font-medium">{station.pumpCount}</span>
                   </div>
                   
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild className="flex-1">
+                  {station.metrics && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Today's Sales:</span>
+                      <span className="font-medium">₹{station.metrics.totalSales.toLocaleString()}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2 pt-2">
+                    <Button asChild variant="outline" size="sm" className="flex-1">
                       <Link to={`/dashboard/stations/${station.id}`}>
-                        <Eye className="mr-2 h-3 w-3" />
-                        View Details
+                        <Eye className="mr-2 h-4 w-4" />
+                        View
                       </Link>
                     </Button>
-                    <Button variant="outline" size="sm" asChild className="flex-1">
-                      <Link to={`/dashboard/pumps?stationId=${station.id}`}>
-                        <Fuel className="mr-2 h-3 w-3" />
+                    <Button asChild variant="outline" size="sm" className="flex-1">
+                      <Link to={`/dashboard/stations/${station.id}/pumps`}>
+                        <Fuel className="mr-2 h-4 w-4" />
                         Pumps
                       </Link>
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
