@@ -4,16 +4,22 @@
  * @description React Query hooks for stations API
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { stationsApi } from '@/api/stations';
+import { stationsApi, CreateStationData, UpdateStationData } from '@/api/stations';
 
 /**
- * Hook to fetch all stations
+ * Hook to fetch all stations or a specific station
  * @returns Query result with stations data
  */
 export const useStations = (stationId?: string) => {
   return useQuery({
     queryKey: stationId ? ['station', stationId] : ['stations'],
-    queryFn: () => stationId ? stationsApi.getStation(stationId) : stationsApi.getStations(),
+    queryFn: () => {
+      if (stationId) {
+        return stationsApi.getStation(stationId);
+      } else {
+        return stationsApi.getStations();
+      }
+    },
     staleTime: 60000, // 1 minute
   });
 };
@@ -40,7 +46,7 @@ export const useCreateStation = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data) => stationsApi.createStation(data),
+    mutationFn: (data: CreateStationData) => stationsApi.createStation(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
     },
@@ -55,7 +61,7 @@ export const useUpdateStation = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data }) => stationsApi.updateStation(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateStationData }) => stationsApi.updateStation(id, data),
     onSuccess: (station, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['station', id] });
       queryClient.invalidateQueries({ queryKey: ['stations'] });
@@ -71,7 +77,7 @@ export const useDeleteStation = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (id) => stationsApi.deleteStation(id),
+    mutationFn: (id: string) => stationsApi.deleteStation(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
     },

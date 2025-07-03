@@ -1,3 +1,4 @@
+
 /**
  * @file hooks/api/useReports.ts
  * @description React Query hooks for reports API
@@ -14,10 +15,7 @@ export const useReports = () => {
     queryKey: ['reports'],
     queryFn: () => reportsService.getReports(),
     staleTime: 60000, // 1 minute
-    retry: 2,
-    onError: (error) => {
-      console.error('[REPORTS-HOOK] Error fetching reports:', error);
-    }
+    retry: 2
   });
 };
 
@@ -32,10 +30,7 @@ export const useReport = (id: string) => {
     queryFn: () => reportsService.getReport(id),
     enabled: !!id,
     staleTime: 60000, // 1 minute
-    retry: 2,
-    onError: (error) => {
-      console.error(`[REPORTS-HOOK] Error fetching report ${id}:`, error);
-    }
+    retry: 2
   });
 };
 

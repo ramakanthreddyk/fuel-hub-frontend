@@ -28,12 +28,26 @@ interface StationWithMetrics {
     totalSales: number;
     activePumps: number;
     totalPumps: number;
+    totalVolume?: number;
+    transactionCount?: number;
   };
 }
 
 export function OrganizationHierarchy() {
-  const { data: stations = [], isLoading } = useStationsWithMetrics();
+  const { data: stationsData = [], isLoading } = useStationsWithMetrics();
   const [expandedStations, setExpandedStations] = useState<Set<string>>(new Set());
+
+  // Transform the stations data to match our expected interface
+  const stations: StationWithMetrics[] = Array.isArray(stationsData) 
+    ? stationsData.map(station => ({
+        ...station,
+        status: (station.status === 'active' || station.status === 'inactive' || station.status === 'maintenance') 
+          ? station.status 
+          : 'active' as const,
+        pumpCount: station.pumpCount || 0,
+        attendantCount: station.attendantCount || 0,
+      }))
+    : [];
 
   const toggleStation = (stationId: string) => {
     const newExpanded = new Set(expandedStations);
@@ -163,13 +177,13 @@ export function OrganizationHierarchy() {
                             </div>
                             <div className="text-center p-2 bg-blue-50 rounded">
                               <div className="text-lg font-bold text-blue-600">
-                                {(station.metrics as any).totalVolume ? `${(station.metrics as any).totalVolume.toLocaleString()}L` : 'N/A'}
+                                {station.metrics.totalVolume ? `${station.metrics.totalVolume.toLocaleString()}L` : 'N/A'}
                               </div>
                               <div className="text-xs text-muted-foreground">Volume</div>
                             </div>
                             <div className="text-center p-2 bg-purple-50 rounded">
                               <div className="text-lg font-bold text-purple-600">
-                                {(station.metrics as any).transactionCount || 0}
+                                {station.metrics.transactionCount || 0}
                               </div>
                               <div className="text-xs text-muted-foreground">Transactions</div>
                             </div>

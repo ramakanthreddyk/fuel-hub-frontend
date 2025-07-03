@@ -1,3 +1,4 @@
+
 /**
  * @file hooks/api/useReadings.ts
  * @description React Query hooks for readings API
@@ -14,10 +15,7 @@ export const useReadings = () => {
     queryKey: ['readings'],
     queryFn: () => readingsService.getReadings(),
     staleTime: 60000, // 1 minute
-    retry: 2,
-    onError: (error) => {
-      console.error('[READINGS-HOOK] Error fetching readings:', error);
-    }
+    retry: 2
   });
 };
 
@@ -32,10 +30,7 @@ export const useReading = (id: string) => {
     queryFn: () => readingsService.getReading(id),
     enabled: !!id,
     staleTime: 60000, // 1 minute
-    retry: 2,
-    onError: (error) => {
-      console.error(`[READINGS-HOOK] Error fetching reading ${id}:`, error);
-    }
+    retry: 2
   });
 };
 
@@ -50,10 +45,22 @@ export const useLatestReading = (nozzleId: string) => {
     queryFn: () => readingsService.getLatestReading(nozzleId),
     enabled: !!nozzleId,
     staleTime: 60000, // 1 minute
-    retry: 2,
-    onError: (error) => {
-      console.error(`[READINGS-HOOK] Error fetching latest reading for nozzle ${nozzleId}:`, error);
-    }
+    retry: 2
+  });
+};
+
+/**
+ * Hook to check if reading can be created for nozzle
+ * @param nozzleId Nozzle ID
+ * @returns Query result with can create reading data
+ */
+export const useCanCreateReading = (nozzleId: string) => {
+  return useQuery({
+    queryKey: ['can-create-reading', nozzleId],
+    queryFn: () => readingsService.canCreateReading(nozzleId),
+    enabled: !!nozzleId,
+    staleTime: 60000, // 1 minute
+    retry: 2
   });
 };
 
