@@ -1,108 +1,79 @@
+/**
+ * @file api/auth.ts
+ * @description Authentication API functions
+ */
+import apiClient from './core/apiClient';
 
-import { apiClient, extractApiData } from './client';
-import type { LoginRequest, LoginResponse, ApiResponse } from './api-contract';
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
 
-const devLog = (message: string, ...args: any[]) => {
-  if (import.meta.env.DEV) {
-    console.log(`[AUTH-API] ${message}`, ...args);
-  }
-};
+interface LoginResponse {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    tenantId?: string;
+    tenantName?: string;
+  };
+  token: string;
+}
 
-const devError = (message: string, ...args: any[]) => {
-  if (import.meta.env.DEV) {
-    console.error(`[AUTH-API] ${message}`, ...args);
-  }
-};
+interface RefreshTokenResponse {
+  token: string;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    tenantId?: string;
+    tenantName?: string;
+  };
+}
 
 export const authApi = {
-  login: async (credentials: LoginRequest, forceAdminRoute: boolean = false): Promise<LoginResponse> => {
-    devLog('Sending login request:', { 
-      email: credentials.email, 
-      forceAdminRoute 
-    });
-    
+  /**
+   * Login user
+   * @param credentials User credentials
+   * @param isAdminLogin Whether this is an admin login
+   * @returns Login response with user and token
+   */
+  login: async (credentials: LoginCredentials, isAdminLogin = false): Promise<LoginResponse> => {
     try {
-      devLog('API base URL:', apiClient.defaults.baseURL);
-      
-      if (forceAdminRoute) {
-        // Force admin route when user accessed /login/admin
-        devLog('Force admin route detected - using SuperAdmin endpoint: /admin/auth/login');
-        
-        const adminResponse = await apiClient.post('/admin/auth/login', credentials);
-        const adminLoginData = extractApiData<LoginResponse>(adminResponse);
-        
-        devLog('SuperAdmin login successful:', {
-          hasToken: !!adminLoginData.token,
-          hasUser: !!adminLoginData.user,
-          role: adminLoginData.user?.role
-        });
-        
-        if (!adminLoginData.token || !adminLoginData.user) {
-          throw new Error('Invalid SuperAdmin response structure');
-        }
-        
-        return adminLoginData;
-      } else {
-        // Regular user login - try regular endpoint first
-        devLog('Attempting regular user login at /auth/login...');
-        try {
-          const response = await apiClient.post('/auth/login', credentials);
-          const loginData = extractApiData<LoginResponse>(response);
-          
-          devLog('Regular user login successful:', {
-            hasToken: !!loginData.token,
-            hasUser: !!loginData.user,
-            role: loginData.user?.role
-          });
-          
-          if (!loginData.token || !loginData.user) {
-            throw new Error('Invalid login response structure');
-          }
-          
-          return loginData;
-        } catch (regularError: any) {
-          devLog('Regular user login failed, trying SuperAdmin login at /admin/auth/login...');
-          
-          // If regular login fails with 401/404, try admin login as fallback
-          if (regularError.response?.status === 404 || regularError.response?.status === 401) {
-            const adminResponse = await apiClient.post('/admin/auth/login', credentials);
-            const adminLoginData = extractApiData<LoginResponse>(adminResponse);
-            
-            devLog('SuperAdmin fallback login successful:', {
-              hasToken: !!adminLoginData.token,
-              hasUser: !!adminLoginData.user,
-              role: adminLoginData.user?.role
-            });
-            
-            if (!adminLoginData.token || !adminLoginData.user) {
-              throw new Error('Invalid SuperAdmin response structure');
-            }
-            
-            return adminLoginData;
-          } else {
-            throw regularError;
-          }
-        }
-      }
-    } catch (error: any) {
-      devError('Login request failed:', error.message);
-      devLog('Error details:', error.response?.data || 'No response data');
+      const endpoint = isAdminLogin ? 'auth/admin/login' : 'auth/login';
+      const response = await apiClient.post(endpoint, credentials);
+      return response.data;
+    } catch (error) {
+      console.error('[AUTH-API] Login error:', error);
       throw error;
     }
   },
-  
+
+  /**
+   * Logout user
+   */
   logout: async (): Promise<void> => {
-    devLog('Logging out user');
-    await apiClient.post('/auth/logout');
+    try {
+      await apiClient.post('auth/logout');
+    } catch (error) {
+      console.error('[AUTH-API] Logout error:', error);
+      throw error;
+    }
   },
-  
-  refreshToken: async (): Promise<LoginResponse> => {
-    devLog('Refreshing token');
-    const response = await apiClient.post('/auth/refresh');
-    return extractApiData<LoginResponse>(response);
+
+  /**
+   * Refresh authentication token
+   * @returns New token and possibly updated user info
+   */
+  refreshToken: async (): Promise<RefreshTokenResponse> => {
+    try {
+      const response = await apiClient.post('auth/refresh-token');
+      return response.data;
+    } catch (error) {
+      console.error('[AUTH-API] Token refresh error:', error);
+      throw error;
+    }
   }
 };
-
-// Export types for backward compatibility
-export type { LoginRequest, LoginResponse };
-export type { UserRole } from './api-contract';
