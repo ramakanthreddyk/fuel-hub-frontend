@@ -2,6 +2,7 @@
 /**
  * @file NewReadingPage.tsx
  * @description Simplified page component for recording new nozzle readings
+ * Updated layout for mobile-friendliness – 2025-07-03
  */
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -10,16 +11,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useStations } from '@/hooks/api/useStations';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
 import { useCreateReading, useLatestReading } from '@/hooks/api/useReadings';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
+import { useToast } from '@/hooks/use-toast';
 
 export default function NewReadingPage() {
   const navigate = useNavigate();
   const { nozzleId } = useParams();
+  const { toast } = useToast();
   
   // Form state
   const [selectedStationId, setSelectedStationId] = useState('');
@@ -72,31 +76,45 @@ export default function NewReadingPage() {
     setSelectedNozzleId('');
   };
   
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  // Handle form submission with better error handling
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedNozzleId || reading < minReading) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please ensure all fields are filled correctly and reading is valid',
+        variant: 'destructive'
+      });
       return;
     }
     
     setIsSubmitting(true);
     
-    createReading.mutate({
-      nozzleId: selectedNozzleId,
-      reading: reading,
-      recordedAt: new Date(recordedAt).toISOString(),
-      paymentMethod: paymentMethod as 'cash' | 'card' | 'upi' | 'credit'
-    }, {
-      onSuccess: () => {
-        // Navigate to readings page
-        navigate('/dashboard/readings');
-      },
-      onError: (error) => {
-        console.error('Error creating reading:', error);
-        setIsSubmitting(false);
-      }
-    });
+    try {
+      await createReading.mutateAsync({
+        nozzleId: selectedNozzleId,
+        reading: reading,
+        recordedAt: new Date(recordedAt).toISOString(),
+        paymentMethod: paymentMethod as 'cash' | 'card' | 'upi' | 'credit'
+      });
+      
+      toast({
+        title: 'Success',
+        description: 'Reading recorded successfully'
+      });
+      
+      // Navigate to readings page
+      navigate('/dashboard/readings');
+    } catch (error) {
+      console.error('Error creating reading:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to record reading. Please try again.',
+        variant: 'destructive'
+      });
+      setIsSubmitting(false);
+    }
   };
   
   // Loading state
@@ -116,31 +134,32 @@ export default function NewReadingPage() {
   const selectedPump = pumps.find(p => p.id === selectedPumpId);
   
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => navigate('/dashboard/readings')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Readings
+            <span className="hidden sm:inline">Back to Readings</span>
+            <span className="sm:hidden">Back</span>
           </Button>
-          <h1 className="text-2xl font-bold">New Reading Entry</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">New Reading Entry</h1>
         </div>
       </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Reading Details</CardTitle>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">Reading Details</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Station, Pump, Nozzle Selection */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Station, Pump, Nozzle Selection - Improved mobile layout */}
+            <div className="grid grid-cols-1 gap-4">
               {/* Station */}
               <div className="space-y-2">
-                <Label htmlFor="station">Station</Label>
+                <Label htmlFor="station" className="text-sm font-medium">Station</Label>
                 {nozzleId && selectedStation ? (
-                  <div className="p-2 border rounded-md bg-muted">
-                    <span className="font-medium">{selectedStation.name}</span>
+                  <div className="p-3 border rounded-md bg-muted/50">
+                    <span className="font-medium text-sm">{selectedStation.name}</span>
                   </div>
                 ) : (
                   <Select 
@@ -164,10 +183,10 @@ export default function NewReadingPage() {
               
               {/* Pump */}
               <div className="space-y-2">
-                <Label htmlFor="pump">Pump</Label>
+                <Label htmlFor="pump" className="text-sm font-medium">Pump</Label>
                 {nozzleId && selectedPump ? (
-                  <div className="p-2 border rounded-md bg-muted">
-                    <span className="font-medium">{selectedPump.name}</span>
+                  <div className="p-3 border rounded-md bg-muted/50">
+                    <span className="font-medium text-sm">{selectedPump.name}</span>
                   </div>
                 ) : (
                   <Select 
@@ -197,12 +216,17 @@ export default function NewReadingPage() {
               
               {/* Nozzle */}
               <div className="space-y-2">
-                <Label htmlFor="nozzle">Nozzle</Label>
+                <Label htmlFor="nozzle" className="text-sm font-medium">Nozzle</Label>
                 {nozzleId && selectedNozzle ? (
-                  <div className="p-2 border rounded-md bg-muted">
-                    <span className="font-medium">
-                      Nozzle {selectedNozzle.nozzleNumber} ({selectedNozzle.fuelType})
-                    </span>
+                  <div className="p-3 border rounded-md bg-muted/50">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">
+                        Nozzle {selectedNozzle.nozzleNumber}
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        {selectedNozzle.fuelType}
+                      </Badge>
+                    </div>
                   </div>
                 ) : (
                   <Select 
@@ -231,51 +255,67 @@ export default function NewReadingPage() {
               </div>
             </div>
             
-            {/* Nozzle Info Panel */}
+            {/* Nozzle Info Panel - Improved mobile layout */}
             {selectedNozzle && (
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
+              <div className="p-4 bg-muted/30 rounded-lg border">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Fuel Type:</span>
-                    <span className="ml-2 font-medium">{selectedNozzle.fuelType}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {selectedNozzle.fuelType}
+                    </Badge>
                   </div>
-                  <div>
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Previous Reading:</span>
-                    <span className="ml-2 font-medium">{latestReading?.reading || 0} L</span>
+                    <span className="font-mono font-medium">
+                      {latestReading?.reading?.toFixed(2) || '0.00'} L
+                    </span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Nozzle:</span>
-                    <span className="ml-2 font-medium">#{selectedNozzle.nozzleNumber || 'N/A'}</span>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Nozzle Number:</span>
+                    <span className="font-medium">#{selectedNozzle.nozzleNumber || 'N/A'}</span>
                   </div>
-                  <div>
+                  <div className="flex justify-between">
                     <span className="text-muted-foreground">Status:</span>
-                    <span className="ml-2 font-medium capitalize">{selectedNozzle.status}</span>
+                    <Badge variant={selectedNozzle.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                      {selectedNozzle.status}
+                    </Badge>
                   </div>
                 </div>
               </div>
             )}
             
-            {/* Reading and Time */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Reading and Time - Improved mobile layout */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="reading">Current Reading (L)</Label>
+                <Label htmlFor="reading" className="text-sm font-medium">Current Reading (L)</Label>
                 <Input
                   id="reading"
                   type="number"
+                  step="0.01"
                   min={minReading}
-                  value={reading}
+                  value={reading || ''}
                   onChange={(e) => setReading(Number(e.target.value))}
+                  placeholder="Enter current reading"
                   required
+                  className="font-mono"
                 />
-                {reading < minReading && (
-                  <p className="text-sm text-red-500">
-                    Reading must be at least {minReading}
-                  </p>
+                {reading > 0 && reading < minReading && (
+                  <div className="flex items-center gap-2 text-sm text-red-600">
+                    <AlertCircle className="h-4 w-4" />
+                    Reading must be at least {minReading.toFixed(2)}
+                  </div>
+                )}
+                {reading > minReading && (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle className="h-4 w-4" />
+                    Volume: {(reading - minReading).toFixed(2)} L
+                  </div>
                 )}
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="recordedAt">Recorded At</Label>
+                <Label htmlFor="recordedAt" className="text-sm font-medium">Recorded At</Label>
                 <Input
                   id="recordedAt"
                   type="datetime-local"
@@ -288,7 +328,7 @@ export default function NewReadingPage() {
             
             {/* Payment Method */}
             <div className="space-y-2">
-              <Label htmlFor="paymentMethod">Payment Method</Label>
+              <Label htmlFor="paymentMethod" className="text-sm font-medium">Payment Method</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                 <SelectTrigger>
                   <SelectValue />
@@ -302,19 +342,32 @@ export default function NewReadingPage() {
               </Select>
             </div>
             
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || !selectedNozzleId || reading < minReading || !hasFuelPrices} 
-              className="w-full"
-            >
-              {isSubmitting ? 'Recording...' : 'Record Reading'}
-            </Button>
-            
-            {!hasFuelPrices && selectedStationId && (
-              <p className="text-sm text-red-500 text-center">
-                This station has no active fuel prices. Please add fuel prices before recording readings.
-              </p>
-            )}
+            {/* Submit button with better validation feedback */}
+            <div className="space-y-3">
+              {!hasFuelPrices && selectedStationId && (
+                <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <p className="text-sm text-yellow-800">
+                    This station has no active fuel prices. Please add fuel prices before recording readings.
+                  </p>
+                </div>
+              )}
+              
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || !selectedNozzleId || reading < minReading || !hasFuelPrices} 
+                className="w-full"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Recording...
+                  </>
+                ) : (
+                  'Record Reading'
+                )}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

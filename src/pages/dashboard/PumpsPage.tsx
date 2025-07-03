@@ -2,6 +2,7 @@
 /**
  * @file pages/dashboard/PumpsPage.tsx
  * @description Page for managing pumps with improved mobile layout
+ * Updated layout for mobile-friendliness – 2025-07-03
  */
 import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
@@ -12,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useForm } from 'react-hook-form';
 import { Plus, Fuel, Settings, Activity, Building2, Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -121,6 +123,14 @@ export default function PumpsPage() {
     }
   };
 
+  // Handle pump settings - placeholder for future feature
+  const handlePumpSettings = (pumpId: string) => {
+    toast({
+      title: "Coming Soon",
+      description: "Pump settings feature is under development",
+    });
+  };
+
   // Handle back to stations navigation
   const handleBackToStations = () => {
     navigateBack(navigate, '/dashboard/stations');
@@ -131,65 +141,64 @@ export default function PumpsPage() {
   // If no station is selected, show station selector
   if (!effectiveStationId) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Pumps</h1>
-            <p className="text-muted-foreground text-sm md:text-base">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Pumps</h1>
+            <p className="text-muted-foreground text-sm md:text-base mt-1">
               Please select a station to manage its pumps
             </p>
           </div>
         </div>
         
-        <Card className="p-4 md:p-6">
-          <CardHeader>
-            <CardTitle>Select a Station</CardTitle>
-            <CardDescription>Choose a station to view its pumps</CardDescription>
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Select a Station</CardTitle>
+            <CardDescription className="text-sm">Choose a station to view its pumps</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="station-select" className="text-sm font-medium">
-                    Station
-                  </label>
-                  <Select 
-                    value={selectedStationId} 
-                    onValueChange={handleStationChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select station" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {stationsLoading ? (
-                        <SelectItem value="loading" disabled>Loading stations...</SelectItem>
-                      ) : stations.length === 0 ? (
-                        <SelectItem value="no-stations" disabled>No stations available</SelectItem>
-                      ) : (
-                        stations.map((station) => (
-                          <SelectItem key={station.id} value={station.id}>
-                            {station.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="station-select" className="text-sm font-medium">
+                  Station
+                </label>
+                <Select 
+                  value={selectedStationId} 
+                  onValueChange={handleStationChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select station" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stationsLoading ? (
+                      <SelectItem value="loading" disabled>Loading stations...</SelectItem>
+                    ) : stations.length === 0 ? (
+                      <SelectItem value="no-stations" disabled>No stations available</SelectItem>
+                    ) : (
+                      stations.map((station) => (
+                        <SelectItem key={station.id} value={station.id}>
+                          {station.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex flex-col gap-3 pt-2">
+                <Button variant="outline" onClick={handleBackToStations} className="w-full sm:w-auto">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  View All Stations
+                </Button>
                 
-                <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
-                  <Button variant="outline" onClick={handleBackToStations}>
-                    <Building2 className="mr-2 h-4 w-4" />
-                    View All Stations
-                  </Button>
-                  
-                  <Button 
-                    onClick={() => navigate('/dashboard/stations/new')}
-                    disabled={stationsLoading}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create New Station
-                  </Button>
-                </div>
+                <Button 
+                  onClick={() => navigate('/dashboard/stations/new')}
+                  disabled={stationsLoading}
+                  className="w-full sm:w-auto"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create New Station
+                </Button>
               </div>
             </div>
           </CardContent>
@@ -214,45 +223,49 @@ export default function PumpsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleBackToStations}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Stations
-            </Button>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Pumps</h1>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-            <p className="text-muted-foreground text-sm md:text-base">
-              Station: 
-            </p>
-            <Select 
-              value={effectiveStationId} 
-              onValueChange={handleStationChange}
-            >
-              <SelectTrigger className="w-full sm:w-[200px] h-8">
-                <SelectValue placeholder="Select station" />
-              </SelectTrigger>
-              <SelectContent>
-                {stations.map((station) => (
-                  <SelectItem key={station.id} value={station.id}>
-                    {station.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      {/* Improved header layout for mobile */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="outline" size="sm" onClick={handleBackToStations}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Back to Stations</span>
+            <span className="sm:hidden">Back</span>
+          </Button>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Pumps</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
+              <p className="text-muted-foreground text-sm hidden sm:block">
+                Station: 
+              </p>
+              <Select 
+                value={effectiveStationId} 
+                onValueChange={handleStationChange}
+              >
+                <SelectTrigger className="w-full sm:w-[200px] h-8 text-xs sm:text-sm">
+                  <SelectValue placeholder="Select station" />
+                </SelectTrigger>
+                <SelectContent>
+                  {stations.map((station) => (
+                    <SelectItem key={station.id} value={station.id}>
+                      {station.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
+        
+        {/* Add pump button - full width on mobile */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto sm:self-start">
               <Plus className="mr-2 h-4 w-4" />
               Add Pump
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] mx-4">
             <DialogHeader>
               <DialogTitle>Add New Pump</DialogTitle>
               <DialogDescription>
@@ -315,7 +328,7 @@ export default function PumpsPage() {
 
       {/* Desktop Stats Cards */}
       <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Pumps</CardTitle>
             <Fuel className="h-4 w-4 text-muted-foreground" />
@@ -324,7 +337,7 @@ export default function PumpsPage() {
             <div className="text-2xl font-bold">{pumps.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Pumps</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
@@ -335,7 +348,7 @@ export default function PumpsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Nozzles</CardTitle>
             <Settings className="h-4 w-4 text-muted-foreground" />
@@ -346,7 +359,7 @@ export default function PumpsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Under Maintenance</CardTitle>
             <Settings className="h-4 w-4 text-muted-foreground" />
@@ -359,44 +372,34 @@ export default function PumpsPage() {
         </Card>
       </div>
 
-      {/* Pumps Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {pumps.map((pump) => (
-          <PumpCard
-            key={pump.id}
-            pump={{
-              ...pump,
-              nozzleCount: pump.nozzleCount || 0
-            }}
-            onViewNozzles={() => handleViewNozzles(pump.id)}
-            onSettings={() => {
-              navigate(`/dashboard/pumps/${pump.id}`);
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Refresh button */}
-      <div className="flex justify-end mb-4">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => refetch()}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Loading...' : 'Refresh Pumps'}
-        </Button>
+      {/* Pumps Grid with improved mobile layout */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <TooltipProvider>
+          {pumps.map((pump) => (
+            <div key={pump.id} className="overflow-hidden">
+              <PumpCard
+                pump={{
+                  ...pump,
+                  nozzleCount: pump.nozzleCount || 0,
+                  stationName: station?.name || 'Unknown Station'
+                }}
+                onViewNozzles={() => handleViewNozzles(pump.id)}
+                onSettings={() => handlePumpSettings(pump.id)}
+              />
+            </div>
+          ))}
+        </TooltipProvider>
       </div>
 
       {pumps.length === 0 && !isLoading && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-8">
+        <Card className="overflow-hidden">
+          <CardContent className="flex flex-col items-center justify-center py-8 px-4">
             <Fuel className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No pumps found</h3>
-            <p className="text-muted-foreground text-center mb-4">
+            <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
               Get started by adding your first pump to this station.
             </p>
-            <Button onClick={() => setIsAddDialogOpen(true)}>
+            <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Add First Pump
             </Button>

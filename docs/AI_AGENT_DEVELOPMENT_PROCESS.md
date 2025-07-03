@@ -1,165 +1,128 @@
+
 # AI Agent Development Process
 
-This document outlines the specific process that AI agents should follow when working on the FuelSync frontend codebase. It ensures that AI agents maintain the same standards as human developers and produce maintainable, well-documented code.
+## UI Layout Rules - Updated 2025-07-03
 
-## Process Overview
+This document outlines the development standards and UI guidelines for the FuelSync ERP system.
 
-1. **Understand the Request**
-2. **Consult Documentation**
-3. **Analyze Existing Code**
-4. **Plan the Implementation**
-5. **Implement Changes**
-6. **Test Changes**
-7. **Document Changes**
-8. **Provide Implementation Summary**
+### 🎨 Global UI Rules
 
-## Detailed Process
+#### Mobile-First Responsive Design
+- Always implement mobile-first responsive layouts
+- Use Tailwind's responsive prefixes: `sm:`, `md:`, `lg:`, `xl:`
+- Grid layouts should start with `grid-cols-1` and expand: `sm:grid-cols-2 md:grid-cols-3`
+- Cards must use `overflow-hidden` to prevent layout breaks
 
-### 1. Understanding the Request
+#### Spacing and Layout
+- Use consistent spacing with Tailwind's `gap-*` classes
+- Implement proper padding with `p-4 sm:p-6` pattern
+- Button bars should use `flex-wrap` for mobile compatibility
+- Stack elements vertically on mobile using `flex-col sm:flex-row`
 
-- Identify the type of request (feature, bug fix, refactoring)
-- Determine which user journey it belongs to
-- Identify the components and services affected
-- Clarify any ambiguities with follow-up questions
+#### Component Standards
+- All cards should have `overflow-hidden` class
+- Text should use `text-ellipsis` for long content
+- Use responsive visibility: `sm:hidden`, `md:block`
+- Implement proper loading states with skeleton components
 
-Example:
-```
-This appears to be a feature request to add sorting functionality to the fuel prices table.
-This belongs to the Manager journey and affects the FuelPricesPage component and related services.
-```
+### 📱 Page-Specific Guidelines
 
-### 2. Consulting Documentation
-
-- Start with docs/README.md
-- Check docs/DOCUMENTATION_MAP.md
-- Review the appropriate user journey document
-- Read the API Integration Guide
-
-Example:
-```
-I've reviewed the following documentation:
-- docs/journeys/MANAGER.md for the Manager journey
-- docs/API_INTEGRATION_GUIDE.md for implementation patterns
-- docs/DOCUMENTATION_MAP.md to find related code files
-```
-
-### 3. Analyzing Existing Code
-
-- Examine related services and hooks
-- Review component implementations
-- Understand data flow and state management
-
-Example:
-```
-I've analyzed:
-- src/api/services/fuelPricesService.ts
-- src/hooks/api/useFuelPrices.ts
-- src/components/fuel-prices/FuelPriceTable.tsx
+#### Navigation Pattern
+```tsx
+// Standard navigation header
+<div className="flex flex-col gap-4">
+  <div className="flex items-center gap-3 min-w-0">
+    <Button variant="outline" size="sm" onClick={handleBack}>
+      <ArrowLeft className="mr-2 h-4 w-4" />
+      <span className="hidden sm:inline">Back to Previous</span>
+      <span className="sm:hidden">Back</span>
+    </Button>
+    <div className="min-w-0 flex-1">
+      <h1 className="text-xl sm:text-2xl font-bold">Page Title</h1>
+      <p className="text-muted-foreground text-sm">Description</p>
+    </div>
+  </div>
+  <Button className="w-full sm:w-auto sm:self-start">
+    <Plus className="mr-2 h-4 w-4" />
+    Action Button
+  </Button>
+</div>
 ```
 
-### 4. Planning the Implementation
-
-- Create a minimal implementation plan
-- Identify files to modify
-- Plan for backward compatibility
-
-Example:
-```
-Implementation Plan:
-1. Add sorting state to FuelPriceTable component
-2. Implement sort functions for different columns
-3. Update the table UI to show sort indicators
-4. Ensure backward compatibility with existing features
+#### Form Layout Pattern
+```tsx
+// Responsive form sections
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div className="space-y-2">
+    <Label className="text-sm font-medium">Field Label</Label>
+    <Input placeholder="Enter value" />
+  </div>
+</div>
 ```
 
-### 5. Implementing Changes
-
-- Follow standardized patterns
-- Use existing services and hooks
-- Add proper error handling
-- Include JSDoc comments
-
-### 6. Testing Changes
-
-- Verify functionality works as expected
-- Test error scenarios
-- Check for regressions
-
-### 7. Documenting Changes
-
-- Update relevant documentation
-- Add JSDoc comments
-- Update DOCUMENTATION_MAP.md if needed
-- Add entry to FRONTEND_CHANGELOG.md
-
-### 8. Providing Implementation Summary
-
-- Summarize what was changed and why
-- Explain how it was implemented
-- Note any potential impact on other features
-- Document any known limitations
-
-Example:
-```
-Implementation Summary:
-- Added sorting functionality to the FuelPriceTable component
-- Implemented sort functions for price, date, and station columns
-- Updated the UI to show sort indicators
-- Maintained backward compatibility with existing filtering
-- Known limitation: Sorting resets when filters are applied
+#### Card Grid Pattern
+```tsx
+// Responsive card grids
+<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+  {items.map(item => (
+    <div key={item.id} className="overflow-hidden">
+      <Card>...</Card>
+    </div>
+  ))}
+</div>
 ```
 
-## Accountability Requirements
+### 🔧 API Integration Standards
 
-AI agents must:
+#### Error Handling
+- Always implement try-catch blocks in mutation handlers
+- Show toast notifications for success/error states
+- Provide meaningful error messages to users
+- Log errors to console for debugging
 
-1. **Follow the Development Accountability Checklist**
-2. **Provide clear reasoning for implementation decisions**
-3. **Document all changes thoroughly**
-4. **Highlight any deviations from standard patterns**
-5. **Suggest improvements to documentation when gaps are found**
+#### Loading States
+- Use React Query's `isLoading` states
+- Implement skeleton components for better UX
+- Show loading spinners for form submissions
+- Disable buttons during async operations
 
-## Example Workflow
+#### Form Validation
+- Validate required fields before submission
+- Show real-time validation feedback
+- Use proper TypeScript types for form data
+- Implement optimistic updates where appropriate
 
-Here's an example of how an AI agent should approach a task:
+### 📋 Development Checklist
 
-```
-Task: Add sorting functionality to the fuel prices table
+Before considering a feature complete, ensure:
 
-1. Understanding:
-   This is a feature request for the Manager journey affecting the FuelPricesTable component.
+- [ ] Mobile responsive design implemented
+- [ ] Loading states handled properly
+- [ ] Error boundaries in place
+- [ ] Form validation working
+- [ ] Navigation flow tested
+- [ ] TypeScript errors resolved
+- [ ] Toast notifications implemented
+- [ ] Proper spacing and overflow handling
+- [ ] Accessibility considerations met
+- [ ] Cross-browser compatibility verified
 
-2. Documentation:
-   I've reviewed the Manager journey and API Integration Guide.
+### 🚀 Best Practices
 
-3. Analysis:
-   The FuelPriceTable component currently displays prices without sorting.
-   It uses the useFuelPrices hook to fetch data.
+1. **Keep Components Small**: Aim for components under 200 lines
+2. **Separate Concerns**: Use custom hooks for business logic
+3. **Consistent Naming**: Follow established naming conventions
+4. **Document Changes**: Update changelog and relevant docs
+5. **Test Thoroughly**: Verify on multiple screen sizes
+6. **Performance**: Optimize re-renders with proper dependencies
 
-4. Plan:
-   - Add sorting state to the component
-   - Implement sort functions
-   - Update UI with sort indicators
-   - Ensure backward compatibility
+### 🐛 Common Issues to Avoid
 
-5. Implementation:
-   [Code implementation details]
+- Cards breaking on small screens (use `overflow-hidden`)
+- Cramped button layouts (use proper `gap-*` spacing)
+- Missing loading states (implement skeleton components)
+- Poor mobile navigation (stack elements vertically)
+- Broken form submissions (proper error handling)
+- Route context loss (preserve navigation state)
 
-6. Testing:
-   - Verified sorting works for all columns
-   - Tested with empty data
-   - Checked mobile view
-
-7. Documentation:
-   - Added JSDoc comments
-   - Updated FRONTEND_CHANGELOG.md
-
-8. Summary:
-   [Implementation summary]
-```
-
-## Last Updated
-
-**Date**: Documentation Consolidation
-**Updated By**: Development Team
-**Next Review**: Quarterly
+This document should be referenced for all UI/UX development work to ensure consistency across the application.

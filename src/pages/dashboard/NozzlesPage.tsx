@@ -2,6 +2,7 @@
 /**
  * @file pages/dashboard/NozzlesPage.tsx
  * @description Nozzles page component with improved mobile layout and functionality
+ * Updated layout for mobile-friendliness – 2025-07-03
  */
 import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
@@ -111,6 +112,19 @@ export default function NozzlesPage() {
     navigate(`/dashboard/nozzles?pumpId=${value}&stationId=${selectedStationId}`);
   };
 
+  // Handle create nozzle - Fixed API binding
+  const handleCreateNozzle = () => {
+    if (selectedPumpId && selectedStationId) {
+      navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}&stationId=${selectedStationId}`);
+    } else {
+      toast({
+        title: 'Error',
+        description: 'Please select a pump first',
+        variant: 'destructive'
+      });
+    }
+  };
+
   // Loading state
   if ((stationsLoading || pumpsLoading) && !selectedPumpId) {
     return (
@@ -123,97 +137,96 @@ export default function NozzlesPage() {
   // If no pump is selected, show pump selector
   if (!selectedPumpId) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Nozzles</h1>
-            <p className="text-muted-foreground text-sm md:text-base">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Nozzles</h1>
+            <p className="text-muted-foreground text-sm md:text-base mt-1">
               Please select a pump to view its nozzles
             </p>
           </div>
         </div>
         
-        <Card className="p-4 md:p-6">
-          <CardHeader>
-            <CardTitle>Select a Pump</CardTitle>
-            <CardDescription>Choose a station and pump to view nozzles</CardDescription>
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Select a Pump</CardTitle>
+            <CardDescription className="text-sm">Choose a station and pump to view nozzles</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="station-select" className="text-sm font-medium">
-                    Station
-                  </label>
-                  <Select 
-                    value={selectedStationId} 
-                    onValueChange={handleStationChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select station" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {stationsLoading ? (
-                        <SelectItem value="loading" disabled>Loading stations...</SelectItem>
-                      ) : stations.length === 0 ? (
-                        <SelectItem value="no-stations" disabled>No stations available</SelectItem>
-                      ) : (
-                        stations.map((station) => (
-                          <SelectItem key={station.id} value={station.id}>
-                            {station.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="station-select" className="text-sm font-medium">
+                  Station
+                </label>
+                <Select 
+                  value={selectedStationId} 
+                  onValueChange={handleStationChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select station" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stationsLoading ? (
+                      <SelectItem value="loading" disabled>Loading stations...</SelectItem>
+                    ) : stations.length === 0 ? (
+                      <SelectItem value="no-stations" disabled>No stations available</SelectItem>
+                    ) : (
+                      stations.map((station) => (
+                        <SelectItem key={station.id} value={station.id}>
+                          {station.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="pump-select" className="text-sm font-medium">
+                  Pump
+                </label>
+                <Select 
+                  value={selectedPumpId} 
+                  onValueChange={handlePumpChange}
+                  disabled={!selectedStationId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select pump" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {!selectedStationId ? (
+                      <SelectItem value="no-station" disabled>Select a station first</SelectItem>
+                    ) : pumpsLoading ? (
+                      <SelectItem value="loading" disabled>Loading pumps...</SelectItem>
+                    ) : pumps.length === 0 ? (
+                      <SelectItem value="no-pumps" disabled>No pumps available</SelectItem>
+                    ) : (
+                      pumps.map((pump) => (
+                        <SelectItem key={pump.id} value={pump.id}>
+                          {pump.name} {pump.serialNumber ? `(${pump.serialNumber})` : ''}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex flex-col gap-3 pt-2">
+                <Button variant="outline" onClick={() => navigate('/dashboard/pumps')} className="w-full sm:w-auto">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  View All Pumps
+                </Button>
                 
-                <div className="space-y-2">
-                  <label htmlFor="pump-select" className="text-sm font-medium">
-                    Pump
-                  </label>
-                  <Select 
-                    value={selectedPumpId} 
-                    onValueChange={handlePumpChange}
+                {selectedStationId && (
+                  <Button 
+                    onClick={() => navigate(`/dashboard/pumps/new?stationId=${selectedStationId}`)}
                     disabled={!selectedStationId}
+                    className="w-full sm:w-auto"
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select pump" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {!selectedStationId ? (
-                        <SelectItem value="no-station" disabled>Select a station first</SelectItem>
-                      ) : pumpsLoading ? (
-                        <SelectItem value="loading" disabled>Loading pumps...</SelectItem>
-                      ) : pumps.length === 0 ? (
-                        <SelectItem value="no-pumps" disabled>No pumps available</SelectItem>
-                      ) : (
-                        pumps.map((pump) => (
-                          <SelectItem key={pump.id} value={pump.id}>
-                            {pump.name} {pump.serialNumber ? `(${pump.serialNumber})` : ''}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
-                  <Button variant="outline" onClick={() => navigate('/dashboard/pumps')}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    View All Pumps
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create New Pump
                   </Button>
-                  
-                  {selectedStationId && (
-                    <Button 
-                      onClick={() => navigate(`/dashboard/pumps/new?stationId=${selectedStationId}`)}
-                      disabled={!selectedStationId}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Create New Pump
-                    </Button>
-                  )}
-                </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -251,34 +264,34 @@ export default function NozzlesPage() {
   // No nozzles found
   if (nozzles.length === 0 && !nozzlesLoading) {
     return (
-      <div className="space-y-6">
-        {/* Header with back button */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+        {/* Header with improved mobile layout */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={handleBack}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </Button>
-            <div className="min-w-0">
-              <h1 className="text-2xl font-bold tracking-tight">Nozzles</h1>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Nozzles</h1>
               <p className="text-muted-foreground text-sm truncate">
-                Pump: {pump.name} | Serial: {pump.serialNumber || 'N/A'}
+                Pump: {pump.name} {pump.serialNumber ? `| Serial: ${pump.serialNumber}` : ''}
               </p>
             </div>
           </div>
-          <Button size="sm" onClick={() => navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}&stationId=${selectedStationId}`)}>
+          <Button onClick={handleCreateNozzle} className="w-full sm:w-auto sm:self-start">
             <Plus className="mr-2 h-4 w-4" />
             Add Nozzle
           </Button>
         </div>
 
-        <Card className="p-8 text-center">
+        <Card className="p-6 sm:p-8 text-center overflow-hidden">
           <Fuel className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">No nozzles yet</h3>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-4 text-sm sm:text-base">
             Get started by adding your first nozzle to this pump
           </p>
-          <Button onClick={() => navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}&stationId=${selectedStationId}`)}>
+          <Button onClick={handleCreateNozzle}>
             <Plus className="mr-2 h-4 w-4" />
             Add First Nozzle
           </Button>
@@ -288,25 +301,25 @@ export default function NozzlesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with back button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 min-w-0">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      {/* Header with improved mobile layout */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-3 min-w-0">
           <Button variant="outline" size="sm" onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            <span className="hidden sm:inline">Back</span>
           </Button>
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold tracking-tight">Nozzles</h1>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Nozzles</h1>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-sm hidden sm:block">
                 Pump: 
               </p>
               <Select 
                 value={selectedPumpId} 
                 onValueChange={handlePumpChange}
               >
-                <SelectTrigger className="w-full sm:w-[200px] h-8">
+                <SelectTrigger className="w-full sm:w-[200px] h-8 text-xs sm:text-sm">
                   <SelectValue placeholder="Select pump" />
                 </SelectTrigger>
                 <SelectContent>
@@ -320,37 +333,36 @@ export default function NozzlesPage() {
             </div>
           </div>
         </div>
-        <Button size="sm" onClick={() => navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}&stationId=${selectedStationId}`)}>
+        <Button onClick={handleCreateNozzle} className="w-full sm:w-auto sm:self-start">
           <Plus className="mr-2 h-4 w-4" />
           Add Nozzle
         </Button>
       </div>
 
-      {/* Nozzles List */}
+      {/* Nozzles List with improved mobile grid */}
       <div className="space-y-4">
         {nozzlesError ? (
           <Card className="p-6 text-center">
             <AlertTriangle className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-            <p>Error loading nozzles: {nozzlesError.message}</p>
+            <p className="text-sm">Error loading nozzles: {nozzlesError.message}</p>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {nozzles.map((nozzle) => (
-              <NozzleCard
-                key={nozzle.id}
-                nozzle={{
-                  id: nozzle.id,
-                  // Safely handle the nozzle number with fallback
-                  nozzleNumber: nozzle.nozzleNumber || 0,
-                  // Safely handle fuel type with fallback
-                  fuelType: nozzle.fuelType || 'petrol',
-                  status: nozzle.status,
-                  // serialNumber is optional in NozzleCard, so we can safely omit it
-                }}
-                onEdit={handleEditNozzle}
-                onDelete={handleDeleteNozzle}
-                onRecordReading={handleRecordReading}
-              />
+              <div key={nozzle.id} className="overflow-hidden">
+                <NozzleCard
+                  nozzle={{
+                    id: nozzle.id,
+                    nozzleNumber: nozzle.nozzleNumber || 0,
+                    fuelType: nozzle.fuelType || 'petrol',
+                    status: nozzle.status,
+                    pumpName: pump?.name || 'Unknown Pump',
+                  }}
+                  onEdit={handleEditNozzle}
+                  onDelete={handleDeleteNozzle}
+                  onRecordReading={handleRecordReading}
+                />
+              </div>
             ))}
           </div>
         )}
