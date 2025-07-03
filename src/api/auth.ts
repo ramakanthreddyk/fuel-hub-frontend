@@ -2,7 +2,7 @@
  * @file api/auth.ts
  * @description Authentication API functions
  */
-import axios from 'axios';
+import apiClient from './core/apiClient';
 
 interface LoginCredentials {
   email: string;
@@ -43,15 +43,7 @@ export const authApi = {
   login: async (credentials: LoginCredentials, isAdminLogin = false): Promise<LoginResponse> => {
     try {
       const endpoint = isAdminLogin ? 'auth/admin/login' : 'auth/login';
-      
-      const response = await axios({
-        method: 'post',
-        url: `/api/v1/${endpoint}`,
-        data: credentials,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.post(endpoint, credentials);
       
       // Handle nested response structure
       const responseData = response.data.data || response.data;
@@ -66,15 +58,7 @@ export const authApi = {
    */
   logout: async (): Promise<void> => {
     try {
-      const token = localStorage.getItem('fuelsync_token');
-      await axios({
-        method: 'post',
-        url: `/api/v1/auth/logout`,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      await apiClient.post('auth/logout');
     } catch (error) {
       throw error;
     }
@@ -86,15 +70,7 @@ export const authApi = {
    */
   refreshToken: async (): Promise<RefreshTokenResponse> => {
     try {
-      const token = localStorage.getItem('fuelsync_token');
-      const response = await axios({
-        method: 'post',
-        url: `/api/v1/auth/refresh-token`,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.post('auth/refresh-token');
       
       // Handle nested response structure
       const responseData = response.data.data || response.data;
