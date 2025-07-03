@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Eye, EyeOff, Fuel, Crown, Shield, Zap, Building, BarChart3, Users, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import axios from 'axios';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -23,6 +23,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   // Check if this is admin login via route path
   const isAdminLoginRoute = location.pathname.includes('/admin') || location.pathname === '/login/admin';
@@ -33,39 +34,13 @@ export default function LoginPage() {
     setLoginAttemptType(isAdminLoginRoute ? 'admin' : 'regular');
 
     try {
-      // Direct login without using context or service
-      const endpoint = isAdminLoginRoute ? 'auth/admin/login' : 'auth/login';
-      
-      const response = await axios({
-        method: 'post',
-        url: `/api/v1/${endpoint}`,
-        data: { email, password },
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      // Handle nested response structure
-      const responseData = response.data.data || response.data;
-      
-      if (!responseData || !responseData.token || !responseData.user) {
-        throw new Error('Invalid response from server');
-      }
-      
-      const { user, token } = responseData;
-      
-      // Store auth data
-      localStorage.setItem('fuelsync_token', token);
-      localStorage.setItem('fuelsync_user', JSON.stringify(user));
-      
-      // Force page reload to refresh the app state
-      window.location.href = user.role === 'superadmin' ? '/superadmin/overview' : '/dashboard';
-      
+      await login(email, password, isAdminLoginRoute);
+      // Navigation is handled by AuthContext
     } catch (error: any) {
       setLoginAttemptType(null);
       toast({
         title: "Login Failed",
-        description: error.response?.data?.message || error.message || "Invalid credentials. Please try again.",
+        description: error.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
