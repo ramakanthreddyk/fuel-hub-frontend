@@ -1,6 +1,5 @@
-
 /**
- * @file NewReadingPage.tsx
+ * @file pages/dashboard/NewReadingPage.tsx
  * @description Simplified page component for recording new nozzle readings
  * Updated layout for mobile-friendliness – 2025-07-03
  */
@@ -38,7 +37,7 @@ export default function NewReadingPage() {
   const { data: stations = [], isLoading: stationsLoading } = useStations();
   const { data: pumps = [], isLoading: pumpsLoading } = usePumps(selectedStationId);
   const { data: nozzles = [], isLoading: nozzlesLoading } = useNozzles(selectedPumpId);
-  const { data: latestReading } = useLatestReading(selectedNozzleId);
+  const { data: latestReading, isLoading: latestReadingLoading } = useLatestReading(selectedNozzleId);
   const { data: fuelPrices = [] } = useFuelPrices(selectedStationId);
   const createReading = useCreateReading();
   
@@ -268,7 +267,11 @@ export default function NewReadingPage() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Previous Reading:</span>
                     <span className="font-mono font-medium">
-                      {latestReading?.reading?.toFixed(2) || '0.00'} L
+                      {latestReadingLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        `${latestReading?.reading?.toFixed(2) || '0.00'} L`
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between">
