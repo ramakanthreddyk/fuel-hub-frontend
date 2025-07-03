@@ -1,4 +1,3 @@
-
 /**
  * @file pages/dashboard/NozzlesPage.tsx
  * @description Nozzles page component with improved mobile layout and functionality
@@ -356,7 +355,6 @@ export default function NozzlesPage() {
                     nozzleNumber: nozzle.nozzleNumber || 0,
                     fuelType: nozzle.fuelType || 'petrol',
                     status: nozzle.status,
-                    serialNumber: nozzle.serialNumber,
                   }}
                   onEdit={handleEditNozzle}
                   onDelete={handleDeleteNozzle}
