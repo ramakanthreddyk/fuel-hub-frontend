@@ -79,8 +79,5 @@ export const useCreateReading = () => {
       queryClient.invalidateQueries({ queryKey: ['readings'] });
       queryClient.invalidateQueries({ queryKey: ['latest-reading', variables.nozzleId] });
     },
-    onError: (error) => {
-      console.error('[READINGS-HOOK] Error creating reading:', error);
-    }
   });
 };

@@ -1,3 +1,4 @@
+
 /**
  * @file NewReadingPage.tsx
  * @description Simplified page component for recording new nozzle readings
@@ -37,18 +38,20 @@ export default function NewReadingPage() {
   const { data: fuelPrices = [] } = useFuelPrices(selectedStationId);
   const createReading = useCreateReading();
   
-  // If nozzleId is provided in URL, fetch its details
+  // If nozzleId is provided in URL, find its details to set station and pump
   useEffect(() => {
-    if (nozzleId) {
-      // Find the nozzle in the list
+    if (nozzleId && nozzles.length > 0) {
       const nozzle = nozzles.find(n => n.id === nozzleId);
       if (nozzle) {
-        // Set pump and station IDs
         setSelectedPumpId(nozzle.pumpId);
-        setSelectedStationId(nozzle.stationId);
+        // Find the station by looking through pumps
+        const pump = pumps.find(p => p.id === nozzle.pumpId);
+        if (pump) {
+          setSelectedStationId(pump.stationId);
+        }
       }
     }
-  }, [nozzleId, nozzles]);
+  }, [nozzleId, nozzles, pumps]);
   
   // Set minimum reading based on latest reading
   const minReading = latestReading?.reading || 0;
@@ -214,7 +217,7 @@ export default function NewReadingPage() {
                       {nozzles.length > 0 ? (
                         nozzles.map((nozzle) => (
                           <SelectItem key={nozzle.id} value={nozzle.id}>
-                            Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
+                            Nozzle {nozzle.nozzleNumber || 'N/A'} ({nozzle.fuelType})
                           </SelectItem>
                         ))
                       ) : (
@@ -242,7 +245,7 @@ export default function NewReadingPage() {
                   </div>
                   <div>
                     <span className="text-muted-foreground">Nozzle:</span>
-                    <span className="ml-2 font-medium">#{selectedNozzle.nozzleNumber}</span>
+                    <span className="ml-2 font-medium">#{selectedNozzle.nozzleNumber || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Status:</span>

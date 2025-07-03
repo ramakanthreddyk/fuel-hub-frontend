@@ -1,3 +1,4 @@
+
 /**
  * @file api/services/readingsService.ts
  * @description Service for readings API endpoints
@@ -50,11 +51,9 @@ export const readingsService = {
     try {
       console.log('[READINGS-API] Fetching readings');
       
-      // Use query parameter approach as per API spec
       const params = nozzleId ? { nozzleId } : {};
       const response = await apiClient.get(API_CONFIG.endpoints.readings.base, { params });
       
-      // Extract readings from response
       let readingsArray: Reading[] = [];
       
       if (response.data?.data?.readings) {
@@ -71,7 +70,6 @@ export const readingsService = {
       
       console.log(`[READINGS-API] Successfully fetched ${readingsArray.length} readings`);
       
-      // If no readings are returned, use mock data for development
       if (readingsArray.length === 0 && process.env.NODE_ENV === 'development') {
         console.log('[READINGS-API] Using mock data for development');
         return [
@@ -101,7 +99,6 @@ export const readingsService = {
     } catch (error) {
       console.error('[READINGS-API] Error fetching readings:', error);
       
-      // Return mock data for development if API fails
       if (process.env.NODE_ENV === 'development') {
         console.log('[READINGS-API] Using mock data for development due to API error');
         return [
@@ -180,6 +177,21 @@ export const readingsService = {
     } catch (error) {
       console.error('[READINGS-API] Error creating reading:', error);
       throw error;
+    }
+  },
+
+  /**
+   * Check if reading can be created for nozzle
+   * @param nozzleId Nozzle ID
+   * @returns Can create reading status
+   */
+  canCreateReading: async (nozzleId: string): Promise<{ canCreate: boolean; reason?: string; missingPrice?: boolean }> => {
+    try {
+      const response = await apiClient.get(`${API_CONFIG.endpoints.readings.base}/can-create/${nozzleId}`);
+      return extractData<{ canCreate: boolean; reason?: string; missingPrice?: boolean }>(response);
+    } catch (error) {
+      console.warn('Failed to check reading creation:', error);
+      return { canCreate: false, reason: 'Unable to verify reading requirements' };
     }
   }
 };

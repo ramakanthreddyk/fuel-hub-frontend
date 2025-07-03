@@ -62,6 +62,3 @@ export const stationsApi = {
     await apiClient.delete(`/stations/${id}`);
   }
 };
-
-// Export types for backward compatibility
-export type { Station, CreateStationData, UpdateStationData };
