@@ -1,12 +1,14 @@
 
 /**
  * @file components/nozzles/NozzleCard.tsx
- * @description Enhanced nozzle card component with mobile-responsive layout
+ * @description Enhanced nozzle card component with colorful design and mobile-responsive layout
+ * Updated for responsive colorful UI – 2025-07-03
  */
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Fuel, Edit, Trash2, Activity } from 'lucide-react';
+import { Edit, Trash2, Activity, Hash } from 'lucide-react';
+import { ColorfulCard, CardContent, CardHeader } from '@/components/ui/colorful-card';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { FuelBadge } from '@/components/ui/fuel-badge';
 
 interface NozzleCardProps {
   nozzle: {
@@ -22,72 +24,81 @@ interface NozzleCardProps {
 }
 
 export function NozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: NozzleCardProps) {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return (
-          <Badge className="bg-green-100 text-green-800 border-green-200">
-            <Activity className="w-3 h-3 mr-1" />
-            Active
-          </Badge>
-        );
-      case 'maintenance':
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
-            Maintenance
-          </Badge>
-        );
-      case 'inactive':
-        return (
-          <Badge className="bg-red-100 text-red-800 border-red-200">
-            Inactive
-          </Badge>
-        );
+  const getGradientByFuelType = (fuelType: string) => {
+    switch (fuelType.toLowerCase()) {
+      case 'petrol':
+        return 'from-green-50 via-emerald-50 to-teal-50 border-green-200';
+      case 'diesel':
+        return 'from-orange-50 via-amber-50 to-yellow-50 border-orange-200';
+      case 'premium':
+        return 'from-purple-50 via-indigo-50 to-blue-50 border-purple-200';
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return 'from-gray-50 via-slate-50 to-zinc-50 border-gray-200';
     }
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <ColorfulCard 
+      gradient={getGradientByFuelType(nozzle.fuelType)}
+      className="border"
+    >
       <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Fuel className="h-4 w-4 text-blue-600" />
-              <span className="truncate">Nozzle #{nozzle.nozzleNumber}</span>
-            </CardTitle>
-            <CardDescription className="mt-1">
-              <div className="space-y-1">
-                <div>Fuel: <span className="font-medium capitalize">{nozzle.fuelType}</span></div>
+        <div className="flex flex-col gap-3">
+          {/* Header Row */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Hash className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
+                  Nozzle #{nozzle.nozzleNumber}
+                </h3>
                 {nozzle.serialNumber && (
-                  <div className="text-xs text-muted-foreground">
-                    Serial: <span className="font-mono">{nozzle.serialNumber}</span>
-                  </div>
+                  <p className="text-xs text-gray-600 font-mono truncate">
+                    SN: {nozzle.serialNumber}
+                  </p>
                 )}
               </div>
-            </CardDescription>
+            </div>
+            <StatusBadge status={nozzle.status} size="sm" />
           </div>
-          <div className="flex-shrink-0">
-            {getStatusBadge(nozzle.status)}
+
+          {/* Fuel Type and Stats Row */}
+          <div className="flex flex-col gap-2">
+            <FuelBadge fuelType={nozzle.fuelType} size="md" />
+            
+            <div className="bg-white/60 rounded-lg p-2 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-gray-600" />
+                <div>
+                  <p className="text-xs text-gray-600">Current Status</p>
+                  <p className="font-bold text-gray-900 capitalize">{nozzle.status}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col sm:flex-row gap-2">
+      
+      <CardContent className="pt-0">
+        <div className="flex flex-col gap-2">
           <Button 
             variant="default" 
             size="sm" 
-            className="flex-1"
+            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md"
             onClick={() => onRecordReading(nozzle.id)}
+            disabled={nozzle.status !== 'active'}
           >
             <Activity className="w-4 h-4 mr-2" />
-            Record Reading
+            {nozzle.status === 'active' ? 'Record Reading' : 'Unavailable'}
           </Button>
+          
           <div className="flex gap-2">
             <Button 
               variant="outline" 
               size="sm"
+              className="flex-1 bg-white/80 backdrop-blur-sm hover:bg-white border-gray-300 hover:border-gray-400"
               onClick={() => onEdit(nozzle.id)}
             >
               <Edit className="w-4 h-4 mr-1" />
@@ -96,8 +107,8 @@ export function NozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Nozzle
             <Button 
               variant="outline" 
               size="sm"
+              className="flex-1 bg-white/80 backdrop-blur-sm hover:bg-red-50 border-gray-300 hover:border-red-400 text-red-600 hover:text-red-700"
               onClick={() => onDelete(nozzle.id)}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
               <Trash2 className="w-4 h-4 mr-1" />
               <span className="hidden sm:inline">Delete</span>
@@ -105,6 +116,6 @@ export function NozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Nozzle
           </div>
         </div>
       </CardContent>
-    </Card>
+    </ColorfulCard>
   );
 }

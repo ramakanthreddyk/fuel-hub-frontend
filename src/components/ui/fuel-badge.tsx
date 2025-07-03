@@ -1,43 +1,43 @@
 
 import { Badge } from '@/components/ui/badge';
-import { Activity, Wrench, AlertCircle } from 'lucide-react';
+import { Fuel, Zap, Crown } from 'lucide-react';
 
-interface StatusBadgeProps {
-  status: string;
+interface FuelBadgeProps {
+  fuelType: string;
   size?: 'sm' | 'md' | 'lg';
 }
 
-export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
-  const getStatusConfig = (statusValue: string) => {
-    switch (statusValue.toLowerCase()) {
-      case 'active':
+export function FuelBadge({ fuelType, size = 'md' }: FuelBadgeProps) {
+  const getFuelConfig = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'petrol':
         return {
-          icon: <Activity className="w-3 h-3" />,
+          icon: <Fuel className="w-3 h-3" />,
           color: 'bg-gradient-to-r from-green-500 to-emerald-600',
           textColor: 'text-white'
         };
-      case 'maintenance':
+      case 'diesel':
         return {
-          icon: <Wrench className="w-3 h-3" />,
-          color: 'bg-gradient-to-r from-yellow-500 to-orange-600',
+          icon: <Zap className="w-3 h-3" />,
+          color: 'bg-gradient-to-r from-orange-500 to-amber-600',
           textColor: 'text-white'
         };
-      case 'inactive':
+      case 'premium':
         return {
-          icon: <AlertCircle className="w-3 h-3" />,
-          color: 'bg-gradient-to-r from-red-500 to-pink-600',
+          icon: <Crown className="w-3 h-3" />,
+          color: 'bg-gradient-to-r from-purple-500 to-indigo-600',
           textColor: 'text-white'
         };
       default:
         return {
-          icon: <AlertCircle className="w-3 h-3" />,
+          icon: <Fuel className="w-3 h-3" />,
           color: 'bg-gradient-to-r from-gray-500 to-slate-600',
           textColor: 'text-white'
         };
     }
   };
 
-  const config = getStatusConfig(status);
+  const config = getFuelConfig(fuelType);
   const sizeClasses = {
     sm: 'px-2 py-1 text-xs',
     md: 'px-3 py-1.5 text-sm',
@@ -47,7 +47,7 @@ export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
   return (
     <Badge className={`${config.color} ${config.textColor} ${sizeClasses[size]} border-0 shadow-sm flex items-center gap-1 font-medium`}>
       {config.icon}
-      <span className="capitalize">{status}</span>
+      <span className="capitalize">{fuelType}</span>
     </Badge>
   );
 }
