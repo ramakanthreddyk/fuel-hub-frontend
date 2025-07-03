@@ -20,13 +20,22 @@ const apiClient = axios.create({
 // Default tenant ID for demo purposes
 const DEFAULT_TENANT_ID = "df9347c2-9f6c-4d32-942f-1208b91fbb2b";
 
+// Track if a token refresh is in progress
+let isRefreshing = false;
+let refreshPromise: Promise<any> | null = null;
+
 // Request interceptor to add auth token and tenant context
 apiClient.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem('fuelsync_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Skip auth for login and refresh token endpoints
+    const isAuthEndpoint = config.url?.includes('auth/login') || config.url?.includes('auth/refresh-token');
+    
+    // Add auth token if available and not an auth endpoint
+    if (!isAuthEndpoint) {
+      const token = localStorage.getItem('fuelsync_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
 
     // Add tenant context
@@ -83,7 +92,58 @@ apiClient.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If the error is due to an expired token (401) and we haven't tried to refresh yet
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('auth/refresh-token')) {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        
+        try {
+          // Try to refresh the token
+          refreshPromise = axios.post(`${API_BASE_URL}/api/v1/auth/refresh-token`);
+          const response = await refreshPromise;
+          
+          // If successful, update the token
+          const newToken = response.data.token;
+          if (newToken) {
+            localStorage.setItem('fuelsync_token', newToken);
+            
+            // Update user if returned
+            if (response.data.user) {
+              localStorage.setItem('fuelsync_user', JSON.stringify(response.data.user));
+            }
+            
+            // Update the original request with the new token
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            originalRequest._retry = true;
+            
+            // Retry the original request
+            return apiClient(originalRequest);
+          }
+        } catch (refreshError) {
+          console.error('[API-CLIENT] Token refresh failed:', refreshError);
+          // If refresh fails, redirect to login
+          window.location.href = '/login';
+        } finally {
+          isRefreshing = false;
+          refreshPromise = null;
+        }
+      } else if (refreshPromise) {
+        // If a refresh is already in progress, wait for it to complete
+        try {
+          await refreshPromise;
+          // Retry the original request with the new token
+          originalRequest.headers.Authorization = `Bearer ${localStorage.getItem('fuelsync_token')}`;
+          originalRequest._retry = true;
+          return apiClient(originalRequest);
+        } catch (error) {
+          return Promise.reject(error);
+        }
+      }
+    }
+    
     console.error(`[API-CLIENT] Request failed:`, {
       url: error.config?.url,
       method: error.config?.method,
