@@ -1,4 +1,7 @@
-
+/**
+ * @file pages/LoginPage.tsx
+ * @description Login page component
+ */
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,8 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Eye, EyeOff, Fuel, Crown, Shield, Zap, Building, BarChart3, Users, Settings } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import axios from 'axios';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,7 +20,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [loginAttemptType, setLoginAttemptType] = useState<'regular' | 'admin' | null>(null);
   
-  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -31,13 +33,39 @@ export default function LoginPage() {
     setLoginAttemptType(isAdminLoginRoute ? 'admin' : 'regular');
 
     try {
-      await login(email, password, isAdminLoginRoute);
-      // Navigation is handled by AuthContext
+      // Direct login without using context or service
+      const endpoint = isAdminLoginRoute ? 'auth/admin/login' : 'auth/login';
+      
+      const response = await axios({
+        method: 'post',
+        url: `/api/v1/${endpoint}`,
+        data: { email, password },
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Handle nested response structure
+      const responseData = response.data.data || response.data;
+      
+      if (!responseData || !responseData.token || !responseData.user) {
+        throw new Error('Invalid response from server');
+      }
+      
+      const { user, token } = responseData;
+      
+      // Store auth data
+      localStorage.setItem('fuelsync_token', token);
+      localStorage.setItem('fuelsync_user', JSON.stringify(user));
+      
+      // Force page reload to refresh the app state
+      window.location.href = user.role === 'superadmin' ? '/superadmin/overview' : '/dashboard';
+      
     } catch (error: any) {
       setLoginAttemptType(null);
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid credentials. Please try again.",
+        description: error.response?.data?.message || error.message || "Invalid credentials. Please try again.",
         variant: "destructive",
       });
     } finally {
