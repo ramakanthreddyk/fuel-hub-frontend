@@ -1,20 +1,53 @@
-
-# FuelSync Hub - Frontend Brain 🧠
+# FuelSync Frontend Brain 🧠
 
 ## Contract-First Architecture
 
 This document maps the frontend implementation to the **OpenAPI specification** and **journey documents** as the single source of truth.
 
-## Status: CONTRACT-ALIGNED ✅
+## API Integration Strategy
 
-The frontend now uses:
-- ✅ Generated TypeScript types from OpenAPI spec
-- ✅ Contract-compliant API services
-- ✅ Type-safe hooks with runtime validation
-- ✅ Centralized error handling
-- ✅ Consistent data transformation
+We've implemented a standardized API integration strategy with the following components:
 
----
+### 1. Core Layer
+- **apiClient.ts**: Centralized axios instance with standardized request/response handling
+- **config.ts**: API configuration with endpoint definitions
+
+### 2. Service Layer
+- **stationsService.ts**: Station-specific API methods
+- **pumpsService.ts**: Pump-specific API methods
+- **nozzlesService.ts**: Nozzle-specific API methods
+- **readingsService.ts**: Reading operations
+- **fuelPricesService.ts**: Price management
+- **usersService.ts**: User management
+- **reportsService.ts**: Report generation
+- **dashboardService.ts**: Analytics & metrics
+
+### 3. Hook Layer
+- **useStations.ts**: Hooks for station-related operations
+- **usePumps.ts**: Hooks for pump-related operations
+- **useNozzles.ts**: Hooks for nozzle-related operations
+- **useReadings.ts**: Hooks for reading operations
+- **useFuelPrices.ts**: Hooks for price management
+- **useUsers.ts**: Hooks for user management
+- **useReports.ts**: Hooks for report generation
+- **useDashboard.ts**: Hooks for analytics & metrics
+
+### 4. Optimization Layer
+- **useQueryConfig.ts**: Centralized React Query configuration
+- **useErrorHandler.ts**: Centralized error handling
+
+## Development Process
+
+To ensure maintainability and accountability, we've established a standardized development process:
+
+1. **Follow the Documentation**: Start with the README and Documentation Map
+2. **Use the Accountability Checklist**: Complete all items in the Development Accountability Checklist
+3. **Document Changes**: Update documentation and add JSDoc comments
+4. **Provide Implementation Summary**: Summarize what was changed and why
+
+For detailed process information, see:
+- [Development Accountability Checklist](./DEVELOPMENT_ACCOUNTABILITY_CHECKLIST.md)
+- [AI Agent Development Process](./AI_AGENT_DEVELOPMENT_PROCESS.md)
 
 ## Persona Mapping
 
@@ -39,11 +72,11 @@ The frontend now uses:
 | Journey Step | Frontend Component | API Service | Contract Status |
 |--------------|-------------------|-------------|-----------------|
 | Login | `LoginPage.tsx` | `authService.login()` | ✅ ALIGNED |
-| Dashboard | `dashboard/SummaryPage.tsx` | `dashboardService.getSalesSummary()` | ✅ ALIGNED |
+| Dashboard | `dashboard/SummaryPage.tsx` | `dashboardService.getSalesSummary()` | ✅ MIGRATED |
 | Manage Stations | `dashboard/StationsPage.tsx` | `stationsService.getStations()` | ✅ ALIGNED |
 | Create Station | `CreateStationDialog.tsx` | `stationsService.createStation()` | ✅ ALIGNED |
-| Manage Users | `dashboard/UsersPage.tsx` | `usersService.getUsers()` | ⚠️ NEEDS MIGRATION |
-| View Reports | `dashboard/ReportsPage.tsx` | `reportsService.getSalesReport()` | ⚠️ NEEDS MIGRATION |
+| Manage Users | `dashboard/UsersPage.tsx` | `usersService.getUsers()` | ✅ MIGRATED |
+| View Reports | `dashboard/ReportsPage.tsx` | `reportsService.getSalesReport()` | ✅ MIGRATED |
 
 ### 👨‍💼 Manager Journey
 
@@ -53,10 +86,10 @@ The frontend now uses:
 | Journey Step | Frontend Component | API Service | Contract Status |
 |--------------|-------------------|-------------|-----------------|
 | Login | `LoginPage.tsx` | `authService.login()` | ✅ ALIGNED |
-| Manage Pumps | `dashboard/PumpsPage.tsx` | `pumpsService.getPumps()` | ⚠️ NEEDS MIGRATION |
-| Manage Nozzles | `dashboard/NozzlesPage.tsx` | `nozzlesService.getNozzles()` | ⚠️ NEEDS MIGRATION |
-| Record Readings | `dashboard/NewReadingPage.tsx` | `readingsService.createReading()` | ⚠️ NEEDS MIGRATION |
-| Set Fuel Prices | `dashboard/FuelPricesPage.tsx` | `fuelPricesService.createPrice()` | ⚠️ NEEDS MIGRATION |
+| Manage Pumps | `dashboard/PumpsPage.tsx` | `pumpsService.getPumps()` | ✅ MIGRATED |
+| Manage Nozzles | `dashboard/NozzlesPage.tsx` | `nozzlesService.getNozzles()` | ✅ MIGRATED |
+| Record Readings | `dashboard/NewReadingPage.tsx` | `readingsService.createReading()` | ✅ MIGRATED |
+| Set Fuel Prices | `dashboard/FuelPricesPage.tsx` | `fuelPricesService.createPrice()` | ✅ MIGRATED |
 
 ### 👷 Attendant Journey
 
@@ -67,23 +100,17 @@ The frontend now uses:
 |--------------|-------------------|-------------|-----------------|
 | Login | `LoginPage.tsx` | `authService.login()` | ✅ ALIGNED |
 | View Stations | `dashboard/StationsPage.tsx` | `attendantService.getAssignedStations()` | ✅ ALIGNED |
-| Record Readings | `dashboard/NewReadingPage.tsx` | `readingsService.createReading()` | ⚠️ NEEDS ATTENDANT API |
+| Record Readings | `dashboard/NewReadingPage.tsx` | `readingsService.createReading()` | ✅ MIGRATED |
 | Submit Cash Report | Custom Component | `attendantService.createCashReport()` | ✅ ALIGNED |
 | View Alerts | `dashboard/AlertsPage.tsx` | `attendantService.getAlerts()` | ✅ ALIGNED |
 
----
-
-## Contract Services Architecture
+## Migration Status
 
 ### Core Services (✅ Implemented)
-
 - `AuthService` - Authentication & token management
 - `SuperAdminService` - Platform administration
 - `AttendantService` - Attendant-specific operations
 - `StationsService` - Station management
-
-### Services Needing Migration (⚠️ TODO)
-
 - `PumpsService` - Pump management
 - `NozzlesService` - Nozzle management
 - `ReadingsService` - Reading operations
@@ -92,78 +119,58 @@ The frontend now uses:
 - `ReportsService` - Report generation
 - `DashboardService` - Analytics & metrics
 
----
+### Components (✅ Migrated)
+- `UsersPage.tsx` - User management page
+- `NewReadingPage.tsx` - Reading entry page
+- `ReadingEntryForm.tsx` - Reading entry form
+- `FuelPricesPage.tsx` - Fuel prices management page
+- `FuelPriceTable.tsx` - Fuel prices table
 
-## Type Safety Status
+### Optimization (✅ Implemented)
+- Centralized React Query configuration
+- Optimized caching strategies
+- Centralized error handling
+- Enhanced API client with better error handling
+- Improved performance with proper timeout settings
 
-### ✅ Contract-Aligned Types
+### Documentation (✅ Implemented)
+- Comprehensive README
+- Documentation Map
+- Development Accountability Checklist
+- AI Agent Development Process
+- Updated Documentation Reference System
 
-All types are generated from OpenAPI spec and include:
-- Request/Response schemas
-- Enum validation
-- Required field enforcement
-- Nested object validation
+## Best Practices
 
-### 📋 Migration Checklist
+1. **Always Use the Service Layer**: Never make direct API calls from components
+2. **Handle Response Formats Consistently**: Use the extraction helpers
+3. **Type Everything**: Always define and use proper types
+4. **Use React Query for Data Fetching**: Always use React Query hooks in components
+5. **Handle Errors Properly**: Use the centralized error handler
+6. **Ensure Tenant Context**: Always include tenant headers for authenticated requests
+7. **Use Appropriate Caching**: Apply the right caching strategy for each data type
+8. **Document Changes**: Update documentation and add JSDoc comments
+9. **Follow the Accountability Checklist**: Complete all items in the checklist
 
-- [x] Install `openapi-typescript-codegen`
-- [x] Generate types from OpenAPI spec
-- [x] Create contract-compliant API client
-- [x] Implement core contract services
-- [x] Create contract hooks for auth and stations
-- [ ] Migrate remaining API services
-- [ ] Update all components to use contract types
-- [ ] Add runtime schema validation
-- [ ] Test all persona journeys end-to-end
+## Documentation
 
----
-
-## Runtime Validation
-
-### Planned Implementation
-
-```typescript
-// Runtime validation against OpenAPI schemas
-import { validateResponse } from '@/api/validation';
-
-const response = await contractClient.get('/stations');
-const validatedData = validateResponse(response, 'StationListResponse');
-```
-
----
-
-## Known Contract Gaps
-
-### Missing Endpoints
-- None identified - OpenAPI spec covers all journey requirements
-
-### Type Mismatches
-- Some legacy components use outdated type names (being fixed)
-- Property aliases needed for backward compatibility (implemented)
-
-### Error Handling
-- Standardized error responses per OpenAPI spec
-- Consistent error boundaries across all personas
-
----
-
-## Next Steps
-
-1. **Complete Service Migration**: Migrate remaining services to contract-first approach
-2. **Component Updates**: Update all components to use contract types
-3. **End-to-End Testing**: Validate all persona journeys
-4. **Runtime Validation**: Add schema validation for API responses
-5. **Performance Optimization**: Implement caching strategies aligned with contract
-
----
+For detailed information, refer to:
+- [README](./README.md) - Main documentation entry point
+- [Documentation Map](./DOCUMENTATION_MAP.md) - Code-documentation relationships
+- [API Integration Guide](./API_INTEGRATION_GUIDE.md) - API integration patterns
+- [Documentation Reference System](./DOCUMENTATION_REFERENCE_SYSTEM.md) - How documentation works
+- [Development Accountability Checklist](./DEVELOPMENT_ACCOUNTABILITY_CHECKLIST.md) - Checklist for all changes
+- [AI Agent Development Process](./AI_AGENT_DEVELOPMENT_PROCESS.md) - Process for AI agents
 
 ## Maintenance
 
-This document is updated automatically when:
+This document is updated when:
 - OpenAPI spec changes
 - Journey documents are modified  
 - New services are implemented
 - Contract drift is detected
+- Development process changes
 
-**Last Updated**: Contract alignment implementation
-**Next Review**: After service migration completion
+**Last Updated**: Documentation and Process Consolidation
+**Updated By**: Development Team
+**Next Review**: Quarterly
