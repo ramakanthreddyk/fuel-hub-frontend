@@ -1,5 +1,17 @@
 # FuelSync Frontend Changelog
 
+## 2023-07-03: Permission and SelectItem Value Fixes
+
+### Fixed
+- Fixed 403 Forbidden error with cash reports endpoint:
+  - Added mock data for cash reports due to permission issues
+  - Preserved original API call code for when permissions are fixed
+  - Updated TODO list to note the permission requirement
+- Fixed SelectItem empty string value error in CashReportsListPage:
+  - Changed empty string value to "all-stations" for station filter
+  - Updated logic to handle the new value in API calls
+  - Ensured consistent approach with other select components
+
 ## 2023-07-03: Backend API Integration Updates
 
 ### Fixed
