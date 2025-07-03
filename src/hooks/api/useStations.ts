@@ -1,27 +1,20 @@
+
 /**
- * @file useStations.ts
+ * @file hooks/api/useStations.ts
  * @description React Query hooks for stations API
- * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
- * @see docs/journeys/OWNER.md - Owner journey for station management
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { stationsService, Station, StationWithMetrics, CreateStationRequest, UpdateStationRequest } from '@/api/services/stationsService';
-import { queryOptions } from './useQueryConfig';
-import { useErrorHandler } from './useErrorHandler';
+import { stationsApi } from '@/api/stations';
 
 /**
  * Hook to fetch all stations
- * @param includeMetrics Whether to include metrics in the response
  * @returns Query result with stations data
  */
-export const useStations = (includeMetrics = false) => {
-  const { handleError } = useErrorHandler();
-  
+export const useStations = (stationId?: string) => {
   return useQuery({
-    queryKey: ['stations', includeMetrics],
-    queryFn: () => stationsService.getStations(includeMetrics),
-    ...queryOptions.referenceData,
-    onError: (error) => handleError(error, 'Failed to fetch stations'),
+    queryKey: stationId ? ['station', stationId] : ['stations'],
+    queryFn: () => stationId ? stationsApi.getStation(stationId) : stationsApi.getStations(),
+    staleTime: 60000, // 1 minute
   });
 };
 
@@ -31,14 +24,11 @@ export const useStations = (includeMetrics = false) => {
  * @returns Query result with station data
  */
 export const useStation = (id: string) => {
-  const { handleError } = useErrorHandler();
-  
   return useQuery({
     queryKey: ['station', id],
-    queryFn: () => stationsService.getStation(id),
+    queryFn: () => stationsApi.getStation(id),
     enabled: !!id,
-    ...queryOptions.referenceData,
-    onError: (error) => handleError(error, `Failed to fetch station ${id}`),
+    staleTime: 60000, // 1 minute
   });
 };
 
@@ -48,14 +38,12 @@ export const useStation = (id: string) => {
  */
 export const useCreateStation = () => {
   const queryClient = useQueryClient();
-  const { handleError } = useErrorHandler();
   
   return useMutation({
-    mutationFn: (data: CreateStationRequest) => stationsService.createStation(data),
+    mutationFn: (data) => stationsApi.createStation(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
     },
-    onError: (error) => handleError(error, 'Failed to create station'),
   });
 };
 
@@ -65,16 +53,13 @@ export const useCreateStation = () => {
  */
 export const useUpdateStation = () => {
   const queryClient = useQueryClient();
-  const { handleError } = useErrorHandler();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateStationRequest }) => 
-      stationsService.updateStation(id, data),
-    onSuccess: (_, { id }) => {
+    mutationFn: ({ id, data }) => stationsApi.updateStation(id, data),
+    onSuccess: (station, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['station', id] });
       queryClient.invalidateQueries({ queryKey: ['stations'] });
     },
-    onError: (error) => handleError(error, 'Failed to update station'),
   });
 };
 
@@ -84,13 +69,11 @@ export const useUpdateStation = () => {
  */
 export const useDeleteStation = () => {
   const queryClient = useQueryClient();
-  const { handleError } = useErrorHandler();
   
   return useMutation({
-    mutationFn: (id: string) => stationsService.deleteStation(id),
+    mutationFn: (id) => stationsApi.deleteStation(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
     },
-    onError: (error) => handleError(error, 'Failed to delete station'),
   });
 };

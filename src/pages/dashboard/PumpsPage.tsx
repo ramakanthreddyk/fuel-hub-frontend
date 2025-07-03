@@ -1,6 +1,7 @@
+
 /**
  * @file pages/dashboard/PumpsPage.tsx
- * @description Page for managing pumps
+ * @description Page for managing pumps with improved mobile layout
  */
 import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
@@ -14,10 +15,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useForm } from 'react-hook-form';
 import { Plus, Fuel, Settings, Activity, Building2, Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { EnhancedFuelPumpCard } from '@/components/pumps/EnhancedFuelPumpCard';
+import { PumpCard } from '@/components/pumps/PumpCard';
 import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useStations } from '@/hooks/api/useStations';
+import { navigateBack } from '@/utils/navigation';
 
 export default function PumpsPage() {
   const { stationId } = useParams<{ stationId: string }>();
@@ -121,7 +123,7 @@ export default function PumpsPage() {
 
   // Handle back to stations navigation
   const handleBackToStations = () => {
-    navigate('/dashboard/stations');
+    navigateBack(navigate, '/dashboard/stations');
   };
 
   const isLoading = stationsLoading || pumpsLoading;
@@ -139,7 +141,7 @@ export default function PumpsPage() {
           </div>
         </div>
         
-        <Card className="p-6">
+        <Card className="p-4 md:p-6">
           <CardHeader>
             <CardTitle>Select a Station</CardTitle>
             <CardDescription>Choose a station to view its pumps</CardDescription>
@@ -174,7 +176,7 @@ export default function PumpsPage() {
                   </Select>
                 </div>
                 
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                   <Button variant="outline" onClick={handleBackToStations}>
                     <Building2 className="mr-2 h-4 w-4" />
                     View All Stations
@@ -213,8 +215,8 @@ export default function PumpsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleBackToStations}>
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -222,7 +224,7 @@ export default function PumpsPage() {
             </Button>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Pumps</h1>
           </div>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
             <p className="text-muted-foreground text-sm md:text-base">
               Station: 
             </p>
@@ -230,7 +232,7 @@ export default function PumpsPage() {
               value={effectiveStationId} 
               onValueChange={handleStationChange}
             >
-              <SelectTrigger className="w-[200px] h-8">
+              <SelectTrigger className="w-full sm:w-[200px] h-8">
                 <SelectValue placeholder="Select station" />
               </SelectTrigger>
               <SelectContent>
@@ -245,12 +247,12 @@ export default function PumpsPage() {
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="md:size-default">
+            <Button size="sm" className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
-              <span className="hidden md:inline">Add Pump</span>
+              Add Pump
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Add New Pump</DialogTitle>
               <DialogDescription>
@@ -285,8 +287,20 @@ export default function PumpsPage() {
                     </FormItem>
                   )}
                 />
-                <DialogFooter>
-                  <Button type="submit" disabled={createPumpMutation.isPending}>
+                <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsAddDialogOpen(false)}
+                    className="order-2 sm:order-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={createPumpMutation.isPending}
+                    className="order-1 sm:order-2"
+                  >
                     {createPumpMutation.isPending ? "Creating..." : "Create Pump"}
                   </Button>
                 </DialogFooter>
@@ -348,7 +362,7 @@ export default function PumpsPage() {
       {/* Pumps Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {pumps.map((pump) => (
-          <EnhancedFuelPumpCard
+          <PumpCard
             key={pump.id}
             pump={{
               ...pump,
@@ -362,7 +376,7 @@ export default function PumpsPage() {
         ))}
       </div>
 
-      {/* Add a refresh button */}
+      {/* Refresh button */}
       <div className="flex justify-end mb-4">
         <Button 
           variant="outline" 

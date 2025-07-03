@@ -14,12 +14,56 @@ import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export function Header() {
   const { user, logout } = useAuth();
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get current page title based on route
+  const getPageTitle = () => {
+    const path = location.pathname;
+    
+    if (path === '/dashboard' || path === '/dashboard/') {
+      return 'Dashboard';
+    }
+    
+    if (path.startsWith('/dashboard/stations')) {
+      if (path.includes('/new')) return 'New Station';
+      if (path.includes('/edit')) return 'Edit Station';
+      return 'Stations';
+    }
+    
+    if (path.startsWith('/dashboard/pumps')) {
+      if (path.includes('/new')) return 'New Pump';
+      if (path.includes('/edit')) return 'Edit Pump';
+      return 'Pumps';
+    }
+    
+    if (path.startsWith('/dashboard/nozzles')) {
+      if (path.includes('/new')) return 'New Nozzle';
+      if (path.includes('/edit')) return 'Edit Nozzle';
+      return 'Nozzles';
+    }
+    
+    if (path.startsWith('/dashboard/readings')) {
+      if (path.includes('/new')) return 'New Reading';
+      if (path.includes('/edit')) return 'Edit Reading';
+      return 'Readings';
+    }
+    
+    if (path.startsWith('/dashboard/cash-report')) {
+      return 'Cash Report';
+    }
+    
+    if (path.startsWith('/superadmin')) {
+      return 'Platform Management';
+    }
+    
+    return 'Dashboard';
+  };
 
   const getRoleDetails = (role: string) => {
     switch (role) {
@@ -82,11 +126,11 @@ export function Header() {
         <div className="flex items-center gap-2 md:gap-4">
           <SidebarTrigger className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-800" />
           
-          {/* Page Title - Hidden on mobile */}
+          {/* Page Title - Show current page context */}
           <div className="hidden sm:flex items-center gap-2">
             <div className="h-6 w-px bg-border" />
             <span className="text-sm font-medium text-muted-foreground">
-              {user?.role === 'superadmin' ? 'Platform Management' : 'Dashboard'}
+              {getPageTitle()}
             </span>
           </div>
         </div>

@@ -1,12 +1,12 @@
+
 /**
  * @file pages/dashboard/NozzlesPage.tsx
- * @description Nozzles page component
+ * @description Nozzles page component with improved mobile layout and functionality
  */
 import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Fuel, 
@@ -16,12 +16,16 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { usePump, usePumps } from '@/hooks/api/usePumps';
-import { useNozzles } from '@/hooks/api/useNozzles';
+import { useNozzles, useDeleteNozzle } from '@/hooks/api/useNozzles';
 import { useStations } from '@/hooks/api/useStations';
+import { useToast } from '@/hooks/use-toast';
+import { NozzleCard } from '@/components/nozzles/NozzleCard';
+import { navigateBack } from '@/utils/navigation';
 
 export default function NozzlesPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   
   // Get station and pump IDs from URL params
   const { stationId, pumpId } = useParams<{ stationId: string; pumpId: string }>();
@@ -54,9 +58,36 @@ export default function NozzlesPage() {
     error: nozzlesError 
   } = useNozzles(selectedPumpId);
 
+  // Delete nozzle mutation
+  const deleteNozzle = useDeleteNozzle();
+
   // Handle record reading click
   const handleRecordReading = (nozzleId: string) => {
-    navigate(`/dashboard/readings/new/${nozzleId}`);
+    navigate(`/dashboard/readings/new?nozzleId=${nozzleId}&pumpId=${selectedPumpId}&stationId=${selectedStationId}`);
+  };
+
+  // Handle edit nozzle
+  const handleEditNozzle = (nozzleId: string) => {
+    navigate(`/dashboard/nozzles/${nozzleId}/edit?pumpId=${selectedPumpId}&stationId=${selectedStationId}`);
+  };
+
+  // Handle delete nozzle
+  const handleDeleteNozzle = async (nozzleId: string) => {
+    if (window.confirm('Are you sure you want to delete this nozzle?')) {
+      try {
+        await deleteNozzle.mutateAsync(nozzleId);
+        toast({
+          title: 'Success',
+          description: 'Nozzle deleted successfully'
+        });
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete nozzle',
+          variant: 'destructive'
+        });
+      }
+    }
   };
 
   // Handle back button click
@@ -64,7 +95,7 @@ export default function NozzlesPage() {
     if (selectedStationId) {
       navigate(`/dashboard/pumps?stationId=${selectedStationId}`);
     } else {
-      navigate('/dashboard/pumps');
+      navigateBack(navigate, '/dashboard/pumps');
     }
   };
 
@@ -102,7 +133,7 @@ export default function NozzlesPage() {
           </div>
         </div>
         
-        <Card className="p-6">
+        <Card className="p-4 md:p-6">
           <CardHeader>
             <CardTitle>Select a Pump</CardTitle>
             <CardDescription>Choose a station and pump to view nozzles</CardDescription>
@@ -167,7 +198,7 @@ export default function NozzlesPage() {
                   </Select>
                 </div>
                 
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
                   <Button variant="outline" onClick={() => navigate('/dashboard/pumps')}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     View All Pumps
@@ -175,7 +206,7 @@ export default function NozzlesPage() {
                   
                   {selectedStationId && (
                     <Button 
-                      onClick={() => navigate(`/dashboard/nozzles/new?stationId=${selectedStationId}`)}
+                      onClick={() => navigate(`/dashboard/pumps/new?stationId=${selectedStationId}`)}
                       disabled={!selectedStationId}
                     >
                       <Plus className="mr-2 h-4 w-4" />
@@ -222,20 +253,20 @@ export default function NozzlesPage() {
     return (
       <div className="space-y-6">
         {/* Header with back button */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleBack}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
-            <div>
+            <div className="min-w-0">
               <h1 className="text-2xl font-bold tracking-tight">Nozzles</h1>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm truncate">
                 Pump: {pump.name} | Serial: {pump.serialNumber || 'N/A'}
               </p>
             </div>
           </div>
-          <Button size="sm" onClick={() => navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}`)}>
+          <Button size="sm" onClick={() => navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}&stationId=${selectedStationId}`)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Nozzle
           </Button>
@@ -247,7 +278,7 @@ export default function NozzlesPage() {
           <p className="text-muted-foreground mb-4">
             Get started by adding your first nozzle to this pump
           </p>
-          <Button onClick={() => navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}`)}>
+          <Button onClick={() => navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}&stationId=${selectedStationId}`)}>
             <Plus className="mr-2 h-4 w-4" />
             Add First Nozzle
           </Button>
@@ -259,15 +290,15 @@ export default function NozzlesPage() {
   return (
     <div className="space-y-6">
       {/* Header with back button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 min-w-0">
           <Button variant="outline" size="sm" onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <div>
+          <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold tracking-tight">Nozzles</h1>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
               <p className="text-muted-foreground text-sm">
                 Pump: 
               </p>
@@ -275,7 +306,7 @@ export default function NozzlesPage() {
                 value={selectedPumpId} 
                 onValueChange={handlePumpChange}
               >
-                <SelectTrigger className="w-[200px] h-8">
+                <SelectTrigger className="w-full sm:w-[200px] h-8">
                   <SelectValue placeholder="Select pump" />
                 </SelectTrigger>
                 <SelectContent>
@@ -289,7 +320,7 @@ export default function NozzlesPage() {
             </div>
           </div>
         </div>
-        <Button size="sm" onClick={() => navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}`)}>
+        <Button size="sm" onClick={() => navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}&stationId=${selectedStationId}`)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Nozzle
         </Button>
@@ -305,36 +336,13 @@ export default function NozzlesPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {nozzles.map((nozzle) => (
-              <Card key={nozzle.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle>Nozzle #{nozzle.nozzleNumber}</CardTitle>
-                      <CardDescription>Fuel: {nozzle.fuelType}</CardDescription>
-                    </div>
-                    <Badge 
-                      variant={nozzle.status === 'active' ? 'default' : 'secondary'}
-                      className={
-                        nozzle.status === 'active' ? 'bg-green-100 text-green-800' :
-                        nozzle.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }
-                    >
-                      {nozzle.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full mb-2"
-                    onClick={() => handleRecordReading(nozzle.id)}
-                  >
-                    Record Reading
-                  </Button>
-                </CardContent>
-              </Card>
+              <NozzleCard
+                key={nozzle.id}
+                nozzle={nozzle}
+                onEdit={handleEditNozzle}
+                onDelete={handleDeleteNozzle}
+                onRecordReading={handleRecordReading}
+              />
             ))}
           </div>
         )}
