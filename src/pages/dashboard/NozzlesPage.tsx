@@ -341,11 +341,11 @@ export default function NozzlesPage() {
                 nozzle={{
                   id: nozzle.id,
                   // Safely handle the nozzle number with fallback
-                  nozzleNumber: nozzle.nozzleNumber || nozzle.nozzle_number || 0,
+                  nozzleNumber: nozzle.nozzleNumber || 0,
                   // Safely handle fuel type with fallback
-                  fuelType: nozzle.fuelType || nozzle.fuel_type || 'petrol',
+                  fuelType: nozzle.fuelType || 'petrol',
                   status: nozzle.status,
-                  serialNumber: nozzle.serialNumber,
+                  // serialNumber is optional in NozzleCard, so we can safely omit it
                 }}
                 onEdit={handleEditNozzle}
                 onDelete={handleDeleteNozzle}
