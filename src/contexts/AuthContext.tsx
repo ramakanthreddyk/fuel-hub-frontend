@@ -1,4 +1,7 @@
-
+/**
+ * @file contexts/AuthContext.tsx
+ * @description Authentication context provider
+ */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '@/api/auth';
@@ -22,6 +25,7 @@ interface AuthContextType {
   login: (email: string, password: string, isAdminLogin?: boolean) => Promise<void>;
   logout: () => void;
   getCurrentUser: () => User | null;
+  refreshToken: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,6 +107,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const refreshToken = async () => {
+    try {
+      console.log('[AUTH-CONTEXT] Refreshing token');
+      const response = await authApi.refreshToken();
+      
+      if (response && response.token) {
+        localStorage.setItem('fuelsync_token', response.token);
+        console.log('[AUTH-CONTEXT] Token refreshed successfully');
+        
+        // If user info is also returned, update it
+        if (response.user) {
+          localStorage.setItem('fuelsync_user', JSON.stringify(response.user));
+          setUser(response.user);
+        }
+        
+        return;
+      }
+      
+      throw new Error('Failed to refresh token');
+    } catch (error) {
+      console.error('[AUTH-CONTEXT] Token refresh error:', error);
+      // If refresh fails, log out the user
+      logout();
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       console.log('[AUTH-CONTEXT] Logging out user');
@@ -133,6 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     login,
     logout,
     getCurrentUser,
+    refreshToken
   };
 
   return (
