@@ -6,46 +6,31 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStations } from '@/hooks/api/useStations';
 import { useCashReports } from '@/hooks/api/useAttendant';
-import { format, subDays } from 'date-fns';
-import { ArrowLeft, Download, Search, RefreshCw, Loader2, DollarSign } from 'lucide-react';
+import { format } from 'date-fns';
+import { ArrowLeft, RefreshCw, Loader2, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export default function CashReportsListPage() {
   const navigate = useNavigate();
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const lastMonth = format(subDays(new Date(), 30), 'yyyy-MM-dd');
-  
-  // State
-  const [selectedStationId, setSelectedStationId] = useState<string>('all-stations');
-  const [startDate, setStartDate] = useState<string>(lastMonth);
-  const [endDate, setEndDate] = useState<string>(today);
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Fetch stations
   const { data: stations = [], isLoading: stationsLoading } = useStations();
   
-  // Fetch cash reports
+  // Fetch cash reports - no parameters as per API spec
   const { 
     data: cashReports = [], 
     isLoading: reportsLoading,
     refetch
-  } = useCashReports(selectedStationId === 'all-stations' ? undefined : selectedStationId, startDate, endDate);
+  } = useCashReports();
   
   // Handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await refetch();
     setIsRefreshing(false);
-  };
-  
-  // Handle filter
-  const handleFilter = () => {
-    refetch();
   };
   
   const isLoading = stationsLoading || reportsLoading;
@@ -81,76 +66,9 @@ export default function CashReportsListPage() {
       
       <Card>
         <CardHeader>
-          <CardTitle>Filter Reports</CardTitle>
-          <CardDescription>
-            Filter cash reports by station and date range
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Station Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="station">Station</Label>
-              <Select 
-                value={selectedStationId} 
-                onValueChange={setSelectedStationId}
-              >
-                <SelectTrigger id="station">
-                  <SelectValue placeholder="All Stations" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-stations">All Stations</SelectItem>
-                  {stations.map((station) => (
-                    <SelectItem key={station.id} value={station.id}>
-                      {station.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Start Date */}
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
-              <Input 
-                id="startDate" 
-                type="date" 
-                value={startDate} 
-                onChange={(e) => setStartDate(e.target.value)} 
-              />
-            </div>
-            
-            {/* End Date */}
-            <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
-              <Input 
-                id="endDate" 
-                type="date" 
-                value={endDate} 
-                onChange={(e) => setEndDate(e.target.value)} 
-              />
-            </div>
-            
-            {/* Filter Button */}
-            <div className="flex items-end">
-              <Button 
-                type="button" 
-                onClick={handleFilter}
-                className="w-full"
-              >
-                <Search className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
           <CardTitle>Cash Reports</CardTitle>
           <CardDescription>
-            View cash reports history
+            View your recent cash reports
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -159,7 +77,7 @@ export default function CashReportsListPage() {
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No cash reports found</h3>
               <p className="text-muted-foreground mb-4">
-                No cash reports found for the selected filters
+                You haven't submitted any cash reports yet
               </p>
               <Button 
                 onClick={() => navigate('/dashboard/cash-report/new')}
