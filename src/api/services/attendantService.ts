@@ -45,21 +45,14 @@ export const attendantService = {
   
   /**
    * Get cash reports
-   * @param stationId Optional station ID to filter by
-   * @param startDate Optional start date to filter by
-   * @param endDate Optional end date to filter by
    * @returns List of cash reports
    */
-  getCashReports: async (stationId?: string, startDate?: string, endDate?: string): Promise<CashReport[]> => {
+  getCashReports: async (): Promise<CashReport[]> => {
     try {
       console.log('[ATTENDANT-API] Fetching cash reports');
       
-      const params: Record<string, string> = {};
-      if (stationId) params.stationId = stationId;
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
-      
-      const response = await apiClient.get('attendant/cash-reports', { params });
+      // No parameters as per API spec
+      const response = await apiClient.get('attendant/cash-reports');
       return extractArray<CashReport>(response);
     } catch (error) {
       console.error('[ATTENDANT-API] Error fetching cash reports:', error);
