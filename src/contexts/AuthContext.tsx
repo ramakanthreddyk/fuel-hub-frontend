@@ -1,3 +1,4 @@
+
 /**
  * @file contexts/AuthContext.tsx
  * @description Authentication context provider
@@ -52,8 +53,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         if (token && storedUser) {
           const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          console.log('[AUTH-CONTEXT] User restored from storage:', parsedUser);
+          // Ensure role is properly typed
+          if (parsedUser.role && ['superadmin', 'owner', 'manager', 'attendant'].includes(parsedUser.role)) {
+            setUser(parsedUser as User);
+            console.log('[AUTH-CONTEXT] User restored from storage:', parsedUser);
+          } else {
+            console.error('[AUTH-CONTEXT] Invalid user role:', parsedUser.role);
+            localStorage.removeItem('fuelsync_token');
+            localStorage.removeItem('fuelsync_user');
+          }
         } else {
           console.log('[AUTH-CONTEXT] No stored auth data found');
         }
@@ -83,16 +91,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       const { user: authUser, token } = response;
       
-      // Ensure user has required fields
+      // Ensure user has required fields and valid role
       if (!authUser.id || !authUser.email || !authUser.name || !authUser.role) {
         throw new Error('Invalid user data received');
+      }
+      
+      if (!['superadmin', 'owner', 'manager', 'attendant'].includes(authUser.role)) {
+        throw new Error('Invalid user role received');
       }
       
       // Store auth data
       localStorage.setItem('fuelsync_token', token);
       localStorage.setItem('fuelsync_user', JSON.stringify(authUser));
       
-      setUser(authUser);
+      setUser(authUser as User);
       console.log('[AUTH-CONTEXT] Login successful:', authUser);
       
       // Navigate based on role - avoid redirecting if already on correct page
@@ -126,9 +138,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log('[AUTH-CONTEXT] Token refreshed successfully');
         
         // If user info is also returned, update it
-        if (response.user) {
+        if (response.user && ['superadmin', 'owner', 'manager', 'attendant'].includes(response.user.role)) {
           localStorage.setItem('fuelsync_user', JSON.stringify(response.user));
-          setUser(response.user);
+          setUser(response.user as User);
         }
         
         return;

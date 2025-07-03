@@ -15,6 +15,22 @@ import {
 import { useStationsWithMetrics } from '@/hooks/useStations';
 import { Link } from 'react-router-dom';
 
+interface StationWithMetrics {
+  id: string;
+  name: string;
+  address: string;
+  status: 'active' | 'inactive' | 'maintenance';
+  manager?: string;
+  attendantCount?: number;
+  pumpCount?: number;
+  createdAt: string;
+  metrics?: {
+    totalSales: number;
+    activePumps: number;
+    totalPumps: number;
+  };
+}
+
 export function OrganizationHierarchy() {
   const { data: stations = [], isLoading } = useStationsWithMetrics();
   const [expandedStations, setExpandedStations] = useState<Set<string>>(new Set());
@@ -85,7 +101,7 @@ export function OrganizationHierarchy() {
           </div>
         ) : (
           <div className="space-y-4">
-            {stations.map((station) => (
+            {stations.map((station: StationWithMetrics) => (
               <div key={station.id} className="border rounded-lg">
                 <Collapsible
                   open={expandedStations.has(station.id)}
@@ -101,7 +117,7 @@ export function OrganizationHierarchy() {
                         <div className="text-left">
                           <div className="font-medium">{station.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {station.pumpCount} pumps • {station.attendantCount} attendants
+                            {station.pumpCount || 0} pumps • {station.attendantCount || 0} attendants
                             {station.metrics && (
                               <span> • ₹{station.metrics.totalSales.toLocaleString()} today</span>
                             )}
@@ -127,7 +143,7 @@ export function OrganizationHierarchy() {
                         <div className="flex items-center gap-2 p-2 bg-blue-50 rounded">
                           <Fuel className="h-4 w-4 text-blue-600" />
                           <span className="text-sm">
-                            {station.pumpCount} pumps configured
+                            {station.pumpCount || 0} pumps configured
                           </span>
                           <Button asChild variant="outline" size="sm" className="ml-auto">
                             <Link to={`/dashboard/stations/${station.id}/pumps`}>

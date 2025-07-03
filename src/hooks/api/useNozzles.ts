@@ -1,3 +1,4 @@
+
 /**
  * @file useNozzles.ts
  * @description React Query hooks for nozzles API
@@ -43,7 +44,7 @@ export const useCreateNozzle = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data) => nozzlesService.createNozzle(data),
+    mutationFn: (data: any) => nozzlesService.createNozzle(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['nozzles', variables.pumpId] });
       queryClient.invalidateQueries({ queryKey: ['pump', variables.pumpId] });
@@ -59,7 +60,7 @@ export const useUpdateNozzle = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data }) => nozzlesService.updateNozzle(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) => nozzlesService.updateNozzle(id, data),
     onSuccess: (nozzle, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['nozzle', id] });
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
@@ -80,7 +81,7 @@ export const useDeleteNozzle = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (id) => nozzlesService.deleteNozzle(id),
+    mutationFn: (id: string) => nozzlesService.deleteNozzle(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
       // We don't know which pump this nozzle belonged to, so we invalidate all pumps

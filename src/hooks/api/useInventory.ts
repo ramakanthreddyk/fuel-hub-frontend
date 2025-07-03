@@ -1,3 +1,4 @@
+
 /**
  * @file hooks/api/useInventory.ts
  * @description React Query hooks for fuel inventory API
@@ -15,10 +16,7 @@ export const useInventory = (stationId?: string) => {
     queryKey: ['fuel-inventory', stationId],
     queryFn: () => inventoryService.getFuelInventory(stationId),
     staleTime: 60000, // 1 minute
-    retry: 2,
-    onError: (error) => {
-      console.error('[INVENTORY-HOOK] Error fetching fuel inventory:', error);
-    }
+    retry: 2
   });
 };
 
@@ -31,9 +29,6 @@ export const useInventorySummary = () => {
     queryKey: ['inventory-summary'],
     queryFn: () => inventoryService.getInventorySummary(),
     staleTime: 60000, // 1 minute
-    retry: 2,
-    onError: (error) => {
-      console.error('[INVENTORY-HOOK] Error fetching inventory summary:', error);
-    }
+    retry: 2
   });
 };

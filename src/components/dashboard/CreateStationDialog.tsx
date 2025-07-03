@@ -10,10 +10,15 @@ import { useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { stationsApi } from '@/api/stations';
-import { CreateStationRequest } from '@/api/api-contract';
 
 interface CreateStationDialogProps {
   children?: React.ReactNode;
+}
+
+interface CreateStationFormData {
+  name: string;
+  address: string;
+  status: 'active' | 'inactive' | 'maintenance';
 }
 
 export default function CreateStationDialog({ children }: CreateStationDialogProps) {
@@ -21,7 +26,7 @@ export default function CreateStationDialog({ children }: CreateStationDialogPro
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm<CreateStationRequest>({
+  const form = useForm<CreateStationFormData>({
     defaultValues: {
       name: '',
       address: '',
@@ -30,7 +35,17 @@ export default function CreateStationDialog({ children }: CreateStationDialogPro
   });
 
   const createStationMutation = useMutation({
-    mutationFn: stationsApi.createStation,
+    mutationFn: (data: CreateStationFormData) => {
+      // Transform to match API expectations
+      const stationData = {
+        name: data.name,
+        address: data.address,
+        city: '', // Default empty values for required fields
+        state: '',
+        postalCode: ''
+      };
+      return stationsApi.createStation(stationData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
       queryClient.invalidateQueries({ queryKey: ['stations-with-metrics'] });
@@ -50,7 +65,7 @@ export default function CreateStationDialog({ children }: CreateStationDialogPro
     }
   });
 
-  const onSubmit = (data: CreateStationRequest) => {
+  const onSubmit = (data: CreateStationFormData) => {
     createStationMutation.mutate(data);
   };
 

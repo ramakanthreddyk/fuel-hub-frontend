@@ -1,3 +1,4 @@
+
 /**
  * @file useFuelPrices.ts
  * @description React Query hooks for fuel prices API
@@ -17,10 +18,7 @@ export const useFuelPrices = (stationId?: string) => {
     queryKey: ['fuel-prices', stationId],
     queryFn: () => fuelPricesService.getFuelPrices(stationId),
     staleTime: 60000, // 1 minute
-    retry: 2,
-    onError: (error) => {
-      console.error('[FUEL-PRICES-HOOK] Error fetching fuel prices:', error);
-    }
+    retry: 2
   });
 };
 
@@ -45,10 +43,7 @@ export const useFuelPriceValidation = (stationId: string) => {
     },
     enabled: !!stationId,
     staleTime: 60000, // 1 minute
-    retry: 2,
-    onError: (error) => {
-      console.error(`[FUEL-PRICES-HOOK] Error validating fuel prices for station ${stationId}:`, error);
-    }
+    retry: 2
   });
 };
 
@@ -61,10 +56,7 @@ export const useMissingPrices = () => {
     queryKey: ['missing-prices'],
     queryFn: () => fuelPricesService.getMissingPrices(),
     staleTime: 300000, // 5 minutes
-    retry: 2,
-    onError: (error) => {
-      console.error('[FUEL-PRICES-HOOK] Error fetching missing prices:', error);
-    }
+    retry: 2
   });
 };
 
