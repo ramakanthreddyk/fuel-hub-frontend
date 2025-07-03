@@ -122,8 +122,8 @@ export default function DashboardPage() {
       {analytics && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <EnhancedMetricsCard
-            title="Total Users"
-            value={analytics.overview?.totalUsers || analytics.totalUsers || 0}
+            title="Total Tenants"
+            value={analytics.overview?.totalTenants || analytics.totalTenants || 0}
             icon={<Users className="h-5 w-5" />}
             description="Across all stations"
             gradient="from-pink-500 to-rose-600"
