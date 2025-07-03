@@ -35,9 +35,15 @@ export function ApiProvider({ children }: { children: ReactNode }) {
     const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
     const tenantId = user.tenantId || '';
     
+    // Ensure tenant ID is always included for non-superadmin users
+    if (!tenantId && user.role !== 'superadmin') {
+      console.error('[API-CONTEXT] Missing tenant ID for non-superadmin user');
+    }
+    
     return {
       'Authorization': `Bearer ${token}`,
       'x-tenant-id': tenantId,
+      'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
   };
@@ -50,16 +56,30 @@ export function ApiProvider({ children }: { children: ReactNode }) {
   // Fetch API with standard error handling
   const fetchApi = async <T,>(endpoint: string, options: RequestInit = {}): Promise<T> => {
     const url = getFullUrl(endpoint);
+    console.log(`[API-CONTEXT] Fetching from: ${url}`);
+    
+    // Get headers with auth info
+    const headers = getAuthHeaders();
+    
+    // Log headers for debugging (without sensitive info)
+    console.log('[API-CONTEXT] Request headers:', {
+      'x-tenant-id': headers['x-tenant-id'],
+      'Content-Type': headers['Content-Type'],
+      'Authorization': headers['Authorization'] ? '(Bearer token present)' : '(No token)'
+    });
+    
     const response = await fetch(url, {
       headers: {
-        ...getAuthHeaders(),
+        ...headers,
         ...(options.headers || {})
       },
       ...options
     });
     
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      const errorText = await response.text().catch(() => 'No error details');
+      console.error(`[API-CONTEXT] API error: ${response.status}`, errorText);
+      throw new Error(`API error: ${response.status} - ${errorText}`);
     }
     
     const data = await response.json();
