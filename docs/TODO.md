@@ -6,6 +6,7 @@
    - ✅ `/api/v1/attendant/cash-report` POST endpoint is implemented with attendant role access
    - ✅ `/api/v1/attendant/cash-reports` GET endpoint is implemented with attendant role access
    - ✅ Frontend updated to match API spec exactly (removed unsupported parameters)
+   - ✅ Removed unnecessary x-user-role header to avoid CORS preflight issues
 
 2. **Creditor API**
    - ✅ `/api/v1/creditors` GET endpoint is implemented
@@ -55,6 +56,7 @@
    - ✅ Fix SelectItem empty string value in CashReportsListPage
    - ✅ Update attendant service to match API spec exactly
    - ✅ Add automatic token refresh to fix authentication issues
+   - ✅ Remove unnecessary custom headers to avoid CORS issues
    - ⚠️ Investigate and fix the 500 error with `/api/v1/fuel-inventory` (check tenant context)
 
 2. **Role-Based Features**
