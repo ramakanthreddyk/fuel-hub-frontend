@@ -1,4 +1,3 @@
-
 /**
  * @file api/services/readingsService.ts
  * @description Service for readings API endpoints
@@ -69,61 +68,9 @@ export const readingsService = {
       }
       
       console.log(`[READINGS-API] Successfully fetched ${readingsArray.length} readings`);
-      
-      if (readingsArray.length === 0 && process.env.NODE_ENV === 'development') {
-        console.log('[READINGS-API] Using mock data for development');
-        return [
-          {
-            id: '1',
-            nozzleId: 'N001',
-            nozzleNumber: 1,
-            pumpId: 'P001',
-            pumpName: 'Pump 1 - Petrol',
-            stationId: 'S001',
-            stationName: 'Downtown Station',
-            reading: 125834.50,
-            previousReading: 125712.25,
-            recordedAt: '2024-01-15 14:30:00',
-            paymentMethod: 'cash',
-            createdAt: '2024-01-15 14:30:00',
-            recordedBy: 'John Doe',
-            status: 'completed',
-            volume: 122.25,
-            amount: 12225.00,
-            pricePerLitre: 100.00
-          }
-        ];
-      }
-      
       return readingsArray;
     } catch (error) {
       console.error('[READINGS-API] Error fetching readings:', error);
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[READINGS-API] Using mock data for development due to API error');
-        return [
-          {
-            id: '1',
-            nozzleId: 'N001',
-            nozzleNumber: 1,
-            pumpId: 'P001',
-            pumpName: 'Pump 1 - Petrol',
-            stationId: 'S001',
-            stationName: 'Downtown Station',
-            reading: 125834.50,
-            previousReading: 125712.25,
-            recordedAt: '2024-01-15 14:30:00',
-            paymentMethod: 'cash',
-            createdAt: '2024-01-15 14:30:00',
-            recordedBy: 'John Doe',
-            status: 'completed',
-            volume: 122.25,
-            amount: 12225.00,
-            pricePerLitre: 100.00
-          }
-        ];
-      }
-      
       throw error;
     }
   },
@@ -156,8 +103,20 @@ export const readingsService = {
       }
       
       console.log(`[READINGS-API] Fetching latest reading for nozzle ${nozzleId}`);
-      const response = await apiClient.get(`${API_CONFIG.endpoints.readings.base}/latest/${nozzleId}`);
-      return extractData<Reading>(response);
+      
+      // Get all readings for the nozzle
+      const allReadings = await readingsService.getReadings(nozzleId);
+      
+      if (allReadings.length === 0) {
+        return null;
+      }
+      
+      // Sort by reading date (descending) and take the first one
+      const sortedReadings = [...allReadings].sort((a, b) => {
+        return new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime();
+      });
+      
+      return sortedReadings[0];
     } catch (error) {
       console.error(`[READINGS-API] Error fetching latest reading for nozzle ${nozzleId}:`, error);
       return null;
