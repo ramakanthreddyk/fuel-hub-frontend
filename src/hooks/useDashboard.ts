@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi } from '@/api/dashboard';
+import { analyticsApi } from '@/api/analytics';
 
 interface DashboardFilters {
   stationId?: string;
@@ -59,5 +60,28 @@ export const useStationMetrics = () => {
     queryFn: () => dashboardApi.getStationMetrics(),
     retry: 1,
     staleTime: 60000,
+  });
+};
+
+// New analytics hooks
+export const useAnalyticsDashboard = () => {
+  return useQuery({
+    queryKey: ['analytics-dashboard'],
+    queryFn: () => analyticsApi.getSuperAdminAnalytics(),
+    retry: 1,
+    staleTime: 300000, // 5 minutes
+  });
+};
+
+export const useAdminDashboard = () => {
+  return useQuery({
+    queryKey: ['admin-dashboard'],
+    queryFn: async () => {
+      // This would call /api/v1/admin/dashboard
+      const response = await fetch('/api/v1/admin/dashboard');
+      return response.json();
+    },
+    retry: 1,
+    staleTime: 300000,
   });
 };
