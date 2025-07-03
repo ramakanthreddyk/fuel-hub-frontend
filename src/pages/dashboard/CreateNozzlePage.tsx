@@ -1,235 +1,151 @@
-
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+/**
+ * @file CreateNozzlePage.tsx
+ * @description Create nozzle page component
+ * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
+ * @see docs/journeys/MANAGER.md - Manager journey for nozzle management
+ */
+import { useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { EnhancedSelect } from '@/components/ui/enhanced-select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useQuery } from '@tanstack/react-query';
-import { toast } from '@/hooks/use-toast';
-import { pumpsApi } from '@/api/pumps';
-import { nozzlesApi } from '@/api/nozzles';
-import { ownerService } from '@/api/contract/owner.service';
-
-const createNozzleSchema = z.object({
-  pumpId: z.string().min(1, 'Pump selection is required'),
-  nozzleNumber: z.number().min(1, 'Nozzle number must be at least 1'),
-  fuelType: z.enum(['petrol', 'diesel', 'premium'], {
-    required_error: 'Fuel type is required',
-  }),
-});
-
-type CreateNozzleForm = z.infer<typeof createNozzleSchema>;
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { usePump } from '@/hooks/api/usePumps';
+import { useCreateNozzle } from '@/hooks/api/useNozzles';
 
 export default function CreateNozzlePage() {
   const navigate = useNavigate();
+  const { stationId, pumpId } = useParams<{ stationId: string; pumpId: string }>();
   
-  // Extract pumpId from URL if present
-  const queryParams = new URLSearchParams(window.location.search);
-  const pumpIdFromUrl = queryParams.get('pumpId');
-  const stationIdFromUrl = queryParams.get('stationId');
+  const [nozzleNumber, setNozzleNumber] = useState('');
+  const [fuelType, setFuelType] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { data: pumps = [], isLoading: pumpsLoading } = useQuery({
-    queryKey: ['pumps-all'],
-    queryFn: async () => {
-      // Get all pumps across all stations
-      const allPumps = await pumpsApi.getPumps('all');
-      return allPumps;
-    },
-  });
-
-  const form = useForm<CreateNozzleForm>({
-    resolver: zodResolver(createNozzleSchema),
-    defaultValues: {
-      pumpId: pumpIdFromUrl || '',
-      nozzleNumber: 1,
-      fuelType: 'petrol',
-    },
-  });
-
-  const onSubmit = async (data: CreateNozzleForm) => {
+  // Fetch pump details
+  const { data: pump, isLoading: pumpLoading } = usePump(pumpId || '');
+  
+  // Create nozzle mutation
+  const createNozzleMutation = useCreateNozzle();
+  
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!pumpId || !nozzleNumber || !fuelType) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
     try {
-      // Try using the owner service first (for owner role)
-      try {
-        await ownerService.createNozzle({
-          pumpId: data.pumpId,
-          nozzleNumber: data.nozzleNumber,
-          fuelType: data.fuelType,
-          status: 'active',
-        });
-      } catch (ownerError) {
-        // Fall back to nozzlesApi if owner service fails
-        await nozzlesApi.createNozzle({
-          pumpId: data.pumpId,
-          nozzleNumber: data.nozzleNumber,
-          fuelType: data.fuelType,
-          status: 'active',
-        });
-      }
-      
-      toast({
-        title: "Success",
-        description: "Nozzle created successfully",
+      await createNozzleMutation.mutateAsync({
+        pumpId,
+        nozzleNumber: parseInt(nozzleNumber),
+        fuelType: fuelType as 'petrol' | 'diesel' | 'premium',
+        status: 'active'
       });
       
-      // If we came from a specific pump page, go back there
-      if (pumpIdFromUrl && stationIdFromUrl) {
-        navigate(`/dashboard/nozzles?pumpId=${pumpIdFromUrl}&stationId=${stationIdFromUrl}`);
-      } else if (stationIdFromUrl) {
-        navigate(`/dashboard/pumps?stationId=${stationIdFromUrl}`);
-      } else {
-        navigate('/setup');
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create nozzle",
-        variant: "destructive",
-      });
+      // Navigate back to nozzles page
+      navigate(`/dashboard/stations/${stationId}/pumps/${pumpId}/nozzles`);
+    } catch (error) {
+      console.error('Error creating nozzle:', error);
+      setIsSubmitting(false);
     }
   };
-
-  if (pumpsLoading) {
+  
+  if (pumpLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
-
-  if (pumps.length === 0) {
-    return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="container mx-auto max-w-2xl">
-          <Card>
-            <CardHeader>
-              <CardTitle>No Pumps Available</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Please create a pump before adding a nozzle.
-              </p>
-              <div className="flex gap-2">
-                <Button onClick={() => navigate('/dashboard/pumps/create')}>
-                  Create Pump
-                </Button>
-                <Button variant="outline" onClick={() => navigate('/setup')}>
-                  Back to Setup
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+  
+  return (
+    <div className="space-y-6">
+      {/* Header with back button */}
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link to={`/dashboard/stations/${stationId}/pumps/${pumpId}/nozzles`}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Add New Nozzle</h1>
+          <p className="text-muted-foreground">
+            {pump?.name ? `For pump: ${pump.name}` : ''}
+          </p>
         </div>
       </div>
-    );
-  }
-
-  const pumpOptions = pumps.map(pump => ({
-    value: pump.id,
-    label: `${pump.name} (${pump.serialNumber})`,
-  }));
-
-  const fuelTypeOptions = [
-    { value: 'petrol', label: 'Petrol' },
-    { value: 'diesel', label: 'Diesel' },
-    { value: 'premium', label: 'Premium' },
-  ];
-
-  return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="container mx-auto max-w-2xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>Create New Nozzle</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="pumpId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pump *</FormLabel>
-                      <FormControl>
-                        <EnhancedSelect
-                          placeholder="Select Pump"
-                          options={pumpOptions}
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          error={form.formState.errors.pumpId?.message}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="nozzleNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nozzle Number *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="1"
-                          placeholder="Enter nozzle number"
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="fuelType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Fuel Type *</FormLabel>
-                      <FormControl>
-                        <EnhancedSelect
-                          placeholder="Select Fuel Type"
-                          options={fuelTypeOptions}
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          error={form.formState.errors.fuelType?.message}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex gap-4">
-                  <Button
-                    type="submit"
-                    disabled={form.formState.isSubmitting}
-                  >
-                    {form.formState.isSubmitting ? 'Creating...' : 'Create Nozzle'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/setup')}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
+      
+      {/* Create Nozzle Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Nozzle Details</CardTitle>
+          <CardDescription>
+            Enter the details for the new nozzle
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="nozzleNumber">Nozzle Number</Label>
+              <Input
+                id="nozzleNumber"
+                type="number"
+                placeholder="Enter nozzle number"
+                value={nozzleNumber}
+                onChange={(e) => setNozzleNumber(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="fuelType">Fuel Type</Label>
+              <Select
+                value={fuelType}
+                onValueChange={setFuelType}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select fuel type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="petrol">Petrol</SelectItem>
+                  <SelectItem value="diesel">Diesel</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(`/dashboard/stations/${stationId}/pumps/${pumpId}/nozzles`)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !nozzleNumber || !fuelType}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Nozzle'
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

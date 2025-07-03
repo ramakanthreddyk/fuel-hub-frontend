@@ -1,4 +1,9 @@
-
+/**
+ * @file FuelPricesPage.tsx
+ * @description Fuel prices management page
+ * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
+ * @see docs/journeys/MANAGER.md - Manager journey for setting fuel prices
+ */
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, X, RefreshCw } from 'lucide-react';
@@ -6,7 +11,7 @@ import { FuelPriceTable } from '@/components/fuel-prices/FuelPriceTable';
 import { FuelPriceForm } from '@/components/fuel-prices/FuelPriceForm';
 import { PageHeader } from '@/components/ui/page-header';
 import { TooltipWrapper } from '@/components/ui/tooltip-wrapper';
-import { useFuelPrices } from '@/hooks/useFuelPrices';
+import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 
 /**
  * Fuel Prices management page

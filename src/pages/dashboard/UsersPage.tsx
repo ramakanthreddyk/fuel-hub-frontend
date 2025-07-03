@@ -1,125 +1,122 @@
-
+/**
+ * @file UsersPage.tsx
+ * @description User management page component
+ * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
+ * @see docs/journeys/OWNER.md - Owner journey for user management
+ */
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UserPlus, Users, Edit, Trash2, Key } from 'lucide-react';
-import { usersApi } from '@/api/users';
-import { CreateUserRequest, ResetPasswordRequest } from '@/api/api-contract';
+import { UserPlus, Users, Edit, Trash2, Key, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm } from '@/components/users/UserForm';
 import { ResetPasswordForm } from '@/components/users/ResetPasswordForm';
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, useResetPassword } from '@/hooks/api/useUsers';
+import { User, CreateUserRequest, UpdateUserRequest, ResetPasswordRequest } from '@/api/services/usersService';
 
 export default function UsersPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const { data: users, isLoading } = useQuery({
-    queryKey: ['users'],
-    queryFn: usersApi.getUsers,
-  });
-
-  const createUserMutation = useMutation({
-    mutationFn: usersApi.createUser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setIsCreateDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "User created successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create user",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const updateUserMutation = useMutation({
-    mutationFn: ({ userId, userData }: { userId: string; userData: any }) =>
-      usersApi.updateUser(userId, userData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setIsEditDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "User updated successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update user",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const resetPasswordMutation = useMutation({
-    mutationFn: ({ userId, passwordData }: { userId: string; passwordData: ResetPasswordRequest }) =>
-      usersApi.resetPassword(userId, passwordData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setIsResetPasswordDialogOpen(false);
-      toast({
-        title: "Success",
-        description: "Password reset successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to reset password",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const deleteUserMutation = useMutation({
-    mutationFn: usersApi.deleteUser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast({
-        title: "Success",
-        description: "User deleted successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to delete user",
-        variant: "destructive",
-      });
-    }
-  });
+  // Use the new API hooks
+  const { data: users, isLoading, error } = useUsers();
+  const createUser = useCreateUser();
+  const updateUser = useUpdateUser();
+  const deleteUser = useDeleteUser();
+  const resetPassword = useResetPassword();
 
   const handleCreateUser = (userData: CreateUserRequest) => {
-    createUserMutation.mutate(userData);
+    createUser.mutate(userData, {
+      onSuccess: () => {
+        setIsCreateDialogOpen(false);
+        toast({
+          title: "Success",
+          description: "User created successfully",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create user",
+          variant: "destructive",
+        });
+      }
+    });
   };
 
-  const handleUpdateUser = (userId: string, userData: any) => {
-    updateUserMutation.mutate({ userId, userData });
+  const handleUpdateUser = (userId: string, userData: UpdateUserRequest) => {
+    updateUser.mutate({ userId, data: userData }, {
+      onSuccess: () => {
+        setIsEditDialogOpen(false);
+        toast({
+          title: "Success",
+          description: "User updated successfully",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update user",
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   const handleResetPassword = (userId: string, passwordData: ResetPasswordRequest) => {
-    resetPasswordMutation.mutate({ userId, passwordData });
+    resetPassword.mutate({ userId, data: passwordData }, {
+      onSuccess: () => {
+        setIsResetPasswordDialogOpen(false);
+        toast({
+          title: "Success",
+          description: "Password reset successfully",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to reset password",
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   const handleDeleteUser = (userId: string) => {
     if (confirm("Are you sure you want to delete this user?")) {
-      deleteUserMutation.mutate(userId);
+      deleteUser.mutate(userId, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: "User deleted successfully",
+          });
+        },
+        onError: (error: any) => {
+          toast({
+            title: "Error",
+            description: error.message || "Failed to delete user",
+            variant: "destructive",
+          });
+        }
+      });
     }
   };
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <div className="text-red-500 mb-4">Error loading users: {(error as Error).message}</div>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -145,7 +142,7 @@ export default function UsersPage() {
             <UserForm 
               onSubmit={handleCreateUser} 
               onCancel={() => setIsCreateDialogOpen(false)}
-              isLoading={createUserMutation.isPending} 
+              isLoading={createUser.isPending} 
             />
           </DialogContent>
         </Dialog>
@@ -163,15 +160,8 @@ export default function UsersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center space-x-4 animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/6"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/6"></div>
-                </div>
-              ))}
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
             <Table>
@@ -227,6 +217,13 @@ export default function UsersPage() {
                     </TableCell>
                   </TableRow>
                 ))}
+                {users?.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No users found. Create your first user to get started.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           )}
@@ -246,7 +243,7 @@ export default function UsersPage() {
               user={selectedUser}
               onSubmit={(userData) => handleUpdateUser(selectedUser.id, userData)}
               onCancel={() => setIsEditDialogOpen(false)}
-              isLoading={updateUserMutation.isPending}
+              isLoading={updateUser.isPending}
             />
           )}
         </DialogContent>
@@ -264,7 +261,7 @@ export default function UsersPage() {
             <ResetPasswordForm
               onSubmit={(passwordData) => handleResetPassword(selectedUser.id, passwordData)}
               onCancel={() => setIsResetPasswordDialogOpen(false)}
-              isLoading={resetPasswordMutation.isPending}
+              isLoading={resetPassword.isPending}
             />
           )}
         </DialogContent>
