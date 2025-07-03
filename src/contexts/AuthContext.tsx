@@ -77,7 +77,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       const response = await authApi.login({ email, password }, isAdminLogin);
       
+      if (!response || !response.token || !response.user) {
+        throw new Error('Invalid response from server');
+      }
+      
       const { user: authUser, token } = response;
+      
+      // Ensure user has required fields
+      if (!authUser.id || !authUser.email || !authUser.name || !authUser.role) {
+        throw new Error('Invalid user data received');
+      }
       
       // Store auth data
       localStorage.setItem('fuelsync_token', token);
@@ -101,7 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error: any) {
       console.error('[AUTH-CONTEXT] Login error:', error);
-      throw new Error(error.response?.data?.message || 'Login failed');
+      throw new Error(error.response?.data?.message || error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
