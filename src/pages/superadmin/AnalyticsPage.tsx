@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Users, Gauge, TrendingUp, CheckCircle, AlertCircle, Shield, Activity } from 'lucide-react';
@@ -9,14 +8,44 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AnalyticsPage() {
+  const { user } = useAuth();
+  
+  // Only fetch if user is superadmin
   const { data: analytics, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['superadmin-analytics'],
     queryFn: superAdminApi.getSummary,
-    retry: 2,
+    retry: 1,
     staleTime: 300000, // 5 minutes
+    enabled: user?.role === 'superadmin', // Only run query if user is superadmin
   });
+
+  // If user is not superadmin, show access denied
+  if (user?.role !== 'superadmin') {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Platform Analytics"
+          description="Cross-tenant performance metrics and insights"
+        />
+        
+        <Card className="bg-gradient-to-br from-red-50 to-orange-50 border-red-200">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Shield className="h-12 w-12 text-red-500 mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-red-700">Access Denied</h3>
+            <p className="text-red-600 text-center mb-4">
+              You don't have permission to view platform analytics. This section is restricted to super administrators only.
+            </p>
+            <Badge variant="destructive">
+              Current Role: {user?.role || 'Unknown'}
+            </Badge>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

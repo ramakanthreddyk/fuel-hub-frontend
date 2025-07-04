@@ -1,7 +1,6 @@
-
 /**
  * @file pages/dashboard/PumpsPage.tsx
- * @description Page for managing pumps with improved mobile layout
+ * @description Page for managing pumps with improved mobile layout and responsive design
  * Updated layout for mobile-friendliness – 2025-07-03
  */
 import { useState, useEffect } from 'react';
@@ -15,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useForm } from 'react-hook-form';
-import { Plus, Fuel, Settings, Activity, Building2, Loader2, ArrowLeft } from 'lucide-react';
+import { Plus, Fuel, Settings, Activity, Building2, Loader2, ArrowLeft, Menu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PumpCard } from '@/components/pumps/PumpCard';
 import { MobileStatsCard } from '@/components/dashboard/MobileStatsCard';
@@ -141,8 +140,8 @@ export default function PumpsPage() {
   // If no station is selected, show station selector
   if (!effectiveStationId) {
     return (
-      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
+        <div className="flex flex-col gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Pumps</h1>
             <p className="text-muted-foreground text-sm md:text-base mt-1">
@@ -185,10 +184,11 @@ export default function PumpsPage() {
                 </Select>
               </div>
               
-              <div className="flex flex-col gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button variant="outline" onClick={handleBackToStations} className="w-full sm:w-auto">
                   <Building2 className="mr-2 h-4 w-4" />
-                  View All Stations
+                  <span className="hidden sm:inline">View All Stations</span>
+                  <span className="sm:hidden">Stations</span>
                 </Button>
                 
                 <Button 
@@ -197,7 +197,8 @@ export default function PumpsPage() {
                   className="w-full sm:w-auto"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Create New Station
+                  <span className="hidden sm:inline">Create New Station</span>
+                  <span className="sm:hidden">New Station</span>
                 </Button>
               </div>
             </div>
@@ -223,26 +224,41 @@ export default function PumpsPage() {
   ];
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-      {/* Improved header layout for mobile */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="outline" size="sm" onClick={handleBackToStations}>
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
+      {/* Improved responsive header layout */}
+      <div className="space-y-4">
+        {/* Back button and title row */}
+        <div className="flex items-start gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleBackToStations}
+            className="shrink-0 h-9"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Back to Stations</span>
-            <span className="sm:hidden">Back</span>
+            <span className="hidden xs:inline">Back</span>
           </Button>
+          
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Pumps</h1>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-              <p className="text-muted-foreground text-sm hidden sm:block">
-                Station: 
-              </p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">
+              Pumps
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1 hidden sm:block">
+              Manage fuel pumps for your stations
+            </p>
+          </div>
+        </div>
+
+        {/* Station selector and Add pump button row */}
+        <div className="flex flex-col xs:flex-row gap-3 items-stretch xs:items-center">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
               <Select 
                 value={effectiveStationId} 
                 onValueChange={handleStationChange}
               >
-                <SelectTrigger className="w-full sm:w-[200px] h-8 text-xs sm:text-sm">
+                <SelectTrigger className="h-9 text-sm min-w-0">
                   <SelectValue placeholder="Select station" />
                 </SelectTrigger>
                 <SelectContent>
@@ -255,79 +271,81 @@ export default function PumpsPage() {
               </Select>
             </div>
           </div>
+          
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="shrink-0 h-9">
+                <Plus className="mr-2 h-4 w-4" />
+                <span className="hidden xs:inline">Add Pump</span>
+                <span className="xs:hidden">Add</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] mx-4">
+              <DialogHeader>
+                <DialogTitle>Add New Pump</DialogTitle>
+                <DialogDescription>
+                  Add a new pump to {station?.name || 'selected station'}
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pump Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter pump name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="serialNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Serial Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter serial number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setIsAddDialogOpen(false)}
+                      className="order-2 sm:order-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={createPumpMutation.isPending}
+                      className="order-1 sm:order-2"
+                    >
+                      {createPumpMutation.isPending ? "Creating..." : "Create Pump"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </div>
-        
-        {/* Add pump button - full width on mobile */}
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full sm:w-auto sm:self-start">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Pump
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] mx-4">
-            <DialogHeader>
-              <DialogTitle>Add New Pump</DialogTitle>
-              <DialogDescription>
-                Add a new pump to {station?.name || 'selected station'}
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pump Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter pump name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="serialNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Serial Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter serial number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsAddDialogOpen(false)}
-                    className="order-2 sm:order-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={createPumpMutation.isPending}
-                    className="order-1 sm:order-2"
-                  >
-                    {createPumpMutation.isPending ? "Creating..." : "Create Pump"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
       </div>
 
       {/* Mobile Stats Card */}
-      <MobileStatsCard stats={mobileStats} />
+      <div className="block lg:hidden">
+        <MobileStatsCard stats={mobileStats} />
+      </div>
 
       {/* Desktop Stats Cards */}
-      <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="hidden lg:grid gap-4 grid-cols-2 xl:grid-cols-4">
         <Card className="overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Pumps</CardTitle>
@@ -372,8 +390,8 @@ export default function PumpsPage() {
         </Card>
       </div>
 
-      {/* Pumps Grid with improved mobile layout */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {/* Responsive Pumps Grid */}
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <TooltipProvider>
           {pumps.map((pump) => (
             <div key={pump.id} className="overflow-hidden">
@@ -395,7 +413,7 @@ export default function PumpsPage() {
 
       {pumps.length === 0 && !isLoading && (
         <Card className="overflow-hidden">
-          <CardContent className="flex flex-col items-center justify-center py-8 px-4">
+          <CardContent className="flex flex-col items-center justify-center py-12 px-4">
             <Fuel className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No pumps found</h3>
             <p className="text-muted-foreground text-center mb-4 text-sm sm:text-base">
