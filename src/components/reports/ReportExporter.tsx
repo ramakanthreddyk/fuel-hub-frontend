@@ -47,9 +47,12 @@ export function ReportExporter({ stationId, reportType, filters }: ReportExporte
         // If response has data property, create blob from it
         const responseData = (response as any).data;
         blob = new Blob([JSON.stringify(responseData)], { type: 'application/json' });
+      } else if (response && typeof response === 'object' && response.constructor === Blob) {
+        // If response is already a Blob
+        blob = response as Blob;
       } else {
-        // Assume response is already blob-like data or convert to blob
-        blob = response instanceof Blob ? response : new Blob([JSON.stringify(response)], { type: 'application/octet-stream' });
+        // Convert response to blob
+        blob = new Blob([JSON.stringify(response)], { type: 'application/octet-stream' });
       }
       
       // Create download link
