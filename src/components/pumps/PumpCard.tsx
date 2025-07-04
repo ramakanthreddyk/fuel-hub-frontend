@@ -1,11 +1,11 @@
 
 /**
  * @file components/pumps/PumpCard.tsx
- * @description Enhanced pump card component with colorful design and mobile-responsive layout
- * Updated for responsive colorful UI – 2025-07-03
+ * @description Enhanced pump card component with realistic fuel station design
+ * Updated for immersive fuel station UI – 2025-07-04
  */
 import { Button } from '@/components/ui/button';
-import { Eye, Settings, Building2, Hash } from 'lucide-react';
+import { Eye, Settings, Fuel, Hash, Activity } from 'lucide-react';
 import { ColorfulCard, CardContent, CardHeader } from '@/components/ui/colorful-card';
 import { StatusBadge } from '@/components/ui/status-badge';
 
@@ -35,25 +35,43 @@ export function PumpCard({ pump, onViewNozzles, onSettings }: PumpCardProps) {
     }
   };
 
+  const getPumpIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return '⛽';
+      case 'maintenance':
+        return '🔧';
+      case 'inactive':
+        return '🚫';
+      default:
+        return '⛽';
+    }
+  };
+
   return (
     <ColorfulCard 
       gradient={getGradientByStatus(pump.status)}
-      className="border"
+      className="border group hover:shadow-2xl"
     >
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3">
           {/* Header Row */}
           <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Building2 className="h-5 w-5 text-blue-600" />
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="relative">
+                <div className="p-3 bg-slate-800 rounded-xl shadow-lg">
+                  <span className="text-2xl">{getPumpIcon(pump.status)}</span>
+                </div>
+                {pump.status === 'active' && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                )}
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-gray-900 text-base sm:text-lg truncate">
+                <h3 className="font-bold text-gray-900 text-lg truncate group-hover:text-blue-700 transition-colors">
                   {pump.name}
                 </h3>
                 {pump.serialNumber && (
-                  <p className="text-xs text-gray-600 font-mono truncate">
+                  <p className="text-xs text-gray-600 font-mono truncate mt-1">
                     SN: {pump.serialNumber}
                   </p>
                 )}
@@ -64,48 +82,47 @@ export function PumpCard({ pump, onViewNozzles, onSettings }: PumpCardProps) {
 
           {/* Stats Row */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/60 rounded-lg p-2 backdrop-blur-sm">
+            <div className="bg-white/60 rounded-lg p-3 backdrop-blur-sm border border-white/30">
               <div className="flex items-center gap-2">
-                <Hash className="h-4 w-4 text-gray-600" />
+                <Hash className="h-4 w-4 text-blue-600" />
                 <div>
                   <p className="text-xs text-gray-600">Nozzles</p>
-                  <p className="font-bold text-gray-900">{pump.nozzleCount}</p>
+                  <p className="font-bold text-gray-900 text-lg">{pump.nozzleCount}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white/60 rounded-lg p-2 backdrop-blur-sm">
+            
+            <div className="bg-white/60 rounded-lg p-3 backdrop-blur-sm border border-white/30">
               <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-gray-600" />
+                <Activity className="h-4 w-4 text-green-600" />
                 <div>
                   <p className="text-xs text-gray-600">Status</p>
-                  <p className="font-bold text-gray-900 capitalize text-sm">{pump.status}</p>
+                  <p className="font-bold text-gray-900 text-sm capitalize">{pump.status}</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </CardHeader>
-      
-      <CardContent className="pt-0">
-        <div className="flex flex-col sm:flex-row gap-2">
+
+      <CardContent>
+        <div className="flex gap-2">
           <Button 
-            variant="default" 
-            size="sm" 
-            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md"
             onClick={() => onViewNozzles(pump.id)}
+            size="sm" 
+            className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white shadow-md"
           >
-            <Eye className="w-4 h-4 mr-2" />
+            <Eye className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">View Nozzles</span>
             <span className="sm:hidden">Nozzles</span>
           </Button>
           <Button 
-            variant="outline" 
-            size="sm"
-            className="bg-white/80 backdrop-blur-sm hover:bg-white border-gray-300 hover:border-gray-400"
             onClick={() => onSettings(pump.id)}
+            size="sm" 
+            variant="outline"
+            className="bg-white/60 backdrop-blur-sm border border-gray-300 hover:bg-white/80"
           >
-            <Settings className="w-4 h-4 mr-1" />
-            <span className="hidden sm:inline">Settings</span>
+            <Settings className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>
