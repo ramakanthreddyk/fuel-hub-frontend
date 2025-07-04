@@ -1,314 +1,354 @@
+
 /**
- * @file components/layout/Sidebar.tsx
- * @description Main sidebar navigation component with role-based items
+ * Enhanced Sidebar Component
+ * 
+ * Comprehensive navigation with all available features
  */
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
-import {
-  Fuel,
-  LayoutDashboard,
-  Building2,
-  Gauge,
-  BarChart3,
-  Users,
-  Settings,
-  FileText,
-  DollarSign,
-  Package,
-  FileSpreadsheet,
-  CreditCard
-} from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-  useSidebar
-} from '@/components/ui/sidebar';
 
-const getMenuItems = (role: string) => {
-  const baseItems = [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: LayoutDashboard,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-950"
-    }
-  ];
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { 
+  LayoutDashboard, 
+  Building2, 
+  Fuel, 
+  FileText, 
+  Users, 
+  CreditCard, 
+  DollarSign, 
+  BarChart3, 
+  Settings, 
+  Bell,
+  Download,
+  AlertTriangle,
+  TrendingUp,
+  Calculator,
+  UserCheck,
+  Clock,
+  Shield,
+  Database,
+  ChevronRight
+} from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocation, Link } from "react-router-dom";
+import { useState } from "react";
 
-  const attendantItems = [
-    {
-      title: "Record Reading",
-      url: "/dashboard/readings/new",
-      icon: FileText,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50 dark:bg-indigo-950"
-    },
-    {
-      title: "Cash Report",
-      url: "/dashboard/cash-report/new",
-      icon: DollarSign,
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950"
-    },
-    {
-      title: "Cash History",
-      url: "/dashboard/cash-reports",
-      icon: CreditCard,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-950"
-    },
-    {
-      title: "Readings",
-      url: "/dashboard/readings",
-      icon: FileText,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50 dark:bg-orange-950"
-    }
-  ];
+interface SidebarProps {
+  className?: string;
+}
 
-  const managerItems = [
-    {
-      title: "Stations",
-      url: "/dashboard/stations",
-      icon: Building2,
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950"
-    },
-    {
-      title: "Pumps",
-      url: "/dashboard/pumps",
-      icon: Gauge,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-950"
-    },
-    {
-      title: "Nozzles",
-      url: "/dashboard/nozzles",
-      icon: Gauge,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50 dark:bg-indigo-950"
-    },
-    {
-      title: "Readings",
-      url: "/dashboard/readings",
-      icon: FileText,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50 dark:bg-indigo-950"
-    },
-    {
-      title: "Cash Reports",
-      url: "/dashboard/cash-reports",
-      icon: DollarSign,
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950"
-    },
-    {
-      title: "Fuel Inventory",
-      url: "/dashboard/fuel-inventory",
-      icon: Package,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50 dark:bg-orange-950"
-    },
-    {
-      title: "Reports",
-      url: "/dashboard/reports",
-      icon: FileSpreadsheet,
-      color: "text-teal-600",
-      bgColor: "bg-teal-50 dark:bg-teal-950"
-    },
-    {
-      title: "Analytics",
-      url: "/dashboard/analytics",
-      icon: BarChart3,
-      color: "text-pink-600",
-      bgColor: "bg-pink-50 dark:bg-pink-950"
-    }
-  ];
+interface NavItem {
+  title: string;
+  href: string;
+  icon: any;
+  badge?: string | number;
+  children?: NavItem[];
+  roles?: string[];
+}
 
-  const ownerItems = [
-    {
-      title: "Stations",
-      url: "/dashboard/stations",
-      icon: Building2,
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950"
-    },
-    {
-      title: "Pumps",
-      url: "/dashboard/pumps",
-      icon: Gauge,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-950"
-    },
-    {
-      title: "Nozzles",
-      url: "/dashboard/nozzles",
-      icon: Gauge,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50 dark:bg-indigo-950"
-    },
-    {
-      title: "Fuel Prices",
-      url: "/dashboard/fuel-prices",
-      icon: DollarSign,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50 dark:bg-yellow-950"
-    },
-    {
-      title: "Readings",
-      url: "/dashboard/readings",
-      icon: FileText,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50 dark:bg-indigo-950"
-    },
-    {
-      title: "Cash Reports",
-      url: "/dashboard/cash-reports",
-      icon: DollarSign,
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950"
-    },
-    {
-      title: "Fuel Inventory",
-      url: "/dashboard/fuel-inventory",
-      icon: Package,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50 dark:bg-orange-950"
-    },
-    {
-      title: "Reports",
-      url: "/dashboard/reports",
-      icon: FileSpreadsheet,
-      color: "text-teal-600",
-      bgColor: "bg-teal-50 dark:bg-teal-950"
-    },
-    {
-      title: "Analytics",
-      url: "/dashboard/analytics",
-      icon: BarChart3,
-      color: "text-pink-600",
-      bgColor: "bg-pink-50 dark:bg-pink-950"
-    },
-    {
-      title: "User Management",
-      url: "/dashboard/users",
-      icon: Users,
-      color: "text-cyan-600",
-      bgColor: "bg-cyan-50 dark:bg-cyan-950"
-    }
-  ];
-
-  const roleSpecificItems = {
-    owner: ownerItems,
-    manager: managerItems,
-    attendant: attendantItems
-  };
-
-  const settingsItem = {
-    title: "Settings",
-    url: "/dashboard/settings",
-    icon: Settings,
-    color: "text-gray-600",
-    bgColor: "bg-gray-50 dark:bg-gray-950"
-  };
-
-  return [
-    ...baseItems,
-    ...(roleSpecificItems[role as keyof typeof roleSpecificItems] || []),
-    settingsItem
-  ];
-};
-
-export function AppSidebar() {
+export function Sidebar({ className }: SidebarProps) {
   const { user } = useAuth();
   const location = useLocation();
-  const { setOpenMobile, isMobile } = useSidebar();
+  const [expandedSections, setExpandedSections] = useState<string[]>(['dashboard']);
 
-  const menuItems = getMenuItems(user?.role || 'attendant');
+  const toggleSection = (title: string) => {
+    setExpandedSections(prev => 
+      prev.includes(title) 
+        ? prev.filter(s => s !== title)
+        : [...prev, title]
+    );
+  };
 
-  const handleMenuItemClick = () => {
-    if (isMobile) {
-      setOpenMobile(false);
+  const isOwnerOrManager = user?.role === 'owner' || user?.role === 'manager';
+  const isOwner = user?.role === 'owner';
+  const isSuperAdmin = user?.role === 'superadmin';
+  const isAttendant = user?.role === 'attendant';
+
+  const navItems: NavItem[] = [
+    {
+      title: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Operations",
+      href: "#",
+      icon: Building2,
+      children: [
+        {
+          title: "Stations",
+          href: "/dashboard/stations",
+          icon: Building2,
+          roles: ['owner', 'manager']
+        },
+        {
+          title: "Pumps",
+          href: "/dashboard/pumps",
+          icon: Fuel,
+          roles: ['owner', 'manager']
+        },
+        {
+          title: "Nozzles",
+          href: "/dashboard/nozzles",
+          icon: Settings,
+          roles: ['owner', 'manager']
+        },
+        {
+          title: "Readings",
+          href: "/dashboard/readings",
+          icon: FileText,
+          badge: "New"
+        }
+      ]
+    },
+    {
+      title: "Sales & Finance",
+      href: "#",
+      icon: DollarSign,
+      children: [
+        {
+          title: "Sales Overview",
+          href: "/dashboard/sales",
+          icon: TrendingUp
+        },
+        {
+          title: "Fuel Prices",
+          href: "/dashboard/fuel-prices",
+          icon: Calculator,
+          roles: ['owner', 'manager']
+        },
+        {
+          title: "Credit Management",
+          href: "/dashboard/creditors",
+          icon: CreditCard,
+          roles: ['owner', 'manager']
+        },
+        {
+          title: "Financial Reports",
+          href: "/dashboard/reports/financial",
+          icon: BarChart3,
+          roles: ['owner', 'manager']
+        }
+      ]
+    },
+    {
+      title: "People",
+      href: "#",
+      icon: Users,
+      roles: ['owner', 'manager'],
+      children: [
+        {
+          title: "User Management",
+          href: "/dashboard/users",
+          icon: Users,
+          roles: ['owner']
+        },
+        {
+          title: "Attendance",
+          href: "/dashboard/attendance",
+          icon: UserCheck,
+          roles: ['owner', 'manager']
+        },
+        {
+          title: "Shifts & Schedules",
+          href: "/dashboard/shifts",
+          icon: Clock,
+          roles: ['owner', 'manager']
+        }
+      ]
+    },
+    {
+      title: "Reports & Analytics",
+      href: "#",
+      icon: BarChart3,
+      roles: ['owner', 'manager'],
+      children: [
+        {
+          title: "Sales Reports",
+          href: "/dashboard/reports/sales",
+          icon: TrendingUp
+        },
+        {
+          title: "Inventory Reports",
+          href: "/dashboard/reports/inventory",
+          icon: Database
+        },
+        {
+          title: "Export Data",
+          href: "/dashboard/reports/export",
+          icon: Download
+        }
+      ]
+    },
+    {
+      title: "Attendant Tools",
+      href: "#",
+      icon: UserCheck,
+      roles: ['attendant'],
+      children: [
+        {
+          title: "My Stations",
+          href: "/dashboard/attendant/stations",
+          icon: Building2
+        },
+        {
+          title: "Record Reading",
+          href: "/dashboard/readings/new",
+          icon: FileText
+        },
+        {
+          title: "Cash Reports",
+          href: "/dashboard/attendant/cash-reports",
+          icon: DollarSign
+        }
+      ]
     }
+  ];
+
+  // Add SuperAdmin section
+  if (isSuperAdmin) {
+    navItems.push({
+      title: "Super Admin",
+      href: "#",
+      icon: Shield,
+      children: [
+        {
+          title: "Tenant Management",
+          href: "/superadmin/tenants",
+          icon: Building2
+        },
+        {
+          title: "Plans & Billing",
+          href: "/superadmin/plans",
+          icon: CreditCard
+        },
+        {
+          title: "System Analytics",
+          href: "/superadmin/analytics",
+          icon: BarChart3
+        },
+        {
+          title: "System Health",
+          href: "/superadmin/health",
+          icon: AlertTriangle
+        }
+      ]
+    });
+  }
+
+  // Add universal items
+  navItems.push(
+    {
+      title: "Alerts",
+      href: "/dashboard/alerts",
+      icon: Bell,
+      badge: 3 // This should come from API
+    },
+    {
+      title: "Settings",
+      href: "/dashboard/settings",
+      icon: Settings
+    }
+  );
+
+  const isActiveLink = (href: string) => {
+    if (href === '/dashboard') {
+      return location.pathname === '/dashboard';
+    }
+    return location.pathname.startsWith(href);
+  };
+
+  const hasAccess = (item: NavItem) => {
+    if (!item.roles) return true;
+    return item.roles.includes(user?.role || '');
+  };
+
+  const renderNavItem = (item: NavItem, level: number = 0) => {
+    if (!hasAccess(item)) return null;
+
+    const isExpanded = expandedSections.includes(item.title);
+    const hasChildren = item.children && item.children.length > 0;
+    const isActive = isActiveLink(item.href);
+
+    if (hasChildren) {
+      return (
+        <div key={item.title}>
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-full justify-start gap-2 mb-1",
+              level > 0 && "ml-4",
+              isActive && "bg-accent"
+            )}
+            onClick={() => toggleSection(item.title)}
+          >
+            <item.icon className="h-4 w-4" />
+            <span className="flex-1 text-left">{item.title}</span>
+            {item.badge && (
+              <Badge variant="secondary" className="ml-auto">
+                {item.badge}
+              </Badge>
+            )}
+            <ChevronRight 
+              className={cn(
+                "h-4 w-4 transition-transform",
+                isExpanded && "rotate-90"
+              )}
+            />
+          </Button>
+          {isExpanded && (
+            <div className="mb-2">
+              {item.children?.map(child => renderNavItem(child, level + 1))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Button
+        key={item.title}
+        variant="ghost"
+        className={cn(
+          "w-full justify-start gap-2 mb-1",
+          level > 0 && "ml-4",
+          isActive && "bg-accent"
+        )}
+        asChild
+      >
+        <Link to={item.href}>
+          <item.icon className="h-4 w-4" />
+          {item.title}
+          {item.badge && (
+            <Badge variant="secondary" className="ml-auto">
+              {item.badge}
+            </Badge>
+          )}
+        </Link>
+      </Button>
+    );
   };
 
   return (
-    <Sidebar className="border-r-0 shadow-xl bg-white dark:bg-gray-950">
-      <SidebarHeader className="p-6 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
-            <Fuel className="h-6 w-6 text-white" />
+    <div className={cn("pb-12", className)}>
+      <div className="space-y-4 py-4">
+        <div className="px-3 py-2">
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+            FuelSync Hub
+          </h2>
+          <div className="px-4 text-sm text-muted-foreground">
+            {user?.role === 'superadmin' ? 'Super Administrator' : user?.tenantName}
           </div>
-          <div className="flex-1">
-            <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              FuelSync Hub
-            </span>
-            <div className="text-xs text-muted-foreground font-medium">
-              {user?.tenantName || 'Dashboard'}
+        </div>
+        <div className="px-3">
+          <ScrollArea className="h-[calc(100vh-200px)]">
+            <div className="space-y-1 p-2">
+              {navItems.map(item => renderNavItem(item))}
             </div>
-          </div>
+          </ScrollArea>
         </div>
-      </SidebarHeader>
-      
-      <SidebarContent className="px-3 py-4">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-3">
-            Navigation
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={`${item.title}-${item.url}`}>
-                  <SidebarMenuButton asChild>
-                    <Link 
-                      to={item.url}
-                      onClick={handleMenuItemClick}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group hover:shadow-md",
-                        location.pathname === item.url 
-                          ? `${item.bgColor} ${item.color} font-semibold shadow-sm border border-current/20` 
-                          : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
-                      )}
-                    >
-                      <div className={cn(
-                        "p-2 rounded-lg transition-all duration-200",
-                        location.pathname === item.url 
-                          ? `${item.color} bg-white/80 dark:bg-gray-900/80 shadow-sm` 
-                          : `${item.color} ${item.bgColor} group-hover:shadow-sm`
-                      )}>
-                        <item.icon className="h-4 w-4" />
-                      </div>
-                      <span className="font-medium text-sm truncate flex-1">
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      
-      <SidebarFooter className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950 border-t border-gray-100 dark:border-gray-800">
-        <div className="text-center space-y-2">
-          <div className="text-xs text-muted-foreground font-medium">
-            Powered by FuelSync Hub
-          </div>
-          <div className="text-xs text-muted-foreground">
-            © 2024 All rights reserved
-          </div>
-        </div>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </div>
   );
 }

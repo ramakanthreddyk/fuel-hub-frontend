@@ -1,20 +1,28 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fuelPricesService } from '@/api/contract/fuel-prices.service';
-import { useToast } from '@/hooks/use-toast';
-import type { CreateFuelPriceRequest } from '@/api/api-contract';
+/**
+ * Fuel Prices Hook
+ * 
+ * React Query hooks for fuel price management
+ */
 
-export const useFuelPrices = () => {
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fuelPricesService } from '@/api/services';
+import { useToast } from '@/hooks/use-toast';
+import type { CreateFuelPriceRequest, UpdateFuelPriceRequest } from '@/api/api-contract';
+
+export const useFuelPrices = (stationId?: string) => {
   return useQuery({
-    queryKey: ['fuel-prices'],
-    queryFn: async () => {
-      console.log('[USE-FUEL-PRICES] Fetching fuel prices...');
-      const result = await fuelPricesService.getFuelPrices();
-      console.log('[USE-FUEL-PRICES] Hook result:', result);
-      return result;
-    },
-    retry: 1,
-    staleTime: 30000, // 30 seconds
+    queryKey: ['fuel-prices', stationId],
+    queryFn: () => fuelPricesService.getFuelPrices(stationId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useFuelPrice = (id: string) => {
+  return useQuery({
+    queryKey: ['fuel-price', id],
+    queryFn: () => fuelPricesService.getFuelPrice(id),
+    enabled: !!id,
   });
 };
 
@@ -24,31 +32,31 @@ export const useCreateFuelPrice = () => {
 
   return useMutation({
     mutationFn: (data: CreateFuelPriceRequest) => fuelPricesService.createFuelPrice(data),
-    onSuccess: () => {
+    onSuccess: (newPrice) => {
       queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
-      queryClient.invalidateQueries({ queryKey: ['stations'] }); // Refresh station data too
+      queryClient.invalidateQueries({ queryKey: ['fuel-prices', newPrice.stationId] });
       toast({
         title: "Success",
-        description: "Fuel price created successfully",
+        description: `${newPrice.fuelType} price updated to ₹${newPrice.price}/L`,
       });
     },
     onError: (error: any) => {
-      console.error('[USE-FUEL-PRICES] Create error:', error);
       toast({
         title: "Error",
-        description: error?.message || "Failed to create fuel price",
+        description: error.message || "Failed to update fuel price",
         variant: "destructive",
       });
     },
   });
 };
 
-export const useUpdateFuelPrice = (id: string) => {
+export const useUpdateFuelPrice = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (data: Partial<CreateFuelPriceRequest>) => fuelPricesService.updateFuelPrice(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateFuelPriceRequest }) => 
+      fuelPricesService.updateFuelPrice(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
       toast({
@@ -57,36 +65,28 @@ export const useUpdateFuelPrice = (id: string) => {
       });
     },
     onError: (error: any) => {
-      console.error('[USE-FUEL-PRICES] Update error:', error);
       toast({
         title: "Error",
-        description: error?.message || "Failed to update fuel price",
+        description: error.message || "Failed to update fuel price",
         variant: "destructive",
       });
     },
   });
 };
 
-export const useDeleteFuelPrice = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
+export const useValidateStationPrices = (stationId: string) => {
+  return useQuery({
+    queryKey: ['validate-station-prices', stationId],
+    queryFn: () => fuelPricesService.validateStationPrices(stationId),
+    enabled: !!stationId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
 
-  return useMutation({
-    mutationFn: (id: string) => fuelPricesService.deleteFuelPrice(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
-      toast({
-        title: "Success",
-        description: "Fuel price deleted successfully",
-      });
-    },
-    onError: (error: any) => {
-      console.error('[USE-FUEL-PRICES] Delete error:', error);
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to delete fuel price",
-        variant: "destructive",
-      });
-    },
+export const useMissingPrices = () => {
+  return useQuery({
+    queryKey: ['missing-fuel-prices'],
+    queryFn: () => fuelPricesService.getMissingPrices(),
+    staleTime: 5 * 60 * 1000,
   });
 };
