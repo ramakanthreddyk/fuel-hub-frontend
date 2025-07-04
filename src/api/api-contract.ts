@@ -4,7 +4,7 @@
  * 
  * This file contains ALL TypeScript interfaces for the FuelSync Hub API.
  * Updated to match OpenAPI specification v3.0.0
- * Last Updated: 2025-07-04 (OpenAPI alignment)
+ * Last Updated: 2025-07-04 (OpenAPI alignment + Build Error Fixes)
  */
 
 // =============================================================================
@@ -90,6 +90,15 @@ export interface UpdateUserRequest {
   role?: "manager" | "attendant";
   stationId?: string;
   isActive?: boolean;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordRequest {
+  newPassword: string;
 }
 
 // =============================================================================
@@ -394,6 +403,9 @@ export interface CreateCreditPaymentRequest {
   notes?: string;
 }
 
+// Alias for CreateCreditPaymentRequest
+export interface CreatePaymentRequest extends CreateCreditPaymentRequest {}
+
 // =============================================================================
 // DASHBOARD & ANALYTICS TYPES
 // =============================================================================
@@ -439,6 +451,60 @@ export interface StationPerformance {
   activePumps: number;
   totalPumps: number;
   lastActivity: string;
+}
+
+export interface SalesSummary {
+  totalRevenue: number;
+  totalVolume: number;
+  salesCount: number;
+  averageTicketSize: number;
+  cashSales: number;
+  creditSales: number;
+  cardSales?: number;
+  upiSales?: number;
+  growthPercentage: number;
+  totalProfit?: number;
+  profitMargin?: number;
+  period?: string;
+  previousPeriodRevenue?: number;
+}
+
+export interface FuelTypeBreakdown {
+  fuelType: string;
+  volume: number;
+  revenue: number;
+  percentage: number;
+  averagePrice: number;
+}
+
+export interface TopCreditor {
+  id: string;
+  partyName: string;
+  name: string; // Alias for partyName
+  outstandingAmount: number;
+  creditLimit: number;
+  lastPurchaseDate?: string;
+}
+
+export interface DailySalesTrend {
+  date: string;
+  revenue: number;
+  volume: number;
+  salesCount: number;
+  dayOfWeek?: string;
+}
+
+export interface StationMetric {
+  id: string;
+  name: string;
+  todaySales: number;
+  monthlySales: number;
+  salesGrowth: number;
+  activePumps: number;
+  totalPumps: number;
+  status: "active" | "inactive" | "maintenance";
+  lastActivity?: string;
+  efficiency?: number;
 }
 
 // =============================================================================
@@ -499,6 +565,7 @@ export interface Alert {
   id: string;
   type: 'warning' | 'error' | 'info' | 'success';
   priority: 'low' | 'medium' | 'high' | 'critical';
+  severity: 'low' | 'medium' | 'high' | 'critical'; // Alias for priority
   title: string;
   message: string;
   stationId?: string;
@@ -510,11 +577,28 @@ export interface Alert {
   acknowledgedAt?: string;
   acknowledgedBy?: string;
   isActive: boolean;
+  read: boolean; // For UI state
   expiresAt?: string;
 }
 
 export interface SystemAlert extends Alert {
   // System alerts are the same as Alert
+}
+
+export interface AlertsParams {
+  stationId?: string;
+  unreadOnly?: boolean;
+  type?: string;
+  priority?: string;
+}
+
+export interface AlertSummary {
+  total: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  unacknowledged: number;
 }
 
 // =============================================================================
@@ -537,6 +621,14 @@ export interface Tenant {
   subscriptionEndsAt?: string;
   ownerName?: string;
   ownerEmail?: string;
+  // Extended properties for detailed views
+  users?: User[];
+  stations?: Station[];
+}
+
+export interface TenantDetailsResponse extends Tenant {
+  users: User[];
+  stations: Station[];
 }
 
 export interface CreateTenantRequest {
@@ -632,10 +724,27 @@ export interface SuperAdminAnalytics {
     totalTransactions: number;
     averageStationsPerTenant: number;
   };
+  // Extended properties for components
+  totalTenants: number;
+  activeTenants: number;
+  totalRevenue: number;
+  salesVolume?: number;
+  monthlyGrowth?: Array<{
+    month: string;
+    tenants: number;
+    revenue: number;
+  }>;
+  topTenants?: Array<{
+    id: string;
+    name: string;
+    stationsCount: number;
+    revenue: number;
+  }>;
 }
 
 export interface SuperAdminSummary {
   totalTenants: number;
+  totalStations: number; // Added missing property
   activeTenants: number;
   totalRevenue: number;
   monthlyGrowth: number;
@@ -677,6 +786,7 @@ export interface HourlySales {
   revenue: number;
   volume: number;
   salesCount: number;
+  sales: number; // Alias for revenue
   date: string;
 }
 
@@ -686,6 +796,8 @@ export interface PeakHour {
   averageVolume: number;
   averageSalesCount: number;
   dayOfWeek?: string;
+  timeRange: string; // e.g., "9:00 AM - 10:00 AM"
+  avgSales: number; // Alias for averageRevenue
 }
 
 export interface FuelPerformance {
@@ -695,72 +807,21 @@ export interface FuelPerformance {
   salesCount: number;
   averagePrice: number;
   growth: number;
+  margin: number; // Profit margin percentage
 }
 
 export interface StationRanking {
   rank: number;
   stationId: string;
   stationName: string;
+  id: string; // Alias for stationId
+  name: string; // Alias for stationName
   revenue: number;
   volume: number;
   efficiency: number;
   score: number;
-}
-
-// =============================================================================
-// ADDITIONAL DASHBOARD TYPES
-// =============================================================================
-
-export interface SalesSummary {
-  totalRevenue: number;
-  totalVolume: number;
-  salesCount: number;
-  averageTicketSize: number;
-  cashSales: number;
-  creditSales: number;
-  cardSales?: number;
-  upiSales?: number;
-  growthPercentage: number;
-  totalProfit?: number;
-  profitMargin?: number;
-  period?: string;
-  previousPeriodRevenue?: number;
-}
-
-export interface FuelTypeBreakdown {
-  fuelType: string;
-  volume: number;
-  revenue: number;
-  percentage: number;
-  averagePrice: number;
-}
-
-export interface TopCreditor {
-  id: string;
-  partyName: string;
-  outstandingAmount: number;
-  lastPurchaseDate?: string;
-}
-
-export interface DailySalesTrend {
-  date: string;
-  revenue: number;
-  volume: number;
-  salesCount: number;
-  dayOfWeek?: string;
-}
-
-export interface StationMetric {
-  id: string;
-  name: string;
-  todaySales: number;
-  monthlySales: number;
-  salesGrowth: number;
-  activePumps: number;
-  totalPumps: number;
-  status: "active" | "inactive" | "maintenance";
-  lastActivity?: string;
-  efficiency?: number;
+  sales: number; // Alias for revenue
+  growth: number; // Growth percentage
 }
 
 // =============================================================================
@@ -790,10 +851,12 @@ export interface FuelDelivery {
   stationName?: string;
   fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
   quantity: number;
+  volume: number; // Alias for quantity
   pricePerLitre: number;
   totalAmount: number;
   deliveryDate: string;
   supplierName?: string;
+  deliveredBy?: string; // Person who delivered
   invoiceNumber?: string;
   notes?: string;
   createdAt: string;
@@ -888,10 +951,18 @@ export interface SalesReportExportFilters extends SalesReportFilters {
   format: 'csv' | 'excel' | 'pdf';
 }
 
-export interface ExportReportRequest {
-  type: 'sales' | 'inventory' | 'financial' | 'attendance';
+export interface ExportRequest {
   format: 'csv' | 'excel' | 'pdf';
-  filters: Record<string, any>;
+  dateRange?: {
+    startDate: string;
+    endDate: string;
+  };
+  filters?: Record<string, any>;
+  includeFields?: string[];
+}
+
+export interface ExportReportRequest extends ExportRequest {
+  type: 'sales' | 'inventory' | 'financial' | 'attendance';
 }
 
 export interface ScheduleReportRequest {
@@ -902,24 +973,10 @@ export interface ScheduleReportRequest {
   recipients: string[];
 }
 
-// =============================================================================
-// ALERTS & NOTIFICATIONS
-// =============================================================================
-
-export interface AlertsParams {
-  stationId?: string;
-  unreadOnly?: boolean;
-  type?: string;
-  priority?: string;
-}
-
-export interface AlertSummary {
-  total: number;
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
-  unacknowledged: number;
+export interface ExportResponse {
+  downloadUrl: string;
+  filename: string;
+  expiresAt: string;
 }
 
 // =============================================================================
@@ -960,32 +1017,4 @@ export interface BulkOperationResponse {
   totalProcessed: number;
   successCount: number;
   failureCount: number;
-}
-
-// =============================================================================
-// EXPORT TYPES
-// =============================================================================
-
-export interface ExportRequest {
-  format: 'csv' | 'excel' | 'pdf';
-  dateRange?: {
-    startDate: string;
-    endDate: string;
-  };
-  filters?: Record<string, any>;
-  includeFields?: string[];
-}
-
-export interface ExportResponse {
-  downloadUrl: string;
-  filename: string;
-  expiresAt: string;
-}
-
-// =============================================================================
-// PAYMENT ALIASES
-// =============================================================================
-
-export interface CreatePaymentRequest extends CreateCreditPaymentRequest {
-  // Alias for CreateCreditPaymentRequest
 }

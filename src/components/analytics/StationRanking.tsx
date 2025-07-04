@@ -50,7 +50,7 @@ export function StationRanking({ period = 'month' }: StationRankingProps) {
         <div className="space-y-3">
           {rankings.map((station, index) => (
             <div 
-              key={station.id} 
+              key={station.stationId || station.id} 
               className={`p-4 rounded-lg border-2 ${getRankColor(index + 1)}`}
             >
               <div className="flex items-center justify-between">
@@ -59,20 +59,20 @@ export function StationRanking({ period = 'month' }: StationRankingProps) {
                     {index + 1}
                   </div>
                   <div>
-                    <h4 className="font-semibold">{station.name}</h4>
+                    <h4 className="font-semibold">{station.stationName || station.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      ₹{station.sales.toLocaleString()} • {station.volume.toLocaleString()}L
+                      ₹{(station.revenue || station.sales || 0).toLocaleString()} • {station.volume.toLocaleString()}L
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <Badge variant={station.growth >= 0 ? 'default' : 'destructive'} className="mb-1">
-                    {station.growth >= 0 ? (
+                  <Badge variant={(station.growth || 0) >= 0 ? 'default' : 'destructive'} className="mb-1">
+                    {(station.growth || 0) >= 0 ? (
                       <TrendingUp className="h-3 w-3 mr-1" />
                     ) : (
                       <TrendingDown className="h-3 w-3 mr-1" />
                     )}
-                    {Math.abs(station.growth)}%
+                    {Math.abs(station.growth || 0)}%
                   </Badge>
                   <p className="text-xs text-muted-foreground">
                     Efficiency: {station.efficiency}%

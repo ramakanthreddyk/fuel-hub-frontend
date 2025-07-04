@@ -1,31 +1,30 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useTopCreditors } from '@/hooks/useDashboard';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useTopCreditors } from '@/hooks/useCreditors';
+import { CreditCard, AlertTriangle, Eye } from 'lucide-react';
+import { format } from 'date-fns';
 
-interface DashboardFilters {
-  stationId?: string;
-  dateFrom?: string;
-  dateTo?: string;
-}
-
-interface TopCreditorsTableProps {
-  filters?: DashboardFilters;
-}
-
-export function TopCreditorsTable({ filters = {} }: TopCreditorsTableProps) {
-  const { data: creditors = [], isLoading } = useTopCreditors(5, filters);
+export function TopCreditorsTable() {
+  const { data: creditors = [], isLoading } = useTopCreditors();
+  const [selectedCreditor, setSelectedCreditor] = useState<any>(null);
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Top Creditors</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-orange-600" />
+            Top Creditors
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {[...Array(5)].map((_, i) => (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="h-12 bg-muted animate-pulse rounded" />
             ))}
           </div>
@@ -34,70 +33,131 @@ export function TopCreditorsTable({ filters = {} }: TopCreditorsTableProps) {
     );
   }
 
-  if (!creditors.length) {
+  if (creditors.length === 0) {
     return (
-      <Card className="bg-gradient-to-br from-white to-orange-50 border-orange-200">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-orange-700">Top Creditors</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-orange-600" />
+            Top Creditors
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            No creditors with outstanding amounts
+          <div className="text-center py-6 text-muted-foreground">
+            <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No credit sales recorded</p>
           </div>
         </CardContent>
       </Card>
     );
   }
 
+  const getStatusColor = (outstanding: number, limit?: number) => {
+    if (!limit) return 'bg-gray-100 text-gray-800';
+    const percentage = (outstanding / limit) * 100;
+    if (percentage >= 90) return 'bg-red-100 text-red-800';
+    if (percentage >= 70) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-green-100 text-green-800';
+  };
+
+  const getStatusText = (outstanding: number, limit?: number) => {
+    if (!limit) return 'No Limit';
+    const percentage = (outstanding / limit) * 100;
+    if (percentage >= 90) return 'Critical';
+    if (percentage >= 70) return 'Warning';
+    return 'Good';
+  };
+
   return (
     <Card className="bg-gradient-to-br from-white to-orange-50 border-orange-200">
       <CardHeader>
-        <CardTitle className="text-orange-700">Top Creditors by Outstanding</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <CreditCard className="h-5 w-5 text-orange-600" />
+          Top Creditors by Outstanding Amount
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Party Name</TableHead>
-              <TableHead>Outstanding</TableHead>
-              <TableHead>Credit Limit</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Outstanding</TableHead>
+              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {creditors.map((creditor) => {
-              const utilizationPercentage = creditor.creditLimit ? 
-                (creditor.outstandingAmount / creditor.creditLimit) * 100 : 0;
-              
-              const getStatusColor = (percentage: number) => {
-                if (percentage >= 90) return 'bg-red-100 text-red-800';
-                if (percentage >= 70) return 'bg-orange-100 text-orange-800';
-                return 'bg-green-100 text-green-800';
-              };
-
-              const getStatusLabel = (percentage: number) => {
-                if (percentage >= 90) return 'Critical';
-                if (percentage >= 70) return 'High';
-                return 'Normal';
-              };
-
-              return (
-                <TableRow key={creditor.id}>
-                  <TableCell className="font-medium">{creditor.name}</TableCell>
-                  <TableCell className="font-mono">₹{creditor.outstandingAmount.toLocaleString()}</TableCell>
-                  <TableCell className="font-mono">
-                    {creditor.creditLimit ? `₹${creditor.creditLimit.toLocaleString()}` : 'No limit'}
-                  </TableCell>
-                  <TableCell>
-                    {creditor.creditLimit && (
-                      <Badge className={getStatusColor(utilizationPercentage)}>
-                        {getStatusLabel(utilizationPercentage)}
-                      </Badge>
+            {creditors.map((creditor) => (
+              <TableRow key={creditor.id}>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{creditor.partyName || creditor.name}</div>
+                    {creditor.lastPurchaseDate && (
+                      <div className="text-xs text-muted-foreground">
+                        Last purchase: {format(new Date(creditor.lastPurchaseDate), 'MMM dd, yyyy')}
+                      </div>
                     )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+                  </div>
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  ₹{creditor.outstandingAmount.toLocaleString()}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge className={getStatusColor(creditor.outstandingAmount, creditor.creditLimit)}>
+                    {getStatusText(creditor.outstandingAmount, creditor.creditLimit)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setSelectedCreditor(creditor)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Creditor Details</DialogTitle>
+                      </DialogHeader>
+                      {selectedCreditor && (
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-semibold">{selectedCreditor.partyName || selectedCreditor.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Outstanding: ₹{selectedCreditor.outstandingAmount.toLocaleString()}
+                            </p>
+                            {selectedCreditor.creditLimit && (
+                              <p className="text-sm text-muted-foreground">
+                                Credit Limit: ₹{selectedCreditor.creditLimit.toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+                          
+                          {selectedCreditor.lastPurchaseDate && (
+                            <div>
+                              <span className="text-sm font-medium">Last Purchase: </span>
+                              <span className="text-sm">
+                                {format(new Date(selectedCreditor.lastPurchaseDate), 'PPP')}
+                              </span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                            <span className="text-sm">
+                              Requires attention for payment collection
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </CardContent>

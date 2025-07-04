@@ -20,9 +20,9 @@ export function AnalyticsDashboard({ analytics }: AnalyticsDashboardProps) {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.totalTenants}</div>
+            <div className="text-2xl font-bold">{analytics.totalTenants || analytics.overview?.totalTenants || 0}</div>
             <p className="text-xs text-muted-foreground">
-              {analytics.activeTenants} active
+              {analytics.activeTenants || analytics.tenantMetrics?.activeTenants || 0} active
             </p>
           </CardContent>
         </Card>
@@ -33,7 +33,7 @@ export function AnalyticsDashboard({ analytics }: AnalyticsDashboardProps) {
             <Gauge className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.totalStations}</div>
+            <div className="text-2xl font-bold">{analytics.overview?.totalStations || analytics.usageMetrics?.totalStations || 0}</div>
           </CardContent>
         </Card>
 
@@ -53,7 +53,7 @@ export function AnalyticsDashboard({ analytics }: AnalyticsDashboardProps) {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{analytics.totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">₹{(analytics.totalRevenue || analytics.overview?.totalRevenue || 0).toLocaleString()}</div>
           </CardContent>
         </Card>
 
@@ -64,7 +64,7 @@ export function AnalyticsDashboard({ analytics }: AnalyticsDashboardProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Math.round((analytics.activeTenants / analytics.totalTenants) * 100)}%
+              {Math.round(((analytics.activeTenants || analytics.tenantMetrics?.activeTenants || 0) / (analytics.totalTenants || analytics.overview?.totalTenants || 1)) * 100)}%
             </div>
           </CardContent>
         </Card>

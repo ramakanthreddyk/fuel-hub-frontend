@@ -1,10 +1,10 @@
+
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { 
   Tenant, 
   CreateTenantRequest, 
   User, 
   Station, 
-  TenantDetailsResponse,
   ApiResponse 
 } from './api-contract';
 
@@ -38,6 +38,8 @@ export const tenantsApi = {
         createdAt: tenant.createdAt,
         userCount: tenant.userCount || 0,
         stationCount: tenant.stationCount || 0,
+        users: [], // Will be populated by getTenantDetails if needed
+        stations: [] // Will be populated by getTenantDetails if needed
       }));
     } catch (error) {
       console.error('Error fetching tenants:', error);
@@ -92,52 +94,13 @@ export const tenantsApi = {
         planId: newTenant.planId,
         planName: newTenant.planName,
         createdAt: newTenant.createdAt,
-        userCount: 0,
-        stationCount: 0
+        userCount: newTenant.userCount || 0,
+        stationCount: newTenant.stationCount || 0,
+        users: [],
+        stations: []
       };
     } catch (error) {
       console.error('Error creating tenant:', error);
-      if (error.response?.data?.message) {
-        console.error('Backend error message:', error.response.data.message);
-      }
-      throw error;
-    }
-  },
-  
-  // Update tenant status (SuperAdmin route)
-  updateTenantStatus: async (tenantId: string, status: 'active' | 'suspended' | 'cancelled'): Promise<Tenant> => {
-    try {
-      console.log(`Updating tenant ${tenantId} status to ${status}`);
-      const response = await apiClient.patch(`/admin/tenants/${tenantId}/status`, { status });
-      const updatedTenant = extractApiData<TenantResponse>(response);
-      
-      // Map to expected Tenant structure
-      return {
-        id: updatedTenant.id,
-        name: updatedTenant.name,
-        status: updatedTenant.status,
-        planId: updatedTenant.planId,
-        planName: updatedTenant.planName,
-        createdAt: updatedTenant.createdAt,
-        userCount: updatedTenant.userCount || 0,
-        stationCount: updatedTenant.stationCount || 0
-      };
-    } catch (error) {
-      console.error(`Error updating tenant ${tenantId} status:`, error);
-      if (error.response?.data?.message) {
-        console.error('Backend error message:', error.response.data.message);
-      }
-      throw error;
-    }
-  },
-  
-  // Delete tenant (SuperAdmin route)
-  deleteTenant: async (tenantId: string): Promise<void> => {
-    try {
-      console.log(`Deleting tenant ${tenantId}`);
-      await apiClient.delete(`/admin/tenants/${tenantId}`);
-    } catch (error) {
-      console.error(`Error deleting tenant ${tenantId}:`, error);
       if (error.response?.data?.message) {
         console.error('Backend error message:', error.response.data.message);
       }

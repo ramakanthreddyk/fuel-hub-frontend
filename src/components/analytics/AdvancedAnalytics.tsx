@@ -42,7 +42,7 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
                     <XAxis dataKey="hour" />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line type="monotone" dataKey="sales" stroke="#8b5cf6" strokeWidth={2} />
+                    <Line type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -67,9 +67,9 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
                 {peakHours.map((peak, index) => (
                   <div key={index} className="p-4 bg-green-50 rounded-lg">
                     <h4 className="font-semibold text-green-800">Peak {index + 1}</h4>
-                    <p className="text-green-600">{peak.timeRange}</p>
+                    <p className="text-green-600">{peak.timeRange || `${peak.hour}:00`}</p>
                     <p className="text-sm text-muted-foreground">
-                      Avg Sales: ₹{peak.avgSales.toLocaleString()}
+                      Avg Sales: ₹{(peak.avgSales || peak.averageRevenue || 0).toLocaleString()}
                     </p>
                   </div>
                 ))}
