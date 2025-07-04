@@ -18,9 +18,9 @@ export default function CreditorsPage() {
 
   // Filter creditors based on search term
   const filteredCreditors = creditors.filter(creditor =>
-    creditor.partyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    creditor.contactPerson?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    creditor.phoneNumber?.includes(searchTerm)
+    (creditor.partyName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (creditor.contactPerson || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (creditor.phoneNumber || '').includes(searchTerm)
   );
 
   const totalOutstanding = creditors.reduce((sum, creditor) => sum + (creditor.outstandingAmount || 0), 0);

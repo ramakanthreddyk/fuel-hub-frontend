@@ -34,8 +34,8 @@ export function ReconciliationForm({ stationId, date, readings, onSuccess }: Rec
 
   const managerConfirmation = watch('managerConfirmation');
   
-  const totalExpected = readings.reduce((sum, reading) => sum + (reading.totalSales || 0), 0);
-  const totalCashDeclared = readings.reduce((sum, reading) => sum + (reading.totalCash || 0), 0);
+  const totalExpected = readings.reduce((sum, reading) => sum + (reading.revenue || 0), 0);
+  const totalCashDeclared = readings.reduce((sum, reading) => sum + (reading.cashDeclared || 0), 0);
   const deltaAmount = totalExpected - totalCashDeclared;
 
   const onSubmit = async (data: FormData) => {
@@ -48,8 +48,8 @@ export function ReconciliationForm({ stationId, date, readings, onSuccess }: Rec
       await createReconciliation.mutateAsync({
         stationId,
         date,
-        openingReading: readings[0]?.currentReading || 0,
-        closingReading: readings[readings.length - 1]?.currentReading || 0,
+        openingReading: readings[0]?.openingReading || 0,
+        closingReading: readings[readings.length - 1]?.closingReading || 0,
         notes: data.reconciliationNotes,
       });
       onSuccess?.();

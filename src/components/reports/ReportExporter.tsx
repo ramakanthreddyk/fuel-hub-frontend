@@ -34,7 +34,16 @@ export function ReportExporter({ stationId, reportType, filters }: ReportExporte
         }
       };
 
-      const blob = await reportsService.exportReport(exportData);
+      const response = await reportsService.exportReport(exportData);
+      
+      // Handle blob response
+      let blob: Blob;
+      if (response instanceof Blob) {
+        blob = response;
+      } else {
+        // If response is not a blob, create one from the data
+        blob = new Blob([JSON.stringify(response)], { type: 'application/json' });
+      }
       
       // Create download link
       const url = window.URL.createObjectURL(blob);

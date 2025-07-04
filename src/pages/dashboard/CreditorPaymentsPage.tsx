@@ -54,7 +54,7 @@ export default function CreditorPaymentsPage() {
             <div>
               <p className="text-sm text-muted-foreground">Outstanding</p>
               <p className="text-lg font-semibold text-red-600">
-                ₹{(creditor.outstandingAmount || 0).toLocaleString()}
+                ₹{((creditor.outstandingAmount || 0)).toLocaleString()}
               </p>
             </div>
             <div>

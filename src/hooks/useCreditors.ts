@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 export const useCreditors = (stationId?: string) => {
   return useQuery({
     queryKey: ['creditors', stationId],
-    queryFn: () => creditorService.getCreditors(),
+    queryFn: () => creditorService.getCreditors(stationId),
     staleTime: 60000 // 1 minute
   });
 };
@@ -36,13 +36,13 @@ export const useTopCreditors = () => {
     queryFn: async (): Promise<TopCreditor[]> => {
       const creditors = await creditorService.getCreditors();
       return creditors
-        .sort((a, b) => b.outstandingAmount - a.outstandingAmount)
+        .sort((a, b) => (b.outstandingAmount || 0) - (a.outstandingAmount || 0))
         .slice(0, 10)
         .map(creditor => ({
           id: creditor.id,
           partyName: creditor.partyName,
           name: creditor.name || creditor.partyName,
-          outstandingAmount: creditor.outstandingAmount,
+          outstandingAmount: creditor.outstandingAmount || 0,
           creditLimit: creditor.creditLimit,
           lastPurchaseDate: creditor.lastPurchaseDate
         }));
