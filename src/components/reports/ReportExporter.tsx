@@ -2,147 +2,146 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useReportExport } from '@/hooks/useReports';
-import { Download, FileText, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Download, Mail } from 'lucide-react';
+import { reportsService } from '@/api/services/reportsService';
 
 interface ReportExporterProps {
-  stationId?: string;
-  dateRange?: { from: Date; to: Date };
+  stationId: string;
+  reportType: 'sales' | 'inventory' | 'reconciliation';
+  filters: Record<string, any>;
 }
 
-export function ReportExporter({ stationId, dateRange }: ReportExporterProps) {
-  const [reportType, setReportType] = useState<string>('');
-  const [format, setFormat] = useState<'csv' | 'excel' | 'pdf' | ''>('');
-  const { exportReport, scheduleReport, isExporting } = useReportExport();
+export function ReportExporter({ stationId, reportType, filters }: ReportExporterProps) {
+  const [format, setFormat] = useState<'pdf' | 'excel' | 'csv'>('pdf');
+  const [recipients, setRecipients] = useState<string>('');
+  const [isExporting, setIsExporting] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
   const { toast } = useToast();
 
   const handleExport = async () => {
-    if (!reportType || !format) {
-      toast({
-        title: 'Missing Selection',
-        description: 'Please select report type and format',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    setIsExporting(true);
     try {
-      await exportReport({
-        reportType: reportType as 'sales' | 'inventory' | 'reconciliation',
-        format: format as 'csv' | 'excel' | 'pdf',
+      const exportData = {
+        type: reportType,
+        format,
         filters: {
           stationId,
-          dateRange,
-        },
-      });
+          ...filters
+        }
+      };
+
+      const blob = await reportsService.exportReport(exportData);
       
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${reportType}-report-${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
       toast({
-        title: 'Export Successful',
-        description: 'Report has been downloaded',
+        title: "Success",
+        description: "Report exported successfully",
       });
     } catch (error) {
       toast({
-        title: 'Export Failed',
-        description: 'Unable to export report',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to export report",
+        variant: "destructive",
       });
+    } finally {
+      setIsExporting(false);
     }
   };
 
-  const handleSchedule = async () => {
-    if (!reportType) {
-      toast({
-        title: 'Missing Selection',
-        description: 'Please select report type',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+  const handleScheduleReport = async () => {
+    setIsScheduling(true);
     try {
-      await scheduleReport({
-        reportType: reportType as 'sales' | 'inventory' | 'reconciliation',
-        frequency: 'weekly',
-        recipients: [],
+      const scheduleData = {
+        type: reportType,
+        format,
+        frequency: 'weekly' as const,
+        recipients: recipients.split(',').map(r => r.trim()).filter(Boolean),
         filters: {
           stationId,
-        },
-      });
+          ...filters
+        }
+      };
+
+      await reportsService.scheduleReport(scheduleData);
       
       toast({
-        title: 'Report Scheduled',
-        description: 'Weekly reports will be emailed to you',
+        title: "Success",
+        description: "Report scheduled successfully",
       });
+      
+      setRecipients('');
     } catch (error) {
       toast({
-        title: 'Scheduling Failed',
-        description: 'Unable to schedule report',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to schedule report",
+        variant: "destructive",
       });
+    } finally {
+      setIsScheduling(false);
     }
   };
 
   return (
-    <Card className="bg-gradient-to-br from-white to-green-50 border-green-200">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-green-600" />
-          Export Reports
-        </CardTitle>
+        <CardTitle>Export Report</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="text-sm font-medium mb-2 block">Report Type</label>
-            <Select value={reportType} onValueChange={setReportType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select report type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sales">Sales Summary</SelectItem>
-                <SelectItem value="inventory">Inventory Report</SelectItem>
-                <SelectItem value="reconciliation">Reconciliation Report</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">Format</label>
-            <Select value={format} onValueChange={(value: 'csv' | 'excel' | 'pdf') => setFormat(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select format" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pdf">PDF</SelectItem>
-                <SelectItem value="excel">Excel</SelectItem>
-                <SelectItem value="csv">CSV</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div>
+          <Label htmlFor="format">Export Format</Label>
+          <Select value={format} onValueChange={(value: 'pdf' | 'excel' | 'csv') => setFormat(value)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pdf">PDF</SelectItem>
+              <SelectItem value="excel">Excel</SelectItem>
+              <SelectItem value="csv">CSV</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="flex gap-3">
-          <Button 
-            onClick={handleExport} 
-            disabled={isExporting || !reportType || !format}
-            className="flex-1"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            {isExporting ? 'Exporting...' : 'Export Now'}
-          </Button>
-          
-          <Button 
-            onClick={handleSchedule} 
-            variant="outline" 
-            disabled={!reportType}
-            className="flex-1"
-          >
-            <Mail className="h-4 w-4 mr-2" />
-            Schedule Weekly
-          </Button>
+        <Button 
+          onClick={handleExport} 
+          disabled={isExporting}
+          className="w-full"
+        >
+          <Download className="mr-2 h-4 w-4" />
+          {isExporting ? 'Exporting...' : 'Export Now'}
+        </Button>
+
+        <div className="border-t pt-4">
+          <Label htmlFor="recipients">Email Recipients (comma-separated)</Label>
+          <Input
+            id="recipients"
+            value={recipients}
+            onChange={(e) => setRecipients(e.target.value)}
+            placeholder="email1@example.com, email2@example.com"
+          />
         </div>
+
+        <Button 
+          onClick={handleScheduleReport} 
+          disabled={isScheduling || !recipients.trim()}
+          variant="outline"
+          className="w-full"
+        >
+          <Mail className="mr-2 h-4 w-4" />
+          {isScheduling ? 'Scheduling...' : 'Schedule Weekly Report'}
+        </Button>
       </CardContent>
     </Card>
   );

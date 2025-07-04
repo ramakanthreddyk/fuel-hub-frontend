@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { creditorService } from '@/api/services/creditorService';
-import { CreateCreditPaymentRequest, TopCreditor } from '@/api/api-contract';
+import { CreateCreditPaymentRequest, TopCreditor, CreateCreditorRequest } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
 
 /**
@@ -73,6 +73,33 @@ export const useCreatePayment = () => {
       toast({
         title: "Error",
         description: error.response?.data?.message || "Failed to record payment",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+/**
+ * Hook to create a new creditor
+ */
+export const useCreateCreditor = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (data: CreateCreditorRequest) => creditorService.createCreditor(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['creditors'] });
+      queryClient.invalidateQueries({ queryKey: ['top-creditors'] });
+      toast({
+        title: "Success",
+        description: "Creditor created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to create creditor",
         variant: "destructive",
       });
     },
