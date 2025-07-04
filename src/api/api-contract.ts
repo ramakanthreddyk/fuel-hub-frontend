@@ -834,6 +834,7 @@ export interface FuelInventory {
   stationName?: string;
   fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
   currentStock: number;
+  currentVolume: number; // Alias for currentStock
   minimumLevel: number;
   maximumLevel: number;
   lastUpdated: string;
@@ -871,6 +872,7 @@ export interface CreateFuelDeliveryRequest {
   deliveryDate?: string;
   supplierName?: string;
   invoiceNumber?: string;
+  deliveredBy?: string;
   notes?: string;
 }
 
@@ -897,6 +899,7 @@ export interface ReconciliationRecord {
 export interface CreateReconciliationRequest {
   stationId: string;
   date: string;
+  reconciliationDate?: string; // Alias for date
   openingReading: number;
   closingReading: number;
   notes?: string;
@@ -905,12 +908,20 @@ export interface CreateReconciliationRequest {
 export interface DailyReadingSummary {
   nozzleId: string;
   nozzleName?: string;
+  nozzleNumber?: number; // Alias for display
   fuelType: string;
   openingReading: number;
   closingReading: number;
+  previousReading: number; // Alias for openingReading
+  currentReading: number; // Alias for closingReading
   totalVolume: number;
+  deltaVolume: number; // Alias for totalVolume
   salesCount: number;
   revenue: number;
+  pricePerLitre: number;
+  saleValue: number; // Alias for revenue
+  paymentMethod?: string;
+  cashDeclared?: number;
 }
 
 // =============================================================================
@@ -931,11 +942,14 @@ export interface SalesReportData {
   date: string;
   stationName: string;
   nozzleName: string;
+  nozzleNumber?: string; // Alias for nozzleName
   fuelType: string;
   volume: number;
   amount: number;
   paymentMethod: string;
   attendantName?: string;
+  attendant?: string; // Alias for attendantName
+  pricePerLitre?: number;
 }
 
 export interface SalesReportSummary {
@@ -945,6 +959,8 @@ export interface SalesReportSummary {
   averageTicketSize: number;
   byPaymentMethod: PaymentMethodBreakdown[];
   byFuelType: FuelTypeBreakdown[];
+  paymentMethodBreakdown: PaymentMethodBreakdown[]; // Alias
+  fuelTypeBreakdown: FuelTypeBreakdown[]; // Alias
 }
 
 export interface SalesReportExportFilters extends SalesReportFilters {
@@ -959,6 +975,7 @@ export interface ExportRequest {
   };
   filters?: Record<string, any>;
   includeFields?: string[];
+  reportType?: string; // Added for compatibility
 }
 
 export interface ExportReportRequest extends ExportRequest {
@@ -971,6 +988,7 @@ export interface ScheduleReportRequest {
   frequency: 'daily' | 'weekly' | 'monthly';
   filters: Record<string, any>;
   recipients: string[];
+  reportType?: string; // Added for compatibility
 }
 
 export interface ExportResponse {

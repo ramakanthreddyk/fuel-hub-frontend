@@ -38,8 +38,8 @@ export function InventoryStatusCard({ stationId }: InventoryStatusCardProps) {
     );
   }
 
-  const lowStockItems = inventory.filter(item => item.currentVolume < 1000);
-  const criticalStockItems = inventory.filter(item => item.currentVolume < 500);
+  const lowStockItems = inventory.filter(item => (item.currentVolume || item.currentStock) < 1000);
+  const criticalStockItems = inventory.filter(item => (item.currentVolume || item.currentStock) < 500);
 
   return (
     <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200">
@@ -65,37 +65,40 @@ export function InventoryStatusCard({ stationId }: InventoryStatusCardProps) {
         )}
 
         <div className="grid gap-3">
-          {inventory.slice(0, 5).map((item) => (
-            <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
-              <div className="flex items-center gap-3">
-                <Fuel className={`h-4 w-4 ${
-                  item.currentVolume < 500 ? 'text-red-500' : 
-                  item.currentVolume < 1000 ? 'text-yellow-500' : 'text-green-500'
-                }`} />
-                <div>
-                  <p className="font-medium text-sm">{item.stationName}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.fuelType.charAt(0).toUpperCase() + item.fuelType.slice(1)}
+          {inventory.slice(0, 5).map((item) => {
+            const currentLevel = item.currentVolume || item.currentStock;
+            return (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                <div className="flex items-center gap-3">
+                  <Fuel className={`h-4 w-4 ${
+                    currentLevel < 500 ? 'text-red-500' : 
+                    currentLevel < 1000 ? 'text-yellow-500' : 'text-green-500'
+                  }`} />
+                  <div>
+                    <p className="font-medium text-sm">{item.stationName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.fuelType.charAt(0).toUpperCase() + item.fuelType.slice(1)}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className={`font-bold text-sm ${
+                    currentLevel < 500 ? 'text-red-600' : 
+                    currentLevel < 1000 ? 'text-yellow-600' : 'text-green-600'
+                  }`}>
+                    {currentLevel.toLocaleString()}L
                   </p>
+                  <Badge variant={
+                    currentLevel < 500 ? 'destructive' : 
+                    currentLevel < 1000 ? 'secondary' : 'default'
+                  } className="text-xs">
+                    {currentLevel < 500 ? 'Critical' : 
+                     currentLevel < 1000 ? 'Low' : 'Normal'}
+                  </Badge>
                 </div>
               </div>
-              <div className="text-right">
-                <p className={`font-bold text-sm ${
-                  item.currentVolume < 500 ? 'text-red-600' : 
-                  item.currentVolume < 1000 ? 'text-yellow-600' : 'text-green-600'
-                }`}>
-                  {item.currentVolume.toLocaleString()}L
-                </p>
-                <Badge variant={
-                  item.currentVolume < 500 ? 'destructive' : 
-                  item.currentVolume < 1000 ? 'secondary' : 'default'
-                } className="text-xs">
-                  {item.currentVolume < 500 ? 'Critical' : 
-                   item.currentVolume < 1000 ? 'Low' : 'Normal'}
-                </Badge>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {inventory.length === 0 && (

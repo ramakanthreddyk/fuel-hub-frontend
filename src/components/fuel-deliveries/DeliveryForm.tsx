@@ -17,7 +17,7 @@ export function DeliveryForm() {
     deliveryDate: new Date().toISOString().split('T')[0],
     supplierName: '',
     invoiceNumber: '',
-    pricePerLiter: 0,
+    pricePerLitre: 0,
     deliveredBy: ''
   });
 
@@ -37,7 +37,7 @@ export function DeliveryForm() {
           deliveryDate: new Date().toISOString().split('T')[0],
           supplierName: '',
           invoiceNumber: '',
-          pricePerLiter: 0,
+          pricePerLitre: 0,
           deliveredBy: ''
         });
       }
@@ -103,12 +103,12 @@ export function DeliveryForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pricePerLiter">Price per Liter *</Label>
+              <Label htmlFor="pricePerLitre">Price per Liter *</Label>
               <Input
-                id="pricePerLiter"
+                id="pricePerLitre"
                 type="number"
-                value={formData.pricePerLiter || ''}
-                onChange={(e) => setFormData({ ...formData, pricePerLiter: Number(e.target.value) })}
+                value={formData.pricePerLitre || ''}
+                onChange={(e) => setFormData({ ...formData, pricePerLitre: Number(e.target.value) })}
                 placeholder="Enter price per liter"
                 min="0"
                 step="0.01"

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -33,7 +32,7 @@ export function TopCreditorsTable() {
     );
   }
 
-  if (creditors.length === 0) {
+  if (!creditors || creditors.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -87,7 +86,7 @@ export function TopCreditorsTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {creditors.map((creditor) => (
+            {Array.isArray(creditors) && creditors.map((creditor) => (
               <TableRow key={creditor.id}>
                 <TableCell>
                   <div>

@@ -15,7 +15,7 @@ interface PaymentFormProps {
 
 export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps) {
   const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | 'credit'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque'>('cash');
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -64,7 +64,7 @@ export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps)
           
           <div>
             <Label htmlFor="paymentMethod">Payment Method *</Label>
-            <Select value={paymentMethod} onValueChange={(value: 'cash' | 'card' | 'upi' | 'credit') => setPaymentMethod(value)}>
+            <Select value={paymentMethod} onValueChange={(value: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque') => setPaymentMethod(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -72,7 +72,8 @@ export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps)
                 <SelectItem value="cash">Cash</SelectItem>
                 <SelectItem value="card">Card</SelectItem>
                 <SelectItem value="upi">UPI</SelectItem>
-                <SelectItem value="credit">Credit</SelectItem>
+                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                <SelectItem value="cheque">Cheque</SelectItem>
               </SelectContent>
             </Select>
           </div>
