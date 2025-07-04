@@ -409,6 +409,27 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/pumps/{id}/settings:
+    get:
+      summary: Get pump settings
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Update pump settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
   /api/v1/nozzles:
     post:
       summary: Create nozzle
@@ -468,6 +489,27 @@ paths:
               $ref: '#/components/schemas/CreateNozzleRequest'
     delete:
       summary: Delete nozzle
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/nozzles/{id}/settings:
+    get:
+      summary: Get nozzle settings
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    put:
+      summary: Update nozzle settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -664,11 +706,11 @@ paths:
                     $ref: '#/components/schemas/AlertSummary'
         default:
           $ref: '#/components/responses/Error'
-  /api/v1/alerts/{alertId}:
+  /api/v1/alerts/{id}:
     delete:
       summary: Delete an alert by ID
       parameters:
-        - name: alertId
+        - name: id
           in: path
           required: true
           schema:
@@ -1117,6 +1159,15 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/dashboard/fuel-types:
+    get:
+      deprecated: true
+      summary: Legacy fuel breakdown
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
   /api/v1/dashboard/top-creditors:
     get:
       summary: Dashboard top creditors
@@ -1125,9 +1176,26 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/dashboard/station-metrics:
+    get:
+      summary: Dashboard station metrics
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
   /api/v1/dashboard/sales-trend:
     get:
       summary: Dashboard sales trend
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/dashboard/daily-trend:
+    get:
+      deprecated: true
+      summary: Legacy sales trend
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -1384,7 +1452,26 @@ paths:
       summary: Current part inventory
       responses:
         '200':
-          $ref: '#/components/responses/Success'
+          description: Inventory items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventoryItem'
+              example:
+                data:
+                  - id: "inv1"
+                    stationId: "st1"
+                    stationName: "Station A"
+                    fuelType: "petrol"
+                    currentStock: 800
+                    minimumLevel: 500
+                    lastUpdated: "2025-11-28T10:00:00Z"
+                    stockStatus: "medium"
         default:
           $ref: '#/components/responses/Error'
   /api/v1/inventory/alerts:
@@ -1392,7 +1479,26 @@ paths:
       summary: Low stock alerts
       responses:
         '200':
-          $ref: '#/components/responses/Success'
+          description: Inventory alerts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alert'
+              example:
+                data:
+                  - id: "al1"
+                    stationId: "st1"
+                    stationName: "Station A"
+                    alertType: "low_inventory"
+                    message: "Low petrol inventory"
+                    severity: "warning"
+                    isRead: false
+                    createdAt: "2025-11-28T09:00:00Z"
         default:
           $ref: '#/components/responses/Error'
   /api/v1/inventory/update:
@@ -1400,7 +1506,18 @@ paths:
       summary: Update inventory counts
       responses:
         '200':
-          $ref: '#/components/responses/Success'
+          description: Update status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: success
         default:
           $ref: '#/components/responses/Error'
       requestBody:
@@ -1408,7 +1525,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/InventoryUpdateRequest'
   /api/v1/reports/financial/export:
     get:
       summary: Export financial report
@@ -1425,16 +1542,39 @@ paths:
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
-  /api/v1/settings:
+  /api/v1/tenant/settings:
     get:
-      summary: Retrieve tenant settings
+      summary: Retrieve tenant settings and feature flags
       responses:
         '200':
           $ref: '#/components/responses/Success'
         default:
           $ref: '#/components/responses/Error'
     post:
-      summary: Update tenant settings
+      summary: Update tenant settings or feature flag
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/v1/settings:
+    get:
+      deprecated: true
+      summary: Legacy tenant settings
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      deprecated: true
+      summary: Legacy update tenant settings
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -1459,7 +1599,24 @@ paths:
       summary: Compare station performance
       responses:
         '200':
-          $ref: '#/components/responses/Success'
+          description: Station comparison metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StationComparison'
+              example:
+                data:
+                  - id: "st1"
+                    stationName: "Station A"
+                    sales: 12000
+                    volume: 4500
+                    transactions: 200
+                    growth: 5
         default:
           $ref: '#/components/responses/Error'
   /api/v1/stations/ranking:
@@ -1467,7 +1624,24 @@ paths:
       summary: Station ranking report
       responses:
         '200':
-          $ref: '#/components/responses/Success'
+          description: Ranked station metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StationRanking'
+              example:
+                data:
+                  - rank: 1
+                    id: "st1"
+                    name: "Station A"
+                    sales: 15000
+                    volume: 5000
+                    transactionCount: 220
         default:
           $ref: '#/components/responses/Error'
   /api/docs/swagger.json:
@@ -1481,6 +1655,7 @@ paths:
   /test:
     get:
       summary: Echo test endpoint
+      x-internal: true
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -1488,6 +1663,7 @@ paths:
           $ref: '#/components/responses/Error'
     post:
       summary: Echo test POST
+      x-internal: true
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -1502,6 +1678,7 @@ paths:
   /test-login:
     post:
       summary: Login helper for tests
+      x-internal: true
       responses:
         '200':
           $ref: '#/components/responses/Success'
@@ -1524,6 +1701,7 @@ paths:
   /schemas:
     get:
       summary: List tenant schemas (non-production)
+      x-internal: true
       description: |
         Development utility for viewing or resetting demo tables.
         When `NODE_ENV` is `production` the endpoint is authenticated and
@@ -1881,6 +2059,30 @@ paths:
           type: number
         growth:
           type: number
+    StationMetric:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        todaySales:
+          type: number
+        monthlySales:
+          type: number
+        salesGrowth:
+          type: number
+        activePumps:
+          type: number
+        totalPumps:
+          type: number
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+        lastActivity:
+          type: string
+        efficiency:
+          type: number
     StationRanking:
       type: object
       properties:
@@ -2081,6 +2283,8 @@ paths:
       properties:
         stationId:
           type: string
+        stationName:
+          type: string
         fuelType:
           type: string
           enum: [petrol, diesel, premium]
@@ -2110,6 +2314,36 @@ paths:
         lastUpdated:
           type: string
           format: date-time
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: string
+        stationId:
+          type: string
+        stationName:
+          type: string
+        fuelType:
+          type: string
+        currentStock:
+          type: number
+        minimumLevel:
+          type: number
+        lastUpdated:
+          type: string
+          format: date-time
+        stockStatus:
+          type: string
+    InventoryUpdateRequest:
+      type: object
+      required: [stationId, fuelType, newStock]
+      properties:
+        stationId:
+          type: string
+        fuelType:
+          type: string
+        newStock:
+          type: number
     FuelPrice:
       type: object
       properties:
