@@ -4,7 +4,7 @@ import type {
   SalesReportFilters, 
   SalesReportData, 
   SalesReportSummary, 
-  ExportReportRequest,
+  ExportRequest,
   ScheduleReportRequest,
   SalesReportExportFilters,
   ApiResponse 
@@ -17,7 +17,9 @@ export const reportsApi = {
   }> => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.append(key, value);
+      if (value && typeof value === 'string') {
+        params.append(key, value);
+      }
     });
     
     const response = await apiClient.get(`/reports/sales?${params.toString()}`);
@@ -30,7 +32,9 @@ export const reportsApi = {
   exportSalesCSV: async (filters: SalesReportFilters): Promise<Blob> => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.append(key, value);
+      if (value && typeof value === 'string') {
+        params.append(key, value);
+      }
     });
     
     const response = await apiClient.get(`/reports/sales/export?${params.toString()}`, {
@@ -47,7 +51,7 @@ export const reportsApi = {
     return response.data;
   },
 
-  exportReport: async (request: ExportReportRequest): Promise<Blob> => {
+  exportReport: async (request: ExportRequest): Promise<Blob> => {
     const response = await apiClient.post('/reports/export', request, {
       responseType: 'blob',
     });

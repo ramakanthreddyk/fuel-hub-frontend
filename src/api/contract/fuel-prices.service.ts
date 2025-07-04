@@ -43,6 +43,7 @@ export const fuelPricesService = {
         price: parseFloat(price.price) || 0,
         validFrom: price.valid_from || price.validFrom,
         createdAt: price.created_at || price.createdAt,
+        isActive: price.is_active !== false, // Default to true if not specified
         // Handle station name - get from relationship or fetch separately
         stationName: price.station?.name || undefined
       }));

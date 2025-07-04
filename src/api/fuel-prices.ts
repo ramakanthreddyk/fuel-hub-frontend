@@ -33,6 +33,7 @@ export const fuelPricesApi = {
         price: parseFloat(price.price) || 0,
         validFrom: price.valid_from,
         createdAt: price.created_at,
+        isActive: price.is_active !== false, // Default to true if not specified
         // Include station info if available
         station: price.station ? {
           name: price.station.name
