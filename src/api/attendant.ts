@@ -17,8 +17,8 @@ const devLog = (message: string, ...args: any[]) => {
   }
 };
 
-// Define attendance and shift types
-export interface AttendanceRecord {
+// Define attendance and shift types locally to avoid conflicts
+interface AttendanceRecord {
   id: string;
   employeeId: string;
   employeeName: string;
@@ -29,7 +29,7 @@ export interface AttendanceRecord {
   date: string;
 }
 
-export interface Shift {
+interface Shift {
   id: string;
   shiftName: string;
   startTime: string;
@@ -128,7 +128,7 @@ export const attendantApi = {
   }
 };
 
-// Export types for backward compatibility
+// Export types for backward compatibility - removing conflicting exports
 export type { 
   AttendantStation, 
   AttendantPump, 
@@ -136,7 +136,8 @@ export type {
   CashReport, 
   CreateCashReportRequest,
   SystemAlert,
-  AlertSummary,
-  AttendanceRecord,
-  Shift
+  AlertSummary
 };
+
+// Export the local types
+export type { AttendanceRecord, Shift };
