@@ -44,7 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const token = localStorage.getItem('fuelsync_token');
   const isAuthenticated = !!user && !!token;
 
-  // Initialize auth state on mount
+  // Initialize auth state on mount - prevent immediate refresh
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -53,7 +53,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         if (token && storedUser) {
           const parsedUser = JSON.parse(storedUser);
-          // Ensure role is properly typed
           if (parsedUser.role && ['superadmin', 'owner', 'manager', 'attendant'].includes(parsedUser.role)) {
             setUser(parsedUser as User);
             console.log('[AUTH-CONTEXT] User restored from storage:', parsedUser);
@@ -62,8 +61,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             localStorage.removeItem('fuelsync_token');
             localStorage.removeItem('fuelsync_user');
           }
-        } else {
-          console.log('[AUTH-CONTEXT] No stored auth data found');
         }
       } catch (error) {
         console.error('[AUTH-CONTEXT] Error initializing auth:', error);
@@ -75,7 +72,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    initializeAuth();
+    // Small delay to prevent immediate execution
+    const timer = setTimeout(initializeAuth, 200);
+    return () => clearTimeout(timer);
   }, []);
 
   const login = async (email: string, password: string, isAdminLogin = false) => {
@@ -91,7 +90,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       const { user: authUser, token } = response;
       
-      // Ensure user has required fields and valid role
       if (!authUser.id || !authUser.email || !authUser.name || !authUser.role) {
         throw new Error('Invalid user data received');
       }
@@ -100,26 +98,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error('Invalid user role received');
       }
       
-      // Store auth data
       localStorage.setItem('fuelsync_token', token);
       localStorage.setItem('fuelsync_user', JSON.stringify(authUser));
       
       setUser(authUser as User);
       console.log('[AUTH-CONTEXT] Login successful:', authUser);
       
-      // Navigate based on role - avoid redirecting if already on correct page
-      const currentPath = location.pathname;
-      
-      if (authUser.role === 'superadmin') {
-        if (!currentPath.startsWith('/superadmin')) {
-          navigate('/superadmin/overview', { replace: true });
+      // Small delay before navigation to ensure state is set
+      setTimeout(() => {
+        const currentPath = location.pathname;
+        
+        if (authUser.role === 'superadmin') {
+          if (!currentPath.startsWith('/superadmin')) {
+            navigate('/superadmin/overview', { replace: true });
+          }
+        } else {
+          if (!currentPath.startsWith('/dashboard')) {
+            navigate('/dashboard', { replace: true });
+          }
         }
-      } else {
-        // For owner, manager, attendant - go to dashboard
-        if (!currentPath.startsWith('/dashboard')) {
-          navigate('/dashboard', { replace: true });
-        }
-      }
+      }, 100);
     } catch (error: any) {
       console.error('[AUTH-CONTEXT] Login error:', error);
       throw new Error(error.response?.data?.message || error.message || 'Login failed');
@@ -137,7 +135,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.setItem('fuelsync_token', response.token);
         console.log('[AUTH-CONTEXT] Token refreshed successfully');
         
-        // If user info is also returned, update it
         if (response.user && ['superadmin', 'owner', 'manager', 'attendant'].includes(response.user.role)) {
           localStorage.setItem('fuelsync_user', JSON.stringify(response.user));
           setUser(response.user as User);
@@ -149,7 +146,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw new Error('Failed to refresh token');
     } catch (error) {
       console.error('[AUTH-CONTEXT] Token refresh error:', error);
-      // If refresh fails, log out the user
       logout();
       throw error;
     }
@@ -161,12 +157,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await authApi.logout();
     } catch (error) {
       console.error('[AUTH-CONTEXT] Logout error:', error);
-      // Continue with logout even if API call fails
     } finally {
       localStorage.removeItem('fuelsync_token');
       localStorage.removeItem('fuelsync_user');
       setUser(null);
-      // Only navigate to login if not already there
       if (!location.pathname.includes('/login') && location.pathname !== '/') {
         navigate('/', { replace: true });
       }
