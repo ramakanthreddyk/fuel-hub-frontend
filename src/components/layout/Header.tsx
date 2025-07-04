@@ -10,17 +10,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap } from 'lucide-react';
+import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 
 export function Header() {
   const { user, logout } = useAuth();
-  const { isMobile } = useSidebar();
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Get current page title based on route
   const getPageTitle = () => {
@@ -124,7 +124,14 @@ export function Header() {
     <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 shadow-sm dark:bg-gray-950/95 dark:border-gray-800">
       <div className="flex h-14 md:h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2 md:gap-4">
-          <SidebarTrigger className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-800" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 lg:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
           
           {/* Page Title - Show current page context */}
           <div className="hidden sm:flex items-center gap-2">

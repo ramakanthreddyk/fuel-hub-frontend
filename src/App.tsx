@@ -5,6 +5,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { GlobalErrorBoundary } from './components/common/GlobalErrorBoundary';
 import { Toaster } from './components/ui/toaster';
 
 // Layout Components
@@ -48,107 +49,114 @@ function App() {
   console.log('[APP] App component mounting');
 
   return (
-    <ThemeProvider defaultTheme="light" storageKey="fuelsync-ui-theme">
-      <AuthProvider>
-        <div className="min-h-screen bg-background">
-          <Routes>
-            {/* Root Landing Route */}
-            <Route path="/" element={<LandingPage />} />
-            
-            {/* Public Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/login/admin" element={<LoginPage />} />
-            
-            {/* Dashboard Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute allowedRoles={['owner', 'manager', 'attendant']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<RoleDashboard />} />
+    <GlobalErrorBoundary>
+      <ThemeProvider defaultTheme="light" storageKey="fuelsync-ui-theme">
+        <AuthProvider>
+          <div className="min-h-screen bg-background">
+            <Routes>
+              {/* Root Landing Route */}
+              <Route path="/" element={<LandingPage />} />
               
-              {/* Station Routes */}
-              <Route path="stations" element={<StationsPage />} />
-              <Route path="stations/new" element={<CreateStationPage />} />
-              <Route path="stations/:stationId" element={<StationDetailPage />} />
-              <Route path="stations/:stationId/pumps" element={<PumpsPage />} />
-              <Route path="stations/:stationId/pumps/:pumpId" element={<PumpDetailPage />} />
-              <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
-              <Route path="stations/:stationId/pumps/:pumpId/nozzles/new" element={<CreateNozzlePage />} />
+              {/* Public Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login/admin" element={<LoginPage />} />
               
-              {/* Pump Routes */}
-              <Route path="pumps" element={<PumpsPage />} />
-              <Route path="pumps/new" element={<CreatePumpPage />} />
-              <Route path="pumps/:pumpId" element={<PumpDetailPage />} />
-              <Route path="pumps/:pumpId/nozzles" element={<NozzlesPage />} />
-              <Route path="pumps/:pumpId/nozzles/new" element={<CreateNozzlePage />} />
-              
-              {/* Nozzle Routes */}
-              <Route path="nozzles" element={<NozzlesPage />} />
-              <Route path="nozzles/new" element={<CreateNozzlePage />} />
-              <Route path="nozzles/:nozzleId" element={<NozzlesPage />} />
-              <Route path="nozzles/:nozzleId/readings/new" element={<NewReadingPage />} />
-              
-              {/* Reading Routes */}
-              <Route path="readings" element={<ReadingsPage />} />
-              <Route path="readings/new" element={<NewReadingPage />} />
-              <Route path="readings/new/:nozzleId" element={<NewReadingPage />} />
-              
-              {/* Cash Report Routes */}
-              <Route path="cash-report/new" element={<CashReportPage />} />
-              <Route path="cash-reports" element={<CashReportsListPage />} />
-              <Route path="cash-reports/:reportId" element={<CashReportPage />} />
-              
-              {/* Other Routes */}
-              <Route path="fuel-prices" element={<FuelPricesPage />} />
-              <Route path="fuel-inventory" element={<FuelInventoryPage />} />
-              <Route path="reports" element={<ReportsPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-            </Route>
+              {/* Dashboard Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['owner', 'manager', 'attendant']}>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<RoleDashboard />} />
+                
+                {/* Station Routes */}
+                <Route path="stations" element={<StationsPage />} />
+                <Route path="stations/new" element={<CreateStationPage />} />
+                <Route path="stations/:stationId" element={<StationDetailPage />} />
+                <Route path="stations/:stationId/pumps" element={<PumpsPage />} />
+                <Route path="stations/:stationId/pumps/:pumpId" element={<PumpDetailPage />} />
+                <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
+                <Route path="stations/:stationId/pumps/:pumpId/nozzles/new" element={<CreateNozzlePage />} />
+                
+                {/* Pump Routes */}
+                <Route path="pumps" element={<PumpsPage />} />
+                <Route path="pumps/new" element={<CreatePumpPage />} />
+                <Route path="pumps/:pumpId" element={<PumpDetailPage />} />
+                <Route path="pumps/:pumpId/nozzles" element={<NozzlesPage />} />
+                <Route path="pumps/:pumpId/nozzles/new" element={<CreateNozzlePage />} />
+                
+                {/* Nozzle Routes */}
+                <Route path="nozzles" element={<NozzlesPage />} />
+                <Route path="nozzles/new" element={<CreateNozzlePage />} />
+                <Route path="nozzles/:nozzleId" element={<NozzlesPage />} />
+                <Route path="nozzles/:nozzleId/readings/new" element={<NewReadingPage />} />
+                
+                {/* Reading Routes */}
+                <Route path="readings" element={<ReadingsPage />} />
+                <Route path="readings/new" element={<NewReadingPage />} />
+                <Route path="readings/new/:nozzleId" element={<NewReadingPage />} />
+                
+                {/* Cash Report Routes */}
+                <Route path="cash-report/new" element={<CashReportPage />} />
+                <Route path="cash-reports" element={<CashReportsListPage />} />
+                <Route path="cash-reports/:reportId" element={<CashReportPage />} />
+                
+                {/* Other Routes */}
+                <Route path="fuel-prices" element={<FuelPricesPage />} />
+                <Route path="fuel-inventory" element={<FuelInventoryPage />} />
+                <Route path="reports" element={<ReportsPage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="users" element={<UsersPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+              </Route>
 
-            {/* SuperAdmin Routes */}
-            <Route
-              path="/superadmin"
-              element={
-                <ProtectedRoute allowedRoles={['superadmin']}>
-                  <SuperAdminLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/superadmin/overview" replace />} />
-              <Route path="overview" element={<SuperAdminOverviewPage />} />
-              <Route path="tenants" element={<SuperAdminTenantsPage />} />
-              <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
-              <Route path="users" element={<SuperAdminUsersPage />} />
-              <Route path="plans" element={<SuperAdminPlansPage />} />
-              <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
-            </Route>
+              {/* SuperAdmin Routes */}
+              <Route
+                path="/superadmin"
+                element={
+                  <ProtectedRoute allowedRoles={['superadmin']}>
+                    <SuperAdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="/superadmin/overview" replace />} />
+                <Route path="overview" element={<SuperAdminOverviewPage />} />
+                <Route path="tenants" element={<SuperAdminTenantsPage />} />
+                <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
+                <Route path="users" element={<SuperAdminUsersPage />} />
+                <Route path="plans" element={<SuperAdminPlansPage />} />
+                <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
+              </Route>
 
-            {/* Fallback Route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          
-          <Toaster />
-        </div>
-      </AuthProvider>
-    </ThemeProvider>
+              {/* Fallback Route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+            
+            <Toaster />
+          </div>
+        </AuthProvider>
+      </ThemeProvider>
+    </GlobalErrorBoundary>
   );
 }
 
 // Component to show different dashboard based on user role
 function RoleDashboard() {
-  const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{"role":"attendant"}');
-  
-  if (user.role === 'attendant') {
-    return <AttendantDashboardPage />;
+  try {
+    const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{"role":"attendant"}');
+    
+    if (user.role === 'attendant') {
+      return <AttendantDashboardPage />;
+    }
+    
+    return <DashboardPage />;
+  } catch (error) {
+    console.error('Error parsing user data:', error);
+    return <DashboardPage />;
   }
-  
-  return <DashboardPage />;
 }
 
 export default App;
