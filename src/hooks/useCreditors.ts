@@ -1,125 +1,102 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { creditorsService } from '@/api/services';
-import type { 
-  Creditor, 
-  CreateCreditorRequest, 
-  UpdateCreditorRequest, 
-  CreditPayment, 
-  CreateCreditPaymentRequest 
-} from '@/api/api-contract';
-import { toast } from 'sonner';
+import { creditorService } from '@/api/services/creditorService';
+import { CreateCreditPaymentRequest, TopCreditor } from '@/api/api-contract';
+import { useToast } from '@/hooks/use-toast';
 
-// Get all creditors
-export const useCreditors = () => {
+/**
+ * Hook to fetch creditors
+ */
+export const useCreditors = (stationId?: string) => {
   return useQuery({
-    queryKey: ['creditors'],
-    queryFn: creditorsService.getCreditors,
+    queryKey: ['creditors', stationId],
+    queryFn: () => creditorService.getCreditors(),
+    staleTime: 60000 // 1 minute
   });
 };
 
-// Get creditor by ID
-export const useCreditor = (creditorId: string) => {
+/**
+ * Hook to fetch a creditor by ID
+ */
+export const useCreditor = (id?: string) => {
   return useQuery({
-    queryKey: ['creditors', creditorId],
-    queryFn: () => creditorsService.getCreditor(creditorId),
-    enabled: !!creditorId,
+    queryKey: ['creditor', id],
+    queryFn: () => creditorService.getCreditor(id || ''),
+    enabled: !!id,
+    staleTime: 60000 // 1 minute
   });
 };
 
-// Get credit payments for a creditor
-export const useCreditPayments = (creditorId: string) => {
-  return useQuery({
-    queryKey: ['creditors', creditorId, 'payments'],
-    queryFn: () => creditorsService.getCreditPayments(creditorId),
-    enabled: !!creditorId,
-  });
-};
-
-// Alias for useCreditPayments
-export const usePayments = (creditorId: string) => {
-  return useCreditPayments(creditorId);
-};
-
-// Create creditor mutation
-export const useCreateCreditor = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (data: CreateCreditorRequest) => 
-      creditorsService.createCreditor(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['creditors'] });
-      toast.success('Creditor created successfully');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to create creditor');
-    },
-  });
-};
-
-// Update creditor mutation
-export const useUpdateCreditor = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ creditorId, data }: { creditorId: string; data: UpdateCreditorRequest }) =>
-      creditorsService.updateCreditor(creditorId, data),
-    onSuccess: (_, { creditorId }) => {
-      queryClient.invalidateQueries({ queryKey: ['creditors'] });
-      queryClient.invalidateQueries({ queryKey: ['creditors', creditorId] });
-      toast.success('Creditor updated successfully');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update creditor');
-    },
-  });
-};
-
-// Delete creditor mutation
-export const useDeleteCreditor = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (creditorId: string) => 
-      creditorsService.deleteCreditor(creditorId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['creditors'] });
-      toast.success('Creditor deleted successfully');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to delete creditor');
-    },
-  });
-};
-
-// Create credit payment mutation
-export const useCreateCreditPayment = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (data: CreateCreditPaymentRequest) =>
-      creditorsService.createCreditPayment(data),
-    onSuccess: (_, data) => {
-      queryClient.invalidateQueries({ queryKey: ['creditors'] });
-      queryClient.invalidateQueries({ queryKey: ['creditors', data.creditorId, 'payments'] });
-      toast.success('Payment recorded successfully');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to record payment');
-    },
-  });
-};
-
-// Alias for useCreateCreditPayment 
-export const useCreatePayment = () => {
-  return useCreateCreditPayment();
-};
-
-// Get top creditors (for dashboard)
+/**
+ * Hook to fetch top creditors by outstanding amount
+ */
 export const useTopCreditors = () => {
   return useQuery({
-    queryKey: ['creditors', 'top'],
-    queryFn: creditorsService.getTopCreditors,
+    queryKey: ['top-creditors'],
+    queryFn: async (): Promise<TopCreditor[]> => {
+      const creditors = await creditorService.getCreditors();
+      return creditors
+        .sort((a, b) => b.outstandingAmount - a.outstandingAmount)
+        .slice(0, 10)
+        .map(creditor => ({
+          id: creditor.id,
+          partyName: creditor.partyName,
+          name: creditor.name || creditor.partyName,
+          outstandingAmount: creditor.outstandingAmount,
+          creditLimit: creditor.creditLimit,
+          lastPurchaseDate: creditor.lastPurchaseDate
+        }));
+    },
+    staleTime: 60000 // 1 minute
   });
 };
+
+/**
+ * Hook to create a new creditor payment
+ */
+export const useCreatePayment = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (data: CreateCreditPaymentRequest) => creditorService.createPayment(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['creditors'] });
+      queryClient.invalidateQueries({ queryKey: ['top-creditors'] });
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      toast({
+        title: "Success",
+        description: "Payment recorded successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to record payment",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+/**
+ * Hook to fetch payment history for a creditor
+ */
+export const usePayments = (creditorId?: string) => {
+  return useQuery({
+    queryKey: ['payments', creditorId],
+    queryFn: () => creditorService.getPayments(creditorId || ''),
+    enabled: !!creditorId,
+    staleTime: 60000 // 1 minute
+  });
+};
+
+/**
+ * Alias for useCreatePayment to maintain backward compatibility
+ */
+export const useCreateCreditorPayment = useCreatePayment;
+
+/**
+ * Hook to fetch credit payments (alias for usePayments)
+ */
+export const useCreditPayments = usePayments;

@@ -8,7 +8,7 @@ import { Building2, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { tenantsApi } from '@/api/tenants';
 import { CreateTenantRequest } from '@/api/api-contract';
-import { superadminApi } from '@/api/superadmin';
+import { superAdminApi } from '@/api/superadmin';
 import { useToast } from '@/hooks/use-toast';
 import { SuperAdminErrorBoundary } from '@/components/admin/SuperAdminErrorBoundary';
 import { TenantForm } from '@/components/admin/TenantForm';
@@ -29,7 +29,7 @@ export default function SuperAdminTenantsPage() {
 
   const { data: plans = [] } = useQuery({
     queryKey: ['admin-plans'],
-    queryFn: superadminApi.getPlans
+    queryFn: superAdminApi.getPlans
   });
 
   const createTenantMutation = useMutation({
@@ -135,7 +135,7 @@ export default function SuperAdminTenantsPage() {
                 </DialogDescription>
               </DialogHeader>
               <TenantForm
-                plans={plans}
+                plans={Array.isArray(plans) ? plans : []}
                 isLoading={createTenantMutation.isPending}
                 onSubmit={handleCreateTenant}
               />

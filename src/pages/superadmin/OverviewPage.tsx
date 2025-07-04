@@ -1,10 +1,11 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { SuperAdminErrorBoundary } from '@/components/admin/SuperAdminErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Building2, Users, Gauge, TrendingUp, CheckCircle, Package, BarChart3, Plus, Settings, Eye } from 'lucide-react';
-import { superadminApi, SuperAdminSummary } from '@/api/superadmin';
+import { superAdminApi, SuperAdminSummary } from '@/api/superadmin';
 import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -17,7 +18,7 @@ export default function SuperAdminOverviewPage() {
   
   const { data: summary, isLoading, error } = useQuery({
     queryKey: ['superadmin-summary'],
-    queryFn: superadminApi.getSummary,
+    queryFn: superAdminApi.getSummary,
     retry: 1,
     meta: {
       errorMessage: "Could not load dashboard data. Please try again later.",

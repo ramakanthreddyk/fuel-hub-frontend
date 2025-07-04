@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,10 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useTopCreditors } from '@/hooks/useCreditors';
 import { CreditCard, AlertTriangle, Eye } from 'lucide-react';
 import { format } from 'date-fns';
+import { TopCreditor } from '@/api/api-contract';
 
 export function TopCreditorsTable() {
   const { data: creditors = [], isLoading } = useTopCreditors();
-  const [selectedCreditor, setSelectedCreditor] = useState<any>(null);
+  const [selectedCreditor, setSelectedCreditor] = useState<TopCreditor | null>(null);
 
   if (isLoading) {
     return (
@@ -32,7 +34,7 @@ export function TopCreditorsTable() {
     );
   }
 
-  if (!creditors || creditors.length === 0) {
+  if (!creditors || !Array.isArray(creditors) || creditors.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -86,7 +88,7 @@ export function TopCreditorsTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Array.isArray(creditors) && creditors.map((creditor) => (
+            {creditors.map((creditor) => (
               <TableRow key={creditor.id}>
                 <TableCell>
                   <div>

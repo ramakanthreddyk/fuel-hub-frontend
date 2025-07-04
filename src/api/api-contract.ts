@@ -99,6 +99,7 @@ export interface ChangePasswordRequest {
 
 export interface ResetPasswordRequest {
   newPassword: string;
+  confirmPassword?: string;
 }
 
 // =============================================================================
@@ -340,6 +341,7 @@ export interface FuelPriceValidation {
 export interface Creditor {
   id: string;
   partyName: string;
+  name: string; // Alias for partyName
   contactPerson?: string;
   phoneNumber?: string;
   email?: string;
@@ -482,7 +484,7 @@ export interface TopCreditor {
   partyName: string;
   name: string; // Alias for partyName
   outstandingAmount: number;
-  creditLimit: number;
+  creditLimit?: number;
   lastPurchaseDate?: string;
 }
 
@@ -691,12 +693,14 @@ export interface AdminUser {
   createdAt: string;
   updatedAt?: string;
   isActive: boolean;
+  lastLogin?: string;
 }
 
 export interface CreateSuperAdminRequest {
   name: string;
   email: string;
   password: string;
+  permissions?: string[];
 }
 
 export interface SuperAdminAnalytics {
@@ -740,16 +744,38 @@ export interface SuperAdminAnalytics {
     stationsCount: number;
     revenue: number;
   }>;
+  // Additional properties needed by components
+  tenantCount: number;
+  activeTenantCount: number;
+  totalUsers: number;
+  signupsThisMonth: number;
+  tenantsByPlan: Array<{
+    planName: string;
+    count: number;
+    percentage: number;
+  }>;
+  recentTenants: Tenant[];
 }
 
 export interface SuperAdminSummary {
   totalTenants: number;
-  totalStations: number; // Added missing property
+  totalStations: number;
   activeTenants: number;
+  activeTenantCount: number; // Alias for activeTenants
+  tenantCount: number; // Alias for totalTenants
   totalRevenue: number;
   monthlyGrowth: number;
+  adminCount: number;
+  planCount: number;
+  totalUsers: number;
+  signupsThisMonth: number;
   recentTenants: Tenant[];
   alerts: Alert[];
+  tenantsByPlan: Array<{
+    planName: string;
+    count: number;
+    percentage: number;
+  }>;
 }
 
 // =============================================================================
@@ -902,6 +928,7 @@ export interface CreateReconciliationRequest {
   reconciliationDate?: string; // Alias for date
   openingReading: number;
   closingReading: number;
+  declaredCash?: number;
   notes?: string;
 }
 

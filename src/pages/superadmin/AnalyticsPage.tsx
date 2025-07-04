@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Users, Gauge, TrendingUp, CheckCircle, AlertCircle, Shield, Activity } from 'lucide-react';
-import { superadminApi } from '@/api/superadmin';
+import { superAdminApi, SuperAdminSummary } from '@/api/superadmin';
 import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { Progress } from '@/components/ui/progress';
 export default function AnalyticsPage() {
   const { data: analytics, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['superadmin-analytics'],
-    queryFn: superadminApi.getSummary,
+    queryFn: superAdminApi.getSummary,
     retry: 2,
     staleTime: 300000, // 5 minutes
   });

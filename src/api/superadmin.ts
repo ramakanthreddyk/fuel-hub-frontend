@@ -1,98 +1,115 @@
 
-import { apiClient, extractApiData, extractApiArray } from './client';
-import type { 
+import { apiClient } from './client';
+import { 
   Tenant, 
   CreateTenantRequest, 
-  UpdateTenantRequest,
-  Plan,
-  CreatePlanRequest,
-  AdminUser,
-  CreateSuperAdminRequest,
-  SuperAdminSummary,
-  SuperAdminAnalytics
+  Plan, 
+  CreatePlanRequest, 
+  AdminUser, 
+  CreateSuperAdminRequest, 
+  SuperAdminAnalytics, 
+  SuperAdminSummary 
 } from './api-contract';
 
+// Main SuperAdmin API object
 export const superAdminApi = {
-  // Tenant management
-  getTenants: async (): Promise<Tenant[]> => {
-    const response = await apiClient.get('/admin/tenants');
-    return extractApiArray<Tenant>(response, 'tenants');
-  },
+  // Tenant Management
+  getTenants: (): Promise<Tenant[]> => apiClient.get('/superadmin/tenants'),
+  createTenant: (data: CreateTenantRequest): Promise<Tenant> => 
+    apiClient.post('/superadmin/tenants', data),
+  getTenant: (id: string): Promise<Tenant> => 
+    apiClient.get(`/superadmin/tenants/${id}`),
+  updateTenant: (id: string, data: Partial<Tenant>): Promise<Tenant> => 
+    apiClient.put(`/superadmin/tenants/${id}`, data),
+  updateTenantStatus: (id: string, status: string): Promise<Tenant> => 
+    apiClient.put(`/superadmin/tenants/${id}/status`, { status }),
+  deleteTenant: (id: string): Promise<void> => 
+    apiClient.delete(`/superadmin/tenants/${id}`),
 
-  getTenant: async (tenantId: string): Promise<Tenant> => {
-    const response = await apiClient.get(`/admin/tenants/${tenantId}`);
-    return extractApiData<Tenant>(response);
-  },
+  // Plan Management
+  getPlans: (): Promise<Plan[]> => apiClient.get('/superadmin/plans'),
+  createPlan: (data: CreatePlanRequest): Promise<Plan> => 
+    apiClient.post('/superadmin/plans', data),
+  updatePlan: (id: string, data: Partial<Plan>): Promise<Plan> => 
+    apiClient.put(`/superadmin/plans/${id}`, data),
+  deletePlan: (id: string): Promise<void> => 
+    apiClient.delete(`/superadmin/plans/${id}`),
 
-  createTenant: async (data: CreateTenantRequest): Promise<Tenant> => {
-    const response = await apiClient.post('/admin/tenants', data);
-    return extractApiData<Tenant>(response);
-  },
+  // Admin User Management
+  getAdminUsers: (): Promise<AdminUser[]> => apiClient.get('/superadmin/users'),
+  createAdminUser: (data: CreateSuperAdminRequest): Promise<AdminUser> => 
+    apiClient.post('/superadmin/users', data),
+  updateAdminUser: (id: string, data: Partial<AdminUser>): Promise<AdminUser> => 
+    apiClient.put(`/superadmin/users/${id}`, data),
+  deleteAdminUser: (id: string): Promise<void> => 
+    apiClient.delete(`/superadmin/users/${id}`),
+  resetAdminPassword: (id: string, passwordData: any): Promise<void> => 
+    apiClient.post(`/superadmin/users/${id}/reset-password`, passwordData),
 
-  updateTenant: async (tenantId: string, data: UpdateTenantRequest): Promise<Tenant> => {
-    const response = await apiClient.put(`/admin/tenants/${tenantId}`, data);
-    return extractApiData<Tenant>(response);
-  },
-
-  updateTenantStatus: async (tenantId: string, status: 'active' | 'suspended' | 'cancelled' | 'trial'): Promise<Tenant> => {
-    const response = await apiClient.put(`/admin/tenants/${tenantId}/status`, { status });
-    return extractApiData<Tenant>(response);
-  },
-
-  deleteTenant: async (tenantId: string): Promise<void> => {
-    await apiClient.delete(`/admin/tenants/${tenantId}`);
-  },
-
-  // Summary for SuperAdmin dashboard
-  getSummary: async (): Promise<SuperAdminSummary> => {
-    const response = await apiClient.get('/admin/summary');
-    const data = extractApiData<any>(response);
-    
-    return {
+  // Analytics and Summary
+  getSummary: (): Promise<SuperAdminSummary> => {
+    return apiClient.get('/superadmin/summary').then(data => ({
       totalTenants: data.totalTenants || 0,
-      totalStations: data.totalStations || 0, // Fixed: added missing property
+      totalStations: data.totalStations || 0,
       activeTenants: data.activeTenants || 0,
+      activeTenantCount: data.activeTenants || data.activeTenantCount || 0,
+      tenantCount: data.totalTenants || data.tenantCount || 0,
       totalRevenue: data.totalRevenue || 0,
       monthlyGrowth: data.monthlyGrowth || 0,
+      adminCount: data.adminCount || 0,
+      planCount: data.planCount || 0,
+      totalUsers: data.totalUsers || 0,
+      signupsThisMonth: data.signupsThisMonth || 0,
       recentTenants: data.recentTenants || [],
-      alerts: data.alerts || []
-    };
+      alerts: data.alerts || [],
+      tenantsByPlan: data.tenantsByPlan || []
+    }));
   },
-
-  // Analytics for SuperAdmin
-  getAnalytics: async (): Promise<SuperAdminAnalytics> => {
-    const response = await apiClient.get('/admin/analytics');
-    return extractApiData<SuperAdminAnalytics>(response);
-  },
-
-  // Plan management
-  getPlans: async (): Promise<Plan[]> => {
-    const response = await apiClient.get('/admin/plans');
-    return extractApiArray<Plan>(response, 'plans');
-  },
-
-  createPlan: async (data: CreatePlanRequest): Promise<Plan> => {
-    const response = await apiClient.post('/admin/plans', data);
-    return extractApiData<Plan>(response);
-  },
-
-  updatePlan: async (planId: string, data: Partial<CreatePlanRequest>): Promise<Plan> => {
-    const response = await apiClient.put(`/admin/plans/${planId}`, data);
-    return extractApiData<Plan>(response);
-  },
-
-  deletePlan: async (planId: string): Promise<void> => {
-    await apiClient.delete(`/admin/plans/${planId}`);
-  },
-
-  // SuperAdmin user management
-  getSuperAdminUsers: async (): Promise<AdminUser[]> => {
-    const response = await apiClient.get('/admin/users');
-    return extractApiArray<AdminUser>(response, 'users');
-  },
-
-  createSuperAdminUser: async (data: CreateSuperAdminRequest): Promise<AdminUser> => {
-    const response = await apiClient.post('/admin/users', data);
-    return extractApiData<AdminUser>(response);
+  getAnalytics: (): Promise<SuperAdminAnalytics> => {
+    return apiClient.get('/superadmin/analytics').then(data => ({
+      ...data,
+      // Ensure all required properties exist
+      tenantCount: data.totalTenants || data.tenantCount || 0,
+      activeTenantCount: data.activeTenants || data.activeTenantCount || 0,
+      totalUsers: data.totalUsers || 0,
+      totalStations: data.totalStations || 0,
+      signupsThisMonth: data.signupsThisMonth || 0,
+      tenantsByPlan: data.tenantsByPlan || [],
+      recentTenants: data.recentTenants || [],
+      overview: data.overview || {
+        totalTenants: data.totalTenants || 0,
+        totalRevenue: data.totalRevenue || 0,
+        totalStations: data.totalStations || 0,
+        growth: data.monthlyGrowth || 0
+      },
+      tenantMetrics: data.tenantMetrics || {
+        activeTenants: data.activeTenants || 0,
+        trialTenants: 0,
+        suspendedTenants: 0,
+        monthlyGrowth: data.monthlyGrowth || 0
+      },
+      revenueMetrics: data.revenueMetrics || {
+        mrr: 0,
+        arr: 0,
+        churnRate: 0,
+        averageRevenuePerTenant: 0
+      },
+      usageMetrics: data.usageMetrics || {
+        totalUsers: data.totalUsers || 0,
+        totalStations: data.totalStations || 0,
+        totalTransactions: 0,
+        averageStationsPerTenant: 0
+      },
+      totalTenants: data.totalTenants || data.tenantCount || 0,
+      activeTenants: data.activeTenants || data.activeTenantCount || 0,
+      totalRevenue: data.totalRevenue || 0,
+      salesVolume: data.salesVolume,
+      monthlyGrowth: data.monthlyGrowth,
+      topTenants: data.topTenants
+    }));
   }
 };
+
+// Backward compatibility exports
+export const superadminApi = superAdminApi;
+export { SuperAdminSummary };

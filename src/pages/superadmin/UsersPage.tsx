@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreVertical, Copy, Edit, Trash2, RotateCcw } from 'lucide-react';
-import { superadminApi } from '@/api/superadmin';
+import { superAdminApi } from '@/api/superadmin';
 import { CreateSuperAdminRequest, AdminUser } from '@/api/api-contract';
 import { SuperAdminUserForm } from '@/components/users/SuperAdminUserForm';
 import { ResetPasswordForm } from '@/components/users/ResetPasswordForm';
@@ -38,11 +39,11 @@ export default function UsersPage() {
   // Use SuperAdmin API for getting admin users
   const { data: users, isLoading } = useQuery({
     queryKey: ['superadmin-users'],
-    queryFn: () => superadminApi.getAdminUsers(),
+    queryFn: () => superAdminApi.getAdminUsers(),
   });
 
   const { mutateAsync: createUser } = useMutation({
-    mutationFn: (data: CreateSuperAdminRequest) => superadminApi.createAdminUser(data),
+    mutationFn: (data: CreateSuperAdminRequest) => superAdminApi.createAdminUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
       toast({
@@ -60,7 +61,7 @@ export default function UsersPage() {
   });
 
   const { mutateAsync: updateUser } = useMutation({
-    mutationFn: ({ userId, userData }: { userId: string; userData: any }) => superadminApi.updateAdminUser(userId, userData),
+    mutationFn: ({ userId, userData }: { userId: string; userData: any }) => superAdminApi.updateAdminUser(userId, userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
       toast({
@@ -78,7 +79,7 @@ export default function UsersPage() {
   });
 
   const { mutateAsync: deleteUser } = useMutation({
-    mutationFn: (id: string) => superadminApi.deleteAdminUser(id),
+    mutationFn: (id: string) => superAdminApi.deleteAdminUser(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
       toast({
@@ -96,7 +97,7 @@ export default function UsersPage() {
   });
 
   const { mutateAsync: resetPassword } = useMutation({
-    mutationFn: ({ userId, passwordData }: { userId: string; passwordData: any }) => superadminApi.resetAdminPassword(userId, passwordData),
+    mutationFn: ({ userId, passwordData }: { userId: string; passwordData: any }) => superAdminApi.resetAdminPassword(userId, passwordData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['superadmin-users'] });
       toast({
@@ -127,8 +128,7 @@ export default function UsersPage() {
       const userData: CreateSuperAdminRequest = {
         name: formData.name,
         email: formData.email,
-        password: formData.password,
-        permissions: formData.permissions
+        password: formData.password
       };
 
       await createUser(userData);
@@ -144,8 +144,7 @@ export default function UsersPage() {
 
       const userData = {
         name: formData.name,
-        email: formData.email,
-        permissions: formData.permissions,
+        email: formData.email
       };
 
       await updateUser({ userId: selectedUser.id, userData });
