@@ -36,13 +36,18 @@ export function ReportExporter({ stationId, reportType, filters }: ReportExporte
 
       const response = await reportsService.exportReport(exportData);
       
-      // Handle blob response
+      // Handle blob response - check if response is a string (URL) or blob data
       let blob: Blob;
-      if (response instanceof Blob) {
-        blob = response;
+      if (typeof response === 'string') {
+        // If response is a URL string, fetch it
+        const fetchResponse = await fetch(response);
+        blob = await fetchResponse.blob();
+      } else if (response && typeof response === 'object' && 'data' in response) {
+        // If response has data property, use it
+        blob = new Blob([JSON.stringify(response.data)], { type: 'application/json' });
       } else {
-        // If response is not a blob, create one from the data
-        blob = new Blob([JSON.stringify(response)], { type: 'application/json' });
+        // Assume response is already blob-like data
+        blob = new Blob([response as any], { type: 'application/octet-stream' });
       }
       
       // Create download link

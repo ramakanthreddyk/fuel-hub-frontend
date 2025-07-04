@@ -1,4 +1,3 @@
-
 /**
  * FuelSync Hub - API Contract
  * 
@@ -99,7 +98,7 @@ export interface ChangePasswordRequest {
 
 export interface ResetPasswordRequest {
   newPassword: string;
-  confirmPassword?: string;
+  confirmPassword: string;
 }
 
 // =============================================================================

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -174,7 +175,7 @@ export default function SummaryPage() {
       {/* Station Metrics and Top Creditors */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <StationMetricsList />
-        <TopCreditorsTable filters={filters} />
+        <TopCreditorsTable />
       </div>
 
       {/* Recent Stations */}
