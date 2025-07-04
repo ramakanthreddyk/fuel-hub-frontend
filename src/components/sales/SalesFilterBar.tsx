@@ -10,12 +10,11 @@ import { stationsApi } from '@/api/stations';
 import { SalesFilters } from '@/api/sales';
 
 interface SalesFilterBarProps {
+  filters: SalesFilters;
   onFiltersChange: (filters: SalesFilters) => void;
 }
 
-export function SalesFilterBar({ onFiltersChange }: SalesFilterBarProps) {
-  const [filters, setFilters] = useState<SalesFilters>({});
-
+export function SalesFilterBar({ filters, onFiltersChange }: SalesFilterBarProps) {
   const { data: stations = [] } = useQuery({
     queryKey: ['stations'],
     queryFn: () => stationsApi.getStations(),
@@ -25,12 +24,10 @@ export function SalesFilterBar({ onFiltersChange }: SalesFilterBarProps) {
     // If value is 'all', treat it as undefined (no filter)
     const effectiveValue = value === 'all' ? undefined : value;
     const newFilters = { ...filters, [key]: effectiveValue };
-    setFilters(newFilters);
     onFiltersChange(newFilters);
   };
 
   const clearFilters = () => {
-    setFilters({});
     onFiltersChange({});
   };
 

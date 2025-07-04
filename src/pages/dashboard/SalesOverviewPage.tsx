@@ -12,14 +12,12 @@ import { useSales } from '@/hooks/useSales';
 import { formatCurrency, formatDate, formatVolume } from '@/utils/formatters';
 import { SalesTable } from '@/components/sales/SalesTable';
 import { SalesFilterBar } from '@/components/sales/SalesFilterBar';
+import type { SalesFilters } from '@/api/sales';
 
 export default function SalesOverviewPage() {
-  const [filters, setFilters] = useState({
-    dateFrom: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    dateTo: new Date().toISOString().split('T')[0],
-    stationId: '',
-    fuelType: '',
-    paymentMethod: ''
+  const [filters, setFilters] = useState<SalesFilters>({
+    startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
   });
 
   const { data: sales = [], isLoading, error } = useSales(filters);
@@ -49,6 +47,10 @@ export default function SalesOverviewPage() {
     console.log('Exporting sales data...', { filters, sales });
   };
 
+  const handleFiltersChange = (newFilters: SalesFilters) => {
+    setFilters(newFilters);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -63,7 +65,7 @@ export default function SalesOverviewPage() {
       />
 
       {/* Sales Filter */}
-      <SalesFilterBar filters={filters} onFiltersChange={setFilters} />
+      <SalesFilterBar filters={filters} onFiltersChange={handleFiltersChange} />
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -75,7 +77,7 @@ export default function SalesOverviewPage() {
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalSales)}</div>
             <p className="text-xs text-muted-foreground">
-              {formatDate(filters.dateFrom)} - {formatDate(filters.dateTo)}
+              {formatDate(filters.startDate || '')} - {formatDate(filters.endDate || '')}
             </p>
           </CardContent>
         </Card>
@@ -164,7 +166,6 @@ export default function SalesOverviewPage() {
           <SalesTable 
             sales={sales} 
             isLoading={isLoading} 
-            error={error}
           />
         </CardContent>
       </Card>

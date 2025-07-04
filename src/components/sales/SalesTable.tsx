@@ -7,15 +7,24 @@ import { formatSafeDate, formatVolume, formatPrice, formatCurrency, formatSafeNu
 interface SalesTableProps {
   sales: EnhancedSale[];
   isLoading?: boolean;
+  error?: Error | null;
 }
 
-export function SalesTable({ sales, isLoading }: SalesTableProps) {
+export function SalesTable({ sales, isLoading, error }: SalesTableProps) {
   if (isLoading) {
     return (
       <div className="space-y-2">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="h-12 bg-muted animate-pulse rounded" />
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        Error loading sales: {error.message}
       </div>
     );
   }

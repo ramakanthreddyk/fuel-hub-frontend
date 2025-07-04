@@ -17,6 +17,27 @@ const devLog = (message: string, ...args: any[]) => {
   }
 };
 
+// Define attendance and shift types
+export interface AttendanceRecord {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  position: string;
+  status: 'present' | 'absent' | 'late';
+  checkIn?: string;
+  checkOut?: string;
+  date: string;
+}
+
+export interface Shift {
+  id: string;
+  shiftName: string;
+  startTime: string;
+  endTime: string;
+  assignedCount?: number;
+  date: string;
+}
+
 export const attendantApi = {
   // Get assigned stations for current attendant
   getAssignedStations: async (): Promise<AttendantStation[]> => {
@@ -80,6 +101,30 @@ export const attendantApi = {
   acknowledgeAlert: async (alertId: string): Promise<void> => {
     devLog('Acknowledging alert', alertId);
     await apiClient.put(`/attendant/alerts/${alertId}/acknowledge`);
+  },
+
+  // Get attendance records
+  getAttendance: async (date: string): Promise<AttendanceRecord[]> => {
+    devLog('Fetching attendance records', { date });
+    try {
+      const response = await apiClient.get(`/attendance?date=${date}`);
+      return extractApiArray<AttendanceRecord>(response, 'attendance');
+    } catch (error) {
+      console.warn('Attendance API not available, returning empty array');
+      return [];
+    }
+  },
+
+  // Get shifts
+  getShifts: async (date: string): Promise<Shift[]> => {
+    devLog('Fetching shifts', { date });
+    try {
+      const response = await apiClient.get(`/shifts?date=${date}`);
+      return extractApiArray<Shift>(response, 'shifts');
+    } catch (error) {
+      console.warn('Shifts API not available, returning empty array');
+      return [];
+    }
   }
 };
 
@@ -91,5 +136,7 @@ export type {
   CashReport, 
   CreateCashReportRequest,
   SystemAlert,
-  AlertSummary
+  AlertSummary,
+  AttendanceRecord,
+  Shift
 };
