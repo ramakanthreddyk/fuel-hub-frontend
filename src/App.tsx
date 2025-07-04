@@ -36,6 +36,8 @@ import UsersPage from './pages/dashboard/UsersPage';
 import SettingsPage from './pages/dashboard/SettingsPage';
 import CashReportPage from './pages/dashboard/CashReportPage';
 import CashReportsListPage from './pages/dashboard/CashReportsListPage';
+import AttendancePage from './pages/dashboard/AttendancePage';
+import SalesOverviewPage from './pages/dashboard/SalesOverviewPage';
 
 // SuperAdmin Pages
 import SuperAdminOverviewPage from './pages/superadmin/OverviewPage';
@@ -103,6 +105,15 @@ function App() {
                 <Route path="cash-report/new" element={<CashReportPage />} />
                 <Route path="cash-reports" element={<CashReportsListPage />} />
                 <Route path="cash-reports/:reportId" element={<CashReportPage />} />
+                
+                {/* Sales Routes */}
+                <Route path="sales" element={<SalesOverviewPage />} />
+                <Route path="sales/overview" element={<SalesOverviewPage />} />
+                
+                {/* Attendance Routes */}
+                <Route path="attendance" element={<AttendancePage />} />
+                <Route path="attendance/shifts" element={<AttendancePage />} />
+                <Route path="attendance/mark" element={<AttendancePage />} />
                 
                 {/* Other Routes */}
                 <Route path="fuel-prices" element={<FuelPricesPage />} />

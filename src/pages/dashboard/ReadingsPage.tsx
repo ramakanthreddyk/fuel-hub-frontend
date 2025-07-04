@@ -1,3 +1,4 @@
+
 /**
  * @file ReadingsPage.tsx
  * @description Page component for viewing and managing readings
@@ -12,6 +13,7 @@ import { Gauge, Clock, AlertTriangle, CheckCircle, Plus, FileText, Eye, Edit, Lo
 import { useNavigate, Link } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { useReadings } from '@/hooks/api/useReadings';
+import { formatReading, formatDateTime } from '@/utils/formatters';
 
 export default function ReadingsPage() {
   const navigate = useNavigate();
@@ -184,18 +186,18 @@ export default function ReadingsPage() {
                   <div className="space-y-2 flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <h4 className="font-medium">{reading.pumpName || `Nozzle ${reading.nozzleNumber || '#'}`}</h4>
-                      {getStatusBadge(reading.status)}
+                      {getStatusBadge(reading.status || 'pending')}
                     </div>
                     <p className="text-sm text-muted-foreground">{reading.stationName}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-                      <span>Current: <span className="font-mono">{reading.reading?.toFixed(2) || '0.00'}L</span></span>
-                      <span>Previous: <span className="font-mono">{reading.previousReading?.toFixed(2) || '0.00'}L</span></span>
+                      <span>Current: <span className="font-mono">{formatReading(reading.reading)}L</span></span>
+                      <span>Previous: <span className="font-mono">{formatReading(reading.previousReading)}L</span></span>
                       <span className="font-medium text-green-600">
-                        Difference: +{((reading.reading || 0) - (reading.previousReading || 0)).toFixed(2)}L
+                        Difference: +{formatReading((reading.reading || 0) - (reading.previousReading || 0))}L
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Recorded by {reading.recordedBy || 'Unknown'} at {reading.recordedAt || 'Unknown time'}
+                      Recorded by {reading.recordedBy || 'Unknown'} at {formatDateTime(reading.recordedAt)}
                     </p>
                   </div>
                   <div className="flex gap-2 mt-3 md:mt-0">
