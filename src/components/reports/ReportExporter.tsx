@@ -48,12 +48,11 @@ export function ReportExporter({ stationId, reportType, filters }: ReportExporte
         const responseData = (response as any).data;
         blob = new Blob([JSON.stringify(responseData)], { type: 'application/json' });
       } else {
-        // Try to handle as blob or convert to blob
-        try {
-          // Check if it's already a Blob by attempting to create one from it
-          blob = response instanceof Blob ? response : new Blob([JSON.stringify(response)], { type: 'application/octet-stream' });
-        } catch {
-          // Fallback: create a simple blob
+        // Handle as blob or fallback to JSON
+        const responseAsUnknown = response as unknown;
+        if (responseAsUnknown && typeof responseAsUnknown === 'object' && responseAsUnknown instanceof Blob) {
+          blob = responseAsUnknown;
+        } else {
           blob = new Blob([JSON.stringify(response || {})], { type: 'application/octet-stream' });
         }
       }
