@@ -286,3 +286,5 @@ This file tracks every build step taken by AI agents or developers. It maintains
 | fix | 2026-07-19 | Lint cleanup and local DB docs | ✅ Done | `eslint.config.js`, `src/hooks/useApi.ts` | `docs/STEP_fix_20260719_COMMAND.md` |
 | fix | 2026-07-15 | Sales list station data | ✅ Done | `src/services/sales.service.ts`, `src/api/sales.ts` | `docs/STEP_fix_20260715_COMMAND.md` |
 | fix | 2026-07-15 | Reading meta fields | ✅ Done | `src/services/nozzleReading.service.ts`, `src/api/api-contract.ts`, `src/api/services/readingsService.ts` | `docs/STEP_fix_20260715_COMMAND.md` |
+| fix | 2026-07-20 | Reading card metadata | ✅ Done | `src/components/readings/ReadingReceiptCard.tsx` | `docs/STEP_fix_20260720_COMMAND.md` |
+| fix | 2026-07-21 | Pumps page default listing | ✅ Done | `src/pages/dashboard/PumpsPage.tsx` | `docs/STEP_fix_20260721_COMMAND.md` |

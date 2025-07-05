@@ -3197,3 +3197,16 @@ Each entry is tied to a step from the implementation index.
 - `src/pages/dashboard/AnalyticsPage.tsx`
 - `docs/backend/PHASE_3_SUMMARY.md`
 - `docs/backend/STEP_3_16_COMMAND.md`
+
+## [Fix 2026-07-20] – Reading card metadata
+
+### 🟥 Fixes
+- Updated `ReadingReceiptCard` to show pump name with nozzle number and the attendant name.
+- Documented in `STEP_fix_20260720_COMMAND.md`.
+
+## [Fix 2026-07-21] – Pumps page default listing
+
+### 🟥 Fixes
+- `PumpsPage` no longer requires a station; selecting **All Pumps** now lists every pump.
+- Added an "All Stations" option to the dropdown filter.
+- Documented in `STEP_fix_20260721_COMMAND.md`.

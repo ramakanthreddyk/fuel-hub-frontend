@@ -33,7 +33,10 @@ export default function PumpsPage() {
   // Check for stationId in query params if not in route params
   const queryParams = new URLSearchParams(location.search);
   const stationIdFromQuery = queryParams.get('stationId');
-  const effectiveStationId = stationId || stationIdFromQuery || selectedStationId;
+  const effectiveStationId =
+    stationId ||
+    (stationIdFromQuery && stationIdFromQuery !== 'all' ? stationIdFromQuery : undefined) ||
+    (selectedStationId || undefined);
 
   const form = useForm({
     defaultValues: {
@@ -90,8 +93,13 @@ export default function PumpsPage() {
 
   // Handle station change
   const handleStationChange = (value: string) => {
-    setSelectedStationId(value);
-    navigate(`/dashboard/pumps?stationId=${value}`);
+    if (!value || value === 'all') {
+      setSelectedStationId('');
+      navigate('/dashboard/pumps');
+    } else {
+      setSelectedStationId(value);
+      navigate(`/dashboard/pumps?stationId=${value}`);
+    }
   };
 
   // Handle view nozzles navigation
@@ -136,41 +144,6 @@ export default function PumpsPage() {
 
   const isLoading = stationsLoading || pumpsLoading;
 
-  // If no station is selected, show station selector
-  if (!effectiveStationId) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
-        <div className="container mx-auto space-y-8">
-          <div className="flex items-center gap-4 pt-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleBackToStations}
-              className="p-2 hover:bg-white/60 rounded-full"
-            >
-              <ArrowLeft className="h-5 w-5 text-slate-600" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Fuel Dispensers
-              </h1>
-              <p className="text-slate-600 mt-1">Select a station to manage fuel pumps</p>
-            </div>
-          </div>
-          
-          <EmptyState
-            icon={<Building2 className="h-12 w-12 text-blue-500" />}
-            title="Select a Station"
-            description="Choose a station to view and manage its fuel dispensers"
-            action={{
-              label: "View All Stations",
-              onClick: handleBackToStations
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -200,11 +173,12 @@ export default function PumpsPage() {
               </h1>
               <div className="flex items-center gap-3 mt-2">
                 <Building2 className="h-5 w-5 text-slate-500" />
-                <Select value={effectiveStationId} onValueChange={handleStationChange}>
+                <Select value={effectiveStationId ?? 'all'} onValueChange={handleStationChange}>
                   <SelectTrigger className="w-[250px] bg-white/80 border-2 border-white shadow-lg">
                     <SelectValue placeholder="Select station" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border-2 shadow-xl">
+                    <SelectItem value="all">All Stations</SelectItem>
                     {stations.map((station) => (
                       <SelectItem key={station.id} value={station.id}>
                         {station.name}

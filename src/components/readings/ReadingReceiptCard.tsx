@@ -77,9 +77,16 @@ export function ReadingReceiptCard({ reading, onView, onEdit }: ReadingReceiptCa
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-mono text-lg font-bold text-gray-900">
-              {reading.pumpName || `NOZZLE #${reading.nozzleNumber || 'N/A'}`}
+              {reading.pumpName
+                ? `${reading.pumpName} – Nozzle #${
+                    reading.nozzleNumber ?? 'N/A'
+                  }`
+                : `Nozzle #${reading.nozzleNumber ?? 'N/A'}`}
             </h3>
             <p className="text-sm text-gray-600">{reading.stationName}</p>
+            <p className="text-xs text-gray-500">
+              Recorded by: {reading.recordedBy || 'UNKNOWN'}
+            </p>
           </div>
           
           <Badge className={cn("text-xs font-semibold", statusConfig.color)}>
@@ -138,13 +145,8 @@ export function ReadingReceiptCard({ reading, onView, onEdit }: ReadingReceiptCa
         </div>
 
         {/* Footer */}
-        <div className="border-t border-dashed border-gray-300 pt-4 space-y-2">
-          <div className="text-xs text-gray-600 font-mono">
-            RECORDED BY: {reading.recordedBy || 'UNKNOWN'}
-          </div>
-          <div className="text-xs text-gray-600 font-mono">
-            {formatDateTime(reading.recordedAt)}
-          </div>
+        <div className="border-t border-dashed border-gray-300 pt-4 space-y-2 text-xs text-gray-600 font-mono">
+          <div>{formatDateTime(reading.recordedAt)}</div>
         </div>
 
         {/* Actions */}
