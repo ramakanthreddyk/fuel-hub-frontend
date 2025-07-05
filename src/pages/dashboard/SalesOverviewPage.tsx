@@ -9,6 +9,11 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, DollarSign, Fuel, Users, Calendar, Download } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { useSales } from '@/hooks/useSales';
+import {
+  useSalesSummary,
+  usePaymentMethodBreakdown,
+  useFuelTypeBreakdown
+} from '@/hooks/useDashboard';
 import { formatCurrency, formatDate, formatVolume } from '@/utils/formatters';
 import { SalesTable } from '@/components/sales/SalesTable';
 import { SalesFilterBar } from '@/components/sales/SalesFilterBar';
@@ -22,23 +27,38 @@ export default function SalesOverviewPage() {
 
   const { data: sales = [], isLoading, error } = useSales(filters);
 
-  // Calculate metrics
-  const totalSales = sales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
-  const totalVolume = sales.reduce((sum, sale) => sum + (sale.volume || 0), 0);
-  const totalTransactions = sales.length;
+  // Aggregated metrics from dashboard endpoints
+  const { data: summary } = useSalesSummary('daily', {
+    stationId: filters.stationId,
+    dateFrom: filters.startDate,
+    dateTo: filters.endDate,
+  });
+  const { data: paymentMethods = [] } = usePaymentMethodBreakdown({
+    stationId: filters.stationId,
+    dateFrom: filters.startDate,
+    dateTo: filters.endDate,
+  });
+  const { data: fuelTypes = [] } = useFuelTypeBreakdown({
+    stationId: filters.stationId,
+    dateFrom: filters.startDate,
+    dateTo: filters.endDate,
+  });
+
+  // Metrics
+  const totalSales = summary?.totalRevenue || 0;
+  const totalVolume = summary?.totalVolume || 0;
+  const totalTransactions = summary?.salesCount || 0;
   const averageTransactionValue = totalTransactions > 0 ? totalSales / totalTransactions : 0;
 
   // Payment method breakdown
-  const paymentBreakdown = sales.reduce((acc, sale) => {
-    const method = sale.paymentMethod || 'unknown';
-    acc[method] = (acc[method] || 0) + (sale.amount || 0);
+  const paymentBreakdown = paymentMethods.reduce((acc, item) => {
+    acc[item.paymentMethod] = item.amount;
     return acc;
   }, {} as Record<string, number>);
 
   // Fuel type breakdown
-  const fuelBreakdown = sales.reduce((acc, sale) => {
-    const fuel = sale.fuelType || 'unknown';
-    acc[fuel] = (acc[fuel] || 0) + (sale.volume || 0);
+  const fuelBreakdown = fuelTypes.reduce((acc, item) => {
+    acc[item.fuelType] = item.volume;
     return acc;
   }, {} as Record<string, number>);
 

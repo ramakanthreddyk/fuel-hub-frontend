@@ -11,11 +11,14 @@ import { Plan } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
 import { PlanForm } from '@/components/admin/PlanForm';
 import { formatCurrency } from '@/utils/formatters';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
 export default function PlansPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [planIdToDelete, setPlanIdToDelete] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -104,9 +107,14 @@ export default function PlansPage() {
   };
 
   const handleDeletePlan = (planId: string) => {
-    if (confirm('Are you sure you want to delete this plan?')) {
-      deletePlanMutation.mutate(planId);
-    }
+    setPlanIdToDelete(planId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeletePlan = () => {
+    if (!planIdToDelete) return;
+    deletePlanMutation.mutate(planIdToDelete);
+    setPlanIdToDelete(null);
   };
 
   const getPlanColor = (planName: string) => {
@@ -249,6 +257,16 @@ export default function PlansPage() {
           )}
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Plan"
+        description="Are you sure you want to delete this plan? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        onConfirm={confirmDeletePlan}
+        onCancel={() => setPlanIdToDelete(null)}
+      />
     </div>
   );
 }

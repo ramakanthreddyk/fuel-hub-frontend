@@ -105,3 +105,108 @@ All notable changes to this project will be documented in this file.
 - Improved API integration patterns across all CRUD operations
 - Enhanced error boundary implementations
 - Optimized component re-rendering patterns
+
+## [2025-12-23] - Numeric Formatting Guards
+
+### Fixed
+- Wrapped API values with `Number()` before using `.toFixed()` to prevent runtime errors.
+- Updated reconciliation and sales tables as well as reading components to use the new guards.
+
+## [2025-12-24] - Role API Matrix Documentation
+
+### Added
+- `ROLE_API_IMPLEMENTATION_MATRIX.md` summarising page and API usage per role.
+
+### Documentation
+- Updated `DOCUMENTATION_MAP.md`, `PHASE_3_SUMMARY.md` and `IMPLEMENTATION_INDEX.md`.
+
+## [2025-12-25] - API Alignment Audit
+
+### Added
+- `API_IMPLEMENTATION_AUDIT_20251224.md` documenting endpoint usage.
+
+### Documentation
+- Updated `PHASE_3_SUMMARY.md` and `IMPLEMENTATION_INDEX.md` with step 3.13.
+
+## [2025-12-26] - Frontend Gap Implementation
+
+### Added
+- Pages for station comparison and ranking analytics
+- Report export page and inventory update form
+
+### Documentation
+- Updated API implementation audit marking endpoints in use
+- Logged step 3.14 in phase summary and implementation index
+
+## [2025-12-27] - Nozzle Reading Backend Fixes
+
+### Fixed
+- Payment method now stored with each nozzle reading
+- `canCreateNozzleReading` response includes `missingPrice`
+- Volume calculations use three-decimal precision
+- Listing endpoint supports `limit` query for efficient latest lookup
+- POST `/nozzle-readings` documented with status code 201
+
+### Documentation
+- Updated OpenAPI specs and backend phase summary
+
+## [2025-12-28] - Frontend Nozzle Reading Alignment
+
+### Fixed
+- Latest reading hook now uses backend `limit` parameter
+- Volumes displayed with three-decimal precision across dashboard pages
+
+### Documentation
+- Logged step file `STEP_fix_20251228.md`
+
+## [2025-12-29] - API Contract Cleanup
+
+### Fixed
+- Removed deprecated `digital_wallet` payment method from API contract types
+
+### Documentation
+- Added `STEP_fix_20251229.md` noting payment_method availability
+
+## [2025-12-30] - Dialog Accessibility Fixes
+
+### Fixed
+- Added hidden titles for command palette dialogs
+- Provided descriptions for alert and creditor dialogs
+
+### Documentation
+- Logged step file `STEP_fix_20251230.md`
+
+## [2025-12-31] - Pending Readings Visibility
+
+### Added
+- `usePendingReadings` hook for `no_readings_24h` alerts
+- Pending readings card on `ReadingsPage` with anomaly tooltip
+
+### Documentation
+- Logged step file `STEP_fix_20251231.md`
+
+## [2026-01-01] - Pending Readings Management
+
+### Added
+- Dashboard badge showing real-time pending readings count
+- Acknowledge and dismiss buttons for pending reading alerts
+- Automatic acknowledgment of `no_readings_24h` alerts after reading creation
+
+### Documentation
+- Logged step file `STEP_fix_20260101.md`
+
+## [2026-01-02] - Sales Overview Metrics Fix
+
+### Fixed
+- Updated dashboard API types to match backend responses.
+- Rewired `SalesOverviewPage` to use aggregated hooks.
+- Adjusted charts and summary components for new fields.
+- Logged step file `STEP_fix_20260102_COMMAND.md`.
+## [2026-01-02] - Dashboard Analytics Fixes
+
+### Fixed
+- Owners no longer hit superadmin analytics endpoint
+- Inventory page handles missing values gracefully
+
+### Documentation
+- Logged step file `STEP_fix_20260102.md`

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { useTopCreditors } from '@/hooks/useCreditors';
 import { CreditCard, AlertTriangle, Eye } from 'lucide-react';
 import { format } from 'date-fns';
@@ -92,10 +92,10 @@ export function TopCreditorsTable() {
               <TableRow key={creditor.id}>
                 <TableCell>
                   <div>
-                    <div className="font-medium">{creditor.partyName || creditor.name}</div>
-                    {creditor.lastPurchaseDate && (
+                    <div className="font-medium">{creditor.partyName}</div>
+                    {(creditor as any).lastTransactionDate && (
                       <div className="text-xs text-muted-foreground">
-                        Last purchase: {format(new Date(creditor.lastPurchaseDate), 'MMM dd, yyyy')}
+                        Last transaction: {format(new Date((creditor as any).lastTransactionDate), 'MMM dd, yyyy')}
                       </div>
                     )}
                   </div>
@@ -122,11 +122,12 @@ export function TopCreditorsTable() {
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>Creditor Details</DialogTitle>
+                        <DialogDescription>Information about the selected creditor</DialogDescription>
                       </DialogHeader>
                       {selectedCreditor && (
                         <div className="space-y-4">
                           <div>
-                            <h4 className="font-semibold">{selectedCreditor.partyName || selectedCreditor.name}</h4>
+                            <h4 className="font-semibold">{selectedCreditor.partyName}</h4>
                             <p className="text-sm text-muted-foreground">
                               Outstanding: ₹{selectedCreditor.outstandingAmount.toLocaleString()}
                             </p>
@@ -137,11 +138,11 @@ export function TopCreditorsTable() {
                             )}
                           </div>
                           
-                          {selectedCreditor.lastPurchaseDate && (
+                          {(selectedCreditor as any).lastTransactionDate && (
                             <div>
-                              <span className="text-sm font-medium">Last Purchase: </span>
+                              <span className="text-sm font-medium">Last Transaction: </span>
                               <span className="text-sm">
-                                {format(new Date(selectedCreditor.lastPurchaseDate), 'PPP')}
+                                {format(new Date((selectedCreditor as any).lastTransactionDate), 'PPP')}
                               </span>
                             </div>
                           )}

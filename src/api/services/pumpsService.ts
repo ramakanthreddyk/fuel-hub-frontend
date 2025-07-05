@@ -10,17 +10,16 @@ export interface Pump {
   id: string;
   stationId: string;
   name: string;
-  serialNumber?: string;
+  serialNumber: string;
   status: 'active' | 'inactive' | 'maintenance';
-  nozzleCount?: number;
   createdAt: string;
+  nozzleCount: number;
 }
 
 export interface CreatePumpRequest {
   stationId: string;
   name: string;
-  serialNumber?: string;
-  status?: 'active' | 'inactive' | 'maintenance';
+  serialNumber: string;
 }
 
 export interface UpdatePumpRequest {
@@ -87,7 +86,8 @@ export const pumpsService = {
     try {
       console.log(`[PUMPS-API] Fetching pump details for ID: ${id}`);
       const response = await apiClient.get(`${API_CONFIG.endpoints.pumps.base}/${id}`);
-      return extractData<Pump>(response);
+      const payload = extractData<any>(response);
+      return (payload.pump ?? payload) as Pump;
     } catch (error) {
       console.error(`[PUMPS-API] Error fetching pump ${id}:`, error);
       throw error;
@@ -103,7 +103,8 @@ export const pumpsService = {
     try {
       console.log('[PUMPS-API] Creating pump with data:', data);
       const response = await apiClient.post(API_CONFIG.endpoints.pumps.base, data);
-      return extractData<Pump>(response);
+      const payload = extractData<any>(response);
+      return (payload.pump ?? payload) as Pump;
     } catch (error) {
       console.error('[PUMPS-API] Error creating pump:', error);
       throw error;

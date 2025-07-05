@@ -229,8 +229,8 @@ export function TenantHierarchy({ tenant }: TenantHierarchyProps) {
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                   <div className="ml-6 mt-2 space-y-2">
-                                    {pump.nozzles && pump.nozzles.length > 0 ? (
-                                      pump.nozzles.map((nozzle) => (
+                                    {(pump as any).nozzles && (pump as any).nozzles.length > 0 ? (
+                                      (pump as any).nozzles.map((nozzle: any) => (
                                         <div
                                           key={nozzle.id}
                                           className="flex items-center justify-between p-2 bg-gray-50 rounded"

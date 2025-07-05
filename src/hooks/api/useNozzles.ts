@@ -47,6 +47,7 @@ export const useCreateNozzle = () => {
     mutationFn: (data: any) => nozzlesService.createNozzle(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['nozzles', variables.pumpId] });
+      queryClient.invalidateQueries({ queryKey: ['nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['pump', variables.pumpId] });
     },
   });

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Building2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { stationsService } from '@/api/contract/stations.service';
 
 export default function CreateStationPage() {
   const navigate = useNavigate();
@@ -26,8 +27,11 @@ export default function CreateStationPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Implement API call to create station
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await stationsService.createStation({
+        name: formData.name,
+        address: formData.address,
+        phone: formData.phone || undefined,
+      });
       
       toast({
         title: "Success",

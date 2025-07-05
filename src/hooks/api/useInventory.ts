@@ -3,7 +3,7 @@
  * @file hooks/api/useInventory.ts
  * @description React Query hooks for fuel inventory API
  */
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryService, FuelInventory, FuelInventorySummary } from '@/api/services/inventoryService';
 
 /**
@@ -30,5 +30,19 @@ export const useInventorySummary = () => {
     queryFn: () => inventoryService.getInventorySummary(),
     staleTime: 60000, // 1 minute
     retry: 2
+  });
+};
+
+/**
+ * Hook to update inventory counts
+ */
+export const useUpdateInventory = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: inventoryService.updateInventory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fuel-inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+    }
   });
 };

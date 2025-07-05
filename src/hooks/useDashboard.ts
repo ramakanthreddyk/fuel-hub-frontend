@@ -64,24 +64,25 @@ export const useStationMetrics = () => {
 };
 
 // New analytics hooks
-export const useAnalyticsDashboard = () => {
+export const useAnalyticsDashboard = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ['analytics-dashboard'],
     queryFn: () => analyticsApi.getSuperAdminAnalytics(),
     retry: 1,
     staleTime: 300000, // 5 minutes
+    enabled,
   });
 };
 
-export const useAdminDashboard = () => {
+export const useAdminDashboard = (enabled: boolean = true) => {
   return useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: async () => {
-      // This would call /api/v1/admin/dashboard
       const response = await fetch('/api/v1/admin/dashboard');
       return response.json();
     },
     retry: 1,
     staleTime: 300000,
+    enabled,
   });
 };

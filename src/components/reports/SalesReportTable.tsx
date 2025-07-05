@@ -83,7 +83,7 @@ export function SalesReportTable({ data, isLoading }: SalesReportTableProps) {
               {record.volume.toLocaleString()}
             </TableCell>
             <TableCell className="text-right font-mono">
-              ₹{record.pricePerLitre.toFixed(2)}
+              ₹{Number(record.pricePerLitre).toFixed(2)}
             </TableCell>
             <TableCell className="text-right font-mono font-medium">
               ₹{record.amount.toLocaleString()}

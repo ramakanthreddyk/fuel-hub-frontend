@@ -1,4 +1,3 @@
-
 /**
  * @file ReadingsPage.tsx
  * @description Page component for viewing and managing readings
@@ -10,17 +9,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Gauge, Clock, AlertTriangle, CheckCircle, Plus, FileText, Eye, Edit, Loader2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, Link } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { useReadings } from '@/hooks/api/useReadings';
+import { usePendingReadings } from '@/hooks/api/usePendingReadings';
 import { formatReading, formatDateTime } from '@/utils/formatters';
+import { cn } from '@/lib/utils';
+import { ReadingReceiptCard } from '@/components/readings/ReadingReceiptCard';
 
 export default function ReadingsPage() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'discrepancy'>('all');
-  
+
   // Fetch readings using the API hook
   const { data: readings, isLoading, error } = useReadings();
+  const {
+    data: pendingAlerts = [],
+    acknowledge: acknowledgeAlert,
+    dismiss: dismissAlert,
+  } = usePendingReadings();
 
   // Filter readings based on selected filter
   const filteredReadings = readings?.filter(reading => 
@@ -32,6 +40,7 @@ export default function ReadingsPage() {
   const pendingReadings = readings?.filter(r => r.status === 'pending').length || 0;
   const discrepancyReadings = readings?.filter(r => r.status === 'discrepancy').length || 0;
   const completedReadings = readings?.filter(r => r.status === 'completed').length || 0;
+  const pendingAlertsCount = pendingAlerts.length;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -57,6 +66,7 @@ export default function ReadingsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <PageHeader
         title="Pump Readings"
         description="Record and monitor fuel pump readings across all stations"
@@ -88,7 +98,7 @@ export default function ReadingsPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingReadings}</div>
+            <div className="text-2xl font-bold">{pendingReadings + pendingAlertsCount}</div>
             <p className="text-xs text-muted-foreground">
               Need attention
             </p>
@@ -120,7 +130,46 @@ export default function ReadingsPage() {
         </Card>
       </div>
 
-      {/* Filter Buttons */}
+      {pendingAlertsCount > 0 && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-yellow-700" />
+              Pending Readings
+            </CardTitle>
+            <CardDescription>Nozzles missing readings in the last 24h</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm">
+              {pendingAlerts.map((alert) => (
+                <li key={alert.id} className="flex items-center justify-between">
+                  <span className="list-disc pl-1">
+                    {alert.stationName || 'Station'} – Nozzle {alert.nozzleId}
+                  </span>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => acknowledgeAlert(alert.id)}
+                    >
+                      Ack
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => dismissAlert(alert.id)}
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Enhanced Filter Buttons */}
       <div className="flex flex-wrap gap-2">
         {(['all', 'pending', 'completed', 'discrepancy'] as const).map((status) => (
           <Button
@@ -128,22 +177,25 @@ export default function ReadingsPage() {
             variant={filter === status ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter(status)}
-            className="capitalize"
+            className={cn(
+              "capitalize transition-all duration-200",
+              filter === status && "shadow-lg scale-105"
+            )}
           >
             {status === 'all' ? 'All Readings' : status}
           </Button>
         ))}
       </div>
 
-      {/* Readings List */}
+      {/* Readings List with Receipt Cards */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Recent Readings
+            Daily Reading Log
           </CardTitle>
           <CardDescription>
-            Latest pump readings from all stations
+            Latest pump readings from all stations - organized like receipt records
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -180,41 +232,14 @@ export default function ReadingsPage() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredReadings.map((reading) => (
-                <div key={reading.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <h4 className="font-medium">{reading.pumpName || `Nozzle ${reading.nozzleNumber || '#'}`}</h4>
-                      {getStatusBadge(reading.status || 'pending')}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{reading.stationName}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-                      <span>Current: <span className="font-mono">{formatReading(reading.reading)}L</span></span>
-                      <span>Previous: <span className="font-mono">{formatReading(reading.previousReading)}L</span></span>
-                      <span className="font-medium text-green-600">
-                        Difference: +{formatReading((reading.reading || 0) - (reading.previousReading || 0))}L
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Recorded by {reading.recordedBy || 'Unknown'} at {formatDateTime(reading.recordedAt)}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 mt-3 md:mt-0">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/dashboard/readings/${reading.id}`}>
-                        <Eye className="w-4 h-4 mr-1" />
-                        View
-                      </Link>
-                    </Button>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/dashboard/readings/${reading.id}/edit`}>
-                        <Edit className="w-4 h-4 mr-1" />
-                        Edit
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
+                <ReadingReceiptCard
+                  key={reading.id}
+                  reading={reading}
+                  onView={(id) => navigate(`/dashboard/readings/${id}`)}
+                  onEdit={(id) => navigate(`/dashboard/readings/${id}/edit`)}
+                />
               ))}
             </div>
           )}

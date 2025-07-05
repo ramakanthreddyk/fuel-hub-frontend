@@ -33,12 +33,12 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
 
   const chartData = trend.map(item => ({
     date: format(new Date(item.date), 'MM/dd'),
-    revenue: item.revenue,
+    amount: item.amount,
     volume: item.volume,
   }));
 
   const chartConfig = {
-    revenue: { label: 'Sales (₹)', color: '#8b5cf6' },
+    amount: { label: 'Sales (₹)', color: '#8b5cf6' },
   };
 
   return (
@@ -56,12 +56,12 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
                 content={<ChartTooltipContent />}
                 formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Sales']}
               />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke={chartConfig.revenue.color} 
+              <Line
+                type="monotone"
+                dataKey="amount"
+                stroke={chartConfig.amount.color}
                 strokeWidth={3}
-                dot={{ fill: chartConfig.revenue.color, strokeWidth: 2, r: 4 }}
+                dot={{ fill: chartConfig.amount.color, strokeWidth: 2, r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>

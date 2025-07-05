@@ -105,7 +105,7 @@ export default function AttendantDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {readingsSummary.petrol?.litres.toFixed(2) || '0.00'}L
+              {Number(readingsSummary.petrol?.litres ?? 0).toFixed(3)}L
             </div>
             <p className="text-xs text-muted-foreground">
               From {readingsSummary.petrol?.count || 0} readings
@@ -120,7 +120,7 @@ export default function AttendantDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {readingsSummary.diesel?.litres.toFixed(2) || '0.00'}L
+              {Number(readingsSummary.diesel?.litres ?? 0).toFixed(3)}L
             </div>
             <p className="text-xs text-muted-foreground">
               From {readingsSummary.diesel?.count || 0} readings
@@ -183,7 +183,7 @@ export default function AttendantDashboardPage() {
                       <div key={reading.id} className="flex items-center justify-between border-b pb-2">
                         <div>
                           <div className="font-medium">
-                            {fuelType} - {volume.toFixed(2)}L
+                            {fuelType} - {Number(volume).toFixed(3)}L
                           </div>
                           <div className="text-sm text-muted-foreground">
                             Nozzle #{nozzleNumber}

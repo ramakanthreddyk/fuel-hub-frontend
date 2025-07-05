@@ -111,6 +111,24 @@ export const inventoryService = {
         return null;
       }
     }
+  },
+
+  /**
+   * Update fuel inventory count for a station
+   */
+  updateInventory: async (data: {
+    stationId: string;
+    fuelType: string;
+    newStock: number;
+  }): Promise<boolean> => {
+    try {
+      console.log('[INVENTORY-API] Updating inventory', data);
+      await apiClient.post('/inventory/update', data);
+      return true;
+    } catch (error) {
+      console.error('[INVENTORY-API] Error updating inventory:', error);
+      return false;
+    }
   }
 };
 

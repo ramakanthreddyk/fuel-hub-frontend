@@ -24,11 +24,13 @@ export const readingsService = {
     nozzleId?: string;
     startDate?: string;
     endDate?: string;
+    limit?: number;
   }): Promise<NozzleReading[]> {
     const searchParams = new URLSearchParams();
     if (params?.nozzleId) searchParams.set('nozzleId', params.nozzleId);
     if (params?.startDate) searchParams.set('startDate', params.startDate);
     if (params?.endDate) searchParams.set('endDate', params.endDate);
+    if (params?.limit) searchParams.set('limit', String(params.limit));
 
     const endpoint = `/nozzle-readings${searchParams.toString() ? `?${searchParams}` : ''}`;
     return contractClient.getArray<NozzleReading>(endpoint, 'readings');
@@ -46,7 +48,7 @@ export const readingsService = {
    */
   async getLatestReading(nozzleId: string): Promise<NozzleReading | null> {
     try {
-      const readings = await this.getReadings({ nozzleId });
+      const readings = await this.getReadings({ nozzleId, limit: 1 });
       return readings.length > 0 ? readings[0] : null;
     } catch (error) {
       console.warn('Failed to get latest reading:', error);

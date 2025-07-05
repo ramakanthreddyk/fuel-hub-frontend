@@ -1,3 +1,9 @@
+---
+title: FuelSync Hub - Frontend-Backend API Contract
+lastUpdated: 2025-07-05
+category: root
+---
+
 
 # FuelSync Hub - Frontend-Backend API Contract
 

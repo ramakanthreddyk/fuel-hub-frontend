@@ -12,8 +12,7 @@ import { EnhancedSelect } from '@/components/ui/enhanced-select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useContractStations } from '@/hooks/useContractStations';
 import { toast } from '@/hooks/use-toast';
-import { pumpsApi } from '@/api/pumps';
-import { ownerService } from '@/api/contract/owner.service';
+import { useCreatePump } from '@/hooks/api/usePumps';
 
 const createPumpSchema = z.object({
   name: z.string().min(1, 'Pump name is required'),
@@ -40,21 +39,21 @@ export default function CreatePumpPage() {
     },
   });
 
+  const createPump = useCreatePump();
+
   const onSubmit = async (data: CreatePumpForm) => {
     try {
-      // Use contract-compliant API call (OpenAPI uses 'name' field)
-      await pumpsApi.createPump({
+      await createPump.mutateAsync({
         name: data.name,
         stationId: data.stationId,
         serialNumber: data.serialNumber,
       });
-      
+
       toast({
-        title: "Success",
-        description: "Pump created successfully",
+        title: 'Success',
+        description: 'Pump created successfully',
       });
-      
-      // If we came from a specific station page, go back there
+
       if (stationIdFromUrl) {
         navigate(`/dashboard/stations/${stationIdFromUrl}/pumps`);
       } else {
@@ -62,9 +61,9 @@ export default function CreatePumpPage() {
       }
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create pump",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to create pump',
+        variant: 'destructive',
       });
     }
   };

@@ -11,8 +11,8 @@ export function SalesReportSummary({ summary }: SalesReportSummaryProps) {
   const getTopFuelType = () => {
     if (!summary.fuelTypeBreakdown || summary.fuelTypeBreakdown.length === 0) return 'N/A';
     
-    const topEntry = summary.fuelTypeBreakdown.reduce((max, current) => 
-      current.revenue > max.revenue ? current : max
+    const topEntry = summary.fuelTypeBreakdown.reduce((max, current) =>
+      current.amount > max.amount ? current : max
     );
     
     return topEntry.fuelType;
@@ -23,8 +23,8 @@ export function SalesReportSummary({ summary }: SalesReportSummaryProps) {
       return 0;
     }
     
-    const cashEntry = summary.paymentMethodBreakdown.find(entry => 
-      entry.method.toLowerCase() === 'cash'
+    const cashEntry = summary.paymentMethodBreakdown.find(entry =>
+      entry.paymentMethod.toLowerCase() === 'cash'
     );
     
     return cashEntry ? cashEntry.amount : 0;

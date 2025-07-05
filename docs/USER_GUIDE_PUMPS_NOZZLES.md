@@ -1,3 +1,9 @@
+---
+title: Creating Pumps and Nozzles in FuelSync Hub
+lastUpdated: 2025-07-05
+category: root
+---
+
 # Creating Pumps and Nozzles in FuelSync Hub
 
 This guide explains how to create pumps and nozzles in the FuelSync Hub system.

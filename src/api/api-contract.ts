@@ -155,27 +155,18 @@ export interface UpdateStationRequest {
 
 export interface Pump {
   id: string;
-  name: string;
-  label?: string; // Alternative name field
-  serialNumber?: string;
-  model?: string;
-  manufacturer?: string;
-  status: 'active' | 'inactive' | 'maintenance';
   stationId: string;
-  stationName?: string;
-  nozzleCount?: number;
+  name: string;
+  serialNumber: string;
+  status: 'active' | 'inactive' | 'maintenance';
   createdAt: string;
-  updatedAt?: string;
-  nozzles?: Nozzle[];
+  nozzleCount: number;
 }
 
 export interface CreatePumpRequest {
-  name: string;
-  serialNumber?: string;
-  model?: string;
-  manufacturer?: string;
-  status?: 'active' | 'inactive' | 'maintenance';
   stationId: string;
+  name: string;
+  serialNumber: string;
 }
 
 export interface UpdatePumpRequest {
@@ -224,7 +215,7 @@ export interface NozzleReading {
   previousReading?: number;
   volume?: number;
   recordedAt: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'digital_wallet';
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
   creditorId?: string;
   creditorName?: string;
   notes?: string;
@@ -243,7 +234,7 @@ export interface CreateReadingRequest {
   nozzleId: string;
   reading: number;
   recordedAt?: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'digital_wallet';
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
   creditorId?: string;
   notes?: string;
 }
@@ -428,18 +419,15 @@ export interface DashboardMetrics {
 }
 
 export interface PaymentMethodBreakdown {
-  method: string;
+  paymentMethod: string;
   amount: number;
   percentage: number;
-  count: number;
 }
 
 export interface FuelTypeAnalytics {
   fuelType: string;
   volume: number;
-  revenue: number;
-  percentage: number;
-  averagePrice: number;
+  amount: number;
 }
 
 export interface StationPerformance {
@@ -473,25 +461,20 @@ export interface SalesSummary {
 export interface FuelTypeBreakdown {
   fuelType: string;
   volume: number;
-  revenue: number;
-  percentage: number;
-  averagePrice: number;
+  amount: number;
 }
 
 export interface TopCreditor {
   id: string;
   partyName: string;
-  name: string; // Alias for partyName
   outstandingAmount: number;
   creditLimit?: number;
-  lastPurchaseDate?: string;
 }
 
 export interface DailySalesTrend {
   date: string;
-  revenue: number;
+  amount: number;
   volume: number;
-  salesCount: number;
   dayOfWeek?: string;
 }
 

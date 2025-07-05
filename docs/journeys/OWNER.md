@@ -1,3 +1,9 @@
+---
+title: OWNER Role Journey
+lastUpdated: 2025-07-05
+category: journeys
+---
+
 # OWNER Role Journey
 
 Comprehensive guide for the **OWNER** role. Owners manage one or more stations within a tenant. All endpoints require a valid JWT from `/api/v1/auth/login` with `x-tenant-id` header.

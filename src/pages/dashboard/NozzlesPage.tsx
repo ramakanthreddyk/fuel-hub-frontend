@@ -1,25 +1,20 @@
+
 /**
  * @file pages/dashboard/NozzlesPage.tsx
- * @description Nozzles page component with improved mobile layout and functionality
- * Updated layout for mobile-friendliness – 2025-07-03
+ * @description Redesigned nozzles page with realistic dispenser cards
  */
-import { useState, useEffect } from 'react';
-import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Fuel, 
-  ArrowLeft, 
-  Plus,
-  Loader2,
-  AlertTriangle
-} from 'lucide-react';
+import { Plus, ArrowLeft, Loader2, AlertTriangle, Droplets } from 'lucide-react';
 import { usePump, usePumps } from '@/hooks/api/usePumps';
 import { useNozzles, useDeleteNozzle } from '@/hooks/api/useNozzles';
 import { useStations } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
-import { NozzleCard } from '@/components/nozzles/NozzleCard';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { FuelNozzleCard } from '@/components/nozzles/FuelNozzleCard';
+import { EmptyState } from '@/components/common/EmptyState';
 import { navigateBack } from '@/utils/navigation';
 
 export default function NozzlesPage() {
@@ -60,6 +55,8 @@ export default function NozzlesPage() {
 
   // Delete nozzle mutation
   const deleteNozzle = useDeleteNozzle();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [nozzleToDelete, setNozzleToDelete] = useState<string | null>(null);
 
   // Handle record reading click
   const handleRecordReading = (nozzleId: string) => {
@@ -71,22 +68,29 @@ export default function NozzlesPage() {
     navigate(`/dashboard/nozzles/${nozzleId}/edit?pumpId=${selectedPumpId}&stationId=${selectedStationId}`);
   };
 
-  // Handle delete nozzle
-  const handleDeleteNozzle = async (nozzleId: string) => {
-    if (window.confirm('Are you sure you want to delete this nozzle?')) {
-      try {
-        await deleteNozzle.mutateAsync(nozzleId);
-        toast({
-          title: 'Success',
-          description: 'Nozzle deleted successfully'
-        });
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to delete nozzle',
-          variant: 'destructive'
-        });
-      }
+  // Show delete confirmation dialog
+  const handleDeleteNozzle = (nozzleId: string) => {
+    setNozzleToDelete(nozzleId);
+    setDeleteDialogOpen(true);
+  };
+
+  // Confirm deletion
+  const confirmDeleteNozzle = async () => {
+    if (!nozzleToDelete) return;
+    try {
+      await deleteNozzle.mutateAsync(nozzleToDelete);
+      toast({
+        title: 'Success',
+        description: 'Nozzle deleted successfully'
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete nozzle',
+        variant: 'destructive'
+      });
+    } finally {
+      setNozzleToDelete(null);
     }
   };
 
@@ -111,7 +115,7 @@ export default function NozzlesPage() {
     navigate(`/dashboard/nozzles?pumpId=${value}&stationId=${selectedStationId}`);
   };
 
-  // Handle create nozzle - Fixed API binding
+  // Handle create nozzle
   const handleCreateNozzle = () => {
     if (selectedPumpId && selectedStationId) {
       navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}&stationId=${selectedStationId}`);
@@ -127,8 +131,8 @@ export default function NozzlesPage() {
   // Loading state
   if ((stationsLoading || pumpsLoading) && !selectedPumpId) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
       </div>
     );
   }
@@ -136,67 +140,56 @@ export default function NozzlesPage() {
   // If no pump is selected, show pump selector
   if (!selectedPumpId) {
     return (
-      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Nozzles</h1>
-            <p className="text-muted-foreground text-sm md:text-base mt-1">
-              Please select a pump to view its nozzles
-            </p>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 p-4">
+        <div className="container mx-auto space-y-8">
+          <div className="flex items-center gap-4 pt-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleBack}
+              className="p-2 hover:bg-white/60 rounded-full"
+            >
+              <ArrowLeft className="h-5 w-5 text-slate-600" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                Fuel Nozzles
+              </h1>
+              <p className="text-slate-600 mt-1">Select a pump to view its nozzles</p>
+            </div>
           </div>
-        </div>
-        
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Select a Pump</CardTitle>
-            <CardDescription className="text-sm">Choose a station and pump to view nozzles</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="station-select" className="text-sm font-medium">
-                  Station
-                </label>
-                <Select 
-                  value={selectedStationId} 
-                  onValueChange={handleStationChange}
-                >
-                  <SelectTrigger>
+          
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-white/20 max-w-md mx-auto">
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-slate-700">Station</label>
+                <Select value={selectedStationId} onValueChange={handleStationChange}>
+                  <SelectTrigger className="bg-white border-2 shadow-sm">
                     <SelectValue placeholder="Select station" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {stationsLoading ? (
-                      <SelectItem value="loading" disabled>Loading stations...</SelectItem>
-                    ) : stations.length === 0 ? (
-                      <SelectItem value="no-stations" disabled>No stations available</SelectItem>
-                    ) : (
-                      stations.map((station) => (
-                        <SelectItem key={station.id} value={station.id}>
-                          {station.name}
-                        </SelectItem>
-                      ))
-                    )}
+                  <SelectContent className="bg-white border-2 shadow-xl">
+                    {stations.map((station) => (
+                      <SelectItem key={station.id} value={station.id}>
+                        {station.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               
-              <div className="space-y-2">
-                <label htmlFor="pump-select" className="text-sm font-medium">
-                  Pump
-                </label>
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-slate-700">Pump</label>
                 <Select 
                   value={selectedPumpId} 
                   onValueChange={handlePumpChange}
                   disabled={!selectedStationId}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white border-2 shadow-sm">
                     <SelectValue placeholder="Select pump" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white border-2 shadow-xl">
                     {!selectedStationId ? (
                       <SelectItem value="no-station" disabled>Select a station first</SelectItem>
-                    ) : pumpsLoading ? (
-                      <SelectItem value="loading" disabled>Loading pumps...</SelectItem>
                     ) : pumps.length === 0 ? (
                       <SelectItem value="no-pumps" disabled>No pumps available</SelectItem>
                     ) : (
@@ -209,27 +202,9 @@ export default function NozzlesPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
-              <div className="flex flex-col gap-3 pt-2">
-                <Button variant="outline" onClick={() => navigate('/dashboard/pumps')} className="w-full sm:w-auto">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  View All Pumps
-                </Button>
-                
-                {selectedStationId && (
-                  <Button 
-                    onClick={() => navigate(`/dashboard/pumps/new?stationId=${selectedStationId}`)}
-                    disabled={!selectedStationId}
-                    className="w-full sm:w-auto"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create New Pump
-                  </Button>
-                )}
-              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -237,8 +212,8 @@ export default function NozzlesPage() {
   // Loading state for pump details and nozzles
   if (pumpLoading || nozzlesLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
       </div>
     );
   }
@@ -246,124 +221,124 @@ export default function NozzlesPage() {
   // Error state for pump
   if (pumpError || !pump) {
     return (
-      <div className="text-center p-8">
-        <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Error loading pump details</h3>
-        <p className="text-muted-foreground mb-4">
-          {pumpError?.message || "Pump not found"}
-        </p>
-        <Button onClick={handleBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-      </div>
-    );
-  }
-
-  // No nozzles found
-  if (nozzles.length === 0 && !nozzlesLoading) {
-    return (
-      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-        {/* Header with improved mobile layout */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={handleBack}>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 p-4">
+        <div className="container mx-auto">
+          <div className="text-center p-8">
+            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Error loading pump details</h3>
+            <p className="text-slate-600 mb-4">
+              {pumpError?.message || "Pump not found"}
+            </p>
+            <Button onClick={handleBack} className="bg-blue-600 hover:bg-blue-700">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">Back</span>
+              Back to Pumps
             </Button>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Nozzles</h1>
-              <p className="text-muted-foreground text-sm truncate">
-                Pump: {pump.name} {pump.serialNumber ? `| Serial: ${pump.serialNumber}` : ''}
-              </p>
-            </div>
           </div>
-          <Button onClick={handleCreateNozzle} className="w-full sm:w-auto sm:self-start">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Nozzle
-          </Button>
         </div>
-
-        <Card className="p-6 sm:p-8 text-center overflow-hidden">
-          <Fuel className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">No nozzles yet</h3>
-          <p className="text-muted-foreground mb-4 text-sm sm:text-base">
-            Get started by adding your first nozzle to this pump
-          </p>
-          <Button onClick={handleCreateNozzle}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add First Nozzle
-          </Button>
-        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-      {/* Header with improved mobile layout */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="outline" size="sm" onClick={handleBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Back</span>
-          </Button>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Nozzles</h1>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-              <p className="text-muted-foreground text-sm hidden sm:block">
-                Pump: 
-              </p>
-              <Select 
-                value={selectedPumpId} 
-                onValueChange={handlePumpChange}
-              >
-                <SelectTrigger className="w-full sm:w-[200px] h-8 text-xs sm:text-sm">
-                  <SelectValue placeholder="Select pump" />
-                </SelectTrigger>
-                <SelectContent>
-                  {pumps.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name} {p.serialNumber ? `(${p.serialNumber})` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+      <div className="container mx-auto p-4 space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleBack}
+              className="p-2 hover:bg-white/60 rounded-full"
+            >
+              <ArrowLeft className="h-5 w-5 text-slate-600" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                Fuel Dispensers
+              </h1>
+              <div className="flex items-center gap-3 mt-2">
+                <span className="text-sm font-medium text-slate-600">Pump:</span>
+                <Select value={selectedPumpId} onValueChange={handlePumpChange}>
+                  <SelectTrigger className="w-[250px] bg-white/80 border-2 border-white shadow-lg">
+                    <SelectValue placeholder="Select pump" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-2 shadow-xl">
+                    {pumps.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name} {p.serialNumber ? `(${p.serialNumber})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
+          
+          <Button 
+            onClick={handleCreateNozzle} 
+            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+          >
+            <Plus className="mr-2 h-5 w-5" />
+            Add Nozzle
+          </Button>
         </div>
-        <Button onClick={handleCreateNozzle} className="w-full sm:w-auto sm:self-start">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Nozzle
-        </Button>
-      </div>
 
-      {/* Nozzles List with improved mobile grid */}
-      <div className="space-y-4">
-        {nozzlesError ? (
-          <Card className="p-6 text-center">
-            <AlertTriangle className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-            <p className="text-sm">Error loading nozzles: {nozzlesError.message}</p>
-          </Card>
+        {/* Pump Info */}
+        {pump && (
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                {pump.name} Fuel Dispensers
+              </h2>
+              <p className="text-slate-600">
+                {nozzles.length} dispensing points available
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Nozzles Grid */}
+        {nozzles.length === 0 ? (
+          <EmptyState
+            icon={<Droplets className="h-12 w-12 text-green-500" />}
+            title="No nozzles yet"
+            description={`Get started by adding your first nozzle to ${pump.name}`}
+            action={{
+              label: "Add First Nozzle",
+              onClick: handleCreateNozzle
+            }}
+          />
         ) : (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 pb-8">
             {nozzles.map((nozzle) => (
-              <div key={nozzle.id} className="overflow-hidden">
-                <NozzleCard
-                  nozzle={{
-                    id: nozzle.id,
-                    nozzleNumber: nozzle.nozzleNumber || 0,
-                    fuelType: nozzle.fuelType || 'petrol',
-                    status: nozzle.status,
-                  }}
-                  onEdit={handleEditNozzle}
-                  onDelete={handleDeleteNozzle}
-                  onRecordReading={handleRecordReading}
-                />
-              </div>
+              <FuelNozzleCard
+                key={nozzle.id}
+                nozzle={{
+                  id: nozzle.id,
+                  nozzleNumber: nozzle.nozzleNumber || 0,
+                  fuelType: (nozzle.fuelType || 'petrol') as 'petrol' | 'diesel' | 'premium',
+                  status: nozzle.status as 'active' | 'maintenance' | 'inactive',
+                }}
+                onEdit={handleEditNozzle}
+                onDelete={handleDeleteNozzle}
+                onRecordReading={handleRecordReading}
+              />
             ))}
           </div>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title="Delete Nozzle"
+          description="Are you sure you want to delete this nozzle? This action cannot be undone."
+          confirmText="Delete"
+          variant="destructive"
+          onConfirm={confirmDeleteNozzle}
+          onCancel={() => setNozzleToDelete(null)}
+        />
       </div>
     </div>
   );
