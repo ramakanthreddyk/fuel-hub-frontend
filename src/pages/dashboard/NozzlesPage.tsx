@@ -1,4 +1,3 @@
-
 /**
  * @file pages/dashboard/NozzlesPage.tsx
  * @description Redesigned nozzles page with realistic dispenser cards
@@ -58,23 +57,19 @@ export default function NozzlesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [nozzleToDelete, setNozzleToDelete] = useState<string | null>(null);
 
-  // Handle record reading click
   const handleRecordReading = (nozzleId: string) => {
     navigate(`/dashboard/readings/new?nozzleId=${nozzleId}&pumpId=${selectedPumpId}&stationId=${selectedStationId}`);
   };
 
-  // Handle edit nozzle
   const handleEditNozzle = (nozzleId: string) => {
     navigate(`/dashboard/nozzles/${nozzleId}/edit?pumpId=${selectedPumpId}&stationId=${selectedStationId}`);
   };
 
-  // Show delete confirmation dialog
   const handleDeleteNozzle = (nozzleId: string) => {
     setNozzleToDelete(nozzleId);
     setDeleteDialogOpen(true);
   };
 
-  // Confirm deletion
   const confirmDeleteNozzle = async () => {
     if (!nozzleToDelete) return;
     try {
@@ -94,7 +89,6 @@ export default function NozzlesPage() {
     }
   };
 
-  // Handle back button click
   const handleBack = () => {
     if (selectedStationId) {
       navigate(`/dashboard/pumps?stationId=${selectedStationId}`);
@@ -103,19 +97,16 @@ export default function NozzlesPage() {
     }
   };
 
-  // Handle station change
   const handleStationChange = (value: string) => {
     setSelectedStationId(value);
-    setSelectedPumpId(''); // Reset pump when station changes
+    setSelectedPumpId('');
   };
 
-  // Handle pump change
   const handlePumpChange = (value: string) => {
     setSelectedPumpId(value);
     navigate(`/dashboard/nozzles?pumpId=${value}&stationId=${selectedStationId}`);
   };
 
-  // Handle create nozzle
   const handleCreateNozzle = () => {
     if (selectedPumpId && selectedStationId) {
       navigate(`/dashboard/nozzles/new?pumpId=${selectedPumpId}&stationId=${selectedStationId}`);
@@ -153,9 +144,9 @@ export default function NozzlesPage() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                Fuel Nozzles
+                Fuel Dispensing Nozzles
               </h1>
-              <p className="text-slate-600 mt-1">Select a pump to view its nozzles</p>
+              <p className="text-slate-600 mt-1">Select a pump to view its dispensing nozzles</p>
             </div>
           </div>
           
@@ -255,7 +246,7 @@ export default function NozzlesPage() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                Fuel Dispensers
+                Fuel Dispensing Center
               </h1>
               <div className="flex items-center gap-3 mt-2">
                 <span className="text-sm font-medium text-slate-600">Pump:</span>
@@ -289,10 +280,10 @@ export default function NozzlesPage() {
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                {pump.name} Fuel Dispensers
+                {pump.name} Dispensing Points
               </h2>
               <p className="text-slate-600">
-                {nozzles.length} dispensing points available
+                {nozzles.length} active nozzles for fuel dispensing
               </p>
             </div>
           </div>
@@ -302,15 +293,15 @@ export default function NozzlesPage() {
         {nozzles.length === 0 ? (
           <EmptyState
             icon={<Droplets className="h-12 w-12 text-green-500" />}
-            title="No nozzles yet"
-            description={`Get started by adding your first nozzle to ${pump.name}`}
+            title="No nozzles configured"
+            description={`Get started by adding dispensing nozzles to ${pump.name}`}
             action={{
               label: "Add First Nozzle",
               onClick: handleCreateNozzle
             }}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 pb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 pb-8">
             {nozzles.map((nozzle) => (
               <FuelNozzleCard
                 key={nozzle.id}
@@ -319,6 +310,8 @@ export default function NozzlesPage() {
                   nozzleNumber: nozzle.nozzleNumber || 0,
                   fuelType: (nozzle.fuelType || 'petrol') as 'petrol' | 'diesel' | 'premium',
                   status: nozzle.status as 'active' | 'maintenance' | 'inactive',
+                  lastReading: nozzle.lastReading,
+                  pumpName: pump.name
                 }}
                 onEdit={handleEditNozzle}
                 onDelete={handleDeleteNozzle}
@@ -333,7 +326,7 @@ export default function NozzlesPage() {
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           title="Delete Nozzle"
-          description="Are you sure you want to delete this nozzle? This action cannot be undone."
+          description="Are you sure you want to delete this nozzle? This action cannot be undone and will remove all associated readings."
           confirmText="Delete"
           variant="destructive"
           onConfirm={confirmDeleteNozzle}

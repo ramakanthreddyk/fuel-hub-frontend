@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Building2, Loader2, MapPin, Fuel, Settings, Activity } from 'lucide-react';
+import { Plus, Building2, Loader2, MapPin, Fuel, Settings, Activity, BarChart3, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStations, useDeleteStation } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
@@ -58,7 +58,7 @@ export default function StationsPage() {
       case 'inactive':
         return 'from-red-50 via-pink-50 to-rose-50';
       default:
-        return 'from-gray-50 via-slate-50 to-zinc-50';
+        return 'from-blue-50 via-indigo-50 to-purple-50';
     }
   };
 
@@ -71,7 +71,7 @@ export default function StationsPage() {
       case 'inactive':
         return 'bg-red-100 text-red-800 border-red-300';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-blue-100 text-blue-800 border-blue-300';
     }
   };
 
@@ -116,7 +116,7 @@ export default function StationsPage() {
             }}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
             {stations.map((station) => (
               <ColorfulCard
                 key={station.id}
@@ -124,76 +124,112 @@ export default function StationsPage() {
                 className="cursor-pointer transform hover:scale-[1.02] transition-all duration-200"
                 onClick={() => navigate(`/dashboard/stations/${station.id}`)}
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-white/80 backdrop-blur-sm">
-                        <Building2 className="h-5 w-5 text-blue-600" />
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="p-3 rounded-xl bg-white/80 backdrop-blur-sm shadow-sm">
+                        <Building2 className="h-6 w-6 text-blue-600" />
                       </div>
-                      <div>
-                        <h3 className="font-bold text-slate-800 text-lg">{station.name}</h3>
-                        <p className="text-xs text-slate-600 flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {station.address}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-slate-800 text-xl truncate pr-2">
+                          {station.name}
+                        </h3>
+                        <p className="text-sm text-slate-600 flex items-center gap-1 mt-1">
+                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{station.address}</span>
                         </p>
                       </div>
                     </div>
                     
-                    <Badge className={cn("text-xs font-semibold", getStatusColor(station.status))}>
+                    <Badge className={cn("text-xs font-semibold flex-shrink-0", getStatusColor(station.status))}>
                       <Activity className="w-3 h-3 mr-1" />
                       {station.status}
                     </Badge>
                   </div>
 
-                  {/* Stats Row */}
+                  {/* Business Summary Stats */}
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 text-center">
-                      <div className="flex items-center justify-center gap-2 mb-1">
-                        <Fuel className="h-4 w-4 text-blue-500" />
-                        <span className="text-xs font-semibold text-slate-600">Pumps</span>
+                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 text-center shadow-sm">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <Fuel className="h-5 w-5 text-blue-500" />
+                        <span className="text-sm font-semibold text-slate-600">Pumps</span>
                       </div>
-                      <div className="text-lg font-bold text-slate-800">
+                      <div className="text-2xl font-bold text-slate-800">
                         {station.pumpCount || 0}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        {station.activePumps || 0} active
                       </div>
                     </div>
                     
-                    <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 text-center">
-                      <div className="flex items-center justify-center gap-2 mb-1">
-                        <Activity className="h-4 w-4 text-green-500" />
-                        <span className="text-xs font-semibold text-slate-600">Active</span>
+                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 text-center shadow-sm">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <BarChart3 className="h-5 w-5 text-green-500" />
+                        <span className="text-sm font-semibold text-slate-600">Nozzles</span>
                       </div>
-                      <div className="text-lg font-bold text-slate-800">
-                        {station.activePumps || 0}
+                      <div className="text-2xl font-bold text-slate-800">
+                        {station.nozzleCount || 0}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        Total dispensers
                       </div>
                     </div>
                   </div>
+
+                  {/* Revenue Summary (if available) */}
+                  {(station.dailyRevenue || station.monthlyRevenue) && (
+                    <div className="mt-3 bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <DollarSign className="h-4 w-4 text-emerald-500" />
+                        <span className="text-sm font-semibold text-slate-600">Revenue Overview</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-center">
+                        {station.dailyRevenue && (
+                          <div>
+                            <div className="text-lg font-bold text-slate-800">
+                              ₹{station.dailyRevenue.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-slate-500">Today</div>
+                          </div>
+                        )}
+                        {station.monthlyRevenue && (
+                          <div>
+                            <div className="text-lg font-bold text-slate-800">
+                              ₹{station.monthlyRevenue.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-slate-500">This Month</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </CardHeader>
 
-                <CardContent className="pt-0">
-                  <div className="flex flex-col sm:flex-row gap-2">
+                <CardContent className="pt-0 pb-6">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white text-xs"
+                      className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white text-sm font-medium"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/dashboard/stations/${station.id}/edit`);
                       }}
                     >
-                      <Settings className="w-3 h-3 mr-1" />
-                      Edit
+                      <Settings className="w-4 h-4 mr-2" />
+                      Manage
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white text-xs"
+                      className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white text-sm font-medium"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/dashboard/pumps?stationId=${station.id}`);
                       }}
                     >
-                      <Fuel className="w-3 h-3 mr-1" />
-                      Pumps
+                      <Fuel className="w-4 h-4 mr-2" />
+                      View Pumps
                     </Button>
                   </div>
                 </CardContent>

@@ -1,4 +1,3 @@
-
 /**
  * @file pages/dashboard/PumpsPage.tsx
  * @description Redesigned pumps page with realistic fuel dispenser cards
@@ -91,7 +90,6 @@ export default function PumpsPage() {
     );
   };
 
-  // Handle station change
   const handleStationChange = (value: string) => {
     if (!value || value === 'all') {
       setSelectedStationId('');
@@ -102,7 +100,6 @@ export default function PumpsPage() {
     }
   };
 
-  // Handle view nozzles navigation
   const handleViewNozzles = (pumpId: string) => {
     if (effectiveStationId) {
       navigate(`/dashboard/nozzles?pumpId=${pumpId}&stationId=${effectiveStationId}`);
@@ -111,7 +108,6 @@ export default function PumpsPage() {
     }
   };
 
-  // Handle pump deletion
   const handleDeletePump = (pumpId: string) => {
     setPumpToDelete(pumpId);
     setDeleteDialogOpen(true);
@@ -137,13 +133,11 @@ export default function PumpsPage() {
     }
   };
 
-  // Handle back to stations navigation
   const handleBackToStations = () => {
     navigateBack(navigate, '/dashboard/stations');
   };
 
   const isLoading = stationsLoading || pumpsLoading;
-
 
   if (isLoading) {
     return (
@@ -169,7 +163,7 @@ export default function PumpsPage() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Fuel Station Control
+                Fuel Pump Control Center
               </h1>
               <div className="flex items-center gap-3 mt-2">
                 <Building2 className="h-5 w-5 text-slate-500" />
@@ -204,10 +198,10 @@ export default function PumpsPage() {
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                {station.name} Fuel Station
+                {station.name} Control Panel
               </h2>
               <p className="text-slate-600">
-                Managing {pumps.length} fuel dispensers
+                Managing {pumps.length} fuel dispensing units
               </p>
             </div>
           </div>
@@ -225,7 +219,7 @@ export default function PumpsPage() {
             }}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
             {pumps.map((pump) => (
               <FuelPumpCard
                 key={pump.id}
@@ -234,7 +228,8 @@ export default function PumpsPage() {
                   name: pump.name,
                   serialNumber: pump.serialNumber,
                   status: pump.status as 'active' | 'maintenance' | 'inactive',
-                  nozzleCount: pump.nozzleCount || 0
+                  nozzleCount: pump.nozzleCount || 0,
+                  stationName: station?.name
                 }}
                 onViewNozzles={handleViewNozzles}
                 onDelete={handleDeletePump}
