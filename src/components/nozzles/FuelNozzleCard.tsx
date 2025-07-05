@@ -1,27 +1,31 @@
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+/**
+ * @file components/nozzles/FuelNozzleCard.tsx
+ * @description Redesigned fuel nozzle card component with consistent styling
+ */
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ColorfulCard, CardHeader, CardContent } from '@/components/ui/colorful-card';
 import { 
   Droplets, 
-  Pencil, 
+  Hash, 
+  Activity, 
+  Gauge, 
+  Edit, 
   Trash2, 
-  MoreVertical,
-  Flame,
-  CheckCircle,
   AlertTriangle,
+  CheckCircle,
   Clock,
-  Gauge
+  Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface FuelNozzleCardProps {
   nozzle: {
     id: string;
     nozzleNumber: number;
     fuelType: 'petrol' | 'diesel' | 'premium';
-    status?: 'active' | 'maintenance' | 'inactive';
+    status: 'active' | 'maintenance' | 'inactive';
   };
   onEdit: (nozzleId: string) => void;
   onDelete: (nozzleId: string) => void;
@@ -33,47 +37,31 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
     switch (nozzle.fuelType) {
       case 'petrol':
         return {
-          color: 'bg-red-500',
-          lightColor: 'bg-red-100',
-          borderColor: 'border-red-300',
-          textColor: 'text-red-800',
-          shadowColor: 'shadow-red-400/30',
-          gradientFrom: 'from-red-400',
-          gradientTo: 'to-rose-500',
-          label: 'PETROL'
+          gradient: 'from-green-50 via-emerald-50 to-teal-50',
+          color: 'bg-green-100 text-green-800 border-green-300',
+          icon: Droplets,
+          label: 'Petrol'
         };
       case 'diesel':
         return {
-          color: 'bg-green-500',
-          lightColor: 'bg-green-100',
-          borderColor: 'border-green-300',
-          textColor: 'text-green-800',
-          shadowColor: 'shadow-green-400/30',
-          gradientFrom: 'from-green-400',
-          gradientTo: 'to-emerald-500',
-          label: 'DIESEL'
+          gradient: 'from-orange-50 via-amber-50 to-yellow-50',
+          color: 'bg-orange-100 text-orange-800 border-orange-300',
+          icon: Zap,
+          label: 'Diesel'
         };
       case 'premium':
         return {
-          color: 'bg-purple-500',
-          lightColor: 'bg-purple-100',
-          borderColor: 'border-purple-300',
-          textColor: 'text-purple-800',
-          shadowColor: 'shadow-purple-400/30',
-          gradientFrom: 'from-purple-400',
-          gradientTo: 'to-violet-500',
-          label: 'PREMIUM'
+          gradient: 'from-purple-50 via-indigo-50 to-blue-50',
+          color: 'bg-purple-100 text-purple-800 border-purple-300',
+          icon: Droplets,
+          label: 'Premium'
         };
       default:
         return {
-          color: 'bg-slate-500',
-          lightColor: 'bg-slate-100',
-          borderColor: 'border-slate-300',
-          textColor: 'text-slate-800',
-          shadowColor: 'shadow-slate-400/30',
-          gradientFrom: 'from-slate-400',
-          gradientTo: 'to-gray-500',
-          label: 'UNKNOWN'
+          gradient: 'from-gray-50 via-slate-50 to-zinc-50',
+          color: 'bg-gray-100 text-gray-800 border-gray-300',
+          icon: Droplets,
+          label: 'Unknown'
         };
     }
   };
@@ -81,113 +69,122 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
   const getStatusConfig = () => {
     switch (nozzle.status) {
       case 'active':
-        return { color: 'bg-emerald-400', icon: CheckCircle, label: 'ACTIVE' };
+        return {
+          color: 'bg-green-100 text-green-800 border-green-300',
+          icon: CheckCircle,
+          label: 'Active'
+        };
       case 'maintenance':
-        return { color: 'bg-amber-400', icon: Clock, label: 'MAINTENANCE' };
+        return {
+          color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+          icon: Clock,
+          label: 'Maintenance'
+        };
       case 'inactive':
-        return { color: 'bg-red-400', icon: AlertTriangle, label: 'OFFLINE' };
+        return {
+          color: 'bg-red-100 text-red-800 border-red-300',
+          icon: AlertTriangle,
+          label: 'Inactive'
+        };
       default:
-        return { color: 'bg-slate-400', icon: AlertTriangle, label: 'UNKNOWN' };
+        return {
+          color: 'bg-gray-100 text-gray-800 border-gray-300',
+          icon: AlertTriangle,
+          label: 'Unknown'
+        };
     }
   };
 
   const fuelConfig = getFuelTypeConfig();
   const statusConfig = getStatusConfig();
+  const FuelIcon = fuelConfig.icon;
   const StatusIcon = statusConfig.icon;
 
   return (
-    <div className="group transition-all duration-300 hover:scale-[1.02]">
-      {/* Nozzle Dispenser Design */}
-      <div className={cn(
-        "relative bg-gradient-to-br from-white to-gray-50",
-        "rounded-3xl p-6 shadow-2xl border-4 border-white",
-        fuelConfig.shadowColor,
-        "min-h-[380px] max-w-[240px] mx-auto overflow-hidden"
-      )}>
-        
-        {/* Nozzle Handle */}
-        <div className="flex flex-col items-center mb-6">
-          <div className={cn(
-            "relative w-16 h-24 rounded-2xl shadow-lg border-4 border-white",
-            `bg-gradient-to-b ${fuelConfig.gradientFrom} ${fuelConfig.gradientTo}`
-          )}>
-            {/* Nozzle Number Badge */}
-            <div className="absolute -top-3 -right-3 bg-slate-900 text-white text-sm w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg">
-              {nozzle.nozzleNumber}
+    <ColorfulCard 
+      gradient={fuelConfig.gradient}
+      className="transform hover:scale-[1.02] transition-all duration-200"
+    >
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-white/80 backdrop-blur-sm">
+              <FuelIcon className="h-5 w-5 text-blue-600" />
             </div>
-            
-            {/* Fuel Icon */}
-            <div className="flex items-center justify-center h-full">
-              <Droplets className="w-8 h-8 text-white drop-shadow-lg" />
+            <div>
+              <h3 className="font-bold text-slate-800 text-lg">
+                Nozzle #{nozzle.nozzleNumber}
+              </h3>
+              <p className="text-xs text-slate-600 flex items-center gap-1">
+                <Hash className="h-3 w-3" />
+                {fuelConfig.label} Dispenser
+              </p>
             </div>
-            
-            {/* Nozzle Tip */}
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-6 h-4 bg-slate-700 rounded-b-lg shadow-lg" />
           </div>
-        </div>
-
-        {/* Fuel Type Display */}
-        <div className="text-center mb-6">
-          <Badge className={cn(
-            "text-white font-bold text-sm px-6 py-3 shadow-lg",
-            fuelConfig.color
-          )}>
-            {fuelConfig.label}
+          
+          <Badge className={cn("text-xs font-semibold", statusConfig.color)}>
+            <StatusIcon className="w-3 h-3 mr-1" />
+            {statusConfig.label}
           </Badge>
         </div>
 
-        {/* Status Indicator */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <div className={cn("w-3 h-3 rounded-full", statusConfig.color)} />
-          <span className="font-medium text-slate-700 text-sm">{statusConfig.label}</span>
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <FuelIcon className="h-4 w-4 text-blue-500" />
+              <span className="text-xs font-semibold text-slate-600">Type</span>
+            </div>
+            <div className="text-sm font-bold text-slate-800 capitalize">
+              {nozzle.fuelType}
+            </div>
+          </div>
+          
+          <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Activity className="h-4 w-4 text-green-500" />
+              <span className="text-xs font-semibold text-slate-600">Status</span>
+            </div>
+            <div className="text-sm font-bold text-slate-800 capitalize">
+              {nozzle.status}
+            </div>
+          </div>
         </div>
+      </CardHeader>
 
-        {/* Control Panel */}
-        <div className="space-y-3">
+      <CardContent className="pt-0">
+        <div className="space-y-2">
           <Button 
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-xs"
+            size="sm"
             onClick={() => onRecordReading(nozzle.id)}
-            className={cn(
-              "w-full text-white font-bold py-4 rounded-xl shadow-lg transition-all hover:shadow-xl",
-              fuelConfig.color,
-              "hover:opacity-90"
-            )}
           >
-            <Gauge className="w-5 h-5 mr-3" />
-            RECORD READING
+            <Gauge className="w-3 h-3 mr-1" />
+            Record Reading
           </Button>
           
           <div className="flex gap-2">
             <Button 
               variant="outline" 
               size="sm" 
+              className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white text-xs"
               onClick={() => onEdit(nozzle.id)}
-              className="flex-1 bg-white border-2 hover:bg-gray-50 font-medium"
             >
-              <Pencil className="w-4 h-4 mr-2 text-blue-600" />
+              <Edit className="w-3 h-3 mr-1" />
               Edit
             </Button>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="px-3 bg-white border-2 hover:bg-gray-50">
-                  <MoreVertical className="w-4 h-4 text-slate-600" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white border-2 shadow-xl">
-                <DropdownMenuItem onClick={() => onDelete(nozzle.id)} className="text-red-600 hover:bg-red-50">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Nozzle
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white hover:text-red-600 text-xs"
+              onClick={() => onDelete(nozzle.id)}
+            >
+              <Trash2 className="w-3 h-3 mr-1" />
+              Delete
+            </Button>
           </div>
         </div>
-
-        {/* Decorative Hose */}
-        <div className="absolute -left-2 bottom-8">
-          <div className="w-6 h-20 bg-slate-600 rounded-l-lg shadow-lg opacity-70" />
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </ColorfulCard>
   );
 }
