@@ -14,41 +14,41 @@ import {
 // Main SuperAdmin API object
 export const superAdminApi = {
   // Tenant Management
-  getTenants: (): Promise<Tenant[]> => apiClient.get('/superadmin/tenants').then(response => response.data || []),
-  createTenant: (data: CreateTenantRequest): Promise<Tenant> => 
-    apiClient.post('/superadmin/tenants', data).then(response => response.data),
-  getTenant: (id: string): Promise<Tenant> => 
-    apiClient.get(`/superadmin/tenants/${id}`).then(response => response.data),
-  updateTenant: (id: string, data: Partial<Tenant>): Promise<Tenant> => 
-    apiClient.put(`/superadmin/tenants/${id}`, data).then(response => response.data),
-  updateTenantStatus: (id: string, status: string): Promise<Tenant> => 
-    apiClient.put(`/superadmin/tenants/${id}/status`, { status }).then(response => response.data),
-  deleteTenant: (id: string): Promise<void> => 
-    apiClient.delete(`/superadmin/tenants/${id}`),
+  getTenants: (): Promise<Tenant[]> => apiClient.get('/admin/tenants').then(response => response.data || []),
+  createTenant: (data: CreateTenantRequest): Promise<Tenant> =>
+    apiClient.post('/admin/tenants', data).then(response => response.data),
+  getTenant: (id: string): Promise<Tenant> =>
+    apiClient.get(`/admin/tenants/${id}`).then(response => response.data),
+  updateTenant: (id: string, data: Partial<Tenant>): Promise<Tenant> =>
+    apiClient.put(`/admin/tenants/${id}`, data).then(response => response.data),
+  updateTenantStatus: (id: string, status: string): Promise<Tenant> =>
+    apiClient.put(`/admin/tenants/${id}/status`, { status }).then(response => response.data),
+  deleteTenant: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/tenants/${id}`),
 
   // Plan Management
-  getPlans: (): Promise<Plan[]> => apiClient.get('/superadmin/plans').then(response => response.data || []),
-  createPlan: (data: CreatePlanRequest): Promise<Plan> => 
-    apiClient.post('/superadmin/plans', data).then(response => response.data),
-  updatePlan: (id: string, data: Partial<Plan>): Promise<Plan> => 
-    apiClient.put(`/superadmin/plans/${id}`, data).then(response => response.data),
-  deletePlan: (id: string): Promise<void> => 
-    apiClient.delete(`/superadmin/plans/${id}`),
+  getPlans: (): Promise<Plan[]> => apiClient.get('/admin/plans').then(response => response.data || []),
+  createPlan: (data: CreatePlanRequest): Promise<Plan> =>
+    apiClient.post('/admin/plans', data).then(response => response.data),
+  updatePlan: (id: string, data: Partial<Plan>): Promise<Plan> =>
+    apiClient.put(`/admin/plans/${id}`, data).then(response => response.data),
+  deletePlan: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/plans/${id}`),
 
   // Admin User Management
-  getAdminUsers: (): Promise<AdminUser[]> => apiClient.get('/superadmin/users').then(response => response.data || []),
-  createAdminUser: (data: CreateSuperAdminRequest): Promise<AdminUser> => 
-    apiClient.post('/superadmin/users', data).then(response => response.data),
-  updateAdminUser: (id: string, data: Partial<AdminUser>): Promise<AdminUser> => 
-    apiClient.put(`/superadmin/users/${id}`, data).then(response => response.data),
-  deleteAdminUser: (id: string): Promise<void> => 
-    apiClient.delete(`/superadmin/users/${id}`),
-  resetAdminPassword: (id: string, passwordData: any): Promise<void> => 
-    apiClient.post(`/superadmin/users/${id}/reset-password`, passwordData),
+  getAdminUsers: (): Promise<AdminUser[]> => apiClient.get('/admin/users').then(response => response.data || []),
+  createAdminUser: (data: CreateSuperAdminRequest): Promise<AdminUser> =>
+    apiClient.post('/admin/users', data).then(response => response.data),
+  updateAdminUser: (id: string, data: Partial<AdminUser>): Promise<AdminUser> =>
+    apiClient.put(`/admin/users/${id}`, data).then(response => response.data),
+  deleteAdminUser: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/users/${id}`),
+  resetAdminPassword: (id: string, passwordData: any): Promise<void> =>
+    apiClient.post(`/admin/users/${id}/reset-password`, passwordData),
 
   // Analytics and Summary
   getSummary: (): Promise<SuperAdminSummary> => {
-    return apiClient.get('/superadmin/summary').then(response => {
+    return apiClient.get('/admin/dashboard').then(response => {
       const data = response.data;
       return {
         totalTenants: data.totalTenants || 0,
@@ -69,7 +69,7 @@ export const superAdminApi = {
     });
   },
   getAnalytics: (): Promise<SuperAdminAnalytics> => {
-    return apiClient.get('/superadmin/analytics').then(response => {
+    return apiClient.get('/analytics/superadmin').then(response => {
       const data = response.data;
       return {
         // Ensure all required properties exist
