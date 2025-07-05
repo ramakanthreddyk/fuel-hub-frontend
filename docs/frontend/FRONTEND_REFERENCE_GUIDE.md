@@ -11,7 +11,7 @@ Always consult this file before implementing UI changes.
 
 ## Canonical API Specification
 
-The OpenAPI contract lives at `docs/openapi.yaml`. Any schema or endpoint change must be reflected here. The previous file `frontend/docs/openapi-v1.yaml` remains for historical reference only.
+The OpenAPI contract lives at `docs/openapi-spec.yaml`. Any schema or endpoint change must be reflected here. The previous file `frontend/docs/openapi-v1.yaml` remains for historical reference only.
 
 
 #### 🔄 Correct Schema Change Propagation Flow
@@ -24,7 +24,7 @@ The OpenAPI contract lives at `docs/openapi.yaml`. Any schema or endpoint change
    * Adjust models, services, validations, and endpoints to match schema changes.
    * Document changes in `backend_brain.md`.
 3. **OpenAPI Spec**
-   * Sync API definitions in `docs/openapi.yaml`.
+   * Sync API definitions in `docs/openapi-spec.yaml`.
 4. **Frontend**
    * Update components, forms, API hooks, and state logic as per the updated spec.
    * Document any temporary gaps in `frontend/docs/api-diff.md`.
@@ -35,4 +35,4 @@ Refer to `frontend/docs/api-diff.md` for any temporary differences between the s
 
 ## Schema Changes
 
-The flow always starts from the database. Consult `DATABASE_MANAGEMENT.md` for detailed migration and script instructions and review design notes in `db_brain.md`. Backend adjustments are tracked in `backend_brain.md`. Once `docs/openapi.yaml` is updated, the frontend should follow this guide and `frontend/docs/api-diff.md` to implement changes. Do not assume schema updates before these docs are in sync.
+The flow always starts from the database. Consult `DATABASE_MANAGEMENT.md` for detailed migration and script instructions and review design notes in `db_brain.md`. Backend adjustments are tracked in `backend_brain.md`. Once `docs/openapi-spec.yaml` is updated, the frontend should follow this guide and `frontend/docs/api-diff.md` to implement changes. Do not assume schema updates before these docs are in sync.

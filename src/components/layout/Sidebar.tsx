@@ -3,7 +3,7 @@
  * @file components/layout/Sidebar.tsx
  * @description Enhanced responsive sidebar with improved mobile experience
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -115,12 +115,22 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const toggleExpanded = (name: string) => {
-    setExpandedItems(prev => 
-      prev.includes(name) 
+    setExpandedItems(prev =>
+      prev.includes(name)
         ? prev.filter(item => item !== name)
         : [...prev, name]
     );
   };
+
+  useEffect(() => {
+    navigation.forEach(item => {
+      if (item.children?.some(child => isActive(child.href))) {
+        setExpandedItems(prev =>
+          prev.includes(item.name) ? prev : [...prev, item.name]
+        );
+      }
+    });
+  }, [location.pathname]);
 
   const isItemVisible = (item: NavItem) => {
     if (!item.roles) return true;
@@ -138,8 +148,11 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
     if (!isItemVisible(item)) return null;
 
     const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.includes(item.name);
-    const active = isActive(item.href);
+    const childActive = item.children?.some(child => isActive(child.href));
+    const active = isActive(item.href) || childActive;
+    const isExpanded =
+      expandedItems.includes(item.name) ||
+      (hasChildren && childActive);
 
     return (
       <div key={item.name}>
@@ -228,6 +241,7 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
 }
 
 export function Sidebar() {
+  const [open, setOpen] = useState(false);
   return (
     <>
       {/* Desktop Sidebar */}
@@ -237,14 +251,14 @@ export function Sidebar() {
 
       {/* Mobile Sidebar */}
       <div className="lg:hidden">
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-64 p-0">
-            <SidebarContent onItemClick={() => {}} />
+            <SidebarContent onItemClick={() => setOpen(false)} />
           </SheetContent>
         </Sheet>
       </div>

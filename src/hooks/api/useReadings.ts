@@ -4,7 +4,7 @@
  * @description React Query hooks for readings API
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { readingsService, Reading, CreateReadingRequest } from '@/api/services/readingsService';
+import { readingsService, Reading, CreateReadingRequest, UpdateReadingRequest } from '@/api/services/readingsService';
 import { alertsService } from '@/api/services';
 
 /**
@@ -94,6 +94,21 @@ export const useCreateReading = () => {
       } catch (err) {
         console.warn('Failed to auto-acknowledge alerts', err);
       }
+    },
+  });
+};
+
+/**
+ * Hook to update a reading
+ */
+export const useUpdateReading = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateReadingRequest }) =>
+      readingsService.updateReading(id, data),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['reading', vars.id] });
+      queryClient.invalidateQueries({ queryKey: ['readings'] });
     },
   });
 };

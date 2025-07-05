@@ -211,6 +211,9 @@ export interface UpdateNozzleRequest {
 export interface NozzleReading {
   id: string;
   nozzleId: string;
+  nozzleNumber?: number;
+  pumpName?: string;
+  stationName?: string;
   reading: number;
   previousReading?: number;
   volume?: number;
@@ -228,6 +231,7 @@ export interface NozzleReading {
   stationId?: string;
   attendantId?: string;
   attendantName?: string;
+  recordedBy?: string; // alias for attendantName
 }
 
 export interface CreateReadingRequest {

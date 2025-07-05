@@ -16,7 +16,7 @@ export const salesApi = {
     return sales.map((sale: any) => ({
       id: sale.id,
       nozzleId: sale.nozzleId || sale.nozzle_id,
-      nozzleName: sale.nozzleName || sale.nozzle_name,
+      nozzleName: sale.nozzleName || sale.nozzle_name || String(sale.nozzle_number || ''),
       stationId: sale.stationId || sale.station_id,
       stationName: sale.stationName || sale.station_name,
       pumpId: sale.pumpId || sale.pump_id,

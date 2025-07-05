@@ -203,7 +203,7 @@ Each step includes:
 
 **Overview:**
 * Combined all routers into an Express app with tenant header support
-* Added Swagger documentation route at `/api/docs` and generated `docs/openapi.yaml` listing all endpoints
+* Added Swagger documentation route at `/api/docs` and generated `docs/openapi-spec.yaml` listing all endpoints
 * Introduced centralized error handler returning `{ status, code, message }`
 * Created Jest unit tests for core services and an e2e auth flow
 
@@ -385,7 +385,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 ### 🛠️ Step 2.18 – Tenants API & Summary
 
 **Status:** ✅ Done
-**Files:** `src/services/tenant.service.ts`, `src/controllers/tenant.controller.ts`, `src/routes/tenant.route.ts`, `src/routes/adminTenant.route.ts`, `src/routes/adminApi.router.ts`, `src/validators/tenant.validator.ts`, `src/app.ts`, `docs/openapi.yaml`
+**Files:** `src/services/tenant.service.ts`, `src/controllers/tenant.controller.ts`, `src/routes/tenant.route.ts`, `src/routes/adminTenant.route.ts`, `src/routes/adminApi.router.ts`, `src/validators/tenant.validator.ts`, `src/app.ts`, `docs/openapi-spec.yaml`
 
 **Overview:**
 * Implemented `/v1/tenants` endpoints for superadmin tenant management.
@@ -423,7 +423,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 **Files:** `src/controllers/dashboard.controller.ts`, `src/routes/dashboard.route.ts`,
 `src/controllers/station.controller.ts`, `src/routes/station.route.ts`, `src/services/station.service.ts`,
 `src/controllers/sales.controller.ts`, `src/services/sales.service.ts`, `src/routes/sales.route.ts`,
-`src/validators/sales.validator.ts`, `src/middlewares/checkStationAccess.ts`, `docs/openapi.yaml`
+`src/validators/sales.validator.ts`, `src/middlewares/checkStationAccess.ts`, `docs/openapi-spec.yaml`
 
 **Overview:**
 * Added station and date range parameters to dashboard metrics.
@@ -446,7 +446,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 ### 🛠️ Step 2.20 – API Alignment Endpoints
 
 **Status:** ✅ Done
-**Files:** `src/services/inventory.service.ts`, `src/controllers/alerts.controller.ts`, `src/routes/alerts.route.ts`, `src/controllers/analytics.controller.ts`, `src/routes/analytics.route.ts`, `src/services/fuelPrice.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `src/controllers/reports.controller.ts`, `src/routes/reports.route.ts`, `src/app.ts`, `docs/openapi.yaml`, `src/docs/swagger.ts`
+**Files:** `src/services/inventory.service.ts`, `src/controllers/alerts.controller.ts`, `src/routes/alerts.route.ts`, `src/controllers/analytics.controller.ts`, `src/routes/analytics.route.ts`, `src/services/fuelPrice.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `src/controllers/reports.controller.ts`, `src/routes/reports.route.ts`, `src/app.ts`, `docs/openapi-spec.yaml`, `src/docs/swagger.ts`
 
 **Overview:**
 * Added global alerts listing and mark-read endpoints.
@@ -474,7 +474,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 ### 🛠️ Step 2.21 – CRUD Completion Endpoints
 
 **Status:** ✅ Done
-**Files:** `src/services/pump.service.ts`, `src/controllers/pump.controller.ts`, `src/routes/pump.route.ts`, `docs/openapi.yaml`
+**Files:** `src/services/pump.service.ts`, `src/controllers/pump.controller.ts`, `src/routes/pump.route.ts`, `docs/openapi-spec.yaml`
 
 **Overview:**
 * Added pump update service and route protected by tenant context and role checks.
@@ -484,7 +484,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 ### 🛠️ Step 2.22 – Fuel Price Delete Endpoint
 
 **Status:** ✅ Done
-**Files:** `src/services/fuelPrice.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `docs/openapi.yaml`
+**Files:** `src/services/fuelPrice.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `docs/openapi-spec.yaml`
 
 **Overview:**
 * Added service, controller and route to remove fuel price records.
@@ -513,7 +513,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 ### 🛠️ Step 2.25 – Endpoint Inventory and Spec Refresh
 
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `backend_brain.md`
+**Files:** `docs/openapi-spec.yaml`, `backend_brain.md`
 
 **Overview:**
 * Enumerated every active backend endpoint and noted which controllers use Prisma.
@@ -534,7 +534,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 ### 🛠️ Step 2.27 – Spec Normalisation & Drift Notes
 
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `backend_brain.md`, `docs/STEP_2_27_COMMAND.md`
+**Files:** `docs/openapi-spec.yaml`, `backend_brain.md`, `docs/STEP_2_27_COMMAND.md`
 
 **Overview:**
 * Aligned path parameters and added missing admin and utility endpoints.
@@ -544,7 +544,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 ### 🛠️ Step 2.28 – Complete OpenAPI Schemas
 
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `backend_brain.md`, `docs/STEP_2_28_COMMAND.md`
+**Files:** `docs/openapi-spec.yaml`, `backend_brain.md`, `docs/STEP_2_28_COMMAND.md`
 
 **Overview:**
 * Added generic request and response definitions for every route.
@@ -558,14 +558,14 @@ sudo apt-get update && sudo apt-get install -y postgresql
 **Files:** `merge-api-docs.js`, `backend_brain.md`, `docs/STEP_2_29_COMMAND.md`
 
 **Overview:**
-* Added a Node.js script to compare endpoints in `backend_brain.md` and `docs/openapi.yaml`.
+* Added a Node.js script to compare endpoints in `backend_brain.md` and `docs/openapi-spec.yaml`.
 * Documented best practices for evolving the API contract and how to run the script.
 
 
 ### 🛠️ Step 2.30 – Pump nozzle count
 
 **Status:** ✅ Done
-**Files:** `src/controllers/pump.controller.ts`, `docs/openapi.yaml`, `backend_brain.md`
+**Files:** `src/controllers/pump.controller.ts`, `docs/openapi-spec.yaml`, `backend_brain.md`
 
 **Overview:**
 * Updated pump listing to include `nozzleCount` using Prisma relation counts.
@@ -574,7 +574,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 ### 🛠️ Fix 2025-07-31 – OpenAPI Schema Details
 
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `docs/STEP_fix_20250731.md`
+**Files:** `docs/openapi-spec.yaml`, `docs/STEP_fix_20250731.md`
 
 **Overview:**
 * Replaced generic object schemas with detailed definitions.
@@ -583,7 +583,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 ### 🛠️ Step 2.31 – Analytics & lookup endpoints
 
 **Status:** ✅ Done
-**Files:** `src/controllers/analytics.controller.ts`, `src/services/analytics.service.ts`, `src/controllers/alerts.controller.ts`, `src/services/alert.service.ts`, `src/controllers/creditor.controller.ts`, `prisma/schema.prisma`, `docs/openapi.yaml`, `backend_brain.md`
+**Files:** `src/controllers/analytics.controller.ts`, `src/services/analytics.service.ts`, `src/controllers/alerts.controller.ts`, `src/services/alert.service.ts`, `src/controllers/creditor.controller.ts`, `prisma/schema.prisma`, `docs/openapi-spec.yaml`, `backend_brain.md`
 
 **Overview:**
 * Added delete endpoint for alerts and new analytics queries using Prisma.
@@ -592,7 +592,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.32 – Parameter naming alignment
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `src/routes/user.route.ts`, `src/routes/station.route.ts`, `src/controllers/user.controller.ts`, `src/controllers/station.controller.ts`, `backend_brain.md`
+**Files:** `docs/openapi-spec.yaml`, `src/routes/user.route.ts`, `src/routes/station.route.ts`, `src/controllers/user.controller.ts`, `src/controllers/station.controller.ts`, `backend_brain.md`
 
 **Overview:**
 * Renamed user and station path parameters to `userId` and `stationId`.
@@ -600,21 +600,21 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.33 – Reusable response components
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`
+**Files:** `docs/openapi-spec.yaml`
 
 **Overview:**
 * Added shared `Success` and `Error` response objects under `components.responses`.
 
 ### 🛠️ Step 2.34 – OpenAPI request schemas
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `docs/STEP_2_34_COMMAND.md`
+**Files:** `docs/openapi-spec.yaml`, `docs/STEP_2_34_COMMAND.md`
 
 **Overview:**
 * Connected login, refresh, user and station endpoints to detailed schemas.
 * Introduced `CreateStationRequest` and `UpdateStationRequest` components.
 ### 🛠️ Step 2.35 – Response wrapper alignment
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `src/app.ts`, `docs/STEP_2_35_COMMAND.md`
+**Files:** `docs/openapi-spec.yaml`, `src/app.ts`, `docs/STEP_2_35_COMMAND.md`
 
 **Overview:**
 * All endpoints now return data under a `data` property.
@@ -642,7 +642,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-08-15 – Tenant Service Unified Schema
 **Status:** ✅ Done
-**Files:** `src/services/tenant.service.ts`, `src/controllers/tenant.controller.ts`, `src/validators/tenant.validator.ts`, `tests/utils/testTenant.ts`, `docs/openapi.yaml`, `docs/TENANT_MANAGEMENT_GUIDE.md`, `docs/STEP_2_36_COMMAND.md`
+**Files:** `src/services/tenant.service.ts`, `src/controllers/tenant.controller.ts`, `src/validators/tenant.validator.ts`, `tests/utils/testTenant.ts`, `docs/openapi-spec.yaml`, `docs/TENANT_MANAGEMENT_GUIDE.md`, `docs/STEP_2_36_COMMAND.md`
 
 **Overview:**
 * Removed all schema references from tenant service and related modules.
@@ -669,7 +669,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-08-18 – Remove schemaName from docs
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, various documentation files, `docs/STEP_fix_20250818.md`
+**Files:** `docs/openapi-spec.yaml`, various documentation files, `docs/STEP_fix_20250818.md`
 
 **Overview:**
 * Purged `schemaName` references from all guides and examples.
@@ -764,7 +764,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-08-30 – Admin login route
 **Status:** ✅ Done
-**Files:** `src/routes/adminAuth.route.ts`, `src/controllers/auth.controller.ts`, `src/services/auth.service.ts`, `src/app.ts`, `docs/openapi.yaml`, `docs/STEP_fix_20250830.md`
+**Files:** `src/routes/adminAuth.route.ts`, `src/controllers/auth.controller.ts`, `src/services/auth.service.ts`, `src/app.ts`, `docs/openapi-spec.yaml`, `docs/STEP_fix_20250830.md`
 
 **Overview:**
 * Added dedicated `/api/v1/admin/auth/login` endpoint for SuperAdmin authentication.
@@ -779,7 +779,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 * Updated Jest helpers to reference the new variable.
 ### 🛠️ Fix 2025-08-31 – Default 404 handler
 **Status:** ✅ Done
-**Files:** `src/app.ts`, `docs/openapi.yaml`, `docs/STEP_fix_20250831.md`
+**Files:** `src/app.ts`, `docs/openapi-spec.yaml`, `docs/STEP_fix_20250831.md`
 
 **Overview:**
 * Added a catch-all route that returns JSON `Route not found` errors.
@@ -787,7 +787,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-09-01 – Secure schemas route
 **Status:** ✅ Done
-**Files:** `src/app.ts`, `docs/openapi.yaml`, `docs/STEP_fix_20250901.md`
+**Files:** `src/app.ts`, `docs/openapi-spec.yaml`, `docs/STEP_fix_20250901.md`
 
 **Overview:**
 * `/schemas` endpoint now only executes in non-production environments.
@@ -967,7 +967,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.37 – Attendant access & cash reports
 **Status:** ✅ Done
-**Files:** `migrations/schema/007_create_cash_reports.sql`, `src/services/attendant.service.ts`, `src/controllers/attendant.controller.ts`, `src/routes/attendant.route.ts`, `src/app.ts`, `docs/openapi.yaml`
+**Files:** `migrations/schema/007_create_cash_reports.sql`, `src/services/attendant.service.ts`, `src/controllers/attendant.controller.ts`, `src/routes/attendant.route.ts`, `src/app.ts`, `docs/openapi-spec.yaml`
 
 **Overview:**
 * Added attendant endpoints to list assigned stations, pumps, nozzles and creditors.
@@ -975,7 +975,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.38 – Attendant cash reports & alerts
 **Status:** ✅ Done
-**Files:** `src/services/attendant.service.ts`, `src/controllers/attendant.controller.ts`, `src/routes/attendant.route.ts`, `docs/openapi.yaml`, `backend_brain.md`
+**Files:** `src/services/attendant.service.ts`, `src/controllers/attendant.controller.ts`, `src/routes/attendant.route.ts`, `docs/openapi-spec.yaml`, `backend_brain.md`
 
 **Overview:**
 * Added endpoint to list attendant cash reports.
@@ -983,7 +983,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.39 – Fuel price validation endpoints
 **Status:** ✅ Done
-**Files:** `src/services/fuelPriceValidation.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `docs/openapi.yaml`
+**Files:** `src/services/fuelPriceValidation.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `docs/openapi-spec.yaml`
 
 **Overview:**
 * Added validation API to check missing fuel types and outdated prices by station.
@@ -991,14 +991,14 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.40 – Nozzle reading creation validation
 **Status:** ✅ Done
-**Files:** `src/services/nozzleReading.service.ts`, `src/controllers/nozzleReading.controller.ts`, `src/routes/nozzleReading.route.ts`, `docs/openapi.yaml`, `src/docs/swagger.ts`
+**Files:** `src/services/nozzleReading.service.ts`, `src/controllers/nozzleReading.controller.ts`, `src/routes/nozzleReading.route.ts`, `docs/openapi-spec.yaml`, `src/docs/swagger.ts`
 
 **Overview:**
 * Added endpoint to verify nozzle status and price before recording a reading.
 
 ### 🛠️ Step 2.41 – Alert creation & summary endpoints
 **Status:** ✅ Done
-**Files:** `src/services/alert.service.ts`, `src/controllers/alerts.controller.ts`, `src/routes/alerts.route.ts`, `docs/openapi.yaml`
+**Files:** `src/services/alert.service.ts`, `src/controllers/alerts.controller.ts`, `src/routes/alerts.route.ts`, `docs/openapi-spec.yaml`
 
 **Overview:**
 * Added API to create alerts and fetch unread counts grouped by severity.
@@ -1058,7 +1058,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-11-02 – Delivery and inventory schema enums
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `frontend/docs/openapi-v1.yaml`, `src/docs/swagger.ts`, `docs/STEP_fix_20251102.md`
+**Files:** `docs/openapi-spec.yaml`, `frontend/docs/openapi-v1.yaml`, `src/docs/swagger.ts`, `docs/STEP_fix_20251102.md`
 
 **Overview:**
 * OpenAPI docs now expose a `capacity` field on inventory entries.
@@ -1091,7 +1091,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.50 – Setup status API
 **Status:** ✅ Done
-**Files:** `src/services/setupStatus.service.ts`, `src/controllers/setupStatus.controller.ts`, `src/routes/setupStatus.route.ts`, `src/app.ts`, `docs/openapi.yaml`, `docs/STEP_2_50_COMMAND.md`
+**Files:** `src/services/setupStatus.service.ts`, `src/controllers/setupStatus.controller.ts`, `src/routes/setupStatus.route.ts`, `src/app.ts`, `docs/openapi-spec.yaml`, `docs/STEP_2_50_COMMAND.md`
 
 **Overview:**
 * Added `/setup-status` endpoint to compute onboarding progress via entity counts.
@@ -1099,7 +1099,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.51 – Duplicate nozzle conflict handling
 **Status:** ✅ Done
-**Files:** `src/controllers/nozzle.controller.ts`, `docs/openapi.yaml`, `tests/nozzle.controller.test.ts`, `docs/STEP_2_51_COMMAND.md`
+**Files:** `src/controllers/nozzle.controller.ts`, `docs/openapi-spec.yaml`, `tests/nozzle.controller.test.ts`, `docs/STEP_2_51_COMMAND.md`
 
 **Overview:**
 * Creation errors from Prisma with code `P2002` now return status `409` and a clear message.
@@ -1115,13 +1115,13 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-11-14 – Pump request schema correction
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `docs/STEP_fix_20251114.md`
+**Files:** `docs/openapi-spec.yaml`, `docs/STEP_fix_20251114.md`
 
 **Overview:**
 * POST and PUT pump endpoints use the correct `CreatePumpRequest` schema.
 ### 🛠️ Fix 2025-11-16 – Nozzle request schema cleanup
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `docs/STEP_fix_20251116_COMMAND.md`
+**Files:** `docs/openapi-spec.yaml`, `docs/STEP_fix_20251116_COMMAND.md`
 
 **Overview:**
 * POST and PUT nozzle endpoints now reference `CreateNozzleRequest` for consistency.
@@ -1150,14 +1150,14 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-11-20 – Fuel price station id in spec
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `src/controllers/fuelPrice.controller.ts`, `docs/STEP_fix_20251120.md`
+**Files:** `docs/openapi-spec.yaml`, `src/controllers/fuelPrice.controller.ts`, `docs/STEP_fix_20251120.md`
 
 **Overview:**
 * Fuel price schema now documents `station.id` and listing returns station id with name.
 
 ### 🛠️ Step 2.53 – Fuel inventory summary endpoint
 **Status:** ✅ Done
-**Files:** `src/services/fuelInventory.service.ts`, `src/controllers/fuelInventory.controller.ts`, `src/routes/fuelInventory.route.ts`, `docs/openapi.yaml`, `docs/STEP_2_53_COMMAND.md`
+**Files:** `src/services/fuelInventory.service.ts`, `src/controllers/fuelInventory.controller.ts`, `src/routes/fuelInventory.route.ts`, `docs/openapi-spec.yaml`, `docs/STEP_2_53_COMMAND.md`
 
 **Overview:**
 * Added `GET /fuel-inventory/summary` to aggregate current volume and capacity by fuel type.
@@ -1165,7 +1165,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-11-23 – Cash report credit entries
 **Status:** ✅ Done
-**Files:** `src/services/attendant.service.ts`, `src/controllers/attendant.controller.ts`, `docs/openapi.yaml`, `backend_brain.md`, `docs/STEP_fix_20251123.md`
+**Files:** `src/services/attendant.service.ts`, `src/controllers/attendant.controller.ts`, `docs/openapi-spec.yaml`, `backend_brain.md`, `docs/STEP_fix_20251123.md`
 
 **Overview:**
 * Cash report API now accepts `creditEntries` with creditor and fuel details.
@@ -1202,7 +1202,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-11-28 – Previous reading in nozzle listing
 **Status:** ✅ Done
-**Files:** `src/services/nozzleReading.service.ts`, `docs/openapi.yaml`, `docs/STEP_fix_20251128.md`
+**Files:** `src/services/nozzleReading.service.ts`, `docs/openapi-spec.yaml`, `docs/STEP_fix_20251128.md`
 
 **Overview:**
 * `GET /api/v1/nozzle-readings` now returns `previousReading` by computing a window function over all readings.
@@ -1210,7 +1210,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.54 – API corrections and feature flags
 **Status:** ✅ Done
-**Files:** `src/routes/dashboard.route.ts`, `src/app.ts`, `src/controllers/settings.controller.ts`, `docs/openapi.yaml`, `docs/STEP_2_54_COMMAND.md`
+**Files:** `src/routes/dashboard.route.ts`, `src/app.ts`, `src/controllers/settings.controller.ts`, `docs/openapi-spec.yaml`, `docs/STEP_2_54_COMMAND.md`
 
 **Overview:**
 * Added deprecated dashboard aliases and new `/tenant/settings` endpoint exposing feature flags.
@@ -1218,7 +1218,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Step 2.55 – Dashboard station metrics endpoint
 **Status:** ✅ Done
-**Files:** `src/services/station.service.ts`, `src/controllers/dashboard.controller.ts`, `src/routes/dashboard.route.ts`, `docs/openapi.yaml`, `docs/STEP_2_55_COMMAND.md`
+**Files:** `src/services/station.service.ts`, `src/controllers/dashboard.controller.ts`, `src/routes/dashboard.route.ts`, `docs/openapi-spec.yaml`, `docs/STEP_2_55_COMMAND.md`
 
 **Overview:**
 * New endpoint `/dashboard/station-metrics` provides per-station totals and efficiency.
@@ -1226,14 +1226,14 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-12-01 – Alert parameter naming alignment
 **Status:** ✅ Done
-**Files:** `docs/openapi.yaml`, `frontend/docs/openapi-v1.yaml`, `docs/STEP_fix_20251201.md`
+**Files:** `docs/openapi-spec.yaml`, `frontend/docs/openapi-v1.yaml`, `docs/STEP_fix_20251201.md`
 
 **Overview:**
 * Changed path parameter `alertId` to `id` for consistency with implemented routes.
 
 ### 🛠️ Step 2.56 – Backend analytics and inventory completion
 **Status:** ✅ Done
-**Files:** `src/services/analytics.service.ts`, `src/services/fuelInventory.service.ts`, `src/services/tenant.service.ts`, `src/controllers`, `src/routes`, `docs/openapi.yaml`, `docs/STEP_2_56_COMMAND.md`
+**Files:** `src/services/analytics.service.ts`, `src/services/fuelInventory.service.ts`, `src/services/tenant.service.ts`, `src/controllers`, `src/routes`, `docs/openapi-spec.yaml`, `docs/STEP_2_56_COMMAND.md`
 
 **Overview:**
 * Added tenant dashboard metrics endpoint and admin tenant summary.
@@ -1337,7 +1337,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-12-23 – Align SalesSummary fields
 **Status:** ✅ Done
-**Files:** `fuelsync/src/controllers/dashboard.controller.ts`, `docs/openapi-spec.yaml`, `fuelsync/docs/openapi.yaml`, `fuelsync/frontend/docs/openapi-v1.yaml`
+**Files:** `fuelsync/src/controllers/dashboard.controller.ts`, `docs/openapi-spec.yaml`, `fuelsync/docs/openapi-spec.yaml`, `fuelsync/frontend/docs/openapi-v1.yaml`
 
 **Overview:**
 * Dashboard sales summary response now returns `totalRevenue`, `totalVolume`, `salesCount`, `totalProfit`, `profitMargin` and `period`.
@@ -1345,7 +1345,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-12-27 – Nozzle reading backend fixes
 **Status:** ✅ Done
-**Files:** `fuelsync/src/services/nozzleReading.service.ts`, `fuelsync/src/controllers/nozzleReading.controller.ts`, `fuelsync/src/validators/nozzleReading.validator.ts`, `docs/openapi-spec.yaml`, `fuelsync/docs/openapi.yaml`
+**Files:** `fuelsync/src/services/nozzleReading.service.ts`, `fuelsync/src/controllers/nozzleReading.controller.ts`, `fuelsync/src/validators/nozzleReading.validator.ts`, `docs/openapi-spec.yaml`, `fuelsync/docs/openapi-spec.yaml`
 
 **Overview:**
 * Stored `payment_method` when saving readings.
@@ -1366,7 +1366,7 @@ sudo apt-get update && sudo apt-get install -y postgresql
 
 ### 🛠️ Fix 2025-07-21 – Prisma Service Refactor
 **Status:** ✅ Done
-**Files:** `src/services/station.service.ts`, `src/services/nozzle.service.ts`, `src/services/fuelInventory.service.ts`, `tests/*`, `docs/openapi.yaml`, `docs/STEP_fix_20250721_COMMAND.md`
+**Files:** `src/services/station.service.ts`, `src/services/nozzle.service.ts`, `src/services/fuelInventory.service.ts`, `tests/*`, `docs/openapi-spec.yaml`, `docs/STEP_fix_20250721_COMMAND.md`
 
 **Overview:**
 * Removed raw `pg` queries in favour of Prisma client calls.

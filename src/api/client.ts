@@ -69,17 +69,28 @@ apiClient.interceptors.response.use(
  * @param response Axios response object
  * @returns Extracted data
  */
-export function extractApiData<T>(response: any): T {
-  // Handle different response formats
+import type { ZodSchema } from 'zod';
+
+export function extractApiData<T>(response: any, schema?: ZodSchema<T>): T {
+  let data: any;
   if (response.data?.data) {
-    return response.data.data as T;
+    data = response.data.data;
+  } else if (response.data?.success && response.data?.data) {
+    data = response.data.data;
+  } else {
+    data = response.data;
   }
-  
-  if (response.data?.success && response.data?.data) {
-    return response.data.data as T;
+
+  if (schema) {
+    const result = schema.safeParse(data);
+    if (!result.success) {
+      console.error('[API-CLIENT] Response validation error:', result.error);
+    } else {
+      data = result.data;
+    }
   }
-  
-  return response.data as T;
+
+  return data as T;
 }
 
 /**
@@ -88,15 +99,33 @@ export function extractApiData<T>(response: any): T {
  * @param arrayKey Optional key to extract array from
  * @returns Extracted array
  */
-export function extractApiArray<T>(response: any, arrayKey?: string): T[] {
+export function extractApiArray<T>(
+  response: any,
+  arrayKey?: string,
+  schema?: ZodSchema<T>
+): T[] {
   const data = extractApiData(response);
   
   // If arrayKey is provided, try to get the array from that property
   if (arrayKey && data && typeof data === 'object' && arrayKey in data) {
     const arrayData = data[arrayKey as keyof typeof data];
-    return Array.isArray(arrayData) ? arrayData : [];
+    const arr = Array.isArray(arrayData) ? arrayData : [];
+    return schema ? validateArray(arr, schema) : arr;
   }
-  
+
   // Otherwise, assume the data itself is the array
-  return Array.isArray(data) ? data : [];
+  const arr = Array.isArray(data) ? data : [];
+  return schema ? validateArray(arr, schema) : arr;
+}
+
+function validateArray<T>(items: any[], schema: ZodSchema<T>): T[] {
+  return items.reduce<T[]>((acc, item) => {
+    const result = schema.safeParse(item);
+    if (!result.success) {
+      console.error('[API-CLIENT] Response validation error:', result.error);
+    } else {
+      acc.push(result.data);
+    }
+    return acc;
+  }, []);
 }

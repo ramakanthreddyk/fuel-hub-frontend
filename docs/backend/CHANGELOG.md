@@ -321,6 +321,8 @@ Each entry is tied to a step from the implementation index.
 * Added `docker-compose.yml` for local Postgres
 * Created `.env.development` with standard credentials
 * Seed and validation scripts now load env vars per `NODE_ENV`
+* Docs now mention that developers may run a local PostgreSQL service instead of
+  Docker Compose.
 
 ### Files
 
@@ -708,17 +710,17 @@ Each entry is tied to a step from the implementation index.
 ## [Fix - 2025-06-23] – OpenAPI Spec
 
 ### 🟩 Features
-* Added static OpenAPI file `docs/openapi.yaml` consolidating all endpoints
+* Added static OpenAPI file `docs/openapi-spec.yaml` consolidating all endpoints
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_fix_20250623.md`
 
 ## [Fix - 2025-06-24] – Local Dev Test Setup
 
 ### 🟢 Dev Setup
 * Expanded `LOCAL_DEV_SETUP.md` with instructions to run tests
-* Referenced `docs/openapi.yaml` in `README.md`
+* Referenced `docs/openapi-spec.yaml` in `README.md`
 
 ## [Fix - 2025-06-25] – Endpoint Review Notes
 
@@ -729,7 +731,7 @@ Each entry is tied to a step from the implementation index.
 
 ### Files
 * `docs/STEP_fix_20250625.md`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/PHASE_2_SUMMARY.md`
 
 ## [Fix - 2025-06-26] – Clarify Test DB Setup
@@ -957,7 +959,7 @@ Each entry is tied to a step from the implementation index.
 ### Files
 * `src/services/tenant.service.ts`, `src/controllers/tenant.controller.ts`
 * `src/routes/tenant.route.ts`, `src/routes/adminTenant.route.ts`, `src/routes/adminApi.router.ts`
-* `src/validators/tenant.validator.ts`, `src/app.ts`, `docs/openapi.yaml`
+* `src/validators/tenant.validator.ts`, `src/app.ts`, `docs/openapi-spec.yaml`
 
 ## [Fix - 2025-07-09] – Align Backend with API Contract
 
@@ -973,7 +975,7 @@ Each entry is tied to a step from the implementation index.
 * `src/controllers/auth.controller.ts`, `src/routes/auth.route.ts`
 * `src/controllers/reconciliation.controller.ts`, `src/routes/reconciliation.route.ts`
 * `src/routes/creditPayment.route.ts`, `src/routes/creditor.route.ts`
-* `src/services/station.service.ts`, `docs/openapi.yaml`, `docs/missing/*`
+* `src/services/station.service.ts`, `docs/openapi-spec.yaml`, `docs/missing/*`
 
 ## [Fix - 2025-07-10] – Dashboard & Reconciliation Bug Fixes
 
@@ -1001,7 +1003,7 @@ Each entry is tied to a step from the implementation index.
 * `src/controllers/station.controller.ts`, `src/routes/station.route.ts`, `src/services/station.service.ts`
 * `src/controllers/sales.controller.ts`, `src/services/sales.service.ts`, `src/routes/sales.route.ts`, `src/validators/sales.validator.ts`
 * `src/middlewares/checkStationAccess.ts`
-* `docs/openapi.yaml`, `docs/STEP_2_19_COMMAND.md`
+* `docs/openapi-spec.yaml`, `docs/STEP_2_19_COMMAND.md`
 
 ## [Fix - 2025-07-11] – SuperAdmin API Alignment
 
@@ -1057,7 +1059,7 @@ Each entry is tied to a step from the implementation index.
 * `src/controllers/analytics.controller.ts`, `src/routes/analytics.route.ts`
 * `src/services/fuelPrice.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`
 * `src/controllers/reports.controller.ts`, `src/routes/reports.route.ts`
-* `src/app.ts`, `docs/openapi.yaml`, `src/docs/swagger.ts`
+* `src/app.ts`, `docs/openapi-spec.yaml`, `src/docs/swagger.ts`
 * `frontend/docs/integration-instructions.md`, `frontend/docs/api-diff.md`
 * `docs/STEP_2_20_COMMAND.md`
 
@@ -1361,7 +1363,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/pump.service.ts`
 * `src/controllers/pump.controller.ts`
 * `src/routes/pump.route.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 
 ## [Feature - Step 2.22] – Fuel Price Delete Endpoint
 
@@ -1373,7 +1375,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/fuelPrice.service.ts`
 * `src/controllers/fuelPrice.controller.ts`
 * `src/routes/fuelPrice.route.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 
 ## [Fix - 2025-07-16] – Schema Consolidation Migration
 
@@ -1484,7 +1486,7 @@ Each entry is tied to a step from the implementation index.
 * Documented endpoint status table in `backend_brain.md`.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `backend_brain.md`
 * `docs/STEP_2_25_COMMAND.md`
 
@@ -1501,7 +1503,7 @@ Each entry is tied to a step from the implementation index.
 * Listed new endpoints in `backend_brain.md` highlighting contract drift.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `backend_brain.md`
 * `docs/STEP_2_27_COMMAND.md`
 
@@ -1517,7 +1519,7 @@ Each entry is tied to a step from the implementation index.
 * Documented remaining contract drift in `backend_brain.md`.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `backend_brain.md`
 
 ## [Enhancement - 2025-07-27] – API Doc Sync Script
@@ -1538,7 +1540,7 @@ Each entry is tied to a step from the implementation index.
 
 ### Files
 * `src/controllers/pump.controller.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `backend_brain.md`
 * `docs/STEP_2_30_COMMAND.md`
 
@@ -1549,7 +1551,7 @@ Each entry is tied to a step from the implementation index.
 * Imported component definitions from `frontend/docs/openapi-v1.yaml`.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_fix_20250731.md`
 
 ## [Feature - 2025-08-01] – Analytics and lookup endpoints
@@ -1567,7 +1569,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/alert.service.ts`
 * `src/controllers/creditor.controller.ts`
 * `prisma/schema.prisma`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `backend_brain.md`
 * `docs/STEP_2_31_COMMAND.md`
 
@@ -1576,7 +1578,7 @@ Each entry is tied to a step from the implementation index.
 * Updated station and user routes to use `stationId` and `userId` path parameters.
 * Synced OpenAPI spec and backend brain to match.
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `src/routes/user.route.ts`
 * `src/routes/station.route.ts`
 * `src/controllers/user.controller.ts`
@@ -1588,7 +1590,7 @@ Each entry is tied to a step from the implementation index.
 ### 🟦 Enhancements
 * Added shared `Success` and `Error` response objects in the OpenAPI spec.
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_33_COMMAND.md`
 
 ## [Fix - 2025-08-04] – Detailed request schemas
@@ -1598,7 +1600,7 @@ Each entry is tied to a step from the implementation index.
 * Added `CreateStationRequest` and `UpdateStationRequest` components.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_34_COMMAND.md`
 ## [Enhancement - 2025-08-05] – Response wrapping and parameter docs
 
@@ -1608,7 +1610,7 @@ Each entry is tied to a step from the implementation index.
 * Standardised error responses and updated utility routes.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `src/app.ts`
 * `docs/STEP_2_35_COMMAND.md`
 
@@ -1674,7 +1676,7 @@ Each entry is tied to a step from the implementation index.
 * `src/controllers/tenant.controller.ts`
 * `src/validators/tenant.validator.ts`
 * `tests/utils/testTenant.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/TENANT_MANAGEMENT_GUIDE.md`
 * `docs/STEP_2_36_COMMAND.md`
 
@@ -1726,7 +1728,7 @@ Each entry is tied to a step from the implementation index.
 * OpenAPI spec references `CreateTenantRequest` without schema fields.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/TENANT_CREATION_API.md`
 * `docs/SUPERADMIN_IMPLEMENTATION.md`
 * `docs/FRONTEND_SUPERADMIN.md`
@@ -1889,7 +1891,7 @@ Each entry is tied to a step from the implementation index.
 * `src/controllers/auth.controller.ts`
 * `src/services/auth.service.ts`
 * `src/app.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_fix_20250830.md`
 
 ## [Fix - 2025-08-31] – Consistent DB Password Variable
@@ -1913,7 +1915,7 @@ Each entry is tied to a step from the implementation index.
 
 ### Files
 * `src/app.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_fix_20250831.md`
 
 ## [Fix - 2025-09-01] – Secure schemas route
@@ -1923,7 +1925,7 @@ Each entry is tied to a step from the implementation index.
 
 ### Files
 * `src/app.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_fix_20250901.md`
 ## [Fix - 2025-09-02] – Debug middleware conditional
 
@@ -2173,7 +2175,7 @@ Each entry is tied to a step from the implementation index.
 
 ### Files
 * `src/controllers/reconciliation.controller.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/missing/IMPLEMENTATION_GUIDE.md`
 * `docs/STEP_fix_20250921.md`
 
@@ -2184,7 +2186,7 @@ Each entry is tied to a step from the implementation index.
 
 ### Files
 * `src/controllers/reconciliation.controller.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_fix_20250920.md`
 
 ## [Feature - 2025-09-23] – Attendant resource access and cash reports
@@ -2200,7 +2202,7 @@ Each entry is tied to a step from the implementation index.
 * `src/controllers/attendant.controller.ts`
 * `src/routes/attendant.route.ts`
 * `src/app.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_37_COMMAND.md`
 
 ## [Feature - 2025-09-23] – Attendant resource access and cash reports
@@ -2216,7 +2218,7 @@ Each entry is tied to a step from the implementation index.
 * `src/controllers/attendant.controller.ts`
 * `src/routes/attendant.route.ts`
 * `src/app.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_37_COMMAND.md`
 
 ## [Feature - 2025-09-24] – Attendant cash reports & alerts
@@ -2229,7 +2231,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/attendant.service.ts`
 * `src/controllers/attendant.controller.ts`
 * `src/routes/attendant.route.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `backend_brain.md`
 * `docs/STEP_2_38_COMMAND.md`
 
@@ -2243,7 +2245,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/fuelPriceValidation.service.ts`
 * `src/controllers/fuelPrice.controller.ts`
 * `src/routes/fuelPrice.route.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_39_COMMAND.md`
 
 ## [Feature - 2025-09-26] – Nozzle reading creation validation
@@ -2255,7 +2257,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/nozzleReading.service.ts`
 * `src/controllers/nozzleReading.controller.ts`
 * `src/routes/nozzleReading.route.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `src/docs/swagger.ts`
 * `docs/STEP_2_40_COMMAND.md`
 
@@ -2269,7 +2271,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/alert.service.ts`
 * `src/controllers/alerts.controller.ts`
 * `src/routes/alerts.route.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_41_COMMAND.md`
 
 ## [Feature - 2025-09-28] – Scheduled alert checks
@@ -2320,7 +2322,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/tenant.service.ts`
 * `src/controllers/adminSettings.controller.ts`
 * `src/routes/adminApi.router.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_45_COMMAND.md`
 
 ## [Doc - Step 2.46] – Journey Docs Alignment
@@ -2494,7 +2496,7 @@ Each entry is tied to a step from the implementation index.
 * Added `capacity` field to `FuelInventory` objects in API specs.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `frontend/docs/openapi-v1.yaml`
 * `src/docs/swagger.ts`
 * `docs/STEP_fix_20251102.md`
@@ -2510,7 +2512,7 @@ Each entry is tied to a step from the implementation index.
 * `src/utils/successResponse.ts`
 * `src/utils/errorResponse.ts`
 * controllers, routes and services updated
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `backend_brain.md`
 * `docs/STEP_2_47_COMMAND.md`
 
@@ -2532,7 +2534,7 @@ Each entry is tied to a step from the implementation index.
 ## [Fix - 2025-11-05] – Frontend docs consolidation
 
 ### 🟥 Fixes
-* Introduced `FRONTEND_REFERENCE_GUIDE.md` pointing to the canonical `docs/openapi.yaml` spec.
+* Introduced `FRONTEND_REFERENCE_GUIDE.md` pointing to the canonical `docs/openapi-spec.yaml` spec.
 * Updated `PHASE_3_SUMMARY.md` with the new spec path.
 * Revised `frontend/docs/api-diff.md` to reference the consolidated spec.
 
@@ -2605,7 +2607,7 @@ Each entry is tied to a step from the implementation index.
 * `src/controllers/setupStatus.controller.ts`
 * `src/routes/setupStatus.route.ts`
 * `src/app.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_50_COMMAND.md`
 
 ## [Fix - 2025-11-12] – Nozzle seeding conflict
@@ -2626,7 +2628,7 @@ Each entry is tied to a step from the implementation index.
 
 ### Files
 * `src/controllers/nozzle.controller.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `tests/nozzle.controller.test.ts`
 * `docs/STEP_2_51_COMMAND.md`
 
@@ -2637,7 +2639,7 @@ Each entry is tied to a step from the implementation index.
 * `CreatePumpRequest` requires `serialNumber` alongside `stationId` and `name`.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_fix_20251114.md`
 
 ## [Fix - 2025-11-15] – Nozzle fuel type validation
@@ -2657,7 +2659,7 @@ Each entry is tied to a step from the implementation index.
 * `CreateNozzleRequest` includes optional `status` with allowed enums.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_fix_20251116_COMMAND.md`
 
 ## [Fix - 2025-11-17] – Response object consistency
@@ -2694,7 +2696,7 @@ Each entry is tied to a step from the implementation index.
 * Listing endpoint returns station id and name.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/missing/COMPLETE_API_SPEC.yaml`
 * `src/controllers/fuelPrice.controller.ts`
 * `docs/STEP_fix_20251120.md`
@@ -2730,7 +2732,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/fuelInventory.service.ts`
 * `src/controllers/fuelInventory.controller.ts`
 * `src/routes/fuelInventory.route.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_53_COMMAND.md`
 
 ## [Fix - 2025-11-23] – Cash report credit entries
@@ -2742,7 +2744,7 @@ Each entry is tied to a step from the implementation index.
 ### Files
 * `src/services/attendant.service.ts`
 * `src/controllers/attendant.controller.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `backend_brain.md`
 * `docs/STEP_fix_20251123.md`
 
@@ -2809,7 +2811,7 @@ Each entry is tied to a step from the implementation index.
 
 ### Files
 * `src/services/nozzleReading.service.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_fix_20251128.md`
 
 ## [Enhancement - 2025-11-29] – API corrections and feature flags
@@ -2823,7 +2825,7 @@ Each entry is tied to a step from the implementation index.
 * `src/routes/dashboard.route.ts`
 * `src/app.ts`
 * `src/controllers/settings.controller.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_54_COMMAND.md`
 
 ## [Feature - 2025-11-30] – Dashboard station metrics endpoint
@@ -2836,7 +2838,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/station.service.ts`
 * `src/controllers/dashboard.controller.ts`
 * `src/routes/dashboard.route.ts`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_55_COMMAND.md`
 
 ## [Fix - 2025-12-01] – Alert parameter naming alignment
@@ -2845,7 +2847,7 @@ Each entry is tied to a step from the implementation index.
 * Renamed path parameter `alertId` to `id` for alert deletion and read routes.
 
 ### Files
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `frontend/docs/openapi-v1.yaml`
 * `docs/STEP_fix_20251201.md`
 
@@ -2866,7 +2868,7 @@ Each entry is tied to a step from the implementation index.
 * `src/services/tenant.service.ts`
 * `src/controllers/*`
 * `src/routes/*`
-* `docs/openapi.yaml`
+* `docs/openapi-spec.yaml`
 * `docs/STEP_2_56_COMMAND.md`
 ## [Step 2.57] – Tenant email convention update
 
@@ -3068,7 +3070,7 @@ Each entry is tied to a step from the implementation index.
 ### Files
 * `fuelsync/src/controllers/dashboard.controller.ts`
 * `docs/openapi-spec.yaml`
-* `fuelsync/docs/openapi.yaml`
+* `fuelsync/docs/openapi-spec.yaml`
 * `fuelsync/frontend/docs/openapi-v1.yaml`
 * `fuelsync/docs/STEP_fix_20251223.md`
 
@@ -3134,3 +3136,64 @@ Each entry is tied to a step from the implementation index.
 ### 🟢 Enhancements
 - Added visually hidden titles and descriptions to Radix dialogs
 - Documented step file `STEP_fix_20251230.md`
+
+## [Fix 2026-04-20] - Spec cleanup
+
+### 🟢 Enhancements
+- Removed outdated `docs/openapi/openapi.yaml`
+- Updated docs to reference `docs/openapi-spec.yaml`
+- Logged step file `STEP_fix_20260420_COMMAND.md`
+
+## [Fix 2026-07-13] – Automated DB Start for Tests
+
+### 🟢 Enhancements
+- Added `start-db-and-test.ts` to start the dev database if needed and run Jest.
+- Updated `package.json` test script to use the helper.
+- Documented step file `STEP_fix_20260713_COMMAND.md`.
+## [Fix 2026-07-13] – Shared API contract and tests
+
+### 🟢 Enhancements
+- Created `/shared/apiTypes.ts` module combining frontend contract and spec.
+- Added `api-contract.test.ts` to verify all routes.
+- Enabled zod based runtime validation in `apiClient` and applied to fuel inventory API.
+- Documented step file `STEP_fix_20260713_COMMAND.md`.
+
+## [Fix 2026-07-14] – Test DB setup fallback
+
+### 🟢 Enhancements
+- Added documentation step `STEP_fix_20260714_COMMAND.md` outlining database setup troubleshooting for tests.
+
+## [Fix 2026-07-15] – Sales listing details
+
+### 🟥 Fixes
+- `listSales` query now joins stations, pumps and nozzles to return station name, pump name and nozzle number.
+- Updated frontend mapping to handle `nozzle_number`.
+\n## [Fix 2026-07-15] – Reading detail and edit pages\n\n### 🟢 Enhancements\n- Added GET and PUT /nozzle-readings/{id} endpoints.\n- Added detail and edit pages in frontend.\n- Added React Query update hook.\n
+
+## [Fix 2026-07-15] – Pumps listing default
+
+### 🟢 Enhancements
+- `usePumps` hook now loads all pumps when no station is specified.
+- Documented in `STEP_fix_20260715_COMMAND.md`.
+
+## [Fix 2026-07-17] – Report generation endpoint
+
+### 🟥 Fixes
+- `reportsService.generateReport` now targets `/reports/export` with proper parameters.
+- Hook `useGenerateReport` opens the returned file blob.
+- Logged in `STEP_fix_20260717_COMMAND.md`.
+
+## [Fix 2026-07-18] – Install missing packages
+
+### 🟥 Fixes
+- Added `ts-node` and `@eslint/js` to ensure linting and tests run.
+- Documented in `STEP_fix_20260718_COMMAND.md`.
+## [Feature 2026-07-17] – Owner Analytics Dashboard
+
+### 🟩 Features
+- Implemented interactive analytics page with comparison charts and rankings
+
+### Files
+- `src/pages/dashboard/AnalyticsPage.tsx`
+- `docs/backend/PHASE_3_SUMMARY.md`
+- `docs/backend/STEP_3_16_COMMAND.md`

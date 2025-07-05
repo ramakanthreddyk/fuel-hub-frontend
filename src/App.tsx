@@ -32,6 +32,8 @@ import EditNozzlePage from './pages/dashboard/EditNozzlePage';
 import FuelPricesPage from './pages/dashboard/FuelPricesPage';
 import ReadingsPage from './pages/dashboard/ReadingsPage';
 import NewReadingPage from './pages/dashboard/NewReadingPage';
+import ReadingDetailPage from './pages/dashboard/ReadingDetailPage';
+import EditReadingPage from './pages/dashboard/EditReadingPage';
 import FuelInventoryPage from './pages/dashboard/FuelInventoryPage';
 import ReportsPage from './pages/dashboard/ReportsPage';
 import AnalyticsPage from './pages/dashboard/AnalyticsPage';
@@ -113,6 +115,8 @@ function App() {
                 <Route path="readings" element={<ReadingsPage />} />
                 <Route path="readings/new" element={<NewReadingPage />} />
                 <Route path="readings/new/:nozzleId" element={<NewReadingPage />} />
+                <Route path="readings/:readingId" element={<ReadingDetailPage />} />
+                <Route path="readings/:readingId/edit" element={<EditReadingPage />} />
                 
                 {/* Cash Report Routes */}
                 <Route path="cash-report/new" element={<CashReportPage />} />

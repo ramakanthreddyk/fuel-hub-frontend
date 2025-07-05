@@ -62,17 +62,17 @@ This file tracks every build step taken by AI agents or developers. It maintains
 | 2     | 2.15 | Sales Listing & Settings API | ✅ Done | `src/routes/sales.route.ts`, `src/controllers/sales.controller.ts`, `src/services/sales.service.ts`, `src/routes/settings.route.ts`, `src/controllers/settings.controller.ts`, `src/services/settings.service.ts` | `PHASE_2_SUMMARY.md#step-2.15` |
 | 2     | 2.16 | Utility Scripts & Fuel Inventory | ✅ Done | `start-server.js`, `scripts/`, `src/services/auth.service.ts`, `src/controllers/auth.controller.ts`, `src/services/fuelInventory.service.ts`, `src/controllers/fuelInventory.controller.ts`, `src/routes/fuelInventory.route.ts` | `PHASE_2_SUMMARY.md#step-2.16` |
 | 2     | 2.17 | Azure Deployment Restructure | ✅ Done | `index.js`, `package.json`, `scripts/start-and-test.js` | `PHASE_2_SUMMARY.md#step-2.17` |
-| 2     | 2.18 | Tenants API & Summary | ✅ Done | `src/services/tenant.service.ts`, `src/controllers/tenant.controller.ts`, `src/routes/tenant.route.ts`, `src/routes/adminTenant.route.ts`, `src/routes/adminApi.router.ts`, `src/validators/tenant.validator.ts`, `src/app.ts`, `docs/openapi.yaml` | `PHASE_2_SUMMARY.md#step-2.18` |
-| 2     | 2.19 | Dashboard & Sales Metrics Expansion | ✅ Done | `src/controllers/dashboard.controller.ts`, `src/routes/dashboard.route.ts`, `src/controllers/station.controller.ts`, `src/routes/station.route.ts`, `src/services/station.service.ts`, `src/controllers/sales.controller.ts`, `src/services/sales.service.ts`, `src/routes/sales.route.ts`, `src/validators/sales.validator.ts`, `src/middlewares/checkStationAccess.ts`, `docs/openapi.yaml` | `PHASE_2_SUMMARY.md#step-2.19` |
-| 2     | 2.20 | API Alignment Endpoints | ✅ Done | `src/controllers/alerts.controller.ts`, `src/routes/alerts.route.ts`, `src/controllers/analytics.controller.ts`, `src/routes/analytics.route.ts`, `src/services/fuelPrice.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `src/controllers/reports.controller.ts`, `src/routes/reports.route.ts`, `src/app.ts`, `docs/openapi.yaml`, `src/docs/swagger.ts` | `PHASE_2_SUMMARY.md#step-2.20` |
-| 2     | 2.21 | CRUD Completion Endpoints | ✅ Done | `src/services/pump.service.ts`, `src/controllers/pump.controller.ts`, `src/routes/pump.route.ts`, `docs/openapi.yaml` | `PHASE_2_SUMMARY.md#step-2.21` |
-| 2     | 2.22 | Fuel Price Delete Endpoint | ✅ Done | `src/services/fuelPrice.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `docs/openapi.yaml` | `PHASE_2_SUMMARY.md#step-2.22` |
+| 2     | 2.18 | Tenants API & Summary | ✅ Done | `src/services/tenant.service.ts`, `src/controllers/tenant.controller.ts`, `src/routes/tenant.route.ts`, `src/routes/adminTenant.route.ts`, `src/routes/adminApi.router.ts`, `src/validators/tenant.validator.ts`, `src/app.ts`, `docs/openapi-spec.yaml` | `PHASE_2_SUMMARY.md#step-2.18` |
+| 2     | 2.19 | Dashboard & Sales Metrics Expansion | ✅ Done | `src/controllers/dashboard.controller.ts`, `src/routes/dashboard.route.ts`, `src/controllers/station.controller.ts`, `src/routes/station.route.ts`, `src/services/station.service.ts`, `src/controllers/sales.controller.ts`, `src/services/sales.service.ts`, `src/routes/sales.route.ts`, `src/validators/sales.validator.ts`, `src/middlewares/checkStationAccess.ts`, `docs/openapi-spec.yaml` | `PHASE_2_SUMMARY.md#step-2.19` |
+| 2     | 2.20 | API Alignment Endpoints | ✅ Done | `src/controllers/alerts.controller.ts`, `src/routes/alerts.route.ts`, `src/controllers/analytics.controller.ts`, `src/routes/analytics.route.ts`, `src/services/fuelPrice.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `src/controllers/reports.controller.ts`, `src/routes/reports.route.ts`, `src/app.ts`, `docs/openapi-spec.yaml`, `src/docs/swagger.ts` | `PHASE_2_SUMMARY.md#step-2.20` |
+| 2     | 2.21 | CRUD Completion Endpoints | ✅ Done | `src/services/pump.service.ts`, `src/controllers/pump.controller.ts`, `src/routes/pump.route.ts`, `docs/openapi-spec.yaml` | `PHASE_2_SUMMARY.md#step-2.21` |
+| 2     | 2.22 | Fuel Price Delete Endpoint | ✅ Done | `src/services/fuelPrice.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `docs/openapi-spec.yaml` | `PHASE_2_SUMMARY.md#step-2.22` |
 | 3     | 3.1  | Owner Dashboard UI           | ⏳ Pending | `frontend/app/dashboard/`              | `PHASE_3_SUMMARY.md#step-3.1` |
 | 3     | 3.2  | Manual Reading Entry UI      | ⏳ Pending | `frontend/app/readings/new.tsx`        | `PHASE_3_SUMMARY.md#step-3.2` |
 | fix | 2025-06-22 | Local dev setup and seed fixes | ✅ Done | `docs/LOCAL_DEV_SETUP.md` | `docs/STEP_fix_20250622.md` |
-| fix | 2025-06-23 | OpenAPI spec file | ✅ Done | `docs/openapi.yaml` | `docs/STEP_fix_20250623.md` |
+| fix | 2025-06-23 | OpenAPI spec file | ✅ Done | `docs/openapi-spec.yaml` | `docs/STEP_fix_20250623.md` |
 | fix | 2025-06-24 | Local dev test instructions | ✅ Done | `docs/LOCAL_DEV_SETUP.md`, `README.md` | `docs/STEP_fix_20250624.md` |
-| fix | 2025-06-25 | Endpoint review notes | ✅ Done | `docs/openapi.yaml`, `docs/PHASE_2_SUMMARY.md` | `docs/STEP_fix_20250625.md` |
+| fix | 2025-06-25 | Endpoint review notes | ✅ Done | `docs/openapi-spec.yaml`, `docs/PHASE_2_SUMMARY.md` | `docs/STEP_fix_20250625.md` |
 | fix | 2025-06-26 | Clarify test DB setup | ✅ Done | `docs/LOCAL_DEV_SETUP.md` | `docs/STEP_fix_20250626.md` |
 | fix | 2025-06-27 | Local DB install & tests | ✅ Done | `docs/LOCAL_DEV_SETUP.md`, `docs/TROUBLESHOOTING.md` | `docs/STEP_fix_20250627.md` |
 | fix | 2025-07-01 | Test DB provisioning fallback | ✅ Done | `docs/TROUBLESHOOTING.md`, `docs/LOCAL_DEV_SETUP.md`, `README.md` | `docs/STEP_fix_20250701.md` |
@@ -114,27 +114,27 @@ This file tracks every build step taken by AI agents or developers. It maintains
 | fix | 2025-07-22 | Backend review cleanup | ✅ Done | `src/services/fuelInventory.service.ts`, `docs/PRISMA_EFFICIENCY_REVIEW.md`, `docs/BACKEND_FULL_REVIEW_JUL2025.md` | `docs/STEP_fix_20250722.md` |
 | 2     | 2.23 | Prisma ORM Migration | ✅ Done | `src/controllers/user.controller.ts`, `prisma/schema.prisma`, `backend_brain.md` | `docs/STEP_2_23_COMMAND.md` |
 | 2     | 2.24 | Additional Prisma Controllers | ✅ Done | `src/controllers/station.controller.ts`, `src/controllers/pump.controller.ts`, `src/controllers/nozzle.controller.ts`, `src/controllers/nozzleReading.controller.ts`, `src/controllers/fuelPrice.controller.ts`, `prisma/schema.prisma`, `backend_brain.md` | `docs/STEP_2_24_COMMAND.md` |
-| 2     | 2.25 | Endpoint Inventory & Spec Refresh | ✅ Done | `docs/openapi.yaml`, `backend_brain.md` | `docs/STEP_2_25_COMMAND.md` |
+| 2     | 2.25 | Endpoint Inventory & Spec Refresh | ✅ Done | `docs/openapi-spec.yaml`, `backend_brain.md` | `docs/STEP_2_25_COMMAND.md` |
 | 2     | 2.26 | OpenAPI Audit | ✅ Done | `backend_brain.md` | `docs/STEP_2_26_COMMAND.md` |
-| 2     | 2.27 | Spec Normalisation & Drift Notes | ✅ Done | `docs/openapi.yaml`, `backend_brain.md` | `docs/STEP_2_27_COMMAND.md` |
-| 2     | 2.28 | Complete OpenAPI Schemas | ✅ Done | `docs/openapi.yaml`, `backend_brain.md` | `docs/STEP_2_28_COMMAND.md` |
+| 2     | 2.27 | Spec Normalisation & Drift Notes | ✅ Done | `docs/openapi-spec.yaml`, `backend_brain.md` | `docs/STEP_2_27_COMMAND.md` |
+| 2     | 2.28 | Complete OpenAPI Schemas | ✅ Done | `docs/openapi-spec.yaml`, `backend_brain.md` | `docs/STEP_2_28_COMMAND.md` |
 | 2     | 2.29 | API Doc Sync Script | ✅ Done | `merge-api-docs.js`, `backend_brain.md` | `docs/STEP_2_29_COMMAND.md` |
-| 2     | 2.30 | Pump nozzle count | ✅ Done | `src/controllers/pump.controller.ts`, `docs/openapi.yaml` | `docs/STEP_2_30_COMMAND.md` |
-| fix | 2025-07-31 | OpenAPI Schema Details | ✅ Done | `docs/openapi.yaml` | `docs/STEP_fix_20250731.md` |
-| 2     | 2.31 | Analytics & GET endpoints | ✅ Done | `src/controllers/analytics.controller.ts`, `src/services/analytics.service.ts`, `src/controllers/alerts.controller.ts`, `src/services/alert.service.ts`, `src/controllers/creditor.controller.ts`, `prisma/schema.prisma`, `docs/openapi.yaml`, `backend_brain.md` | `docs/STEP_2_31_COMMAND.md` |
-| 2     | 2.32 | Parameter naming alignment | ✅ Done | `src/routes/user.route.ts`, `src/routes/station.route.ts`, `docs/openapi.yaml`, `backend_brain.md` | `docs/STEP_2_32_COMMAND.md` |
-| 2     | 2.33 | Reusable response components | ✅ Done | `docs/openapi.yaml` | `docs/STEP_2_33_COMMAND.md` |
-| 2     | 2.34 | OpenAPI request schemas | ✅ Done | `docs/openapi.yaml` | `docs/STEP_2_34_COMMAND.md` |
-| 2     | 2.35 | Response wrapper alignment | ✅ Done | `docs/openapi.yaml`, `src/app.ts` | `docs/STEP_2_35_COMMAND.md` |
+| 2     | 2.30 | Pump nozzle count | ✅ Done | `src/controllers/pump.controller.ts`, `docs/openapi-spec.yaml` | `docs/STEP_2_30_COMMAND.md` |
+| fix | 2025-07-31 | OpenAPI Schema Details | ✅ Done | `docs/openapi-spec.yaml` | `docs/STEP_fix_20250731.md` |
+| 2     | 2.31 | Analytics & GET endpoints | ✅ Done | `src/controllers/analytics.controller.ts`, `src/services/analytics.service.ts`, `src/controllers/alerts.controller.ts`, `src/services/alert.service.ts`, `src/controllers/creditor.controller.ts`, `prisma/schema.prisma`, `docs/openapi-spec.yaml`, `backend_brain.md` | `docs/STEP_2_31_COMMAND.md` |
+| 2     | 2.32 | Parameter naming alignment | ✅ Done | `src/routes/user.route.ts`, `src/routes/station.route.ts`, `docs/openapi-spec.yaml`, `backend_brain.md` | `docs/STEP_2_32_COMMAND.md` |
+| 2     | 2.33 | Reusable response components | ✅ Done | `docs/openapi-spec.yaml` | `docs/STEP_2_33_COMMAND.md` |
+| 2     | 2.34 | OpenAPI request schemas | ✅ Done | `docs/openapi-spec.yaml` | `docs/STEP_2_34_COMMAND.md` |
+| 2     | 2.35 | Response wrapper alignment | ✅ Done | `docs/openapi-spec.yaml`, `src/app.ts` | `docs/STEP_2_35_COMMAND.md` |
 | fix | 2025-08-11 | Consolidate Migration Scripts | ✅ Done | `migrations/schema/003_unified_schema.sql`, `db_brain.md` | `docs/STEP_fix_20250811.md` |
 | fix | 2025-08-12 | Enum Constraint Updates | ✅ Done | `migrations/schema/003_unified_schema.sql`, `db_brain.md` | `docs/STEP_fix_20250812.md` |
 | fix | 2025-08-13 | Response and Query Cleanups | ✅ Done | `src/controllers/creditor.controller.ts`, `src/services/analytics.service.ts`, `src/validators/fuelPrice.validator.ts` | `docs/STEP_fix_20250813.md` |
 | fix | 2025-08-14 | Login Query Updates | ✅ Done | `src/controllers/auth.controller.ts`, `src/services/auth.service.ts` | `docs/STEP_fix_20250814.md` |
-| fix | 2025-08-15 | Tenant Service Unified Schema | ✅ Done | `src/services/tenant.service.ts`, `src/controllers/tenant.controller.ts`, `src/validators/tenant.validator.ts`, `tests/utils/testTenant.ts`, `docs/openapi.yaml`, `docs/TENANT_MANAGEMENT_GUIDE.md` | `docs/STEP_2_36_COMMAND.md` |
+| fix | 2025-08-15 | Tenant Service Unified Schema | ✅ Done | `src/services/tenant.service.ts`, `src/controllers/tenant.controller.ts`, `src/validators/tenant.validator.ts`, `tests/utils/testTenant.ts`, `docs/openapi-spec.yaml`, `docs/TENANT_MANAGEMENT_GUIDE.md` | `docs/STEP_2_36_COMMAND.md` |
 | fix | 2025-06-26 | Unified Schema Setup Scripts | ✅ Done | `scripts/*.js`, `UNIFIED_DB_SETUP.md` | `docs/STEP_fix_20250627.md` |
 | fix | 2025-08-16 | Plan Enforcement Tenant Queries | ✅ Done | `src/middleware/planEnforcement.ts`, `src/services/station.service.ts`, `src/services/pump.service.ts`, `src/services/nozzle.service.ts`, `src/services/user.service.ts` | `docs/STEP_fix_20250816.md` |
 | fix | 2025-08-17 | Service Schema Cleanup | ✅ Done | `src/services/*.ts`, `src/controllers/*`, `src/utils/seedHelpers.ts` | `docs/STEP_fix_20250817.md` |
-| fix | 2025-08-18 | Remove schemaName from docs | ✅ Done | `docs/openapi.yaml`, docs updated | `docs/STEP_fix_20250818.md` |
+| fix | 2025-08-18 | Remove schemaName from docs | ✅ Done | `docs/openapi-spec.yaml`, docs updated | `docs/STEP_fix_20250818.md` |
 | fix | 2025-08-19 | Auth Logging Cleanup | ✅ Done | `src/controllers/auth.controller.ts` | `docs/STEP_fix_20250819.md` |
 | fix | 2025-08-20 | Remove Tenant Schema Artifacts | ✅ Done | `package.json`, `scripts/migrate.js`, `scripts/init-test-db.js`, `scripts/reset-passwords.ts`, `jest.setup.js`, `jest.globalSetup.ts`, `tests/utils/db-utils.ts`, `docs/AGENTS.md` | `docs/STEP_fix_20250820.md` |
 | fix | 2025-08-21 | Remove schemaUtils and Update Analytics | ✅ Done | `src/utils/priceUtils.ts`, `src/controllers/adminAnalytics.controller.ts`, `src/controllers/analytics.controller.ts` | `docs/STEP_fix_20250821.md` |
@@ -146,10 +146,10 @@ This file tracks every build step taken by AI agents or developers. It maintains
 | fix | 2025-08-27 | SQL String Literal Fixes | ✅ Done | `src/services/creditor.service.ts`, `src/services/fuelPrice.service.ts` | `docs/STEP_fix_20250827.md` |
 | fix | 2025-08-28 | Backend UUID Generation | ✅ Done | `src/services/tenant.service.ts`, `src/services/admin.service.ts`, `src/services/plan.service.ts` | `docs/STEP_fix_20250828.md` |
 | fix | 2025-08-29 | Comprehensive UUID Insertion | ✅ Done | `src/services/*` | `docs/STEP_fix_20250829.md` |
-| fix | 2025-08-30 | Admin login route | ✅ Done | `src/routes/adminAuth.route.ts`, `src/controllers/auth.controller.ts`, `src/services/auth.service.ts`, `src/app.ts`, `docs/openapi.yaml` | `docs/STEP_fix_20250830.md` |
+| fix | 2025-08-30 | Admin login route | ✅ Done | `src/routes/adminAuth.route.ts`, `src/controllers/auth.controller.ts`, `src/services/auth.service.ts`, `src/app.ts`, `docs/openapi-spec.yaml` | `docs/STEP_fix_20250830.md` |
 | fix | 2025-08-31 | Consistent DB Password Variable | ✅ Done | `.env.development`, `.env.test`, `docker-compose.yml`, `jest.setup.js`, `jest.globalSetup.ts`, `jest.globalTeardown.ts`, `tests/utils/db-utils.ts` | `docs/STEP_fix_20250831.md` |
-| fix | 2025-08-31 | Default 404 handler | ✅ Done | `src/app.ts`, `docs/openapi.yaml` | `docs/STEP_fix_20250831.md` |
-| fix | 2025-09-01 | Secure schemas route | ✅ Done | `src/app.ts`, `docs/openapi.yaml` | `docs/STEP_fix_20250901.md` |
+| fix | 2025-08-31 | Default 404 handler | ✅ Done | `src/app.ts`, `docs/openapi-spec.yaml` | `docs/STEP_fix_20250831.md` |
+| fix | 2025-09-01 | Secure schemas route | ✅ Done | `src/app.ts`, `docs/openapi-spec.yaml` | `docs/STEP_fix_20250901.md` |
 | fix | 2025-09-02 | Debug middleware conditional | ✅ Done | `src/app.ts`, `.env.example`, `.env.development`, `DEV_GUIDE.md` | `docs/STEP_fix_20250902.md` |
 | fix | 2025-09-03 | Ignore runtime logs | ✅ Done | `.gitignore`, `logs/server.log` (deleted) | `docs/STEP_fix_20250903.md` |
 | fix | 2025-09-04 | Owner doc filename typo | ✅ Done | `OWNER_ROLE_IMPLEMENTATION.md` | `docs/STEP_fix_20250904.md` |
@@ -175,11 +175,11 @@ This file tracks every build step taken by AI agents or developers. It maintains
 | fix | 2025-09-21 | Daily summary previous-day readings | ✅ Done | `src/controllers/reconciliation.controller.ts` | `docs/STEP_fix_20250921.md` |
 | fix | 2025-09-22 | Daily summary price lookup | ✅ Done | `src/controllers/reconciliation.controller.ts` | `docs/STEP_fix_20250920.md` |
 | fix | 2025-09-23 | Unified setup runs migrations | ✅ Done | `scripts/setup-unified-db.js`, `UNIFIED_DB_SETUP.md`, `db_brain.md` | `docs/STEP_fix_20250923.md` |
-| 2     | 2.37 | Attendant access & cash reports | ✅ Done | `src/app.ts`, `src/routes/attendant.route.ts`, `src/controllers/attendant.controller.ts`, `src/services/attendant.service.ts`, `migrations/schema/007_create_cash_reports.sql`, `docs/openapi.yaml` | `docs/STEP_2_37_COMMAND.md` |
-| 2     | 2.38 | Attendant cash reports & alerts | ✅ Done | `src/routes/attendant.route.ts`, `src/controllers/attendant.controller.ts`, `src/services/attendant.service.ts`, `docs/openapi.yaml`, `backend_brain.md` | `docs/STEP_2_38_COMMAND.md` |
-| 2     | 2.39 | Fuel price validation endpoints | ✅ Done | `src/services/fuelPriceValidation.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `docs/openapi.yaml` | `docs/STEP_2_39_COMMAND.md` |
-| 2     | 2.40 | Nozzle reading creation validation | ✅ Done | `src/services/nozzleReading.service.ts`, `src/controllers/nozzleReading.controller.ts`, `src/routes/nozzleReading.route.ts`, `docs/openapi.yaml`, `src/docs/swagger.ts` | `docs/STEP_2_40_COMMAND.md` |
-| 2     | 2.41 | Alert creation & summary endpoints | ✅ Done | `src/services/alert.service.ts`, `src/controllers/alerts.controller.ts`, `src/routes/alerts.route.ts`, `docs/openapi.yaml` | `docs/STEP_2_41_COMMAND.md` |
+| 2     | 2.37 | Attendant access & cash reports | ✅ Done | `src/app.ts`, `src/routes/attendant.route.ts`, `src/controllers/attendant.controller.ts`, `src/services/attendant.service.ts`, `migrations/schema/007_create_cash_reports.sql`, `docs/openapi-spec.yaml` | `docs/STEP_2_37_COMMAND.md` |
+| 2     | 2.38 | Attendant cash reports & alerts | ✅ Done | `src/routes/attendant.route.ts`, `src/controllers/attendant.controller.ts`, `src/services/attendant.service.ts`, `docs/openapi-spec.yaml`, `backend_brain.md` | `docs/STEP_2_38_COMMAND.md` |
+| 2     | 2.39 | Fuel price validation endpoints | ✅ Done | `src/services/fuelPriceValidation.service.ts`, `src/controllers/fuelPrice.controller.ts`, `src/routes/fuelPrice.route.ts`, `docs/openapi-spec.yaml` | `docs/STEP_2_39_COMMAND.md` |
+| 2     | 2.40 | Nozzle reading creation validation | ✅ Done | `src/services/nozzleReading.service.ts`, `src/controllers/nozzleReading.controller.ts`, `src/routes/nozzleReading.route.ts`, `docs/openapi-spec.yaml`, `src/docs/swagger.ts` | `docs/STEP_2_40_COMMAND.md` |
+| 2     | 2.41 | Alert creation & summary endpoints | ✅ Done | `src/services/alert.service.ts`, `src/controllers/alerts.controller.ts`, `src/routes/alerts.route.ts`, `docs/openapi-spec.yaml` | `docs/STEP_2_41_COMMAND.md` |
 | 2     | 2.42 | Scheduled alert checks | ✅ Done | `src/services/alertRules.service.ts`, `docs/BUSINESS_RULES.md` | `docs/STEP_2_42_COMMAND.md` |
 | 2     | 2.43 | Price checks on nozzle readings | ✅ Done | `src/utils/priceUtils.ts`, `src/services/nozzleReading.service.ts`, `tests/sales.service.test.ts` | `docs/STEP_2_43_COMMAND.md` |
 | 2     | 2.44 | Role journey documentation | ✅ Done | `docs/journeys/*` | `docs/STEP_2_44_COMMAND.md` |
@@ -198,43 +198,43 @@ This file tracks every build step taken by AI agents or developers. It maintains
 | fix | 2025-10-11 | Azure README instructions | ✅ Done | `README.md` | `docs/STEP_fix_20251011.md` |
 | fix | 2025-10-12 | Azure migration helper syntax | ✅ Done | `scripts/apply-tenant-settings-kv-azure.js` | `docs/STEP_fix_20251012.md` |
 | fix | 2025-11-01 | Fuel inventory updated_at column | ✅ Done | `src/services/fuelInventory.service.ts` | `docs/STEP_fix_20251101.md` |
-| fix | 2025-11-02 | Delivery & inventory schema enums | ✅ Done | `docs/openapi.yaml`, `frontend/docs/openapi-v1.yaml`, `src/docs/swagger.ts` | `docs/STEP_fix_20251102.md` |
+| fix | 2025-11-02 | Delivery & inventory schema enums | ✅ Done | `docs/openapi-spec.yaml`, `frontend/docs/openapi-v1.yaml`, `src/docs/swagger.ts` | `docs/STEP_fix_20251102.md` |
 | 2     | 2.47 | Response wrapper & analytics endpoints | ✅ Done | see docs/STEP_2_47_COMMAND.md | `PHASE_2_SUMMARY.md#step-2.47` |
 | 2     | 2.48 | Script guide & cleanup | ✅ Done | `docs/SCRIPTS_GUIDE.md` | `docs/STEP_2_48_COMMAND.md` |
 | 2     | 2.49 | successResponse parameter alignment | ✅ Done | `src/controllers/...` | `PHASE_2_SUMMARY.md#step-2.49` |
 | 2     | 2.50 | Setup status API | ✅ Done | `src/services/setupStatus.service.ts`, `src/controllers/setupStatus.controller.ts`, `src/routes/setupStatus.route.ts` | `PHASE_2_SUMMARY.md#step-2.50` |
-| 2     | 2.51 | Duplicate nozzle conflict handling | ✅ Done | `src/controllers/nozzle.controller.ts`, `docs/openapi.yaml`, `tests/nozzle.controller.test.ts` | `PHASE_2_SUMMARY.md#step-2.51` |
+| 2     | 2.51 | Duplicate nozzle conflict handling | ✅ Done | `src/controllers/nozzle.controller.ts`, `docs/openapi-spec.yaml`, `tests/nozzle.controller.test.ts` | `PHASE_2_SUMMARY.md#step-2.51` |
 | fix | 2025-11-05 | Frontend guide & spec path | ✅ Done | `docs/FRONTEND_REFERENCE_GUIDE.md`, `docs/PHASE_3_SUMMARY.md`, `frontend/docs/api-diff.md` | `docs/STEP_fix_20251105.md` |
 | fix | 2025-11-06 | Column update process doc | ✅ Done | `docs/FRONTEND_REFERENCE_GUIDE.md` | `docs/STEP_fix_20251106.md` |
 | fix | 2025-11-07 | Column workflow relocation | ✅ Done | `docs/DATABASE_MANAGEMENT.md`, `docs/FRONTEND_REFERENCE_GUIDE.md`, `docs/PHASE_3_SUMMARY.md` | `docs/STEP_fix_20251107.md` |
 | fix | 2025-11-08 | Frontend update flow clarifications | ✅ Done | `docs/FRONTEND_REFERENCE_GUIDE.md`, `docs/PHASE_3_SUMMARY.md` | `docs/STEP_fix_20251108.md` |
 | fix | 2025-11-09 | Authoritative frontend flow | ✅ Done | `docs/FRONTEND_REFERENCE_GUIDE.md`, `docs/PHASE_3_SUMMARY.md` | `docs/STEP_fix_20251109.md` |
-| fix | 2025-11-14 | Pump request schema correction | ✅ Done | `docs/openapi.yaml` | `docs/STEP_fix_20251114.md` |
+| fix | 2025-11-14 | Pump request schema correction | ✅ Done | `docs/openapi-spec.yaml` | `docs/STEP_fix_20251114.md` |
 | 2     | 2.52 | Nozzle fuel type validation | ✅ Done | `src/validators/nozzle.validator.ts` | `PHASE_2_SUMMARY.md#step-2.52` |
-| fix | 2025-11-16 | Nozzle request schema cleanup | ✅ Done | `docs/openapi.yaml` | `docs/STEP_fix_20251116_COMMAND.md` |
+| fix | 2025-11-16 | Nozzle request schema cleanup | ✅ Done | `docs/openapi-spec.yaml` | `docs/STEP_fix_20251116_COMMAND.md` |
 | fix | 2025-11-17 | Response object consistency | ✅ Done | `src/controllers/nozzle.controller.ts` | `docs/STEP_fix_20251117.md` |
 | fix | 2025-11-18 | Nozzle validator type cast | ✅ Done | `src/validators/nozzle.validator.ts` | `docs/STEP_fix_20251118.md` |
 | fix | 2025-11-19 | Fuel price station names | ✅ Done | `backend_brain.md` | `docs/STEP_fix_20251119.md` |
-| fix | 2025-11-20 | Fuel price station id in spec | ✅ Done | `docs/openapi.yaml` | `docs/STEP_fix_20251120.md` |
+| fix | 2025-11-20 | Fuel price station id in spec | ✅ Done | `docs/openapi-spec.yaml` | `docs/STEP_fix_20251120.md` |
 | fix | 2025-11-21 | Pump column rename | ✅ Done | `migrations/schema/009_rename_pumps_label_to_name.sql` | `docs/STEP_fix_20251121.md` |
 | fix | 2025-11-22 | Schema naming alignment | ✅ Done | `prisma/schema.prisma`, docs updated | `docs/STEP_fix_20251122.md` |
-| 2     | 2.53 | Fuel inventory summary endpoint | ✅ Done | `src/services/fuelInventory.service.ts`, `src/controllers/fuelInventory.controller.ts`, `src/routes/fuelInventory.route.ts`, `docs/openapi.yaml` | `PHASE_2_SUMMARY.md#step-2.53` |
-| fix | 2025-11-23 | Cash report credit entries | ✅ Done | `src/services/attendant.service.ts`, `src/controllers/attendant.controller.ts`, `docs/openapi.yaml` | `docs/STEP_fix_20251123.md` |
+| 2     | 2.53 | Fuel inventory summary endpoint | ✅ Done | `src/services/fuelInventory.service.ts`, `src/controllers/fuelInventory.controller.ts`, `src/routes/fuelInventory.route.ts`, `docs/openapi-spec.yaml` | `PHASE_2_SUMMARY.md#step-2.53` |
+| fix | 2025-11-23 | Cash report credit entries | ✅ Done | `src/services/attendant.service.ts`, `src/controllers/attendant.controller.ts`, `docs/openapi-spec.yaml` | `docs/STEP_fix_20251123.md` |
 | fix | 2025-11-24 | Extended JWT lifetime | ✅ Done | `src/constants/auth.ts`, `src/utils/jwt.ts`, docs updated | `docs/STEP_fix_20251124.md` |
 | fix | 2025-11-25 | Refresh token constant | ✅ Done | `src/constants/auth.ts`, `src/controllers/auth.controller.ts`, `docs/AUTH.md` | `docs/STEP_fix_20251125.md` |
 | fix | 2025-11-26 | Unified fuel inventory queries | ✅ Done | `src/services/fuelInventory.service.ts`, `src/services/inventory.service.ts`, `src/services/delivery.service.ts`, `src/controllers/fuelInventory.controller.ts`, `src/controllers/delivery.controller.ts` | `docs/STEP_fix_20251126.md` |
 | fix | 2025-11-27 | Dashboard station filter handling | ✅ Done | `src/utils/normalizeStationId.ts`, controllers updated | `docs/STEP_fix_20251127.md` |
-| fix | 2025-11-28 | Previous reading in nozzle listing | ✅ Done | `src/services/nozzleReading.service.ts`, `docs/openapi.yaml` | `docs/STEP_fix_20251128.md` |
-| 2     | 2.54 | API corrections and feature flags | ✅ Done | `src/routes/dashboard.route.ts`, `src/app.ts`, `src/controllers/settings.controller.ts`, `docs/openapi.yaml` | `docs/STEP_2_54_COMMAND.md` |
-| 2     | 2.55 | Dashboard station metrics endpoint | ✅ Done | `src/services/station.service.ts`, `src/controllers/dashboard.controller.ts`, `src/routes/dashboard.route.ts`, `docs/openapi.yaml` | `PHASE_2_SUMMARY.md#step-2.55` |
-| fix | 2025-12-01 | Alert parameter naming alignment | ✅ Done | `docs/openapi.yaml`, `frontend/docs/openapi-v1.yaml` | `docs/STEP_fix_20251201.md` |
-| 2     | 2.56 | Backend analytics and inventory completion | ✅ Done | `src/services/analytics.service.ts`, `src/services/fuelInventory.service.ts`, `src/services/tenant.service.ts`, `src/controllers`, `src/routes`, `docs/openapi.yaml` | `docs/STEP_2_56_COMMAND.md` |
+| fix | 2025-11-28 | Previous reading in nozzle listing | ✅ Done | `src/services/nozzleReading.service.ts`, `docs/openapi-spec.yaml` | `docs/STEP_fix_20251128.md` |
+| 2     | 2.54 | API corrections and feature flags | ✅ Done | `src/routes/dashboard.route.ts`, `src/app.ts`, `src/controllers/settings.controller.ts`, `docs/openapi-spec.yaml` | `docs/STEP_2_54_COMMAND.md` |
+| 2     | 2.55 | Dashboard station metrics endpoint | ✅ Done | `src/services/station.service.ts`, `src/controllers/dashboard.controller.ts`, `src/routes/dashboard.route.ts`, `docs/openapi-spec.yaml` | `PHASE_2_SUMMARY.md#step-2.55` |
+| fix | 2025-12-01 | Alert parameter naming alignment | ✅ Done | `docs/openapi-spec.yaml`, `frontend/docs/openapi-v1.yaml` | `docs/STEP_fix_20251201.md` |
+| 2     | 2.56 | Backend analytics and inventory completion | ✅ Done | `src/services/analytics.service.ts`, `src/services/fuelInventory.service.ts`, `src/services/tenant.service.ts`, `src/controllers`, `src/routes`, `docs/openapi-spec.yaml` | `docs/STEP_2_56_COMMAND.md` |
 | 2     | 2.57 | Tenant email convention update | ✅ Done | `src/services/tenant.service.ts`, `docs/TENANT_CREATION_API.md`, `docs/TENANT_MANAGEMENT_GUIDE.md`, `TENANT_USER_CREATION_PROCESS.md`, `docs/USER_MANAGEMENT.md`, `UNIFIED_DB_SETUP.md` | `docs/STEP_2_57_COMMAND.md` |
 | fix | 2025-12-02 | Frontend hooks OpenAPI alignment | ✅ Done | src/api/* | docs/STEP_fix_20251202.md |
 | fix | 2025-12-03 | Remove deprecated dashboard API usage | ✅ Done | src/api/dashboard.ts, dashboard components | docs/STEP_fix_20251203.md |
 | fix | 2025-12-04 | API service and hook consistency | ✅ Done | src/hooks/useDashboard.ts, fuelsync/src/routes/auth.route.ts | docs/STEP_fix_20251204.md |
 | 3     | 3.5  | Page action validation | ✅ Done | `src/pages/dashboard/StationDetailPage.tsx`, `src/pages/dashboard/SalesPage.tsx`, `src/pages/dashboard/FuelInventoryPage.tsx`, `src/pages/dashboard/EditStationPage.tsx`, `src/App.tsx` | `PHASE_3_SUMMARY.md#step-3.5` |
-| 3     | 3.6  | Pump and nozzle settings stubs | ✅ Done | `src/pages/dashboard/PumpSettingsPage.tsx`, `src/api/pumps.ts`, `src/api/nozzles.ts`, `fuelsync/src/routes/pump.route.ts`, `fuelsync/src/routes/nozzle.route.ts`, `fuelsync/src/controllers/pump.controller.ts`, `fuelsync/src/controllers/nozzle.controller.ts`, `fuelsync/src/services/pumpSettings.service.ts`, `fuelsync/src/services/nozzleSettings.service.ts`, `docs/openapi.yaml`, `src/App.tsx`, `src/pages/dashboard/PumpsPage.tsx` | `PHASE_3_SUMMARY.md#step-3.6` |
+| 3     | 3.6  | Pump and nozzle settings stubs | ✅ Done | `src/pages/dashboard/PumpSettingsPage.tsx`, `src/api/pumps.ts`, `src/api/nozzles.ts`, `fuelsync/src/routes/pump.route.ts`, `fuelsync/src/routes/nozzle.route.ts`, `fuelsync/src/controllers/pump.controller.ts`, `fuelsync/src/controllers/nozzle.controller.ts`, `fuelsync/src/services/pumpSettings.service.ts`, `fuelsync/src/services/nozzleSettings.service.ts`, `docs/openapi-spec.yaml`, `src/App.tsx`, `src/pages/dashboard/PumpsPage.tsx` | `PHASE_3_SUMMARY.md#step-3.6` |
 | fix | 2025-12-05 | Remove unused single-report/reading endpoints | ✅ Done | `src/api/reports.ts`, `src/hooks/useReports.ts`, `src/api/contract/readings.service.ts`, `src/hooks/useReadings.ts` | `docs/STEP_fix_20251205.md` |
 | fix | 2025-12-06 | Prisma usage audit | ✅ Done | `docs/PRISMA_EFFICIENCY_REVIEW.md` | `docs/STEP_fix_20251206.md` |
 | fix | 2025-12-07 | Prisma migration of services | ✅ Done | `src/services/user.service.ts`, `src/services/pump.service.ts`, `src/controllers/analytics.controller.ts` | `docs/STEP_fix_20251207.md` |
@@ -257,9 +257,9 @@ This file tracks every build step taken by AI agents or developers. It maintains
 | fix | 2025-12-20 | Create pump page hook alignment | ✅ Done | `src/pages/dashboard/CreatePumpPage.tsx` | `docs/STEP_fix_20251220.md` |
 | fix | 2025-12-21 | Station, pump & nozzle refresh fixes | ✅ Done | `src/hooks/api/useStations.ts`, `src/hooks/api/usePumps.ts`, `src/hooks/api/useNozzles.ts`, `src/components/dashboard/CreateStationDialog.tsx` | `docs/STEP_fix_20251221.md` |
 | fix | 2025-12-22 | Edit pages for stations, pumps & nozzles | ✅ Done | `src/pages/dashboard/EditStationPage.tsx`, `src/pages/dashboard/EditPumpPage.tsx`, `src/pages/dashboard/EditNozzlePage.tsx`, `src/App.tsx` | `docs/STEP_fix_20251222.md` |
-| fix | 2025-12-23 | Align dashboard sales summary fields | ✅ Done | `fuelsync/src/controllers/dashboard.controller.ts`, `docs/openapi-spec.yaml`, `fuelsync/docs/openapi.yaml`, `fuelsync/frontend/docs/openapi-v1.yaml` | `docs/STEP_fix_20251223.md` |
+| fix | 2025-12-23 | Align dashboard sales summary fields | ✅ Done | `fuelsync/src/controllers/dashboard.controller.ts`, `docs/openapi-spec.yaml`, `fuelsync/docs/openapi-spec.yaml`, `fuelsync/frontend/docs/openapi-v1.yaml` | `docs/STEP_fix_20251223.md` |
 | fix | 2025-12-23 | Numeric formatting guards | ✅ Done | `src/components/reconciliation/ReconciliationTable.tsx`, `src/components/reports/SalesReportTable.tsx`, `src/pages/dashboard/NewReadingPage.tsx`, `src/pages/dashboard/AttendantDashboardPage.tsx`, `src/components/nozzles/NozzleDisplay.tsx` | `docs/STEP_fix_20251223.md` |
-| fix | 2025-12-27 | Nozzle reading backend fixes | ✅ Done | `fuelsync/src/services/nozzleReading.service.ts`, `fuelsync/src/controllers/nozzleReading.controller.ts`, `fuelsync/src/validators/nozzleReading.validator.ts`, `docs/openapi-spec.yaml`, `fuelsync/docs/openapi.yaml` | `docs/STEP_fix_20251227.md` |
+| fix | 2025-12-27 | Nozzle reading backend fixes | ✅ Done | `fuelsync/src/services/nozzleReading.service.ts`, `fuelsync/src/controllers/nozzleReading.controller.ts`, `fuelsync/src/validators/nozzleReading.validator.ts`, `docs/openapi-spec.yaml`, `fuelsync/docs/openapi-spec.yaml` | `docs/STEP_fix_20251227.md` |
 | 3     | 3.12 | Role API implementation matrix | ✅ Done | `docs/ROLE_API_IMPLEMENTATION_MATRIX.md` | `PHASE_3_SUMMARY.md#step-3.12` |
 | 3     | 3.13 | API alignment audit | ✅ Done | `docs/API_IMPLEMENTATION_AUDIT_20251224.md` | `PHASE_3_SUMMARY.md#step-3.13` |
 | 3     | 3.14 | Frontend gap implementation | ✅ Done | `src/pages/dashboard/StationComparisonPage.tsx`, `src/pages/dashboard/StationRankingPage.tsx`, `src/pages/dashboard/ReportExportPage.tsx`, `src/pages/dashboard/UpdateInventoryPage.tsx`, `src/App.tsx` | `PHASE_3_SUMMARY.md#step-3.14` |
@@ -271,3 +271,18 @@ This file tracks every build step taken by AI agents or developers. It maintains
 | fix | 2026-01-01 | Pending readings management | ✅ Done | `src/hooks/api/usePendingReadings.ts`, `src/hooks/api/useReadings.ts`, `src/pages/dashboard/ReadingsPage.tsx`, `src/pages/dashboard/DashboardPage.tsx` | `docs/STEP_fix_20260101.md` |
 | fix | 2026-01-02 | Sales overview metric fix | ✅ Done | `src/api/api-contract.ts`, `src/pages/dashboard/SalesOverviewPage.tsx`, `src/components/dashboard/*Chart.tsx`, `src/components/reports/SalesReportSummary.tsx` | `docs/STEP_fix_20260102_COMMAND.md` |
 | fix | 2026-01-02 | Dashboard analytics guard | ✅ Done | `src/hooks/useDashboard.ts`, `src/pages/dashboard/DashboardPage.tsx`, `src/pages/dashboard/FuelInventoryPage.tsx`, `src/components/inventory/InventoryStatusCard.tsx` | `docs/STEP_fix_20260102.md`
+| fix | 2026-04-20 | Spec cleanup | ✅ Done | `docs/openapi/openapi.yaml` removed, docs updated | `docs/STEP_fix_20260420_COMMAND.md` |
+| fix | 2026-07-09 | API route tests attempt | ✅ Done | `docs/QA_API_TEST_REPORT_20260709.md` | `docs/STEP_fix_20260709_COMMAND.md` |
+| fix | 2026-07-10 | API route tests attempt 2 | ✅ Done | `docs/QA_API_TEST_REPORT_20260710.md` | `docs/STEP_fix_20260710_COMMAND.md` |
+| fix | 2026-07-11 | API route tests attempt 3 | ✅ Done | `docs/QA_API_TEST_REPORT_20260711.md` | `docs/STEP_fix_20260711_COMMAND.md` |
+| audit | 2026-07-12 | Backend–frontend sync audit | ✅ Done | `docs/FRONTEND_BACKEND_SYNC_AUDIT_20260712.md`, `backend/__tests__/integration/openapiRoutes.test.ts` | `docs/STEP_audit_20260712_COMMAND.md` |
+| fix | 2026-07-13 | Automated DB start for tests | ✅ Done | `backend/scripts/start-db-and-test.ts`, `backend/package.json` | `docs/STEP_fix_20260713_COMMAND.md` |
+| fix | 2026-07-13 | Shared API types & validation | ✅ Done | `shared/apiTypes.ts`, `backend/__tests__/integration/api-contract.test.ts`, `src/api/client.ts`, `src/api/fuel-inventory.ts` | `docs/STEP_fix_20260713_COMMAND.md` |
+| fix | 2026-07-14 | Test DB setup fallback | ✅ Done | `docs/STEP_fix_20260714_COMMAND.md` |
+| fix | 2026-07-15 | Pumps listing default | ✅ Done | `src/hooks/api/usePumps.ts` | `docs/STEP_fix_20260715_COMMAND.md` |
+| fix | 2026-07-16 | Cash report path fix | ✅ Done | `src/api/contract/attendant.service.ts` | `docs/STEP_fix_20260716_COMMAND.md` |
+| fix | 2026-07-17 | Report generation endpoint | ✅ Done | `src/api/services/reportsService.ts`, `src/hooks/api/useReports.ts` | `docs/STEP_fix_20260717_COMMAND.md` |
+| fix | 2026-07-18 | Install missing packages | ✅ Done | `package.json`, `backend/package.json` | `docs/STEP_fix_20260718_COMMAND.md` |
+| fix | 2026-07-19 | Lint cleanup and local DB docs | ✅ Done | `eslint.config.js`, `src/hooks/useApi.ts` | `docs/STEP_fix_20260719_COMMAND.md` |
+| fix | 2026-07-15 | Sales list station data | ✅ Done | `src/services/sales.service.ts`, `src/api/sales.ts` | `docs/STEP_fix_20260715_COMMAND.md` |
+| fix | 2026-07-15 | Reading meta fields | ✅ Done | `src/services/nozzleReading.service.ts`, `src/api/api-contract.ts`, `src/api/services/readingsService.ts` | `docs/STEP_fix_20260715_COMMAND.md` |

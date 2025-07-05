@@ -30,7 +30,9 @@ export const ensureArray = <T>(data: any): T[] => {
  * Validates that required fields are present in an object
  */
 export const validateRequiredFields = (obj: any, requiredFields: string[]): boolean => {
-  return requiredFields.every(field => obj && obj.hasOwnProperty(field) && obj[field] !== undefined);
+  return requiredFields.every(field =>
+    obj && Object.prototype.hasOwnProperty.call(obj, field) && obj[field] !== undefined,
+  );
 };
 
 /**

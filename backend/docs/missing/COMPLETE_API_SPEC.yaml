@@ -1,0 +1,1071 @@
+openapi: 3.0.0
+info:
+  title: FuelSync Hub API - Complete Specification
+  version: "1.0.0"
+  description: |
+    Complete API specification for FuelSync Hub including both implemented 
+    and missing endpoints that need to be implemented for frontend compatibility.
+    
+    **Status Legend:**
+    - ✅ Implemented and working
+    - ⚠️ Partially implemented or has issues  
+    - ❌ Missing - needs implementation
+    
+servers:
+  - url: /api/v1
+    description: Current backend server
+  - url: /api/v1  
+    description: Expected by frontend (needs alignment)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [owner, manager, attendant, superadmin]
+        tenantId:
+          type: string
+          format: uuid
+        tenantName:
+          type: string
+    
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    
+    Station:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        address:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+        manager:
+          type: string
+        attendantCount:
+          type: integer
+        pumpCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    
+    FuelPrice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        stationId:
+          type: string
+          format: uuid
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        price:
+          type: number
+          format: decimal
+        validFrom:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        station:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+    
+    Creditor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        partyName:
+          type: string
+        contactNumber:
+          type: string
+        address:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        creditLimit:
+          type: number
+          format: decimal
+        currentOutstanding:
+          type: number
+          format: decimal
+        createdAt:
+          type: string
+          format: date-time
+    
+    Sale:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nozzleId:
+          type: string
+          format: uuid
+        stationId:
+          type: string
+          format: uuid
+        volume:
+          type: number
+          format: decimal
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        fuelPrice:
+          type: number
+          format: decimal
+        amount:
+          type: number
+          format: decimal
+        paymentMethod:
+          type: string
+          enum: [cash, card, upi, credit]
+        creditorId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [draft, posted]
+        recordedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        station:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+        nozzle:
+          type: object
+          properties:
+            nozzleNumber:
+              type: integer
+            fuelType:
+              type: string
+    
+    SalesSummary:
+      type: object
+      properties:
+        totalSales:
+          type: number
+          format: decimal
+        totalVolume:
+          type: number
+          format: decimal
+        transactionCount:
+          type: integer
+        period:
+          type: string
+    
+    PaymentMethodBreakdown:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+        amount:
+          type: number
+          format: decimal
+        percentage:
+          type: number
+          format: decimal
+    
+    FuelTypeBreakdown:
+      type: object
+      properties:
+        fuelType:
+          type: string
+        volume:
+          type: number
+          format: decimal
+        amount:
+          type: number
+          format: decimal
+    
+    TopCreditor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        partyName:
+          type: string
+        outstandingAmount:
+          type: number
+          format: decimal
+        creditLimit:
+          type: number
+          format: decimal
+    
+    DailySalesTrend:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: decimal
+        volume:
+          type: number
+          format: decimal
+    
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: integer
+
+paths:
+  # ✅ AUTHENTICATION ENDPOINTS
+  /auth/login:
+    post:
+      summary: "✅ User login and JWT issuance"
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /auth/logout:
+    post:
+      summary: "User logout"
+      tags: [Authentication]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Unauthorized
+  
+  /auth/refresh:
+    post:
+      summary: "Refresh JWT token"
+      tags: [Authentication]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid or expired token
+
+  # ✅ STATION ENDPOINTS
+  /stations:
+    get:
+      summary: "✅ List stations"
+      tags: [Stations]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Station'
+    
+    post:
+      summary: "✅ Create station"
+      tags: [Stations]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+      responses:
+        '201':
+          description: Station created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+  
+  /stations/{id}:
+    get:
+      summary: "✅ Get station by ID"
+      tags: [Stations]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Station details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Station'
+    
+    put:
+      summary: "✅ Update station"
+      tags: [Stations]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+      responses:
+        '200':
+          description: Station updated
+    
+    delete:
+      summary: "✅ Delete station"
+      tags: [Stations]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Station deleted
+
+  # ✅ FUEL PRICE ENDPOINTS
+  /fuel-prices:
+    get:
+      summary: "✅ List fuel prices"
+      tags: [Fuel Prices]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of fuel prices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FuelPrice'
+    
+    post:
+      summary: "✅ Create fuel price"
+      tags: [Fuel Prices]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - stationId
+                - fuelType
+                - price
+              properties:
+                stationId:
+                  type: string
+                  format: uuid
+                fuelType:
+                  type: string
+                  enum: [petrol, diesel, premium]
+                price:
+                  type: number
+                  format: decimal
+                validFrom:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Fuel price created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelPrice'
+  
+  /fuel-prices/{id}:
+    put:
+      summary: "⚠️ Update fuel price (frontend expects, backend may not implement)"
+      tags: [Fuel Prices]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price:
+                  type: number
+                  format: decimal
+                validFrom:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Fuel price updated
+
+  # ✅ CREDITOR ENDPOINTS
+  /creditors:
+    get:
+      summary: "✅ List creditors"
+      tags: [Creditors]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of creditors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Creditor'
+    
+    post:
+      summary: "✅ Create creditor"
+      tags: [Creditors]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - partyName
+              properties:
+                partyName:
+                  type: string
+                creditLimit:
+                  type: number
+                  format: decimal
+      responses:
+        '201':
+          description: Creditor created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Creditor'
+  
+  /creditors/{id}:
+    get:
+      summary: "✅ Get creditor by ID"
+      tags: [Creditors]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Creditor details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Creditor'
+    
+    put:
+      summary: "✅ Update creditor"
+      tags: [Creditors]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Creditor updated
+    
+    delete:
+      summary: "✅ Delete creditor"
+      tags: [Creditors]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Creditor deleted
+
+  # ⚠️ CREDIT PAYMENTS - URL STRUCTURE MISMATCH
+  /credit-payments:
+    get:
+      summary: "⚠️ List credit payments (frontend expects this URL, backend uses /creditors/payments)"
+      tags: [Credit Payments]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: creditorId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of credit payments
+    
+    post:
+      summary: "⚠️ Create credit payment (URL mismatch)"
+      tags: [Credit Payments]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - creditorId
+                - amount
+                - paymentMethod
+              properties:
+                creditorId:
+                  type: string
+                  format: uuid
+                amount:
+                  type: number
+                  format: decimal
+                paymentMethod:
+                  type: string
+                  enum: [cash, bank_transfer, check]
+                referenceNumber:
+                  type: string
+                notes:
+                  type: string
+      responses:
+        '201':
+          description: Payment created
+
+  # ✅ SALES ENDPOINTS
+  /sales:
+    get:
+      summary: "✅ List sales"
+      tags: [Sales]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: paymentMethod
+          in: query
+          schema:
+            type: string
+            enum: [cash, card, upi, credit]
+      responses:
+        '200':
+          description: List of sales
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sales:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Sale'
+
+  # ✅ NOZZLE READINGS
+  /nozzle-readings:
+    post:
+      summary: "✅ Record nozzle reading and generate sale"
+      tags: [Nozzle Readings]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nozzleId
+                - reading
+                - recordedAt
+              properties:
+                nozzleId:
+                  type: string
+                  format: uuid
+                reading:
+                  type: number
+                  format: decimal
+                recordedAt:
+                  type: string
+                  format: date-time
+                creditorId:
+                  type: string
+                  format: uuid
+                paymentMethod:
+                  type: string
+                  enum: [cash, card, upi, credit]
+      responses:
+        '201':
+          description: Reading recorded
+    
+    get:
+      summary: "✅ List nozzle readings"
+      tags: [Nozzle Readings]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: nozzleId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of readings
+
+  # Dashboard Endpoints
+  /dashboard/sales-summary:
+    get:
+      summary: "Get sales summary"
+      tags: [Dashboard]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: range
+          in: query
+          schema:
+            type: string
+            enum: [daily, weekly, monthly, yearly]
+            default: monthly
+      responses:
+        '200':
+          description: Sales summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesSummary'
+
+  /dashboard/payment-methods:
+    get:
+      summary: "Get payment method breakdown"
+      tags: [Dashboard]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Payment method breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethodBreakdown'
+
+  /dashboard/fuel-breakdown:
+    get:
+      summary: "Get fuel type breakdown"
+      tags: [Dashboard]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Fuel type breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FuelTypeBreakdown'
+
+  /dashboard/top-creditors:
+    get:
+      summary: "Get top creditors"
+      tags: [Dashboard]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: Top creditors by outstanding amount
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TopCreditor'
+
+  /dashboard/sales-trend:
+    get:
+      summary: "Get daily sales trend"
+      tags: [Dashboard]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 7
+      responses:
+        '200':
+          description: Daily sales trend
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DailySalesTrend'
+
+  # ⚠️ RECONCILIATION - ENDPOINT STRUCTURE MISMATCH
+  /reconciliation:
+    post:
+      summary: "✅ Create reconciliation record"
+      tags: [Reconciliation]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - stationId
+                - date
+                - totalExpected
+                - cashReceived
+                - managerConfirmation
+              properties:
+                stationId:
+                  type: string
+                  format: uuid
+                date:
+                  type: string
+                  format: date
+                totalExpected:
+                  type: number
+                  format: decimal
+                cashReceived:
+                  type: number
+                  format: decimal
+                reconciliationNotes:
+                  type: string
+                managerConfirmation:
+                  type: boolean
+      responses:
+        '201':
+          description: Reconciliation created
+    
+    get:
+      summary: "✅ Get reconciliation history"
+      tags: [Reconciliation]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Reconciliation history
+
+  /reconciliation/daily-summary:
+    get:
+      summary: "Get daily readings summary"
+      tags: [Reconciliation]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Daily readings summary for reconciliation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nozzleId:
+                      type: string
+                      format: uuid
+                    nozzleNumber:
+                      type: integer
+                    previousReading:
+                      type: number
+                      format: decimal
+                    currentReading:
+                      type: number
+                      format: decimal
+                    deltaVolume:
+                      type: number
+                      format: decimal
+                    pricePerLitre:
+                      type: number
+                      format: decimal
+                    saleValue:
+                      type: number
+                      format: decimal
+                    paymentMethod:
+                      type: string
+                    cashDeclared:
+                      type: number
+                      format: decimal
+                    fuelType:
+                      type: string
+
+  /reconciliation/{stationId}:
+    get:
+      summary: "✅ Get reconciliation by station (backend implements this)"
+      tags: [Reconciliation]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Station reconciliation data
+
+  # ❌ MISSING ADMIN ANALYTICS
+  /admin/analytics:
+    get:
+      summary: "Get super admin analytics"
+      tags: [Admin]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Super admin analytics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalTenants:
+                    type: integer
+                  activeTenants:
+                    type: integer
+                  totalStations:
+                    type: integer
+                  salesVolume:
+                    type: number
+                    format: decimal
+                  totalRevenue:
+                    type: number
+                    format: decimal
+                  topTenants:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                        revenue:
+                          type: number
+                          format: decimal
+                        stationsCount:
+                          type: integer
+                  monthlyGrowth:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        month:
+                          type: string
+                        tenants:
+                          type: integer
+                        revenue:
+                          type: number
+                          format: decimal
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Stations
+    description: Station management
+  - name: Fuel Prices
+    description: Fuel price management
+  - name: Creditors
+    description: Creditor and credit management
+  - name: Credit Payments
+    description: Credit payment tracking
+  - name: Sales
+    description: Sales data and reporting
+  - name: Nozzle Readings
+    description: Fuel nozzle readings and transactions
+  - name: Dashboard
+    description: Dashboard analytics and summaries
+  - name: Reconciliation
+    description: Daily reconciliation and cash management
+  - name: Admin
+    description: Super admin functionality

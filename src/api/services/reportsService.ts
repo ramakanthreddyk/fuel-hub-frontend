@@ -93,13 +93,25 @@ export const reportsService = {
    * @param data Report generation request
    * @returns Generated report
    */
-  generateReport: async (data: GenerateReportRequest): Promise<Report | null> => {
+  generateReport: async (data: GenerateReportRequest): Promise<Blob | null> => {
     try {
       console.log('[REPORTS-API] Generating report with data:', data);
-      
-      // Use the implemented sales report endpoint
-      const response = await apiClient.post('reports/sales', data);
-      return extractData<Report>(response);
+
+      const payload = {
+        type: data.type,
+        format: data.format,
+        stationId: data.filters?.stationId,
+        dateRange: {
+          from: data.dateRange.start,
+          to: data.dateRange.end,
+        },
+      };
+
+      const response = await apiClient.post('reports/export', payload, {
+        responseType: 'blob',
+      });
+
+      return response.data as Blob;
     } catch (error) {
       console.error('[REPORTS-API] Error generating report:', error);
       return null;

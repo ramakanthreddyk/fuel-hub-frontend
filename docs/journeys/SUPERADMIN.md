@@ -6,7 +6,7 @@ category: journeys
 
 # SUPERADMIN Role Journey
 
-This document traces every API endpoint and data flow available to a **SUPERADMIN** in FuelSync Hub. It is derived from `docs/openapi.yaml` and the Express routes under `src/routes`. Any behaviour not documented here is a TODO for the dev team.
+This document traces every API endpoint and data flow available to a **SUPERADMIN** in FuelSync Hub. It is derived from `docs/openapi-spec.yaml` and the Express routes under `src/routes`. Any behaviour not documented here is a TODO for the dev team.
 
 ## Assumptions
 - JWT payload follows `AuthPayload` interface: `{ userId, tenantId?, role }`.
@@ -129,7 +129,7 @@ All subsequent endpoints require `Authorization: Bearer <jwt>` header and `requi
 - `deleteAdminUser` prevents removing the final admin account.
 
 ## Future-Proofing Tips
-- Keep this doc in sync with `docs/openapi.yaml` whenever routes change.
+- Keep this doc in sync with `docs/openapi-spec.yaml` whenever routes change.
 - Add contract tests ensuring each role cannot access other role endpoints.
 - If new admin features are added, document DB tables and JWT claims here first.
 

@@ -1,6 +1,20 @@
 
-import { apiClient, extractApiData, extractApiArray } from './client';
-import type { FuelInventory, FuelInventoryParams, ApiResponse } from './api-contract';
+import { apiClient, extractApiArray } from './client';
+import type { FuelInventory, FuelInventoryParams } from './api-contract';
+import { z } from 'zod';
+
+const fuelInventorySchema: z.ZodSchema<FuelInventory> = z.object({
+  id: z.string(),
+  stationId: z.string(),
+  stationName: z.string().optional(),
+  fuelType: z.string(),
+  currentStock: z.number(),
+  currentVolume: z.number(),
+  minimumLevel: z.number(),
+  maximumLevel: z.number(),
+  lastUpdated: z.string(),
+  status: z.string(),
+});
 
 export const fuelInventoryApi = {
   // Get fuel inventory status with optional filtering
@@ -11,7 +25,7 @@ export const fuelInventoryApi = {
       if (params?.fuelType) searchParams.append('fuelType', params.fuelType);
       
       const response = await apiClient.get(`/fuel-inventory?${searchParams.toString()}`);
-      return extractApiArray<FuelInventory>(response, 'inventory');
+      return extractApiArray<FuelInventory>(response, 'inventory', fuelInventorySchema);
     } catch (error) {
       console.error('Error fetching fuel inventory:', error);
       return [];

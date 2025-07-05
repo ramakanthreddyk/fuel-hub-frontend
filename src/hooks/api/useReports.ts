@@ -40,12 +40,17 @@ export const useReport = (id: string) => {
  */
 export const useGenerateReport = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: GenerateReportRequest) => reportsService.generateReport(data),
-    onSuccess: () => {
+    onSuccess: (blob) => {
       console.log('[REPORTS-HOOK] Report generated successfully');
-      // Invalidate reports query to refresh the list
+
+      if (blob) {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      }
+
       queryClient.invalidateQueries({ queryKey: ['reports'] });
     },
     onError: (error) => {

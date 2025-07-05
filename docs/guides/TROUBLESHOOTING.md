@@ -89,7 +89,10 @@ npm run setup-db
 
 * Ensure port `5432` is free or change `DB_PORT` in `.env.development`
 * Remove old volumes via `docker volume rm fuelsync_pgdata`
-* Install Docker and Docker Compose if `docker-compose` is not found
+* Install Docker and Docker Compose if `docker-compose` is not found. If Docker
+  isn't available, install PostgreSQL locally via your package manager and
+  update `.env.development` to point to the local service. All scripts and
+  tests will work with a running local instance on port `5432`.
 
 ---
 

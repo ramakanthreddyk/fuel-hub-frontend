@@ -1,0 +1,2188 @@
+openapi: 3.0.3
+info:
+  title: FuelSync API
+  description: API specification for FuelSync fuel station management system
+  version: 1.0.0
+servers:
+  - url: /v1
+    description: API base URL
+security:
+  - bearerAuth: []
+  - tenantHeader: []
+paths:
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: User logout
+      responses:
+        '200':
+          description: Logout successful
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh authentication token
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+  /alerts:
+    get:
+      tags: [Alerts]
+      summary: Get all alerts
+      responses:
+        '200':
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Alert'
+  /alerts/{id}/read:
+    patch:
+      tags: [Alerts]
+      summary: Mark alert as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Alert marked as read
+  /alerts/{id}:
+    delete:
+      tags: [Alerts]
+      summary: Dismiss alert
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Alert dismissed
+
+  /analytics/station-comparison:
+    get:
+      tags: [Analytics]
+      summary: Get station comparison data
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: stationIds
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Station comparison data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StationComparison'
+  /analytics/hourly-sales:
+    get:
+      tags: [Analytics]
+      summary: Get hourly sales data
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Hourly sales data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HourlySales'
+  /analytics/peak-hours:
+    get:
+      tags: [Analytics]
+      summary: Get peak hours data
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Peak hours data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PeakHour'
+  /analytics/fuel-performance:
+    get:
+      tags: [Analytics]
+      summary: Get fuel performance data
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Fuel performance data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FuelPerformance'
+  /analytics/station-ranking:
+    get:
+      tags: [Analytics]
+      summary: Get station ranking
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Station ranking data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StationRanking'
+  /analytics/superadmin:
+    get:
+      tags: [Analytics]
+      summary: Get super admin analytics
+      responses:
+        '200':
+          description: Super admin analytics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuperAdminAnalytics'
+
+  /creditors:
+    get:
+      tags: [Creditors]
+      summary: Get all creditors
+      responses:
+        '200':
+          description: List of creditors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Creditor'
+    post:
+      tags: [Creditors]
+      summary: Create new creditor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCreditorRequest'
+      responses:
+        '201':
+          description: Creditor created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Creditor'
+  /creditors/{id}:
+    get:
+      tags: [Creditors]
+      summary: Get creditor by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Creditor details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Creditor'
+
+  /credit-payments:
+    get:
+      tags: [Credit Payments]
+      summary: Get payments for a creditor
+      parameters:
+        - name: creditorId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditPayment'
+    post:
+      tags: [Credit Payments]
+      summary: Create new payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditPayment'
+
+  /dashboard/sales-summary:
+    get:
+      tags: [Dashboard]
+      summary: Get sales summary
+      parameters:
+        - name: range
+          in: query
+          schema:
+            type: string
+            default: monthly
+        - name: stationId
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sales summary data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesSummary'
+  /dashboard/payment-methods:
+    get:
+      tags: [Dashboard]
+      summary: Get payment method breakdown
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment method breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethodBreakdown'
+  /dashboard/fuel-breakdown:
+    get:
+      tags: [Dashboard]
+      summary: Get fuel type breakdown
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fuel type breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FuelTypeBreakdown'
+  /dashboard/top-creditors:
+    get:
+      tags: [Dashboard]
+      summary: Get top creditors
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+        - name: stationId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Top creditors list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TopCreditor'
+  /dashboard/sales-trend:
+    get:
+      tags: [Dashboard]
+      summary: Get daily sales trend
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 7
+        - name: stationId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Daily sales trend
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DailySalesTrend'
+
+  /fuel-deliveries:
+    get:
+      tags: [Fuel Deliveries]
+      summary: Get fuel deliveries
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of fuel deliveries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FuelDelivery'
+    post:
+      tags: [Fuel Deliveries]
+      summary: Create new fuel delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFuelDeliveryRequest'
+      responses:
+        '201':
+          description: Fuel delivery created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelDelivery'
+
+  /fuel-inventory:
+    get:
+      tags: [Fuel Inventory]
+      summary: Get fuel inventory status
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+        - name: fuelType
+          in: query
+          schema:
+            type: string
+            enum: [petrol, diesel]
+      responses:
+        '200':
+          description: Fuel inventory data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FuelInventory'
+
+  /fuel-prices:
+    get:
+      tags: [Fuel Prices]
+      summary: Get all fuel prices
+      responses:
+        '200':
+          description: List of fuel prices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FuelPrice'
+    post:
+      tags: [Fuel Prices]
+      summary: Create new fuel price
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFuelPriceRequest'
+      responses:
+        '201':
+          description: Fuel price created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelPrice'
+  /fuel-prices/{id}:
+    put:
+      tags: [Fuel Prices]
+      summary: Update fuel price
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFuelPriceRequest'
+      responses:
+        '200':
+          description: Fuel price updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelPrice'
+
+  /nozzles:
+    get:
+      tags: [Nozzles]
+      summary: Get nozzles for a pump
+      parameters:
+        - name: pumpId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of nozzles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Nozzle'
+    post:
+      tags: [Nozzles]
+      summary: Create new nozzle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNozzleRequest'
+      responses:
+        '201':
+          description: Nozzle created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Nozzle'
+
+  /nozzles/{nozzleId}:
+    get:
+      tags: [Nozzles]
+      summary: Get nozzle by ID
+      parameters:
+        - name: nozzleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Nozzle details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Nozzle'
+
+  /pumps:
+    get:
+      tags: [Pumps]
+      summary: Get pumps for a station
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of pumps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pump'
+    post:
+      tags: [Pumps]
+      summary: Create new pump
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePumpRequest'
+      responses:
+        '201':
+          description: Pump created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pump'
+  /pumps/{pumpId}:
+    get:
+      tags: [Pumps]
+      summary: Get pump by ID
+      parameters:
+        - name: pumpId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pump details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pump'
+
+  /nozzle-readings:
+    get:
+      tags: [Readings]
+      summary: Get nozzle readings
+      parameters:
+        - name: nozzleId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of nozzle readings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NozzleReading'
+    post:
+      tags: [Readings]
+      summary: Create new reading
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReadingRequest'
+      responses:
+        '201':
+          description: Reading created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NozzleReading'
+
+  /reconciliation:
+    get:
+      tags: [Reconciliation]
+      summary: Get reconciliation history
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reconciliation history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReconciliationRecord'
+    post:
+      tags: [Reconciliation]
+      summary: Create reconciliation record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReconciliationRequest'
+      responses:
+        '201':
+          description: Reconciliation record created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationRecord'
+  /reconciliation/daily-summary:
+    get:
+      tags: [Reconciliation]
+      summary: Get daily readings summary
+      parameters:
+        - name: stationId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Daily readings summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DailyReadingSummary'
+
+  /reports/sales:
+    get:
+      tags: [Reports]
+      summary: Get sales report
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          schema:
+            type: string
+        - name: paymentMethod
+          in: query
+          schema:
+            type: string
+        - name: nozzleId
+          in: query
+          schema:
+            type: string
+        - name: stationId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sales report data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SalesReportData'
+                  summary:
+                    $ref: '#/components/schemas/SalesReportSummary'
+  /reports/sales/export:
+    get:
+      tags: [Reports]
+      summary: Export sales report as CSV
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          schema:
+            type: string
+        - name: paymentMethod
+          in: query
+          schema:
+            type: string
+        - name: nozzleId
+          in: query
+          schema:
+            type: string
+        - name: stationId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+  /reports/export:
+    post:
+      tags: [Reports]
+      summary: Export report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportReportRequest'
+      responses:
+        '200':
+          description: Report file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /reports/schedule:
+    post:
+      tags: [Reports]
+      summary: Schedule report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleReportRequest'
+      responses:
+        '200':
+          description: Report scheduled
+
+  /sales:
+    get:
+      tags: [Sales]
+      summary: Get sales with filters
+      parameters:
+        - name: stationId
+          in: query
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          schema:
+            type: string
+        - name: paymentMethod
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sales data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sales:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Sale'
+
+  /stations:
+    get:
+      tags: [Stations]
+      summary: Get all stations
+      parameters:
+        - name: includeMetrics
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Station'
+  /stations/{stationId}:
+    get:
+      tags: [Stations]
+      summary: Get station by ID
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Station details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Station'
+
+  /analytics/dashboard:
+    get:
+      tags: [Super Admin]
+      summary: Get platform dashboard metrics
+      responses:
+        '200':
+          description: Platform metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuperAdminSummary'
+  /admin/plans:
+    get:
+      tags: [Super Admin]
+      summary: Get all plans
+      responses:
+        '200':
+          description: List of plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+    post:
+      tags: [Super Admin]
+      summary: Create plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+      responses:
+        '201':
+          description: Plan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+  /admin/plans/{planId}:
+    put:
+      tags: [Super Admin]
+      summary: Update plan
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+      responses:
+        '200':
+          description: Plan updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+    delete:
+      tags: [Super Admin]
+      summary: Delete plan
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plan deleted
+  /admin/tenants:
+    get:
+      tags: [Super Admin]
+      summary: Get all tenants
+      responses:
+        '200':
+          description: List of tenants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tenant'
+    post:
+      tags: [Super Admin]
+      summary: Create tenant with admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequest'
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+  /admin/tenants/{tenantId}/status:
+    patch:
+      tags: [Super Admin]
+      summary: Update tenant status
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [active, suspended, cancelled]
+      responses:
+        '200':
+          description: Tenant status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+  /admin/tenants/{tenantId}:
+    delete:
+      tags: [Super Admin]
+      summary: Delete tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tenant deleted
+  /admin/users:
+    get:
+      tags: [Super Admin]
+      summary: Get admin users
+      responses:
+        '200':
+          description: List of admin users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminUser'
+    post:
+      tags: [Super Admin]
+      summary: Create admin user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdminUserRequest'
+      responses:
+        '201':
+          description: Admin user created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+  /admin/users/{userId}:
+    put:
+      tags: [Super Admin]
+      summary: Update admin user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Admin user updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+    delete:
+      tags: [Super Admin]
+      summary: Delete admin user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Admin user deleted
+  /admin/users/{userId}/reset-password:
+    post:
+      tags: [Super Admin]
+      summary: Reset admin user password
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password reset
+
+  /users:
+    get:
+      tags: [Users]
+      summary: Get users for current tenant
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+    post:
+      tags: [Users]
+      summary: Create new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /users/{userId}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      tags: [Users]
+      summary: Update user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      tags: [Users]
+      summary: Delete user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted
+  /users/{userId}/change-password:
+    post:
+      tags: [Users]
+      summary: Change user password
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Password changed
+  /users/{userId}/reset-password:
+    post:
+      tags: [Users]
+      summary: Reset user password
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    tenantHeader:
+      type: apiKey
+      in: header
+      name: x-tenant-id
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            role:
+              type: string
+              enum: [superadmin, owner, manager, attendant]
+            tenantId:
+              type: string
+            tenantName:
+              type: string
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [inventory, credit, maintenance, sales, system]
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        title:
+          type: string
+        message:
+          type: string
+        stationId:
+          type: string
+        stationName:
+          type: string
+        isRead:
+          type: boolean
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+    StationComparison:
+      type: object
+      properties:
+        id:
+          type: string
+        stationName:
+          type: string
+        sales:
+          type: number
+        volume:
+          type: number
+        transactions:
+          type: number
+        growth:
+          type: number
+    HourlySales:
+      type: object
+      properties:
+        hour:
+          type: string
+        sales:
+          type: number
+        volume:
+          type: number
+        transactions:
+          type: number
+    PeakHour:
+      type: object
+      properties:
+        timeRange:
+          type: string
+        avgSales:
+          type: number
+        avgVolume:
+          type: number
+    FuelPerformance:
+      type: object
+      properties:
+        fuelType:
+          type: string
+        volume:
+          type: number
+        sales:
+          type: number
+        margin:
+          type: number
+        growth:
+          type: number
+    StationRanking:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        sales:
+          type: number
+        volume:
+          type: number
+        growth:
+          type: number
+        efficiency:
+          type: number
+        rank:
+          type: number
+    SuperAdminAnalytics:
+      type: object
+      properties:
+        totalTenants:
+          type: number
+        activeTenants:
+          type: number
+        totalStations:
+          type: number
+        salesVolume:
+          type: number
+        totalRevenue:
+          type: number
+        monthlyGrowth:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              tenants:
+                type: number
+              revenue:
+                type: number
+        topTenants:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              stationsCount:
+                type: number
+              revenue:
+                type: number
+    Creditor:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        contactNumber:
+          type: string
+        address:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        createdAt:
+          type: string
+          format: date-time
+        partyName:
+          type: string
+        creditLimit:
+          type: number
+        currentOutstanding:
+          type: number
+    CreateCreditorRequest:
+      type: object
+      required: [partyName]
+      properties:
+        partyName:
+          type: string
+        creditLimit:
+          type: number
+    CreditPayment:
+      type: object
+      properties:
+        id:
+          type: string
+        creditorId:
+          type: string
+        amount:
+          type: number
+        paymentMethod:
+          type: string
+          enum: [cash, bank_transfer, check]
+        referenceNumber:
+          type: string
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreatePaymentRequest:
+      type: object
+      required: [creditorId, amount, paymentMethod]
+      properties:
+        creditorId:
+          type: string
+        amount:
+          type: number
+        paymentMethod:
+          type: string
+          enum: [cash, bank_transfer, check]
+        referenceNumber:
+          type: string
+        notes:
+          type: string
+    SalesSummary:
+      type: object
+      properties:
+        totalRevenue:
+          type: number
+        totalVolume:
+          type: number
+        salesCount:
+          type: number
+        totalProfit:
+          type: number
+        profitMargin:
+          type: number
+        period:
+          type: string
+    PaymentMethodBreakdown:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+        amount:
+          type: number
+        percentage:
+          type: number
+    FuelTypeBreakdown:
+      type: object
+      properties:
+        fuelType:
+          type: string
+        volume:
+          type: number
+        amount:
+          type: number
+    TopCreditor:
+      type: object
+      properties:
+        id:
+          type: string
+        partyName:
+          type: string
+        outstandingAmount:
+          type: number
+        creditLimit:
+          type: number
+    DailySalesTrend:
+      type: object
+      properties:
+        date:
+          type: string
+        amount:
+          type: number
+        volume:
+          type: number
+    FuelDelivery:
+      type: object
+      properties:
+        id:
+          type: string
+        stationId:
+          type: string
+        stationName:
+          type: string
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        volume:
+          type: number
+        deliveryDate:
+          type: string
+          format: date-time
+        supplier:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreateFuelDeliveryRequest:
+      type: object
+      required: [stationId, fuelType, volume, deliveryDate]
+      properties:
+        stationId:
+          type: string
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        volume:
+          type: number
+        deliveryDate:
+          type: string
+          format: date-time
+        supplier:
+          type: string
+    FuelInventory:
+      type: object
+      properties:
+        id:
+          type: string
+        stationId:
+          type: string
+        stationName:
+          type: string
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        capacity:
+          type: number
+        currentVolume:
+          type: number
+        lastUpdated:
+          type: string
+          format: date-time
+    FuelPrice:
+      type: object
+      properties:
+        id:
+          type: string
+        stationId:
+          type: string
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        price:
+          type: number
+        validFrom:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        station:
+          type: object
+          properties:
+            name:
+              type: string
+    CreateFuelPriceRequest:
+      type: object
+      required: [stationId, fuelType, price]
+      properties:
+        stationId:
+          type: string
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        price:
+          type: number
+        validFrom:
+          type: string
+          format: date-time
+    Nozzle:
+      type: object
+      properties:
+        id:
+          type: string
+        pumpId:
+          type: string
+        nozzleNumber:
+          type: number
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+        createdAt:
+          type: string
+          format: date-time
+    CreateNozzleRequest:
+      type: object
+      required: [pumpId, nozzleNumber, fuelType]
+      properties:
+        pumpId:
+          type: string
+        nozzleNumber:
+          type: number
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+    Pump:
+      type: object
+      properties:
+        id:
+          type: string
+        stationId:
+          type: string
+        name:
+          type: string
+        serialNumber:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+        createdAt:
+          type: string
+          format: date-time
+        nozzleCount:
+          type: number
+    CreatePumpRequest:
+      type: object
+      required: [stationId, name, serialNumber]
+      properties:
+        stationId:
+          type: string
+        name:
+          type: string
+        serialNumber:
+          type: string
+    NozzleReading:
+      type: object
+      properties:
+        id:
+          type: string
+        nozzleId:
+          type: string
+        reading:
+          type: number
+        recordedAt:
+          type: string
+          format: date-time
+        paymentMethod:
+          type: string
+          enum: [cash, card, upi, credit]
+        creditorId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreateReadingRequest:
+      type: object
+      required: [nozzleId, reading, recordedAt, paymentMethod]
+      properties:
+        nozzleId:
+          type: string
+        reading:
+          type: number
+        recordedAt:
+          type: string
+          format: date-time
+        paymentMethod:
+          type: string
+          enum: [cash, card, upi, credit]
+        creditorId:
+          type: string
+    ReconciliationRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        stationId:
+          type: string
+        date:
+          type: string
+        totalExpected:
+          type: number
+        cashReceived:
+          type: number
+        reconciliationNotes:
+          type: string
+        managerConfirmation:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        station:
+          type: object
+          properties:
+            name:
+              type: string
+    CreateReconciliationRequest:
+      type: object
+      required: [stationId, date, totalExpected, cashReceived, managerConfirmation]
+      properties:
+        stationId:
+          type: string
+        date:
+          type: string
+        totalExpected:
+          type: number
+        cashReceived:
+          type: number
+        reconciliationNotes:
+          type: string
+        managerConfirmation:
+          type: boolean
+    DailyReadingSummary:
+      type: object
+      properties:
+        nozzleId:
+          type: string
+        nozzleNumber:
+          type: number
+        previousReading:
+          type: number
+        currentReading:
+          type: number
+        deltaVolume:
+          type: number
+        pricePerLitre:
+          type: number
+        saleValue:
+          type: number
+        paymentMethod:
+          type: string
+        cashDeclared:
+          type: number
+        fuelType:
+          type: string
+    SalesReportData:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        volume:
+          type: number
+        pricePerLitre:
+          type: number
+        amount:
+          type: number
+        paymentMethod:
+          type: string
+          enum: [cash, card, upi, credit]
+        attendant:
+          type: string
+        stationName:
+          type: string
+        nozzleNumber:
+          type: number
+    SalesReportSummary:
+      type: object
+      properties:
+        totalVolume:
+          type: number
+        totalRevenue:
+          type: number
+        fuelTypeBreakdown:
+          type: object
+          properties:
+            petrol:
+              type: object
+              properties:
+                volume:
+                  type: number
+                revenue:
+                  type: number
+            diesel:
+              type: object
+              properties:
+                volume:
+                  type: number
+                revenue:
+                  type: number
+            premium:
+              type: object
+              properties:
+                volume:
+                  type: number
+                revenue:
+                  type: number
+        paymentMethodBreakdown:
+          type: object
+          properties:
+            cash:
+              type: number
+            card:
+              type: number
+            upi:
+              type: number
+            credit:
+              type: number
+    ExportReportRequest:
+      type: object
+      required: [type, format]
+      properties:
+        type:
+          type: string
+        format:
+          type: string
+        stationId:
+          type: string
+        dateRange:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date-time
+            to:
+              type: string
+              format: date-time
+    ScheduleReportRequest:
+      type: object
+      required: [type, frequency]
+      properties:
+        type:
+          type: string
+        stationId:
+          type: string
+        frequency:
+          type: string
+    Sale:
+      type: object
+      properties:
+        id:
+          type: string
+        nozzleId:
+          type: string
+        stationId:
+          type: string
+        volume:
+          type: number
+        fuelType:
+          type: string
+          enum: [petrol, diesel, premium]
+        fuelPrice:
+          type: number
+        amount:
+          type: number
+        paymentMethod:
+          type: string
+          enum: [cash, card, upi, credit]
+        creditorId:
+          type: string
+        status:
+          type: string
+          enum: [draft, posted]
+        recordedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        station:
+          type: object
+          properties:
+            name:
+              type: string
+        nozzle:
+          type: object
+          properties:
+            nozzleNumber:
+              type: number
+            fuelType:
+              type: string
+    Station:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+        manager:
+          type: string
+        attendantCount:
+          type: number
+        pumpCount:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+    SuperAdminSummary:
+      type: object
+      properties:
+        totalTenants:
+          type: number
+        activeTenants:
+          type: number
+        totalPlans:
+          type: number
+        totalAdminUsers:
+          type: number
+        totalUsers:
+          type: number
+        totalStations:
+          type: number
+        signupsThisMonth:
+          type: number
+        recentTenants:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+              status:
+                type: string
+                enum: [active, suspended, cancelled]
+        tenantsByPlan:
+          type: array
+          items:
+            type: object
+            properties:
+              planName:
+                type: string
+              count:
+                type: number
+              percentage:
+                type: number
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        maxStations:
+          type: number
+        maxPumpsPerStation:
+          type: number
+        maxNozzlesPerPump:
+          type: number
+        priceMonthly:
+          type: number
+        priceYearly:
+          type: number
+        features:
+          type: array
+          items:
+            type: string
+    CreatePlanRequest:
+      type: object
+      required: [name, maxStations, maxPumpsPerStation, maxNozzlesPerPump, priceMonthly, priceYearly, features]
+      properties:
+        name:
+          type: string
+        maxStations:
+          type: number
+        maxPumpsPerStation:
+          type: number
+        maxNozzlesPerPump:
+          type: number
+        priceMonthly:
+          type: number
+        priceYearly:
+          type: number
+        features:
+          type: array
+          items:
+            type: string
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [superadmin]
+        createdAt:
+          type: string
+          format: date-time
+        lastLogin:
+          type: string
+          format: date-time
+    CreateAdminUserRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        planId:
+          type: string
+        planName:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended, cancelled]
+        createdAt:
+          type: string
+          format: date-time
+        stationCount:
+          type: number
+        userCount:
+          type: number
+    CreateTenantRequest:
+      type: object
+      required: [name, planId]
+      properties:
+        name:
+          type: string
+        planId:
+          type: string
+        adminEmail:
+          type: string
+        adminPassword:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [superadmin, owner, manager, attendant]
+        tenantId:
+          type: string
+        tenantName:
+          type: string
+        stationId:
+          type: string
+        stationName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreateUserRequest:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [manager, attendant]
+        stationId:
+          type: string
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          enum: [manager, attendant]
+        stationId:
+          type: string
+    ChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+    ResetPasswordRequest:
+      type: object
+      required: [newPassword]
+      properties:
+        newPassword:
+          type: string

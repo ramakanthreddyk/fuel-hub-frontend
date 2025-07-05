@@ -1,0 +1,435 @@
+// Prisma schema for FuelSync unified database
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Core platform tables
+model Plan {
+  id                    String   @id @default(uuid())
+  name                  String
+  max_stations          Int      @default(5)
+  max_pumps_per_station Int      @default(10)
+  max_nozzles_per_pump  Int      @default(4)
+  price_monthly         Decimal  @default(0)
+  price_yearly          Decimal  @default(0)
+  features              Json     @default("[]")
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+  tenants               Tenant[]
+
+  @@map("plans")
+}
+
+model Tenant {
+  id                  String              @id @default(uuid())
+  name                String
+  plan_id             String?
+  status              String              @default("active")
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  deleted_at          DateTime?
+  plan                Plan?               @relation(fields: [plan_id], references: [id])
+  users               User[]
+  stations            Station[]
+  tenant_settings     TenantSettings?
+  fuel_inventory      FuelInventory[]
+  alerts              Alert[]
+  fuel_deliveries     FuelDelivery[]
+  credit_payments     CreditPayment[]
+  day_reconciliations DayReconciliation[]
+  report_schedules    ReportSchedule[]
+  audit_logs          AuditLog[]
+  user_activity_logs  UserActivityLog[]
+  validation_issues   ValidationIssue[]
+  TenantSettingsKv    TenantSettingsKv[]
+
+  @@map("tenants")
+}
+
+model AdminUser {
+  id                  String             @id @default(uuid())
+  email               String             @unique
+  password_hash       String
+  name                String?
+  role                String             @default("superadmin")
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+  admin_activity_logs AdminActivityLog[]
+
+  @@map("admin_users")
+}
+
+model AdminActivityLog {
+  id            String     @id @default(uuid())
+  admin_user_id String?
+  action        String
+  target_type   String?
+  target_id     String?
+  details       Json?
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  admin_user    AdminUser? @relation(fields: [admin_user_id], references: [id], onDelete: Cascade)
+
+  @@map("admin_activity_logs")
+}
+
+// Tenant-specific tables
+model User {
+  id                 String            @id @default(uuid())
+  tenant_id          String
+  email              String
+  password_hash      String
+  name               String
+  role               String
+  created_at         DateTime          @default(now())
+  updated_at         DateTime          @updatedAt
+  tenant             Tenant            @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  stations           UserStation[]
+  sales              Sale[]
+  audit_logs         AuditLog[]
+  user_activity_logs UserActivityLog[]
+
+  @@unique([tenant_id, email])
+  @@index([tenant_id])
+  @@map("users")
+}
+
+model Station {
+  id                  String              @id @default(uuid())
+  tenant_id           String
+  name                String
+  address             String?
+  status              String              @default("active")
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  tenant              Tenant              @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  pumps               Pump[]
+  users               UserStation[]
+  creditors           Creditor[]
+  sales               Sale[]
+  fuel_prices         FuelPrice[]
+  fuel_inventory      FuelInventory[]
+  alerts              Alert[]
+  fuel_deliveries     FuelDelivery[]
+  day_reconciliations DayReconciliation[]
+  report_schedules    ReportSchedule[]
+
+  @@unique([tenant_id, name])
+  @@index([tenant_id])
+  @@map("stations")
+}
+
+model Pump {
+  id            String   @id @default(uuid())
+  tenant_id     String
+  station_id    String
+  name          String
+  serial_number String?
+  status        String   @default("active")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  station       Station  @relation(fields: [station_id], references: [id], onDelete: Cascade)
+  nozzles       Nozzle[]
+
+  @@unique([tenant_id, station_id, name])
+  @@index([tenant_id])
+  @@index([station_id])
+  @@map("pumps")
+}
+
+model Nozzle {
+  id            String          @id @default(uuid())
+  tenant_id     String
+  pump_id       String
+  nozzle_number Int
+  fuel_type     String
+  status        String          @default("active")
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  pump          Pump            @relation(fields: [pump_id], references: [id], onDelete: Cascade)
+  readings      NozzleReading[]
+  sales         Sale[]
+
+  @@unique([tenant_id, pump_id, nozzle_number])
+  @@index([tenant_id])
+  @@map("nozzles")
+}
+
+model FuelPrice {
+  id           String    @id @default(uuid())
+  tenant_id    String
+  station_id   String
+  fuel_type    String
+  price        Decimal
+  cost_price   Decimal?  @default(0)
+  valid_from   DateTime  @default(now())
+  effective_to DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  station      Station   @relation(fields: [station_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@index([station_id])
+  @@map("fuel_prices")
+}
+
+model Creditor {
+  id              String          @id @default(uuid())
+  tenant_id       String
+  station_id      String?
+  party_name      String
+  contact_number  String?
+  address         String?
+  credit_limit    Decimal         @default(0)
+  status          String          @default("active")
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  station         Station?        @relation(fields: [station_id], references: [id], onDelete: Cascade)
+  sales           Sale[]
+  credit_payments CreditPayment[]
+
+  @@index([tenant_id])
+  @@map("creditors")
+}
+
+model Sale {
+  id             String         @id @default(uuid())
+  tenant_id      String
+  nozzle_id      String
+  reading_id     String?
+  station_id     String
+  volume         Decimal
+  fuel_type      String
+  fuel_price     Decimal
+  cost_price     Decimal        @default(0)
+  amount         Decimal
+  profit         Decimal        @default(0)
+  payment_method String
+  creditor_id    String?
+  created_by     String?
+  status         String         @default("posted")
+  recorded_at    DateTime
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  nozzle         Nozzle         @relation(fields: [nozzle_id], references: [id], onDelete: Cascade)
+  station        Station        @relation(fields: [station_id], references: [id], onDelete: Cascade)
+  creditor       Creditor?      @relation(fields: [creditor_id], references: [id])
+  creator        User?          @relation(fields: [created_by], references: [id])
+  reading        NozzleReading? @relation(fields: [reading_id], references: [id])
+
+  @@index([tenant_id])
+  @@index([nozzle_id])
+  @@index([created_at])
+  @@map("sales")
+}
+
+model UserStation {
+  user_id    String
+  station_id String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  station    Station  @relation(fields: [station_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, station_id])
+  @@index([user_id])
+  @@map("user_stations")
+}
+
+model TenantSettings {
+  tenant_id         String   @id
+  receipt_template  String?
+  fuel_rounding     String?
+  branding_logo_url String?
+  updated_at        DateTime @updatedAt
+  tenant            Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+  @@map("tenant_settings")
+}
+
+model TenantSettingsKv {
+  tenant_id  String
+  key        String
+  value      String
+  updated_at DateTime @default(now())
+  tenant     Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+  @@id([tenant_id, key])
+  @@index([tenant_id])
+  @@map("tenant_settings_kv")
+}
+
+model FuelInventory {
+  id            String   @id @default(uuid())
+  tenant_id     String
+  station_id    String
+  fuel_type     String
+  current_stock Decimal  @default(0)
+  minimum_level Decimal  @default(1000)
+  created_at    DateTime @default(now())
+  last_updated  DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  tenant        Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  station       Station  @relation(fields: [station_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@map("fuel_inventory")
+}
+
+model Alert {
+  id         String   @id @default(uuid())
+  tenant_id  String
+  station_id String?
+  alert_type String
+  message    String
+  severity   String   @default("info")
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  tenant     Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  station    Station? @relation(fields: [station_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@map("alerts")
+}
+
+model FuelDelivery {
+  id            String   @id @default(uuid())
+  tenant_id     String
+  station_id    String
+  fuel_type     String
+  volume        Decimal
+  delivered_by  String?
+  delivery_date DateTime @db.Date
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  tenant        Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  station       Station  @relation(fields: [station_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@map("fuel_deliveries")
+}
+
+model NozzleReading {
+  id             String   @id @default(uuid())
+  tenant_id      String
+  nozzle_id      String
+  reading        Decimal
+  recorded_at    DateTime
+  payment_method String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  nozzle         Nozzle   @relation(fields: [nozzle_id], references: [id], onDelete: Cascade)
+  sales          Sale[]
+
+  @@index([tenant_id])
+  @@map("nozzle_readings")
+}
+
+model CreditPayment {
+  id               String   @id @default(uuid())
+  tenant_id        String
+  creditor_id      String
+  amount           Decimal
+  payment_method   String?
+  reference_number String?
+  notes            String?
+  received_at      DateTime
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  tenant           Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  creditor         Creditor @relation(fields: [creditor_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@index([creditor_id])
+  @@map("credit_payments")
+}
+
+model DayReconciliation {
+  id           String   @id @default(uuid())
+  tenant_id    String
+  station_id   String
+  date         DateTime @db.Date
+  total_sales  Decimal? @default(0)
+  cash_total   Decimal? @default(0)
+  card_total   Decimal? @default(0)
+  upi_total    Decimal? @default(0)
+  credit_total Decimal? @default(0)
+  finalized    Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  tenant       Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  station      Station  @relation(fields: [station_id], references: [id], onDelete: Cascade)
+
+  @@unique([tenant_id, station_id, date])
+  @@index([tenant_id])
+  @@map("day_reconciliations")
+}
+
+model ReportSchedule {
+  id         String    @id @default(uuid())
+  tenant_id  String
+  station_id String?
+  type       String
+  frequency  String
+  next_run   DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  tenant     Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  station    Station?  @relation(fields: [station_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@map("report_schedules")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  tenant_id   String
+  user_id     String
+  action      String
+  entity_type String
+  entity_id   String
+  details     Json?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@map("audit_logs")
+}
+
+model UserActivityLog {
+  id          String   @id @default(uuid())
+  tenant_id   String?
+  user_id     String?
+  ip_address  String?
+  user_agent  String?
+  event       String?
+  recorded_at DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  tenant      Tenant?  @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@map("user_activity_logs")
+}
+
+model ValidationIssue {
+  id          String   @id @default(uuid())
+  tenant_id   String?
+  entity_type String
+  entity_id   String
+  message     String
+  created_at  DateTime @default(now())
+  tenant      Tenant?  @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id])
+  @@map("validation_issues")
+}

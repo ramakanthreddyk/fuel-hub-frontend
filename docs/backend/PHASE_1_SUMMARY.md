@@ -309,10 +309,15 @@ Each step includes:
 * Added Docker Compose stack for local Postgres development
 * Introduced environment file `.env.development` with standard credentials
 * Updated all seed and validation scripts to load env vars based on `NODE_ENV`
+* Documentation now notes that a local PostgreSQL service can be used instead of
+  Docker. Update `.env.development` to match your local credentials and start
+  the service before running scripts or tests.
 
 **Validations Performed:**
-* `docker-compose up -d` starts `fuelsync-db` container successfully
-* Seed scripts run against the container using credentials from `.env.development`
+* `docker-compose up -d` starts `fuelsync-db` container successfully when Docker
+  is available
+* Seed scripts run against the running database using credentials from
+  `.env.development`
 
 
 ### 🧱 Step 1.19 – Dev Helper Scripts & Env Validation

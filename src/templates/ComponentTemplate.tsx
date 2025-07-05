@@ -3,7 +3,7 @@
  * @description Template for components using the API hook
  */
 import { useState } from 'react';
-import { useApiHook } from '@/hooks/useApiHook';
+import { useFetchData, useApiMutation, apiEndpoints } from '@/hooks/useApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -16,12 +16,12 @@ interface DataItem {
 }
 
 export default function ComponentTemplate() {
-  const { fetchData, createMutation, endpoints } = useApiHook();
+  const endpoints = apiEndpoints;
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   
   // Fetch data example
-  const { data = [], isLoading } = fetchData<DataItem[]>(
-    endpoints.stations, // Example endpoint
+  const { data = [], isLoading } = useFetchData<DataItem[]>(
+    endpoints.stations,
     ['some-data'],
     {
       // Additional options
@@ -35,8 +35,8 @@ export default function ComponentTemplate() {
   );
   
   // Create mutation example
-  const mutation = createMutation<DataItem, { name: string }>(
-    endpoints.stations, // Example endpoint
+  const mutation = useApiMutation<DataItem, { name: string }>(
+    endpoints.stations,
     {
       method: 'POST',
       invalidateQueries: [['some-data']],

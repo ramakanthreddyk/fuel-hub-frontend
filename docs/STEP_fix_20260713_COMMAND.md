@@ -1,0 +1,6 @@
+Project Context: FuelSync backend tests require a running Postgres container. Prior step 2026-07-12 performed a backend–frontend sync audit.
+Task: Create `backend/scripts/start-db-and-test.ts` to automatically start the dev database when it isn't running, wait until `check-db-connection.js` succeeds, then execute Jest. Update `backend/package.json` to run this script for `npm test`. Document the workflow in LOCAL_DEV_SETUP.md, PHASE_3_SUMMARY.md, CHANGELOGs and add the step to IMPLEMENTATION_INDEX.
+Project Context Summary: FuelSync Hub backend and frontend were synced via audit on 2026-07-12. We now need a shared API type module and runtime validation.
+Steps already implemented: see IMPLEMENTATION_INDEX up to 2026-07-12. Jest + Supertest integration tests exist but DB setup fails.
+Task: generate `shared/apiTypes.ts` exporting frontend contract and parsed OpenAPI schemas, add runtime response validation using zod in `src/api/client.ts`, update one API module as example, and create `backend/__tests__/integration/api-contract.test.ts` covering all documented routes.
+Required documentation updates: CHANGELOG.md, docs/backend/CHANGELOG.md, IMPLEMENTATION_INDEX.md (both), docs/backend/PHASE_3_SUMMARY.md.

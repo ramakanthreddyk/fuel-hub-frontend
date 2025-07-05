@@ -12,9 +12,8 @@ import { pumpsService, Pump, CreatePumpRequest, UpdatePumpRequest } from '@/api/
  */
 export const usePumps = (stationId?: string) => {
   return useQuery({
-    queryKey: ['pumps', stationId],
+    queryKey: ['pumps', stationId ?? 'all'],
     queryFn: () => pumpsService.getPumps(stationId),
-    enabled: stationId !== undefined,
     staleTime: 60000, // 1 minute
   });
 };

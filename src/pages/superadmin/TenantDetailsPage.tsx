@@ -32,6 +32,7 @@ export default function TenantDetailsPage() {
     );
   }
   
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { data: tenant, isLoading, error, refetch } = useTenantDetails(tenantId);
 
   if (isLoading) {

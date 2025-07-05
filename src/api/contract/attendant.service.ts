@@ -54,10 +54,10 @@ export class AttendantService {
 
   /**
    * Submit cash report
-   * POST /attendant/cash-reports
+   * POST /attendant/cash-report
    */
   async createCashReport(data: CreateCashReportRequest): Promise<CashReport> {
-    return contractClient.post<CashReport>('/attendant/cash-reports', data);
+    return contractClient.post<CashReport>('/attendant/cash-report', data);
   }
 
   /**

@@ -1,141 +1,122 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BarChart3, TrendingUp, Users, Fuel, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { SearchableStationSelector } from "@/components/filters/SearchableStationSelector";
+import { StationComparisonChart } from "@/components/analytics/StationComparisonChart";
+import { AdvancedAnalytics } from "@/components/analytics/AdvancedAnalytics";
+import { StationRanking } from "@/components/analytics/StationRanking";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function AnalyticsPage() {
+  const queryClient = useQueryClient();
+  const [stationId, setStationId] = useState<string>();
+  const [stationIds, setStationIds] = useState<string[]>([]);
+  const [rankingPeriod, setRankingPeriod] = useState<
+    "today" | "week" | "month"
+  >("month");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Simulate refresh
-    setTimeout(() => setIsRefreshing(false), 1000);
+    await queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    setIsRefreshing(false);
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Analytics</h1>
-          <p className="text-muted-foreground text-sm md:text-base">
-            Business insights and performance metrics
-          </p>
-        </div>
-        <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline" size="sm">
-          <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      </div>
+      <PageHeader
+        title="Analytics"
+        description="Business insights and performance metrics"
+        actions={
+          <Button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            variant="outline"
+            size="sm"
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+        }
+      />
 
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹0</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Volume Sold</CardTitle>
-            <Fuel className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0L</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Transactions</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              +0% from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Stations</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              All stations operational
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Analytics Charts Placeholder */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Sales Trend</CardTitle>
-            <CardDescription>
-              Monthly sales performance over time
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <BarChart3 className="h-12 w-12 mx-auto mb-4" />
-                <p>Sales chart will appear here</p>
-                <p className="text-sm">Configure stations and start recording sales</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Fuel Distribution</CardTitle>
-            <CardDescription>
-              Breakdown of fuel types sold
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <Fuel className="h-12 w-12 mx-auto mb-4" />
-                <p>Fuel distribution chart will appear here</p>
-                <p className="text-sm">Start recording fuel sales to see data</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Additional Analytics */}
+      {/* Station Comparison */}
       <Card>
         <CardHeader>
-          <CardTitle>Performance Summary</CardTitle>
-          <CardDescription>
-            Detailed analytics and insights
-          </CardDescription>
+          <CardTitle>Station Comparison</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 text-muted-foreground">
-            <BarChart3 className="h-16 w-16 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Analytics Coming Soon</h3>
-            <p>Set up your stations and start recording data to see detailed analytics here.</p>
+        <CardContent className="space-y-4">
+          <SearchableStationSelector
+            multiple
+            selectedValues={stationIds}
+            onMultipleChange={setStationIds}
+            onChange={() => {}}
+            placeholder="Select stations"
+          />
+          {stationIds.length > 0 ? (
+            <StationComparisonChart stationIds={stationIds} />
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              Choose stations to view performance comparison.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Advanced Analytics for a single station */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Advanced Analytics</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SearchableStationSelector
+            value={stationId}
+            onChange={setStationId}
+            placeholder="Select station"
+          />
+          {stationId ? (
+            <AdvancedAnalytics stationId={stationId} />
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              Select a station to view detailed analytics.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Station Ranking */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Station Ranking</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="w-40">
+            <Select
+              value={rankingPeriod}
+              onValueChange={(v) => setRankingPeriod(v as any)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">This Week</SelectItem>
+                <SelectItem value="month">This Month</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+          <StationRanking period={rankingPeriod} />
         </CardContent>
       </Card>
     </div>
