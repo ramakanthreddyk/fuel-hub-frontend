@@ -3,7 +3,7 @@ import { apiClient, extractApiArray } from './client';
 import type { FuelInventory, FuelInventoryParams } from './api-contract';
 import { z } from 'zod';
 
-const fuelInventorySchema: z.ZodSchema<FuelInventory> = z.object({
+const fuelInventorySchema = z.object({
   id: z.string(),
   stationId: z.string(),
   stationName: z.string().optional(),

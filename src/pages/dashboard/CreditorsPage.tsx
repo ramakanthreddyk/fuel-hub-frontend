@@ -18,9 +18,9 @@ export default function CreditorsPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCreditors = creditors.filter(creditor =>
-    creditor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    creditor.partyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     creditor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    creditor.phone?.includes(searchTerm)
+    creditor.phoneNumber?.includes(searchTerm)
   );
 
   if (isLoading) {
@@ -79,7 +79,16 @@ export default function CreditorsPage() {
             {filteredCreditors.map((creditor) => (
               <CreditorCard
                 key={creditor.id}
-                creditor={creditor}
+                creditor={{
+                  id: creditor.id,
+                  name: creditor.partyName,
+                  email: creditor.email,
+                  phone: creditor.phoneNumber,
+                  creditLimit: creditor.creditLimit || 0,
+                  currentBalance: creditor.outstandingAmount,
+                  lastPaymentDate: creditor.lastPaymentDate,
+                  status: creditor.isActive ? 'active' : 'inactive'
+                }}
                 onViewDetails={(id) => navigate(`/dashboard/creditors/${id}`)}
                 onAddPayment={(id) => navigate(`/dashboard/creditors/${id}/payments/new`)}
               />
