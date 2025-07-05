@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, DollarSign, Percent } from 'lucide-react';
+import { TrendingUp, BadgeIndianRupee, Percent } from 'lucide-react';
 import { useSalesSummary } from '@/hooks/useDashboard';
 import { ErrorFallback } from '@/components/common/ErrorFallback';
 
@@ -37,31 +37,35 @@ export function SalesSummaryCard({ filters = {} }: SalesSummaryCardProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <Card className="bg-gradient-to-br from-white to-purple-50 border-purple-200">
+      <Card className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-200/50 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-sm font-medium text-green-700">
             {filters.stationId ? 'Station Sales' : 'Total Sales'}
           </CardTitle>
-          <DollarSign className="h-4 w-4 text-purple-600" />
+          <div className="p-2 bg-green-500 rounded-lg">
+            <BadgeIndianRupee className="h-4 w-4 text-white" />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-purple-600">₹{summary?.totalRevenue?.toLocaleString() || 0}</div>
-          <div className="flex items-center text-xs text-muted-foreground mt-1">
-            <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+          <div className="text-2xl font-bold text-green-700">₹{summary?.totalRevenue?.toLocaleString() || 0}</div>
+          <div className="flex items-center text-xs text-green-600 mt-1">
+            <TrendingUp className="h-3 w-3 mr-1" />
             {summary?.salesCount || 0} transactions • {summary?.totalVolume?.toLocaleString() || 0}L sold
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-white to-green-50 border-green-200">
+      <Card className="bg-gradient-to-br from-blue-50 via-cyan-50 to-sky-50 border-2 border-blue-200/50 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Growth Metrics</CardTitle>
-          <TrendingUp className="h-4 w-4 text-green-600" />
+          <CardTitle className="text-sm font-medium text-blue-700">Growth Metrics</CardTitle>
+          <div className="p-2 bg-blue-500 rounded-lg">
+            <TrendingUp className="h-4 w-4 text-white" />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">{summary?.growthPercentage?.toFixed(1) || 0}%</div>
-          <div className="flex items-center text-xs text-muted-foreground mt-1">
-            <Percent className="h-3 w-3 mr-1 text-green-500" />
+          <div className="text-2xl font-bold text-blue-700">{summary?.growthPercentage?.toFixed(1) || 0}%</div>
+          <div className="flex items-center text-xs text-blue-600 mt-1">
+            <Percent className="h-3 w-3 mr-1" />
             Growth vs previous period
           </div>
         </CardContent>

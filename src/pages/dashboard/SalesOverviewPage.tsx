@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, DollarSign, Fuel, Users, Calendar, Download } from 'lucide-react';
+import { TrendingUp, BadgeIndianRupee, Fuel, Users, Calendar, Download } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { useSales } from '@/hooks/useSales';
 import {
@@ -56,137 +56,108 @@ export default function SalesOverviewPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  // Fuel type breakdown
-  const fuelBreakdown = fuelTypes.reduce((acc, item) => {
-    acc[item.fuelType] = item.volume;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const handleExport = () => {
-    // Export functionality would be implemented here
-    console.log('Exporting sales data...', { filters, sales });
-  };
-
-  const handleFiltersChange = (newFilters: SalesFilters) => {
-    setFilters(newFilters);
-  };
-
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Sales Overview"
-        description="Comprehensive view of sales performance and analytics"
-        actions={
-          <Button onClick={handleExport} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export Data
-          </Button>
-        }
-      />
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            Sales Overview & Analytics
+          </h1>
+          <p className="text-muted-foreground mt-2 text-lg">
+            Comprehensive analysis of sales performance and trends
+          </p>
+        </div>
+        <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white shadow-lg">
+          <Download className="mr-2 h-4 w-4" />
+          Export Report
+        </Button>
+      </div>
 
-      {/* Sales Filter */}
-      <SalesFilterBar filters={filters} onFiltersChange={handleFiltersChange} />
+      {/* Key Metrics Cards */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-200/50 shadow-lg hover:shadow-xl transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-green-700">Total Revenue</CardTitle>
+            <div className="p-2 bg-green-500 rounded-lg">
+              <BadgeIndianRupee className="h-5 w-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-700">₹{totalSales.toLocaleString()}</div>
+            <div className="flex items-center text-sm text-green-600 mt-2">
+              <TrendingUp className="h-4 w-4 mr-1" />
+              {totalTransactions} transactions
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="bg-gradient-to-br from-blue-50 via-cyan-50 to-sky-50 border-2 border-blue-200/50 shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold text-blue-700">Volume Sold</CardTitle>
+            <div className="p-2 bg-blue-500 rounded-lg">
+              <Fuel className="h-5 w-5 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalSales)}</div>
-            <p className="text-xs text-muted-foreground">
-              {formatDate(filters.startDate || '')} - {formatDate(filters.endDate || '')}
-            </p>
+            <div className="text-3xl font-bold text-blue-700">{formatVolume(totalVolume)}</div>
+            <div className="flex items-center text-sm text-blue-600 mt-2">
+              <Fuel className="h-4 w-4 mr-1" />
+              Total fuel dispensed
+            </div>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 border-2 border-purple-200/50 shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Volume</CardTitle>
-            <Fuel className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold text-purple-700">Avg Transaction</CardTitle>
+            <div className="p-2 bg-purple-500 rounded-lg">
+              <BadgeIndianRupee className="h-5 w-5 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatVolume(totalVolume)}</div>
-            <p className="text-xs text-muted-foreground">
-              Fuel dispensed
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Transactions</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalTransactions}</div>
-            <p className="text-xs text-muted-foreground">
-              Total sales count
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Transaction</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(averageTransactionValue)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-purple-700">₹{averageTransactionValue.toLocaleString()}</div>
+            <div className="flex items-center text-sm text-purple-600 mt-2">
+              <Users className="h-4 w-4 mr-1" />
               Per transaction
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Payment Method Breakdown */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Methods</CardTitle>
-            <CardDescription>Revenue by payment type</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {Object.entries(paymentBreakdown).map(([method, amount]) => (
-                <div key={method} className="flex items-center justify-between">
-                  <span className="capitalize">{method}</span>
-                  <span className="font-medium">{formatCurrency(amount)}</span>
-                </div>
-              ))}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Fuel Types</CardTitle>
-            <CardDescription>Volume by fuel type</CardDescription>
+        <Card className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 border-2 border-orange-200/50 shadow-lg hover:shadow-xl transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-orange-700">Time Period</CardTitle>
+            <div className="p-2 bg-orange-500 rounded-lg">
+              <Calendar className="h-5 w-5 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {Object.entries(fuelBreakdown).map(([fuel, volume]) => (
-                <div key={fuel} className="flex items-center justify-between">
-                  <span className="capitalize">{fuel}</span>
-                  <span className="font-medium">{formatVolume(volume)}</span>
-                </div>
-              ))}
+            <div className="text-lg font-bold text-orange-700">
+              {filters.startDate && filters.endDate ? 
+                `${formatDate(filters.startDate)} - ${formatDate(filters.endDate)}` : 
+                'All Time'
+              }
+            </div>
+            <div className="flex items-center text-sm text-orange-600 mt-2">
+              <Calendar className="h-4 w-4 mr-1" />
+              Selected range
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Filters */}
+      <SalesFilterBar filters={filters} onFiltersChange={setFilters} />
 
       {/* Sales Table */}
-      <Card>
+      <Card className="shadow-lg border-2 border-gray-200/50">
         <CardHeader>
-          <CardTitle>Recent Sales</CardTitle>
-          <CardDescription>Detailed sales transactions</CardDescription>
+          <CardTitle className="text-xl">Detailed Sales Transactions</CardTitle>
+          <CardDescription className="text-base">
+            All sales transactions with payment methods, fuel types, and volumes
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <SalesTable 
-            sales={sales} 
-            isLoading={isLoading} 
-          />
+          <SalesTable sales={sales} isLoading={isLoading} />
         </CardContent>
       </Card>
     </div>

@@ -6,7 +6,7 @@ import { StationSelector } from '@/components/filters/StationSelector';
 import { DateRangePicker } from '@/components/filters/DateRangePicker';
 import { useEnhancedSales } from '@/hooks/useEnhancedSales';
 import { SalesFilters } from '@/api/sales';
-import { DollarSign, TrendingUp, CreditCard, Users, Download, Filter } from 'lucide-react';
+import { BadgeIndianRupee, TrendingUp, CreditCard, Users, Download, Filter, BarChart3, Fuel } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DateRange } from 'react-day-picker';
 import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
@@ -43,24 +43,26 @@ export default function SalesPage() {
   const postedSales = sales.filter(sale => sale.status === 'posted');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
             Sales Management
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mt-2 text-lg">
             View and analyze all sales transactions across stations
           </p>
         </div>
       </div>
 
       {/* Filters */}
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+      <Card className="bg-gradient-to-r from-blue-50 via-white to-green-50 border-2 border-blue-200/50 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-green-600" />
-            Filters
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <div className="p-2 bg-blue-500 rounded-lg">
+              <Filter className="h-5 w-5 text-white" />
+            </div>
+            Sales Filters
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -76,7 +78,7 @@ export default function SalesPage() {
               onChange={setDateRange}
               placeholder="Select date range"
             />
-            <Button variant="outline" className="bg-white">
+            <Button variant="outline" className="bg-white border-2 shadow-sm hover:shadow-md">
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
@@ -85,65 +87,77 @@ export default function SalesPage() {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-200/50 shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-semibold text-green-700">Total Sales</CardTitle>
+            <div className="p-2 bg-green-500 rounded-lg">
+              <BadgeIndianRupee className="h-5 w-5 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">{formatCurrency(totalAmount)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-green-700">{formatCurrency(totalAmount)}</div>
+            <div className="flex items-center text-sm text-green-600 mt-2">
+              <TrendingUp className="h-4 w-4 mr-1" />
               {formatSafeNumber(sales.length, 0)} transactions
-            </p>
+            </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+        <Card className="bg-gradient-to-br from-blue-50 via-cyan-50 to-sky-50 border-2 border-blue-200/50 shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Volume</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-semibold text-blue-700">Total Volume</CardTitle>
+            <div className="p-2 bg-blue-500 rounded-lg">
+              <Fuel className="h-5 w-5 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-700">{formatVolume(totalVolume)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-blue-700">{formatVolume(totalVolume)}</div>
+            <div className="flex items-center text-sm text-blue-600 mt-2">
+              <BarChart3 className="h-4 w-4 mr-1" />
               Fuel dispensed
-            </p>
+            </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
+        <Card className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 border-2 border-orange-200/50 shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Credit Sales</CardTitle>
-            <CreditCard className="h-4 w-4 text-orange-600" />
+            <CardTitle className="text-sm font-semibold text-orange-700">Credit Sales</CardTitle>
+            <div className="p-2 bg-orange-500 rounded-lg">
+              <CreditCard className="h-5 w-5 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-700">{formatCurrency(creditAmount)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-orange-700">{formatCurrency(creditAmount)}</div>
+            <div className="flex items-center text-sm text-orange-600 mt-2">
+              <CreditCard className="h-4 w-4 mr-1" />
               {formatSafeNumber(creditSales.length, 0)} credit transactions
-            </p>
+            </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
+        <Card className="bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 border-2 border-purple-200/50 shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Posted Sales</CardTitle>
-            <Users className="h-4 w-4 text-purple-600" />
+            <CardTitle className="text-sm font-semibold text-purple-700">Posted Sales</CardTitle>
+            <div className="p-2 bg-purple-500 rounded-lg">
+              <Users className="h-5 w-5 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-700">{formatSafeNumber(postedSales.length, 0)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-purple-700">{formatSafeNumber(postedSales.length, 0)}</div>
+            <div className="flex items-center text-sm text-purple-600 mt-2">
+              <Users className="h-4 w-4 mr-1" />
               of {formatSafeNumber(sales.length, 0)} total sales
-            </p>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Sales Table */}
-      <Card>
+      <Card className="shadow-lg border-2 border-gray-200/50">
         <CardHeader>
-          <CardTitle>Sales Transactions</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl">Sales Transactions</CardTitle>
+          <CardDescription className="text-base">
             {selectedStation ? 'Station-specific' : 'All'} sales generated from nozzle readings
           </CardDescription>
         </CardHeader>

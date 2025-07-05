@@ -1,7 +1,7 @@
 
 /**
  * @file components/layout/Sidebar.tsx
- * @description Enhanced responsive sidebar with improved mobile experience
+ * @description Enhanced responsive sidebar with improved visual design and icons
  */
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -10,17 +10,19 @@ import {
   LayoutDashboard,
   Building2,
   Fuel,
-  Gauge,
-  FileText,
-  BarChart3,
+  Droplets,
+  BadgeIndianRupee,
   Users,
   Settings,
   ChevronDown,
   Menu,
-  X,
-  DollarSign,
+  FileText,
+  BarChart3,
   Calendar,
-  ClipboardList
+  ClipboardList,
+  Factory,
+  Wrench,
+  Database
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -44,33 +46,33 @@ const navigation: NavItem[] = [
   {
     name: 'Stations',
     href: '/dashboard/stations',
-    icon: Building2,
+    icon: Factory,
     roles: ['owner', 'manager'],
   },
   {
     name: 'Pumps & Nozzles',
     href: '/dashboard/pumps',
-    icon: Fuel,
+    icon: Wrench,
     roles: ['owner', 'manager'],
     children: [
       { name: 'All Pumps', href: '/dashboard/pumps', icon: Fuel },
-      { name: 'All Nozzles', href: '/dashboard/nozzles', icon: Gauge },
+      { name: 'All Nozzles', href: '/dashboard/nozzles', icon: Droplets },
     ],
   },
   {
     name: 'Operations',
     href: '/dashboard/readings',
-    icon: Gauge,
+    icon: Database,
     children: [
-      { name: 'Readings', href: '/dashboard/readings', icon: Gauge },
-      { name: 'Fuel Prices', href: '/dashboard/fuel-prices', icon: DollarSign, roles: ['owner', 'manager'] },
+      { name: 'Readings', href: '/dashboard/readings', icon: Database },
+      { name: 'Fuel Prices', href: '/dashboard/fuel-prices', icon: BadgeIndianRupee, roles: ['owner', 'manager'] },
       { name: 'Inventory', href: '/dashboard/fuel-inventory', icon: ClipboardList, roles: ['owner', 'manager'] },
     ],
   },
   {
     name: 'Sales',
     href: '/dashboard/sales',
-    icon: DollarSign,
+    icon: BadgeIndianRupee,
     children: [
       { name: 'Sales Overview', href: '/dashboard/sales/overview', icon: BarChart3 },
       { name: 'Cash Reports', href: '/dashboard/cash-reports', icon: FileText },
@@ -161,20 +163,30 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
             <button
               onClick={() => toggleExpanded(item.name)}
               className={cn(
-                'w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors',
-                'hover:bg-gray-100 dark:hover:bg-gray-800',
+                'w-full flex items-center justify-between px-3 py-3 text-sm rounded-xl transition-all duration-200',
+                'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:shadow-sm',
+                'group focus:outline-none focus:ring-2 focus:ring-blue-500/20',
                 level > 0 && 'ml-4',
-                active && 'bg-gray-100 dark:bg-gray-800'
+                active && 'bg-gradient-to-r from-blue-50 to-purple-50 shadow-sm border border-blue-100'
               )}
             >
               <div className="flex items-center gap-3">
-                <item.icon className="h-4 w-4" />
-                <span className="font-medium">{item.name}</span>
+                <div className={cn(
+                  "p-2 rounded-lg transition-colors",
+                  active ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600 group-hover:bg-blue-500 group-hover:text-white"
+                )}>
+                  <item.icon className="h-4 w-4" />
+                </div>
+                <span className={cn(
+                  "font-medium transition-colors",
+                  active ? "text-blue-700" : "text-gray-700 group-hover:text-blue-700"
+                )}>{item.name}</span>
               </div>
               <ChevronDown
                 className={cn(
-                  'h-4 w-4 transition-transform',
-                  isExpanded && 'rotate-180'
+                  'h-4 w-4 transition-all duration-200',
+                  isExpanded && 'rotate-180',
+                  active ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-600'
                 )}
               />
             </button>
@@ -183,20 +195,28 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
               to={item.href}
               onClick={onItemClick}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors',
-                'hover:bg-gray-100 dark:hover:bg-gray-800',
+                'flex items-center gap-3 px-3 py-3 text-sm rounded-xl transition-all duration-200',
+                'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:shadow-sm',
+                'group focus:outline-none focus:ring-2 focus:ring-blue-500/20',
                 level > 0 && 'ml-4',
-                active && 'bg-primary text-primary-foreground hover:bg-primary/90'
+                active 
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
+                  : 'text-gray-700 hover:text-blue-700'
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <div className={cn(
+                "p-2 rounded-lg transition-colors",
+                active ? "bg-white/20" : "bg-gray-100 text-gray-600 group-hover:bg-blue-500 group-hover:text-white"
+              )}>
+                <item.icon className="h-4 w-4" />
+              </div>
               <span className="font-medium">{item.name}</span>
             </Link>
           )}
         </div>
 
         {hasChildren && isExpanded && (
-          <div className="mt-1 space-y-1">
+          <div className="mt-2 space-y-1">
             {item.children?.map(child => renderNavItem(child, level + 1))}
           </div>
         )}
@@ -205,34 +225,34 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       {/* Logo */}
-      <div className="flex items-center gap-2 px-4 py-6">
-        <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
-          <Fuel className="h-5 w-5 text-primary-foreground" />
+      <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100">
+        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
+          <Fuel className="h-6 w-6 text-white" />
         </div>
         <div>
-          <h1 className="font-bold text-lg">FuelSync</h1>
-          <p className="text-xs text-muted-foreground">Hub Management</p>
+          <h1 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">FuelSync</h1>
+          <p className="text-xs text-gray-500 font-medium">Hub Management</p>
         </div>
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3">
-        <nav className="space-y-1 pb-4">
+      <ScrollArea className="flex-1 px-4 py-4">
+        <nav className="space-y-2">
           {navigation.map(item => renderNavItem(item))}
         </nav>
       </ScrollArea>
 
       {/* User Info */}
-      <div className="p-4 border-t">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-            <Users className="h-4 w-4" />
+      <div className="p-4 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-white shadow-sm">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <Users className="h-5 w-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{user?.name}</p>
-            <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
+            <p className="text-sm font-semibold text-gray-800 truncate">{user?.name}</p>
+            <p className="text-xs text-gray-500 capitalize font-medium">{user?.role}</p>
           </div>
         </div>
       </div>
@@ -245,7 +265,7 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white dark:bg-gray-900 border-r">
+      <div className="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 shadow-lg">
         <SidebarContent />
       </div>
 
@@ -253,11 +273,11 @@ export function Sidebar() {
       <div className="lg:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50">
+            <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50 bg-white shadow-lg hover:shadow-xl rounded-xl">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0">
+          <SheetContent side="left" className="w-72 p-0 bg-white">
             <SidebarContent onItemClick={() => setOpen(false)} />
           </SheetContent>
         </Sheet>
