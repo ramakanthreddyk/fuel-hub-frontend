@@ -165,37 +165,37 @@ export default function StationsPage() {
                     <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 text-center shadow-sm">
                       <div className="flex items-center justify-center gap-2 mb-2">
                         <BarChart3 className="h-5 w-5 text-green-500" />
-                        <span className="text-sm font-semibold text-slate-600">Nozzles</span>
+                        <span className="text-sm font-semibold text-slate-600">Performance</span>
                       </div>
                       <div className="text-2xl font-bold text-slate-800">
-                        {station.nozzleCount || 0}
+                        {station.efficiency || 0}%
                       </div>
                       <div className="text-xs text-slate-500 mt-1">
-                        Total dispensers
+                        Efficiency rating
                       </div>
                     </div>
                   </div>
 
                   {/* Revenue Summary (if available) */}
-                  {(station.dailyRevenue || station.monthlyRevenue) && (
+                  {(station.todaySales || station.monthlySales) && (
                     <div className="mt-3 bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-sm">
                       <div className="flex items-center gap-2 mb-2">
                         <DollarSign className="h-4 w-4 text-emerald-500" />
                         <span className="text-sm font-semibold text-slate-600">Revenue Overview</span>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-center">
-                        {station.dailyRevenue && (
+                        {station.todaySales && (
                           <div>
                             <div className="text-lg font-bold text-slate-800">
-                              ₹{station.dailyRevenue.toLocaleString()}
+                              ₹{station.todaySales.toLocaleString()}
                             </div>
                             <div className="text-xs text-slate-500">Today</div>
                           </div>
                         )}
-                        {station.monthlyRevenue && (
+                        {station.monthlySales && (
                           <div>
                             <div className="text-lg font-bold text-slate-800">
-                              ₹{station.monthlyRevenue.toLocaleString()}
+                              ₹{station.monthlySales.toLocaleString()}
                             </div>
                             <div className="text-xs text-slate-500">This Month</div>
                           </div>

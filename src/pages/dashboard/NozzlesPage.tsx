@@ -1,3 +1,4 @@
+
 /**
  * @file pages/dashboard/NozzlesPage.tsx
  * @description Redesigned nozzles page with realistic dispenser cards
@@ -310,7 +311,7 @@ export default function NozzlesPage() {
                   nozzleNumber: nozzle.nozzleNumber || 0,
                   fuelType: (nozzle.fuelType || 'petrol') as 'petrol' | 'diesel' | 'premium',
                   status: nozzle.status as 'active' | 'maintenance' | 'inactive',
-                  lastReading: nozzle.lastReading,
+                  lastReading: undefined, // This property doesn't exist on the Nozzle type
                   pumpName: pump.name
                 }}
                 onEdit={handleEditNozzle}
