@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { RefreshCw, TrendingUp, Users, Fuel, Loader2, Building2, Shield, Package, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStations } from '@/hooks/api/useStations';
@@ -13,11 +14,13 @@ import { usePumps } from '@/hooks/api/usePumps';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { useReadings } from '@/hooks/api/useReadings';
 import { useAnalyticsDashboard, useAdminDashboard } from '@/hooks/useDashboard';
+import { usePendingReadings } from '@/hooks/api/usePendingReadings';
 import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
 import { Link } from 'react-router-dom';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'superadmin';
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Fetch basic data
@@ -25,10 +28,22 @@ export default function DashboardPage() {
   const { data: pumps = [], isLoading: pumpsLoading, refetch: refetchPumps } = usePumps();
   const { data: fuelPrices = [], isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
   const { data: readings = [], isLoading: readingsLoading, refetch: refetchReadings } = useReadings();
+
+  // Pending reading alerts
+  const { data: pendingAlerts = [] } = usePendingReadings();
   
   // Fetch analytics data
-  const { data: analytics, isLoading: analyticsLoading, refetch: refetchAnalytics } = useAnalyticsDashboard();
-  const { data: adminData, isLoading: adminLoading, refetch: refetchAdmin } = useAdminDashboard();
+  const {
+    data: analytics,
+    isLoading: analyticsLoading,
+    refetch: refetchAnalytics,
+  } = useAnalyticsDashboard(isSuperAdmin);
+
+  const {
+    data: adminData,
+    isLoading: adminLoading,
+    refetch: refetchAdmin,
+  } = useAdminDashboard(isSuperAdmin);
   
   // Calculate metrics
   const totalRevenue = readings.reduce((sum, reading) => sum + (reading.amount || 0), 0);
@@ -37,26 +52,32 @@ export default function DashboardPage() {
   
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await Promise.all([
-      refetchStations(),
-      refetchPumps(),
-      refetchPrices(),
-      refetchReadings(),
-      refetchAnalytics(),
-      refetchAdmin()
-    ]);
+    const promises: Promise<any>[] = [refetchStations(), refetchPumps(), refetchPrices(), refetchReadings()];
+    if (isSuperAdmin) {
+      promises.push(refetchAnalytics());
+      promises.push(refetchAdmin());
+    }
+    await Promise.all(promises);
     setIsRefreshing(false);
   };
-  
-  const isLoading = stationsLoading || pumpsLoading || pricesLoading || readingsLoading || analyticsLoading || adminLoading;
+
+  const isLoading =
+    stationsLoading ||
+    pumpsLoading ||
+    pricesLoading ||
+    readingsLoading ||
+    (isSuperAdmin ? analyticsLoading || adminLoading : false);
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Dashboard
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+            <span>Dashboard</span>
+            {pendingAlerts.length > 0 && (
+              <Badge variant="destructive">{pendingAlerts.length}</Badge>
+            )}
           </h1>
           <p className="text-gray-600">
             Welcome back, {user?.name || 'User'}! Here's your business overview.
@@ -93,7 +114,7 @@ export default function DashboardPage() {
 
         <EnhancedMetricsCard
           title="Fuel Volume"
-          value={`${totalVolume.toFixed(2)}L`}
+          value={`${totalVolume.toFixed(3)}L`}
           icon={<Fuel className="h-5 w-5" />}
           description="Total fuel dispensed"
           gradient="from-blue-500 to-cyan-600"
@@ -119,7 +140,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Analytics Cards - Only show if we have analytics data */}
-      {analytics && (
+      {isSuperAdmin && analytics && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <EnhancedMetricsCard
             title="Total Tenants"
@@ -220,7 +241,7 @@ export default function DashboardPage() {
                   <div>
                     <div className="font-medium">Reading #{reading.id.slice(0, 8)}</div>
                     <div className="text-sm text-muted-foreground">
-                      {reading.volume?.toFixed(2)}L • ₹{reading.amount?.toFixed(2)} • {reading.paymentMethod}
+                      {reading.volume?.toFixed(3)}L • ₹{reading.amount?.toFixed(2)} • {reading.paymentMethod}
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">

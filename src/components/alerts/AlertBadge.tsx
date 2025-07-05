@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAlerts } from '@/hooks/useAlerts';
 import { Bell, X, CheckCircle } from 'lucide-react';
@@ -61,6 +61,7 @@ export function AlertBadge() {
             Alerts & Notifications
             <Badge variant="secondary">{unreadAlerts.length}</Badge>
           </DialogTitle>
+          <DialogDescription>Recent alerts for this tenant</DialogDescription>
         </DialogHeader>
         
         <ScrollArea className="max-h-96">

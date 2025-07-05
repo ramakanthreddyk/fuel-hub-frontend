@@ -66,7 +66,7 @@ export function InventoryStatusCard({ stationId }: InventoryStatusCardProps) {
 
         <div className="grid gap-3">
           {inventory.slice(0, 5).map((item) => {
-            const currentLevel = item.currentVolume || item.currentStock;
+            const currentLevel = item.currentVolume ?? item.currentStock ?? 0;
             return (
               <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
                 <div className="flex items-center gap-3">

@@ -1,3 +1,9 @@
+---
+title: ATTENDANT Role Journey
+lastUpdated: 2025-07-05
+category: journeys
+---
+
 # ATTENDANT Role Journey
 
 Attendants perform basic operations like recording nozzle readings and submitting cash reports. They authenticate via `/api/v1/auth/login` with tenant header.

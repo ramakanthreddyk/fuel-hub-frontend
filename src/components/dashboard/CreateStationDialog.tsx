@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCreateStation } from '@/hooks/api/useStations';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { stationsApi } from '@/api/stations';
 
 interface CreateStationDialogProps {
   children?: React.ReactNode;
@@ -24,7 +23,7 @@ interface CreateStationFormData {
 export default function CreateStationDialog({ children }: CreateStationDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const createStationMutation = useCreateStation();
 
   const form = useForm<CreateStationFormData>({
     defaultValues: {
@@ -34,39 +33,32 @@ export default function CreateStationDialog({ children }: CreateStationDialogPro
     }
   });
 
-  const createStationMutation = useMutation({
-    mutationFn: (data: CreateStationFormData) => {
-      // Transform to match API expectations
-      const stationData = {
-        name: data.name,
-        address: data.address,
-        city: '', // Default empty values for required fields
-        state: '',
-        postalCode: ''
-      };
-      return stationsApi.createStation(stationData);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stations'] });
-      queryClient.invalidateQueries({ queryKey: ['stations-with-metrics'] });
-      setOpen(false);
-      form.reset();
-      toast({
-        title: "Success",
-        description: "Station created successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create station",
-        variant: "destructive",
-      });
-    }
-  });
+  const handleSuccess = () => {
+    setOpen(false);
+    form.reset();
+    toast({ title: 'Success', description: 'Station created successfully' });
+  };
+
+  const handleError = () => {
+    toast({
+      title: 'Error',
+      description: 'Failed to create station',
+      variant: 'destructive',
+    });
+  };
 
   const onSubmit = (data: CreateStationFormData) => {
-    createStationMutation.mutate(data);
+    const payload = {
+      name: data.name,
+      address: data.address,
+      city: '',
+      state: '',
+      postalCode: '',
+    };
+    createStationMutation.mutate(payload, {
+      onSuccess: handleSuccess,
+      onError: handleError,
+    });
   };
 
   return (

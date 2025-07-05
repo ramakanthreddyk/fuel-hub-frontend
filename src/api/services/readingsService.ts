@@ -43,14 +43,16 @@ export interface CreateReadingRequest {
 export const readingsService = {
   /**
    * Get all readings
-   * @param nozzleId Optional nozzle ID to filter by
+   * @param options Optional filter options
    * @returns List of readings
    */
-  getReadings: async (nozzleId?: string): Promise<Reading[]> => {
+  getReadings: async (options?: { nozzleId?: string; limit?: number }): Promise<Reading[]> => {
     try {
       console.log('[READINGS-API] Fetching readings');
-      
-      const params = nozzleId ? { nozzleId } : {};
+
+      const params: Record<string, any> = {};
+      if (options?.nozzleId) params.nozzleId = options.nozzleId;
+      if (options?.limit) params.limit = options.limit;
       const response = await apiClient.get(API_CONFIG.endpoints.readings.base, { params });
       
       let readingsArray: Reading[] = [];
@@ -101,22 +103,16 @@ export const readingsService = {
       if (!nozzleId) {
         return null;
       }
-      
+
       console.log(`[READINGS-API] Fetching latest reading for nozzle ${nozzleId}`);
-      
-      // Get all readings for the nozzle
-      const allReadings = await readingsService.getReadings(nozzleId);
-      
-      if (allReadings.length === 0) {
+
+      const readings = await readingsService.getReadings({ nozzleId, limit: 1 });
+
+      if (readings.length === 0) {
         return null;
       }
-      
-      // Sort by reading date (descending) and take the first one
-      const sortedReadings = [...allReadings].sort((a, b) => {
-        return new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime();
-      });
-      
-      return sortedReadings[0];
+
+      return readings[0];
     } catch (error) {
       console.error(`[READINGS-API] Error fetching latest reading for nozzle ${nozzleId}:`, error);
       return null;

@@ -16,12 +16,15 @@ import { UserForm } from '@/components/users/UserForm';
 import { ResetPasswordForm } from '@/components/users/ResetPasswordForm';
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, useResetPassword } from '@/hooks/api/useUsers';
 import { User, CreateUserRequest, UpdateUserRequest, ResetPasswordRequest } from '@/api/services/usersService';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
 export default function UsersPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userIdToDelete, setUserIdToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Use the new API hooks
@@ -89,23 +92,28 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = (userId: string) => {
-    if (confirm("Are you sure you want to delete this user?")) {
-      deleteUser.mutate(userId, {
-        onSuccess: () => {
-          toast({
-            title: "Success",
-            description: "User deleted successfully",
-          });
-        },
-        onError: (error: any) => {
-          toast({
-            title: "Error",
-            description: error.message || "Failed to delete user",
-            variant: "destructive",
-          });
-        }
-      });
-    }
+    setUserIdToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteUser = () => {
+    if (!userIdToDelete) return;
+    deleteUser.mutate(userIdToDelete, {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "User deleted successfully",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete user",
+          variant: "destructive",
+        });
+      },
+    });
+    setUserIdToDelete(null);
   };
 
   // Handle error state
@@ -266,6 +274,16 @@ export default function UsersPage() {
           )}
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete User"
+        description="Are you sure you want to delete this user? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        onConfirm={confirmDeleteUser}
+        onCancel={() => setUserIdToDelete(null)}
+      />
     </div>
   );
 }

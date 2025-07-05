@@ -1,164 +1,192 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Fuel, Gauge, Settings, AlertTriangle } from 'lucide-react';
+import { 
+  Eye, 
+  AlertTriangle, 
+  CheckCircle, 
+  Wrench,
+  Trash2,
+  MoreVertical,
+  Droplets,
+  Zap,
+  Settings
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface Pump {
-  id: string;
-  name: string;
-  status: 'active' | 'inactive' | 'maintenance';
-  nozzleCount: number;
-  fuelType: string;
-  lastReading?: {
-    totalizer: number;
-    timestamp: string;
-  };
-}
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface FuelPumpCardProps {
-  pump: Pump;
-  onViewNozzles?: (pumpId: string) => void;
-  onSettings?: (pumpId: string) => void;
+  pump: {
+    id: string;
+    name: string;
+    serialNumber?: string;
+    status: 'active' | 'maintenance' | 'inactive';
+    nozzleCount?: number;
+  };
+  onViewNozzles: (pumpId: string) => void;
+  onDelete: (pumpId: string) => void;
+  needsAttention?: boolean;
 }
 
-export function FuelPumpCard({ pump, onViewNozzles, onSettings }: FuelPumpCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
+export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention = false }: FuelPumpCardProps) {
+  const getStatusConfig = () => {
+    switch (pump.status) {
       case 'active':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'inactive':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return {
+          color: 'bg-emerald-400',
+          shadowColor: 'shadow-emerald-400/30',
+          bgGradient: 'from-emerald-50 to-green-100',
+          textColor: 'text-emerald-800',
+          icon: CheckCircle,
+          label: 'ACTIVE'
+        };
       case 'maintenance':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
+        return {
+          color: 'bg-amber-400',
+          shadowColor: 'shadow-amber-400/30',
+          bgGradient: 'from-amber-50 to-orange-100',
+          textColor: 'text-amber-800',
+          icon: Wrench,
+          label: 'MAINTENANCE'
+        };
+      case 'inactive':
+        return {
+          color: 'bg-slate-400',
+          shadowColor: 'shadow-slate-400/30',
+          bgGradient: 'from-slate-50 to-gray-100',
+          textColor: 'text-slate-800',
+          icon: AlertTriangle,
+          label: 'OFFLINE'
+        };
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return {
+          color: 'bg-slate-400',
+          shadowColor: 'shadow-slate-400/30',
+          bgGradient: 'from-slate-50 to-gray-100',
+          textColor: 'text-slate-800',
+          icon: AlertTriangle,
+          label: 'UNKNOWN'
+        };
     }
   };
 
-  const getFuelTypeColor = (fuelType: string) => {
-    switch (fuelType.toLowerCase()) {
-      case 'petrol':
-      case 'gasoline':
-        return 'from-green-400 to-emerald-500';
-      case 'diesel':
-        return 'from-yellow-400 to-orange-500';
-      case 'premium':
-        return 'from-purple-400 to-violet-500';
-      default:
-        return 'from-blue-400 to-indigo-500';
-    }
-  };
+  const statusConfig = getStatusConfig();
+  const StatusIcon = statusConfig.icon;
 
   return (
-    <Card className="hover:shadow-xl transition-all duration-300 border-0 bg-white/95 backdrop-blur-sm overflow-hidden">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-3">
+    <div className={cn(
+      "relative group transition-all duration-300 hover:scale-[1.02]",
+      needsAttention && "animate-pulse"
+    )}>
+      {/* Fuel Pump Dispenser Shape */}
+      <div className={cn(
+        "relative bg-gradient-to-b",
+        statusConfig.bgGradient,
+        "rounded-3xl p-8 shadow-2xl border-4 border-white",
+        statusConfig.shadowColor,
+        "min-h-[420px] max-w-[280px] mx-auto"
+      )}>
+        
+        {/* Top Display Panel */}
+        <div className="bg-slate-900 rounded-xl p-4 mb-6 shadow-inner">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-green-400 font-mono text-xs tracking-wider">FUELSYNC</div>
             <div className={cn(
-              "relative p-4 rounded-2xl bg-gradient-to-br shadow-lg",
-              getFuelTypeColor(pump.fuelType)
-            )}>
-              <Fuel className="h-8 w-8 text-white" />
-              {pump.status === 'maintenance' && (
-                <div className="absolute -top-1 -right-1 p-1 bg-amber-500 rounded-full">
-                  <AlertTriangle className="h-3 w-3 text-white" />
-                </div>
-              )}
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-800">{pump.name}</h3>
-              <p className="text-sm text-muted-foreground font-medium">{pump.fuelType}</p>
-            </div>
-          </CardTitle>
-          <Badge className={cn("border font-medium", getStatusColor(pump.status))}>
-            {pump.status}
+              "w-3 h-3 rounded-full",
+              statusConfig.color,
+              pump.status === 'active' && "animate-pulse shadow-lg"
+            )} />
+          </div>
+          
+          <div className="text-white font-mono text-xl font-bold mb-1">
+            {pump.name.toUpperCase()}
+          </div>
+          
+          <div className="text-green-400 font-mono text-sm">
+            #{pump.serialNumber || 'N/A'}
+          </div>
+        </div>
+
+        {/* Status Badge */}
+        <div className="flex justify-center mb-6">
+          <Badge className={cn(
+            "px-4 py-2 text-white font-bold text-sm shadow-lg",
+            statusConfig.color,
+            "flex items-center gap-2"
+          )}>
+            <StatusIcon className="w-4 h-4" />
+            {statusConfig.label}
           </Badge>
         </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        {/* Fuel Pump Visual */}
-        <div className="relative">
-          <div className="bg-gradient-to-b from-gray-100 to-gray-200 rounded-2xl p-6 shadow-inner">
-            {/* Pump Body */}
-            <div className="relative mx-auto w-24 h-32 bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg shadow-lg">
-              {/* Display Screen */}
-              <div className="absolute top-4 left-2 right-2 h-12 bg-black rounded border-2 border-gray-600 flex items-center justify-center">
-                <div className="text-green-400 font-mono text-xs text-center">
-                  <div className="text-[10px] opacity-75">TOTAL L</div>
-                  <div className="font-bold">
-                    {pump.lastReading?.totalizer?.toLocaleString() || '0'}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Nozzle Holders */}
-              <div className="absolute -right-6 top-20 space-y-2">
-                {Array.from({ length: pump.nozzleCount }, (_, i) => (
-                  <div key={i} className="relative">
-                    <div className="w-8 h-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-r-full shadow-md"></div>
-                    <div className="absolute -right-4 top-1 w-6 h-2 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full"></div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Base */}
-              <div className="absolute -bottom-2 -left-2 -right-2 h-6 bg-gradient-to-b from-gray-700 to-gray-800 rounded-b-lg"></div>
+
+        {/* Nozzle Information */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 mb-6 shadow-lg">
+          <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center gap-2">
+              <Droplets className="w-6 h-6 text-blue-600" />
+              <span className="font-bold text-slate-800">
+                {pump.nozzleCount || 0}
+              </span>
+            </div>
+            <div className="text-slate-600 font-medium">
+              {pump.nozzleCount === 1 ? 'Nozzle' : 'Nozzles'}
             </div>
           </div>
         </div>
 
-        {/* Pump Statistics */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
-            <Gauge className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-            <div className="text-lg font-bold text-blue-700">{pump.nozzleCount}</div>
-            <div className="text-xs text-muted-foreground font-medium">Nozzles</div>
-          </div>
-          
-          <div className="text-center p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-            <div className="text-lg font-bold text-green-700">
-              {pump.lastReading ? 'Active' : 'Idle'}
-            </div>
-            <div className="text-xs text-muted-foreground font-medium">
-              {pump.lastReading ? 'Last Reading' : 'Status'}
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          {onViewNozzles && (
-            <Button 
-              onClick={() => onViewNozzles(pump.id)}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-              size="sm"
-            >
-              <Gauge className="h-4 w-4 mr-2" />
-              View Nozzles
-            </Button>
-          )}
-          
-          {onSettings && (
-            <Button 
-              onClick={() => onSettings(pump.id)}
-              variant="outline"
-              size="sm"
-              className="hover:bg-gray-50"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
-        {pump.lastReading && (
-          <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-            Last reading: {new Date(pump.lastReading.timestamp).toLocaleString()}
+        {needsAttention && (
+          <div className="flex items-center justify-center gap-2 bg-orange-100 border-2 border-orange-300 rounded-lg p-3 mb-4">
+            <AlertTriangle className="w-5 h-5 text-orange-600" />
+            <span className="font-bold text-orange-800 text-sm">NEEDS ATTENTION</span>
           </div>
         )}
-      </CardContent>
-    </Card>
+
+        {/* Control Panel */}
+        <div className="bg-slate-800 rounded-2xl p-4 space-y-3">
+          <Button 
+            onClick={() => onViewNozzles(pump.id)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all hover:shadow-xl"
+          >
+            <Eye className="w-5 h-5 mr-3" />
+            VIEW NOZZLES
+          </Button>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1 bg-white/90 border-2 hover:bg-gray-50"
+            >
+              <Settings className="w-4 h-4 mr-2 text-slate-600" />
+              Settings
+            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="px-3 bg-white/90 border-2 hover:bg-gray-50">
+                  <MoreVertical className="w-4 h-4 text-slate-600" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-white border-2 shadow-xl">
+                <DropdownMenuItem onClick={() => onDelete(pump.id)} className="text-red-600 hover:bg-red-50">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Pump
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Fuel Hose Visual Elements */}
+        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+          <div className="w-8 h-4 bg-slate-700 rounded-b-lg shadow-lg" />
+        </div>
+        
+        <div className="absolute -right-2 top-1/2 transform -translate-y-1/2">
+          <div className="w-4 h-16 bg-slate-600 rounded-r-lg shadow-lg" />
+        </div>
+      </div>
+    </div>
   );
 }

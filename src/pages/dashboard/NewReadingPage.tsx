@@ -270,7 +270,7 @@ export default function NewReadingPage() {
                       {latestReadingLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        `${latestReading?.reading?.toFixed(2) || '0.00'} L`
+                        `${Number(latestReading?.reading ?? 0).toFixed(3)} L`
                       )}
                     </span>
                   </div>
@@ -306,13 +306,13 @@ export default function NewReadingPage() {
                 {reading > 0 && reading < minReading && (
                   <div className="flex items-center gap-2 text-sm text-red-600">
                     <AlertCircle className="h-4 w-4" />
-                    Reading must be at least {minReading.toFixed(2)}
+                    Reading must be at least {Number(minReading).toFixed(3)}
                   </div>
                 )}
                 {reading > minReading && (
                   <div className="flex items-center gap-2 text-sm text-green-600">
                     <CheckCircle className="h-4 w-4" />
-                    Volume: {(reading - minReading).toFixed(2)} L
+                    Volume: {Number(reading - minReading).toFixed(3)} L
                   </div>
                 )}
               </div>

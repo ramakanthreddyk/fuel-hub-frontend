@@ -106,7 +106,7 @@ export function NozzleDisplay({ nozzle, onTakeReading, onSettings }: NozzleDispl
                         "font-bold transition-all duration-300",
                         isDispensing && "animate-pulse text-blue-400"
                       )}>
-                        {nozzle.currentReading?.toFixed(2) || '0.00'}
+                        {Number(nozzle.currentReading ?? 0).toFixed(3)}
                       </div>
                     </div>
                   </div>
@@ -131,14 +131,14 @@ export function NozzleDisplay({ nozzle, onTakeReading, onSettings }: NozzleDispl
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
               <div className="text-2xl font-bold text-blue-700">
-                {nozzle.currentReading?.toFixed(2) || '0.00'}
+                {Number(nozzle.currentReading ?? 0).toFixed(3)}
               </div>
               <div className="text-xs text-muted-foreground font-medium">Current Reading (L)</div>
             </div>
             
             <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
               <div className="text-2xl font-bold text-green-700">
-                {nozzle.lastReading?.toFixed(2) || '0.00'}
+                {Number(nozzle.lastReading ?? 0).toFixed(3)}
               </div>
               <div className="text-xs text-muted-foreground font-medium">Last Reading (L)</div>
             </div>

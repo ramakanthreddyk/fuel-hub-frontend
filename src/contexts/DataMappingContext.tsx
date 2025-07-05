@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface DataMappingContextType {
   mapApiData: <T,>(data: any, mapping?: Record<string, string>) => T;
@@ -21,6 +22,7 @@ interface DataMappingProviderProps {
 
 export function DataMappingProvider({ children }: DataMappingProviderProps) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   const mapApiData = <T,>(data: any, mapping?: Record<string, string>): T => {
     if (!data || typeof data !== 'object') {
@@ -58,21 +60,74 @@ export function DataMappingProvider({ children }: DataMappingProviderProps) {
     return data.map(item => mapApiData<T>(item, mapping));
   };
 
-  // Simple placeholder implementations for nozzle/station mapping
+  // Helpers to access cached query data
+  const findNozzle = (id: string): any => {
+    const direct = queryClient.getQueryData<any>(['nozzle', id]);
+    if (direct) return direct;
+
+    const nozzleQueries = queryClient
+      .getQueriesData<any[]>({ predicate: q => {
+        const key = q.queryKey[0];
+        return key === 'nozzles' || key === 'contract-nozzles';
+      } }) as [unknown, any[]][];
+
+    for (const [, data] of nozzleQueries) {
+      if (Array.isArray(data)) {
+        const found = data.find(n => n.id === id);
+        if (found) return found;
+      }
+    }
+
+    return undefined;
+  };
+
+  const findPump = (id: string): any => {
+    const direct = queryClient.getQueryData<any>(['pump', id]);
+    if (direct) return direct;
+
+    const pumpQueries = queryClient
+      .getQueriesData<any[]>({ predicate: q => {
+        const key = q.queryKey[0];
+        return key === 'pumps' || key === 'contract-pumps';
+      } }) as [unknown, any[]][];
+
+    for (const [, data] of pumpQueries) {
+      if (Array.isArray(data)) {
+        const found = data.find(p => p.id === id);
+        if (found) return found;
+      }
+    }
+
+    return undefined;
+  };
+
   const getStationByNozzleId = (nozzleId: string): string => {
-    // TODO: Implement actual station lookup logic
-    return `Station-${nozzleId.slice(-2)}`;
+    const nozzle = findNozzle(nozzleId);
+    if (!nozzle) return '';
+
+    const stationId = nozzle.stationId || nozzle.station_id;
+    if (stationId) return stationId;
+
+    const pumpId = nozzle.pumpId || nozzle.pump_id;
+    if (pumpId) {
+      const pump = findPump(pumpId);
+      return pump?.stationId || pump?.station_id || '';
+    }
+    return '';
   };
 
   const getNozzleNumber = (nozzleId: string): number => {
-    // TODO: Implement actual nozzle number lookup
-    const match = nozzleId.match(/(\d+)$/);
-    return match ? parseInt(match[1], 10) : 1;
+    const nozzle = findNozzle(nozzleId);
+    return (
+      nozzle?.nozzleNumber ||
+      nozzle?.nozzle_number ||
+      0
+    );
   };
 
   const getNozzleFuelType = (nozzleId: string): string => {
-    // TODO: Implement actual fuel type lookup
-    return 'petrol'; // Default fuel type
+    const nozzle = findNozzle(nozzleId);
+    return nozzle?.fuelType || nozzle?.fuel_type || '';
   };
 
   const value: DataMappingContextType = {

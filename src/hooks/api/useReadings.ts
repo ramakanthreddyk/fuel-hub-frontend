@@ -5,6 +5,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { readingsService, Reading, CreateReadingRequest } from '@/api/services/readingsService';
+import { alertsService } from '@/api/services';
 
 /**
  * Hook to fetch all readings
@@ -73,11 +74,26 @@ export const useCreateReading = () => {
   
   return useMutation({
     mutationFn: (data: CreateReadingRequest) => readingsService.createReading(data),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       console.log('[READINGS-HOOK] Reading created successfully');
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['readings'] });
       queryClient.invalidateQueries({ queryKey: ['latest-reading', variables.nozzleId] });
+      try {
+        const alerts = await alertsService.getAlerts({
+          type: 'no_readings_24h',
+          acknowledged: false,
+          isActive: true,
+        });
+        const matching = alerts.filter(a => a.nozzleId === variables.nozzleId);
+        if (matching.length > 0) {
+          await alertsService.bulkAcknowledgeAlerts(matching.map(a => a.id));
+          queryClient.invalidateQueries({ queryKey: ['pending-readings'] });
+          queryClient.invalidateQueries({ queryKey: ['alerts'] });
+        }
+      } catch (err) {
+        console.warn('Failed to auto-acknowledge alerts', err);
+      }
     },
   });
 };

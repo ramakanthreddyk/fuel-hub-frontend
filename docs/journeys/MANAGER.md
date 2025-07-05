@@ -1,3 +1,9 @@
+---
+title: MANAGER Role Journey
+lastUpdated: 2025-07-05
+category: journeys
+---
+
 # MANAGER Role Journey
 
 Managers operate within a tenant and usually handle day‑to‑day station activities. They log in using `/api/v1/auth/login` with the tenant header.

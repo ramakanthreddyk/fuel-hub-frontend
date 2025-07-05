@@ -49,7 +49,8 @@ export const pumpsApi = {
       console.log('[PUMPS-API] Creating pump with data:', data);
       
       const response = await apiClient.post('/pumps', data);
-      const pump = extractApiData<Pump>(response);
+      const payload = extractApiData<any>(response);
+      const pump: Pump = payload.pump ?? payload;
       
       console.log('[PUMPS-API] Pump created successfully:', pump);
       return pump;
@@ -65,7 +66,8 @@ export const pumpsApi = {
       console.log(`[PUMPS-API] Fetching pump details for ID: ${pumpId}`);
       
       const response = await apiClient.get(`/pumps/${pumpId}`);
-      const pump = extractApiData<Pump>(response);
+      const payload = extractApiData<any>(response);
+      const pump: Pump = payload.pump ?? payload;
       
       console.log('[PUMPS-API] Pump details:', pump);
       return pump;

@@ -71,3 +71,13 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Environment Variables
+
+The application expects an API base URL to be provided at build time. Create a `.env.local` file in the project root with the following variable:
+
+```bash
+VITE_API_BASE_URL=<https://your-backend-url>
+```
+
+If not set, the app defaults to `https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net`.

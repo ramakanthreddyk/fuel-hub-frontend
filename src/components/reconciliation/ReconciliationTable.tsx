@@ -71,7 +71,7 @@ export function ReconciliationTable({ readings, isLoading }: ReconciliationTable
               {reading.deltaVolume.toLocaleString()}
             </TableCell>
             <TableCell className="font-mono">
-              ₹{reading.pricePerLitre.toFixed(2)}
+              ₹{Number(reading.pricePerLitre).toFixed(2)}
             </TableCell>
             <TableCell className="font-mono font-medium">
               ₹{reading.saleValue.toLocaleString()}

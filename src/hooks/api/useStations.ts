@@ -38,11 +38,13 @@ export const useStation = (id: string) => {
  */
 export const useCreateStation = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: CreateStationData) => stationsApi.createStation(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
+      // Also refresh metrics-enabled queries
+      queryClient.invalidateQueries({ queryKey: ['stations-with-metrics'] });
     },
   });
 };
@@ -59,6 +61,7 @@ export const useUpdateStation = () => {
     onSuccess: (station, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['station', id] });
       queryClient.invalidateQueries({ queryKey: ['stations'] });
+      queryClient.invalidateQueries({ queryKey: ['stations-with-metrics'] });
     },
   });
 };
@@ -74,6 +77,7 @@ export const useDeleteStation = () => {
     mutationFn: (id: string) => stationsApi.deleteStation(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
+      queryClient.invalidateQueries({ queryKey: ['stations-with-metrics'] });
     },
   });
 };

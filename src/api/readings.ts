@@ -20,12 +20,11 @@ export const readingsApi = {
   // Get latest reading for a nozzle
   getLatestReading: async (nozzleId: string): Promise<NozzleReading | null> => {
     try {
-      const response = await apiClient.get(`/nozzle-readings?nozzleId=${nozzleId}`);
+      const response = await apiClient.get(`/nozzle-readings?nozzleId=${nozzleId}&limit=1`);
       const readings = extractApiArray<NozzleReading>(response, 'readings');
-      
+
       if (readings.length === 0) return null;
-      
-      // Return the first (latest) reading
+
       return readings[0];
     } catch (error) {
       return null;

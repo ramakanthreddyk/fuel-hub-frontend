@@ -1,3 +1,5 @@
+
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stationsApi } from '@/api/stations';
@@ -9,12 +11,14 @@ import { ArrowLeft, Edit, Trash2, Fuel, Settings, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorFallback } from '@/components/common/ErrorFallback';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
 export default function StationDetailsPage() {
   const { stationId } = useParams<{ stationId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Fetch station details using the correct API endpoint
   const { data: station, isLoading, error, refetch } = useQuery({
@@ -94,9 +98,15 @@ export default function StationDetailsPage() {
   }
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this station? This action cannot be undone.')) {
-      deleteMutation.mutate();
-    }
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    deleteMutation.mutate();
+  };
+
+  const handleCancel = () => {
+    setDeleteDialogOpen(false);
   };
 
   return (
@@ -265,6 +275,16 @@ export default function StationDetailsPage() {
           </CardContent>
         </Card>
       )}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Station"
+        description="Are you sure you want to delete this station? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        onConfirm={confirmDelete}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }

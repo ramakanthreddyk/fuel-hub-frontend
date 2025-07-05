@@ -20,18 +20,25 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import AttendantDashboardPage from './pages/dashboard/AttendantDashboardPage';
 import StationsPage from './pages/dashboard/StationsPage';
 import StationDetailPage from './pages/dashboard/StationDetailPage';
-import CreateStationPage from './pages/dashboard/CreateStationPage';
+import NewStationPage from './pages/dashboard/NewStationPage';
+import EditStationPage from './pages/dashboard/EditStationPage';
 import PumpsPage from './pages/dashboard/PumpsPage';
 import PumpDetailPage from './pages/dashboard/PumpDetailPage';
 import CreatePumpPage from './pages/dashboard/CreatePumpPage';
+import EditPumpPage from './pages/dashboard/EditPumpPage';
 import NozzlesPage from './pages/dashboard/NozzlesPage';
 import CreateNozzlePage from './pages/dashboard/CreateNozzlePage';
+import EditNozzlePage from './pages/dashboard/EditNozzlePage';
 import FuelPricesPage from './pages/dashboard/FuelPricesPage';
 import ReadingsPage from './pages/dashboard/ReadingsPage';
 import NewReadingPage from './pages/dashboard/NewReadingPage';
 import FuelInventoryPage from './pages/dashboard/FuelInventoryPage';
 import ReportsPage from './pages/dashboard/ReportsPage';
 import AnalyticsPage from './pages/dashboard/AnalyticsPage';
+import StationComparisonPage from './pages/dashboard/StationComparisonPage';
+import StationRankingPage from './pages/dashboard/StationRankingPage';
+import UpdateInventoryPage from './pages/dashboard/UpdateInventoryPage';
+import ReportExportPage from './pages/dashboard/ReportExportPage';
 import UsersPage from './pages/dashboard/UsersPage';
 import SettingsPage from './pages/dashboard/SettingsPage';
 import CashReportPage from './pages/dashboard/CashReportPage';
@@ -76,24 +83,30 @@ function App() {
                 
                 {/* Station Routes */}
                 <Route path="stations" element={<StationsPage />} />
-                <Route path="stations/new" element={<CreateStationPage />} />
+                <Route path="stations/new" element={<NewStationPage />} />
+                <Route path="stations/:stationId/edit" element={<EditStationPage />} />
                 <Route path="stations/:stationId" element={<StationDetailPage />} />
                 <Route path="stations/:stationId/pumps" element={<PumpsPage />} />
                 <Route path="stations/:stationId/pumps/:pumpId" element={<PumpDetailPage />} />
+                <Route path="stations/:stationId/pumps/:pumpId/edit" element={<EditPumpPage />} />
                 <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
                 <Route path="stations/:stationId/pumps/:pumpId/nozzles/new" element={<CreateNozzlePage />} />
+                <Route path="stations/:stationId/pumps/:pumpId/nozzles/:nozzleId/edit" element={<EditNozzlePage />} />
                 
                 {/* Pump Routes */}
                 <Route path="pumps" element={<PumpsPage />} />
                 <Route path="pumps/new" element={<CreatePumpPage />} />
+                <Route path="pumps/:pumpId/edit" element={<EditPumpPage />} />
                 <Route path="pumps/:pumpId" element={<PumpDetailPage />} />
                 <Route path="pumps/:pumpId/nozzles" element={<NozzlesPage />} />
                 <Route path="pumps/:pumpId/nozzles/new" element={<CreateNozzlePage />} />
+                <Route path="pumps/:pumpId/nozzles/:nozzleId/edit" element={<EditNozzlePage />} />
                 
                 {/* Nozzle Routes */}
                 <Route path="nozzles" element={<NozzlesPage />} />
                 <Route path="nozzles/new" element={<CreateNozzlePage />} />
                 <Route path="nozzles/:nozzleId" element={<NozzlesPage />} />
+                <Route path="nozzles/:nozzleId/edit" element={<EditNozzlePage />} />
                 <Route path="nozzles/:nozzleId/readings/new" element={<NewReadingPage />} />
                 
                 {/* Reading Routes */}
@@ -118,8 +131,12 @@ function App() {
                 {/* Other Routes */}
                 <Route path="fuel-prices" element={<FuelPricesPage />} />
                 <Route path="fuel-inventory" element={<FuelInventoryPage />} />
+                <Route path="fuel-inventory/update" element={<UpdateInventoryPage />} />
                 <Route path="reports" element={<ReportsPage />} />
+                <Route path="reports/export" element={<ReportExportPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="stations/comparison" element={<StationComparisonPage />} />
+                <Route path="stations/ranking" element={<StationRankingPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="settings" element={<SettingsPage />} />
               </Route>

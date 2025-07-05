@@ -1,3 +1,9 @@
+---
+title: SUPERADMIN Role Journey
+lastUpdated: 2025-07-05
+category: journeys
+---
+
 # SUPERADMIN Role Journey
 
 This document traces every API endpoint and data flow available to a **SUPERADMIN** in FuelSync Hub. It is derived from `docs/openapi.yaml` and the Express routes under `src/routes`. Any behaviour not documented here is a TODO for the dev team.

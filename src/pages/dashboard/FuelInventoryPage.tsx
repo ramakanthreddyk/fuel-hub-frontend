@@ -201,7 +201,10 @@ export default function FuelInventoryPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(summary?.totalCapacity || inventory.reduce((acc, item) => acc + item.capacity, 0)).toLocaleString()}L
+              {(
+                summary?.totalCapacity ??
+                inventory.reduce((acc, item) => acc + (item.capacity ?? 0), 0)
+              ).toLocaleString()}L
             </div>
             <p className="text-xs text-muted-foreground">
               Maximum storage
@@ -240,8 +243,10 @@ export default function FuelInventoryPage() {
           ) : (
             <div className="space-y-4">
               {inventory.map((item) => {
-                const stockStatus = getStockStatus(item.currentStock, item.capacity, item.lowThreshold);
-                const fillPercentage = (item.currentStock / item.capacity) * 100;
+                const currentStock = item.currentStock ?? 0;
+                const capacity = item.capacity ?? 0;
+                const stockStatus = getStockStatus(currentStock, capacity, item.lowThreshold);
+                const fillPercentage = capacity > 0 ? (currentStock / capacity) * 100 : 0;
 
                 return (
                   <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -265,10 +270,10 @@ export default function FuelInventoryPage() {
                     </div>
                     <div className="text-right ml-4">
                       <div className="text-lg font-semibold">
-                        {item.currentStock.toLocaleString()}L
+                        {(item.currentStock ?? 0).toLocaleString()}L
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        of {item.capacity.toLocaleString()}L
+                        of {(item.capacity ?? 0).toLocaleString()}L
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {fillPercentage.toFixed(1)}% full

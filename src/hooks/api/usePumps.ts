@@ -44,6 +44,7 @@ export const useCreatePump = () => {
     mutationFn: (data: CreatePumpRequest) => pumpsService.createPump(data),
     onSuccess: (newPump) => {
       queryClient.invalidateQueries({ queryKey: ['pumps', newPump.stationId] });
+      queryClient.invalidateQueries({ queryKey: ['pumps'] });
       queryClient.invalidateQueries({ queryKey: ['stations'] });
     },
   });
@@ -73,11 +74,12 @@ export const useUpdatePump = () => {
  */
 export const useDeletePump = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (id: string) => pumpsService.deletePump(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['pumps'] });
+      queryClient.invalidateQueries({ queryKey: ['pump', id] });
       queryClient.invalidateQueries({ queryKey: ['stations'] });
     },
   });
