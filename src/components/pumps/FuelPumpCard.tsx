@@ -45,7 +45,7 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
           icon: CheckCircle,
           label: 'Active',
           iconColor: 'text-emerald-400',
-          bgColor: 'bg-emerald-500/20 border-emerald-500/30'
+          bgColor: 'bg-emerald-500/30 border-emerald-500/50'
         };
       case 'maintenance':
         return {
@@ -54,7 +54,7 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
           icon: Settings2,
           label: 'Maintenance',
           iconColor: 'text-amber-400',
-          bgColor: 'bg-amber-500/20 border-amber-500/30'
+          bgColor: 'bg-amber-500/30 border-amber-500/50'
         };
       case 'inactive':
         return {
@@ -63,7 +63,7 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
           icon: AlertTriangle,
           label: 'Inactive',
           iconColor: 'text-red-400',
-          bgColor: 'bg-red-500/20 border-red-500/30'
+          bgColor: 'bg-red-500/30 border-red-500/50'
         };
       default:
         return {
@@ -72,7 +72,7 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
           icon: AlertTriangle,
           label: 'Unknown',
           iconColor: 'text-gray-400',
-          bgColor: 'bg-gray-500/20 border-gray-500/30'
+          bgColor: 'bg-gray-500/30 border-gray-500/50'
         };
     }
   };
@@ -83,7 +83,7 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
   return (
     <div className={cn(
       "group relative overflow-hidden rounded-3xl border backdrop-blur-xl transition-all duration-500 hover:scale-[1.02]",
-      "bg-white/5 dark:bg-white/5 border-white/10 dark:border-white/10",
+      "bg-slate-800/80 dark:bg-slate-900/80 border-slate-600/30 dark:border-slate-700/30",
       "shadow-2xl hover:shadow-3xl",
       statusConfig.glowColor,
       needsAttention && "ring-2 ring-amber-400/50 ring-offset-2 ring-offset-transparent"
@@ -102,7 +102,7 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
       )}
 
       {/* Floating Pump Icon */}
-      <div className="absolute top-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+      <div className="absolute top-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-white/30 to-white/10 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
         <Fuel className={cn("h-7 w-7", statusConfig.iconColor)} />
       </div>
 
@@ -143,17 +143,17 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
 
         {/* 3D Pump Visualization */}
         <div className="relative">
-          <div className="bg-gradient-to-b from-slate-800/50 to-slate-900/50 dark:from-slate-900/50 dark:to-black/50 rounded-2xl p-6 border border-white/10 dark:border-white/10 backdrop-blur-sm">
+          <div className="bg-gradient-to-b from-slate-700/60 to-slate-800/60 dark:from-slate-800/60 dark:to-slate-900/60 rounded-2xl p-6 border border-white/20 dark:border-white/20 backdrop-blur-sm">
             <div className="flex items-center justify-center">
               <div className="relative">
                 {/* Main Pump Body */}
                 <div className={cn(
                   "w-24 h-32 rounded-2xl shadow-xl border relative overflow-hidden",
-                  "bg-gradient-to-b from-slate-700 to-slate-800 dark:from-slate-800 dark:to-slate-900",
-                  "border-slate-600 dark:border-slate-700"
+                  "bg-gradient-to-b from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800",
+                  "border-slate-500 dark:border-slate-600"
                 )}>
                   {/* Digital Display */}
-                  <div className="absolute top-4 left-2 right-2 h-10 bg-black rounded-lg border border-slate-500 flex items-center justify-center overflow-hidden">
+                  <div className="absolute top-4 left-2 right-2 h-10 bg-black rounded-lg border border-slate-400 flex items-center justify-center overflow-hidden">
                     <div className="text-center">
                       <div className={cn(
                         "text-xs font-mono font-bold",
@@ -180,8 +180,8 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
                   <div className="absolute right-0 top-20 space-y-2">
                     {Array.from({ length: Math.min(pump.nozzleCount, 3) }, (_, i) => (
                       <div key={i} className="flex items-center">
-                        <div className="w-8 h-3 bg-gradient-to-r from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 rounded-r-xl shadow-sm border border-slate-500" />
-                        <div className="w-6 h-2 bg-gradient-to-r from-slate-500 to-slate-600 dark:from-slate-600 dark:to-slate-700 rounded-r-full ml-1 shadow-sm" />
+                        <div className="w-8 h-3 bg-gradient-to-r from-slate-500 to-slate-600 dark:from-slate-600 dark:to-slate-700 rounded-r-xl shadow-sm border border-slate-400" />
+                        <div className="w-6 h-2 bg-gradient-to-r from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600 rounded-r-full ml-1 shadow-sm" />
                       </div>
                     ))}
                   </div>
@@ -196,7 +196,7 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
                 </div>
                 
                 {/* Base Platform */}
-                <div className="absolute -bottom-2 -left-2 -right-2 h-4 bg-gradient-to-b from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 rounded-b-2xl shadow-xl border border-slate-500" />
+                <div className="absolute -bottom-2 -left-2 -right-2 h-4 bg-gradient-to-b from-slate-500 to-slate-600 dark:from-slate-600 dark:to-slate-700 rounded-b-2xl shadow-xl border border-slate-400" />
               </div>
             </div>
           </div>
@@ -204,9 +204,9 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white/10 dark:bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 dark:border-white/20">
+          <div className="bg-white/20 dark:bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30 dark:border-white/30">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-xl bg-blue-500/20 dark:bg-blue-500/20">
+              <div className="p-2 rounded-xl bg-blue-500/30 dark:bg-blue-500/30">
                 <Droplets className="h-5 w-5 text-blue-400 dark:text-blue-400" />
               </div>
               <span className="text-sm font-semibold text-slate-200 dark:text-slate-200">Nozzles</span>
@@ -219,17 +219,17 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
             </div>
           </div>
           
-          <div className="bg-white/10 dark:bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 dark:border-white/20">
+          <div className="bg-white/20 dark:bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30 dark:border-white/30">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-xl bg-purple-500/20 dark:bg-purple-500/20">
+              <div className="p-2 rounded-xl bg-purple-500/30 dark:bg-purple-500/30">
                 <Gauge className="h-5 w-5 text-purple-400 dark:text-purple-400" />
               </div>
-              <span className="text-sm font-semibold text-slate-200 dark:text-slate-200">Status</span>
+              <span className="text-sm font-semibold text-slate-200 dark:text-slate-200 truncate">Status</span>
             </div>
-            <div className="text-lg font-bold text-white dark:text-white capitalize">
+            <div className="text-lg font-bold text-white dark:text-white capitalize truncate">
               {pump.status}
             </div>
-            <div className="text-xs text-slate-400 dark:text-slate-400 mt-1">
+            <div className="text-xs text-slate-400 dark:text-slate-400 mt-1 truncate">
               Current state
             </div>
           </div>
@@ -247,7 +247,7 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
           <Button 
             onClick={() => onDelete(pump.id)}
             variant="outline"
-            className="bg-white/10 dark:bg-white/10 backdrop-blur-sm border-white/20 dark:border-white/20 text-white dark:text-white hover:bg-red-500/20 dark:hover:bg-red-500/20 hover:border-red-500/30 dark:hover:border-red-500/30 hover:text-red-200 dark:hover:text-red-200 rounded-xl transition-all duration-300"
+            className="bg-white/20 dark:bg-white/20 backdrop-blur-sm border-white/30 dark:border-white/30 text-white dark:text-white hover:bg-red-500/30 dark:hover:bg-red-500/30 hover:border-red-500/40 dark:hover:border-red-500/40 hover:text-red-200 dark:hover:text-red-200 rounded-xl transition-all duration-300"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

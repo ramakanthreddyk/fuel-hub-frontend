@@ -99,7 +99,7 @@ export default function NozzlesPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white/5 dark:bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 dark:border-white/10 p-6 shadow-2xl">
+        <div className="bg-white/10 dark:bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-white/20 p-6 shadow-2xl">
           <div className="flex items-center gap-3 mb-4">
             <Filter className="h-5 w-5 text-cyan-400" />
             <h3 className="text-lg font-semibold text-white dark:text-white">Filter Nozzles</h3>
@@ -123,7 +123,7 @@ export default function NozzlesPage() {
               className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl"
             />
             
-            <Select value={selectedPump} onValueChange={setSelectedPump}>
+            <Select value={selectedPump || ''} onValueChange={(val) => setSelectedPump(val || undefined)}>
               <SelectTrigger className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl">
                 <SelectValue placeholder="All Pumps" />
               </SelectTrigger>
@@ -137,7 +137,7 @@ export default function NozzlesPage() {
               </SelectContent>
             </Select>
             
-            <Select value={fuelTypeFilter} onValueChange={setFuelTypeFilter}>
+            <Select value={fuelTypeFilter || ''} onValueChange={(val) => setFuelTypeFilter(val || undefined)}>
               <SelectTrigger className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl">
                 <SelectValue placeholder="All Fuel Types" />
               </SelectTrigger>

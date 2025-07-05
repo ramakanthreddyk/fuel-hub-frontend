@@ -66,28 +66,28 @@ export default function StationsPage() {
         return { 
           icon: Zap, 
           color: 'text-emerald-400', 
-          bg: 'bg-emerald-500/20 border-emerald-500/30',
+          bg: 'bg-emerald-500/30 border-emerald-500/50',
           glow: 'shadow-emerald-500/20'
         };
       case 'maintenance':
         return { 
           icon: Settings, 
           color: 'text-amber-400', 
-          bg: 'bg-amber-500/20 border-amber-500/30',
+          bg: 'bg-amber-500/30 border-amber-500/50',
           glow: 'shadow-amber-500/20'
         };
       case 'inactive':
         return { 
           icon: Activity, 
           color: 'text-red-400', 
-          bg: 'bg-red-500/20 border-red-500/30',
+          bg: 'bg-red-500/30 border-red-500/50',
           glow: 'shadow-red-500/20'
         };
       default:
         return { 
           icon: Activity, 
           color: 'text-gray-400', 
-          bg: 'bg-gray-500/20 border-gray-500/30',
+          bg: 'bg-gray-500/30 border-gray-500/50',
           glow: 'shadow-gray-500/20'
         };
     }
@@ -150,7 +150,7 @@ export default function StationsPage() {
                   key={station.id}
                   className={cn(
                     "group relative overflow-hidden rounded-3xl border backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] cursor-pointer",
-                    "bg-white/5 dark:bg-white/5 border-white/10 dark:border-white/10",
+                    "bg-slate-800/80 dark:bg-slate-900/80 border-slate-600/30 dark:border-slate-700/30",
                     "shadow-2xl hover:shadow-3xl",
                     statusConfig.glow
                   )}
@@ -162,15 +162,15 @@ export default function StationsPage() {
                     getStationGradient(index)
                   )}></div>
                   
-                  {/* Floating Orbs */}
-                  <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  {/* Floating Station Icon */}
+                  <div className="absolute top-6 right-6 w-12 h-12 rounded-full bg-gradient-to-br from-white/30 to-white/10 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300 z-10">
                     <Building2 className="h-6 w-6 text-white/80" />
                   </div>
                   
                   <div className="relative p-8 space-y-6">
                     {/* Header */}
                     <div className="space-y-3">
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between pr-16">
                         <div className="space-y-2 flex-1 min-w-0">
                           <h3 className="font-bold text-2xl text-white dark:text-white truncate">
                             {station.name}
@@ -180,24 +180,24 @@ export default function StationsPage() {
                             <span className="truncate">{station.address}</span>
                           </p>
                         </div>
-                        
-                        <div className={cn(
-                          "px-3 py-1 rounded-full border flex items-center gap-2 backdrop-blur-sm",
-                          statusConfig.bg
-                        )}>
-                          <StatusIcon className={cn("w-3 h-3", statusConfig.color)} />
-                          <span className={cn("text-xs font-semibold", statusConfig.color)}>
-                            {station.status}
-                          </span>
-                        </div>
+                      </div>
+                      
+                      <div className={cn(
+                        "inline-flex px-3 py-1 rounded-full border items-center gap-2 backdrop-blur-sm z-20 relative",
+                        statusConfig.bg
+                      )}>
+                        <StatusIcon className={cn("w-3 h-3", statusConfig.color)} />
+                        <span className={cn("text-xs font-semibold", statusConfig.color)}>
+                          {station.status}
+                        </span>
                       </div>
                     </div>
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white/10 dark:bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 dark:border-white/20">
+                      <div className="bg-white/20 dark:bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30 dark:border-white/30">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className="p-2 rounded-xl bg-blue-500/20 dark:bg-blue-500/20">
+                          <div className="p-2 rounded-xl bg-blue-500/30 dark:bg-blue-500/30">
                             <Fuel className="h-5 w-5 text-blue-400 dark:text-blue-400" />
                           </div>
                           <span className="text-sm font-semibold text-slate-200 dark:text-slate-200">Pumps</span>
@@ -210,9 +210,9 @@ export default function StationsPage() {
                         </div>
                       </div>
                       
-                      <div className="bg-white/10 dark:bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 dark:border-white/20">
+                      <div className="bg-white/20 dark:bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30 dark:border-white/30">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className="p-2 rounded-xl bg-emerald-500/20 dark:bg-emerald-500/20">
+                          <div className="p-2 rounded-xl bg-emerald-500/30 dark:bg-emerald-500/30">
                             <Star className="h-5 w-5 text-emerald-400 dark:text-emerald-400" />
                           </div>
                           <span className="text-sm font-semibold text-slate-200 dark:text-slate-200">Rating</span>
@@ -228,7 +228,7 @@ export default function StationsPage() {
 
                     {/* Revenue Section */}
                     {(station.todaySales || station.monthlySales) && (
-                      <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 dark:from-purple-500/10 dark:to-pink-500/10 backdrop-blur-sm rounded-2xl p-4 border border-purple-500/20 dark:border-purple-500/20">
+                      <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 dark:from-purple-500/20 dark:to-pink-500/20 backdrop-blur-sm rounded-2xl p-4 border border-purple-500/30 dark:border-purple-500/30">
                         <div className="flex items-center gap-2 mb-3">
                           <DollarSign className="h-5 w-5 text-purple-400 dark:text-purple-400" />
                           <span className="text-sm font-semibold text-purple-200 dark:text-purple-200">Revenue Performance</span>
@@ -259,7 +259,7 @@ export default function StationsPage() {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="flex-1 bg-white/10 dark:bg-white/10 backdrop-blur-sm border-white/20 dark:border-white/20 text-white dark:text-white hover:bg-white/20 dark:hover:bg-white/20 hover:border-white/30 dark:hover:border-white/30"
+                        className="flex-1 bg-white/20 dark:bg-white/20 backdrop-blur-sm border-white/30 dark:border-white/30 text-white dark:text-white hover:bg-white/30 dark:hover:bg-white/30 hover:border-white/40 dark:hover:border-white/40"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/dashboard/stations/${station.id}/edit`);
@@ -271,7 +271,7 @@ export default function StationsPage() {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="flex-1 bg-white/10 dark:bg-white/10 backdrop-blur-sm border-white/20 dark:border-white/20 text-white dark:text-white hover:bg-white/20 dark:hover:bg-white/20 hover:border-white/30 dark:hover:border-white/30"
+                        className="flex-1 bg-white/20 dark:bg-white/20 backdrop-blur-sm border-white/30 dark:border-white/30 text-white dark:text-white hover:bg-white/30 dark:hover:bg-white/30 hover:border-white/40 dark:hover:border-white/40"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/dashboard/pumps?stationId=${station.id}`);
