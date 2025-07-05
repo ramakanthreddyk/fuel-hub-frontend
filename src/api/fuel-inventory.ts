@@ -25,7 +25,7 @@ export const fuelInventoryApi = {
       if (params?.fuelType) searchParams.append('fuelType', params.fuelType);
       
       const response = await apiClient.get(`/fuel-inventory?${searchParams.toString()}`);
-      return extractApiArray<FuelInventory>(response, 'inventory', fuelInventorySchema);
+      return extractApiArray(response, 'inventory', fuelInventorySchema) as FuelInventory[];
     } catch (error) {
       console.error('Error fetching fuel inventory:', error);
       return [];
