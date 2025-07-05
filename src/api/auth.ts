@@ -42,7 +42,7 @@ export const authApi = {
    */
   login: async (credentials: LoginCredentials, isAdminLogin = false): Promise<LoginResponse> => {
     try {
-      const endpoint = isAdminLogin ? 'auth/admin/login' : 'auth/login';
+      const endpoint = isAdminLogin ? 'admin/auth/login' : 'auth/login';
       const response = await apiClient.post(endpoint, credentials);
       
       // Handle nested response structure
