@@ -1,112 +1,37 @@
+
 /**
  * @file pages/dashboard/PumpsPage.tsx
- * @description Redesigned pumps page with realistic fuel dispenser cards
+ * @description Redesigned pumps page with creative cards and dark mode support
  */
 import { useState } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Building2, Loader2, ArrowLeft, Fuel } from 'lucide-react';
+import { Plus, Fuel, Loader2, Filter, Search, Building2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { usePumps, useDeletePump } from '@/hooks/api/usePumps';
+import { useStations } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
 import { FuelPumpCard } from '@/components/pumps/FuelPumpCard';
 import { EmptyState } from '@/components/common/EmptyState';
-import { usePumps, useCreatePump, useDeletePump } from '@/hooks/api/usePumps';
-import { useStations, useStation } from '@/hooks/api/useStations';
-import { navigateBack } from '@/utils/navigation';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
+import { StationSelector } from '@/components/filters/StationSelector';
 
 export default function PumpsPage() {
-  const { stationId } = useParams<{ stationId: string }>();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedStationId, setSelectedStationId] = useState(stationId || '');
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [selectedStation, setSelectedStation] = useState<string | undefined>();
+  const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pumpToDelete, setPumpToDelete] = useState<string | null>(null);
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Check for stationId in query params if not in route params
-  const queryParams = new URLSearchParams(location.search);
-  const stationIdFromQuery = queryParams.get('stationId');
-  const effectiveStationId =
-    stationId ||
-    (stationIdFromQuery && stationIdFromQuery !== 'all' ? stationIdFromQuery : undefined) ||
-    (selectedStationId || undefined);
 
-  const form = useForm({
-    defaultValues: {
-      name: '',
-      serialNumber: ''
-    }
-  });
+  const { data: pumps = [], isLoading } = usePumps(selectedStation);
+  const { data: stations = [] } = useStations();
+  const deleteStationMutation = useDeletePump();
 
-  // Fetch all stations
-  const { data: stations = [], isLoading: stationsLoading } = useStations();
-  
-  // Fetch specific station details if we have a stationId
-  const { data: station } = useStation(effectiveStationId);
-  
-  // Fetch pumps for selected station
-  const { data: pumps = [], isLoading: pumpsLoading } = usePumps(effectiveStationId);
-
-  // Create pump mutation
-  const createPumpMutation = useCreatePump();
-  const deletePumpMutation = useDeletePump();
-
-  const handleCreatePumpSuccess = () => {
-    setIsAddDialogOpen(false);
-    form.reset();
-    toast({
-      title: 'Success',
-      description: 'Pump created successfully'
-    });
-  };
-
-  const handleCreatePumpError = () => {
-    toast({
-      title: 'Error',
-      description: 'Failed to create pump',
-      variant: 'destructive'
-    });
-  };
-
-  const onSubmit = (data: any) => {
-    if (!effectiveStationId) {
-      toast({
-        title: 'Error',
-        description: 'Please select a station first',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    createPumpMutation.mutate(
-      { ...data, stationId: effectiveStationId },
-      { onSuccess: handleCreatePumpSuccess, onError: handleCreatePumpError }
-    );
-  };
-
-  const handleStationChange = (value: string) => {
-    if (!value || value === 'all') {
-      setSelectedStationId('');
-      navigate('/dashboard/pumps');
-    } else {
-      setSelectedStationId(value);
-      navigate(`/dashboard/pumps?stationId=${value}`);
-    }
-  };
-
-  const handleViewNozzles = (pumpId: string) => {
-    if (effectiveStationId) {
-      navigate(`/dashboard/nozzles?pumpId=${pumpId}&stationId=${effectiveStationId}`);
-    } else {
-      navigate(`/dashboard/nozzles?pumpId=${pumpId}`);
-    }
-  };
+  const filteredPumps = pumps.filter(pump =>
+    pump.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    pump.serialNumber?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleDeletePump = (pumpId: string) => {
     setPumpToDelete(pumpId);
@@ -117,7 +42,7 @@ export default function PumpsPage() {
     if (!pumpToDelete) return;
     
     try {
-      await deletePumpMutation.mutateAsync(pumpToDelete);
+      await deleteStationMutation.mutateAsync(pumpToDelete);
       toast({
         title: 'Success',
         description: 'Pump deleted successfully'
@@ -133,177 +58,114 @@ export default function PumpsPage() {
     }
   };
 
-  const handleBackToStations = () => {
-    navigateBack(navigate, '/dashboard/stations');
-  };
-
-  const isLoading = stationsLoading || pumpsLoading;
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black dark:from-gray-950 dark:via-slate-950 dark:to-black flex items-center justify-center">
+        <div className="relative">
+          <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+          <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-cyan-400/20"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto p-4 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black dark:from-gray-950 dark:via-slate-950 dark:to-black">
+      <div className="container mx-auto p-6 space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleBackToStations}
-              className="p-2 hover:bg-white/60 rounded-full"
-            >
-              <ArrowLeft className="h-5 w-5 text-slate-600" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Fuel Pump Control Center
-              </h1>
-              <div className="flex items-center gap-3 mt-2">
-                <Building2 className="h-5 w-5 text-slate-500" />
-                <Select value={effectiveStationId ?? 'all'} onValueChange={handleStationChange}>
-                  <SelectTrigger className="w-[250px] bg-white/80 border-2 border-white shadow-lg">
-                    <SelectValue placeholder="Select station" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-2 shadow-xl">
-                    <SelectItem value="all">All Stations</SelectItem>
-                    {stations.map((station) => (
-                      <SelectItem key={station.id} value={station.id}>
-                        {station.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-4">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+              🔧 Fuel Pump Management
+            </h1>
+            <p className="text-slate-400 text-lg">Control and monitor your fuel dispensing systems</p>
           </div>
           
           <Button 
-            onClick={() => setIsAddDialogOpen(true)} 
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+            onClick={() => navigate('/dashboard/pumps/new')} 
+            className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 transform hover:scale-105"
           >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             <Plus className="mr-2 h-5 w-5" />
-            Add Fuel Pump
+            Add Pump
           </Button>
         </div>
 
-        {/* Station Info */}
-        {station && (
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                {station.name} Control Panel
-              </h2>
-              <p className="text-slate-600">
-                Managing {pumps.length} fuel dispensing units
-              </p>
+        {/* Filters */}
+        <div className="bg-white/5 dark:bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 dark:border-white/10 p-6 shadow-2xl">
+          <div className="flex items-center gap-3 mb-4">
+            <Filter className="h-5 w-5 text-cyan-400" />
+            <h3 className="text-lg font-semibold text-white dark:text-white">Filter Pumps</h3>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search pumps by name or serial..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white placeholder:text-slate-400 rounded-xl"
+                />
+              </div>
+            </div>
+            <div className="sm:w-64">
+              <StationSelector
+                value={selectedStation}
+                onChange={setSelectedStation}
+                showAll={true}
+                placeholder="All Stations"
+                className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl"
+              />
             </div>
           </div>
-        )}
+        </div>
 
         {/* Pumps Grid */}
-        {pumps.length === 0 ? (
-          <EmptyState
-            icon={<Fuel className="h-12 w-12 text-blue-500" />}
-            title="No fuel pumps yet"
-            description={`Get started by adding your first fuel dispenser to ${station?.name || 'this station'}`}
-            action={{
-              label: "Add First Pump",
-              onClick: () => setIsAddDialogOpen(true)
-            }}
-          />
+        {filteredPumps.length === 0 ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <EmptyState
+              icon={<Fuel className="h-16 w-16 text-cyan-400" />}
+              title={searchQuery || selectedStation ? "No pumps found" : "No pumps yet"}
+              description={
+                searchQuery || selectedStation 
+                  ? "Try adjusting your search or filter criteria"
+                  : "Start building your fuel dispensing network"
+              }
+              action={{
+                label: "Add First Pump",
+                onClick: () => navigate('/dashboard/pumps/new')
+              }}
+            />
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
-            {pumps.map((pump) => (
-              <FuelPumpCard
-                key={pump.id}
-                pump={{
-                  id: pump.id,
-                  name: pump.name,
-                  serialNumber: pump.serialNumber,
-                  status: pump.status as 'active' | 'maintenance' | 'inactive',
-                  nozzleCount: pump.nozzleCount || 0,
-                  stationName: station?.name
-                }}
-                onViewNozzles={handleViewNozzles}
-                onDelete={handleDeletePump}
-                needsAttention={pump.status === 'maintenance'}
-              />
-            ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 pb-8">
+            {filteredPumps.map((pump) => {
+              const stationName = stations.find(s => s.id === pump.stationId)?.name;
+              const needsAttention = pump.nozzleCount === 0 || pump.status === 'maintenance';
+              
+              return (
+                <FuelPumpCard
+                  key={pump.id}
+                  pump={{
+                    ...pump,
+                    stationName
+                  }}
+                  onViewNozzles={(id) => navigate(`/dashboard/pumps/${id}/nozzles`)}
+                  onDelete={handleDeletePump}
+                  needsAttention={needsAttention}
+                />
+              );
+            })}
           </div>
         )}
-
-        {/* Add Pump Dialog */}
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="sm:max-w-[425px] bg-white border-2 shadow-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold">Add New Fuel Pump</DialogTitle>
-              <DialogDescription className="text-slate-600">
-                Add a new fuel dispenser to {station?.name || 'selected station'}
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-semibold">Pump Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter pump name" {...field} className="border-2" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="serialNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-semibold">Serial Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter serial number" {...field} className="border-2" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter className="gap-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsAddDialogOpen(false)}
-                    className="border-2"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={createPumpMutation.isPending}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    {createPumpMutation.isPending ? "Creating..." : "Create Pump"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
 
         {/* Delete Confirmation Dialog */}
         <ConfirmDialog
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
-          title="Delete Fuel Pump"
-          description="Are you sure you want to delete this fuel pump? This action cannot be undone and will also delete all associated nozzles."
+          title="Delete Pump"
+          description="Are you sure you want to delete this pump? This action cannot be undone and will also delete all associated nozzles."
           confirmText="Delete"
           variant="destructive"
           onConfirm={confirmDeletePump}

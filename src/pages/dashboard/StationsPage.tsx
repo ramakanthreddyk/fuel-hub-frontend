@@ -1,15 +1,14 @@
 
 /**
  * @file pages/dashboard/StationsPage.tsx
- * @description Redesigned stations page with consistent UI styling
+ * @description Redesigned stations page with creative card designs and dark mode support
  */
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Building2, Loader2, MapPin, Fuel, Settings, Activity, BarChart3, DollarSign } from 'lucide-react';
+import { Plus, Building2, Loader2, MapPin, Fuel, Settings, Activity, BarChart3, DollarSign, Zap, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStations, useDeleteStation } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
-import { ColorfulCard, CardHeader, CardContent } from '@/components/ui/colorful-card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -49,56 +48,79 @@ export default function StationsPage() {
     }
   };
 
-  const getStatusGradient = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'from-green-50 via-emerald-50 to-teal-50';
-      case 'maintenance':
-        return 'from-yellow-50 via-orange-50 to-amber-50';
-      case 'inactive':
-        return 'from-red-50 via-pink-50 to-rose-50';
-      default:
-        return 'from-blue-50 via-indigo-50 to-purple-50';
-    }
+  const getStationGradient = (index: number) => {
+    const gradients = [
+      'from-violet-500 via-purple-500 to-pink-500',
+      'from-cyan-500 via-blue-500 to-indigo-500',
+      'from-emerald-500 via-green-500 to-teal-500',
+      'from-orange-500 via-red-500 to-pink-500',
+      'from-yellow-500 via-orange-500 to-red-500',
+      'from-indigo-500 via-purple-500 to-pink-500'
+    ];
+    return gradients[index % gradients.length];
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusConfig = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return { 
+          icon: Zap, 
+          color: 'text-emerald-400', 
+          bg: 'bg-emerald-500/20 border-emerald-500/30',
+          glow: 'shadow-emerald-500/20'
+        };
       case 'maintenance':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return { 
+          icon: Settings, 
+          color: 'text-amber-400', 
+          bg: 'bg-amber-500/20 border-amber-500/30',
+          glow: 'shadow-amber-500/20'
+        };
       case 'inactive':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return { 
+          icon: Activity, 
+          color: 'text-red-400', 
+          bg: 'bg-red-500/20 border-red-500/30',
+          glow: 'shadow-red-500/20'
+        };
       default:
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return { 
+          icon: Activity, 
+          color: 'text-gray-400', 
+          bg: 'bg-gray-500/20 border-gray-500/30',
+          glow: 'shadow-gray-500/20'
+        };
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black dark:from-gray-900 dark:via-slate-900 dark:to-black flex items-center justify-center">
+        <div className="relative">
+          <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+          <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-cyan-400/20"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto p-4 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black dark:from-gray-950 dark:via-slate-950 dark:to-black">
+      <div className="container mx-auto p-6 space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Fuel Stations Network
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-4">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+              ⛽ Fuel Station Network
             </h1>
-            <p className="text-slate-600 mt-1">Manage your station network across all locations</p>
+            <p className="text-slate-400 text-lg">Manage your empire of fuel stations</p>
           </div>
           
           <Button 
             onClick={() => navigate('/dashboard/stations/new')} 
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
+            className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 transform hover:scale-105"
           >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             <Plus className="mr-2 h-5 w-5" />
             Add Station
           </Button>
@@ -106,135 +128,163 @@ export default function StationsPage() {
 
         {/* Stations Grid */}
         {stations.length === 0 ? (
-          <EmptyState
-            icon={<Building2 className="h-12 w-12 text-blue-500" />}
-            title="No stations yet"
-            description="Get started by adding your first fuel station to the network"
-            action={{
-              label: "Add First Station",
-              onClick: () => navigate('/dashboard/stations/new')
-            }}
-          />
+          <div className="flex items-center justify-center min-h-[400px]">
+            <EmptyState
+              icon={<Building2 className="h-16 w-16 text-cyan-400" />}
+              title="No stations yet"
+              description="Begin your fuel empire by adding your first station"
+              action={{
+                label: "Launch First Station",
+                onClick: () => navigate('/dashboard/stations/new')
+              }}
+            />
+          </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
-            {stations.map((station) => (
-              <ColorfulCard
-                key={station.id}
-                gradient={getStatusGradient(station.status)}
-                className="cursor-pointer transform hover:scale-[1.02] transition-all duration-200"
-                onClick={() => navigate(`/dashboard/stations/${station.id}`)}
-              >
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="p-3 rounded-xl bg-white/80 backdrop-blur-sm shadow-sm">
-                        <Building2 className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-slate-800 text-xl truncate pr-2">
-                          {station.name}
-                        </h3>
-                        <p className="text-sm text-slate-600 flex items-center gap-1 mt-1">
-                          <MapPin className="h-3 w-3 flex-shrink-0" />
-                          <span className="truncate">{station.address}</span>
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <Badge className={cn("text-xs font-semibold flex-shrink-0", getStatusColor(station.status))}>
-                      <Activity className="w-3 h-3 mr-1" />
-                      {station.status}
-                    </Badge>
-                  </div>
-
-                  {/* Business Summary Stats */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 text-center shadow-sm">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Fuel className="h-5 w-5 text-blue-500" />
-                        <span className="text-sm font-semibold text-slate-600">Pumps</span>
-                      </div>
-                      <div className="text-2xl font-bold text-slate-800">
-                        {station.pumpCount || 0}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        {station.activePumps || 0} active
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 text-center shadow-sm">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <BarChart3 className="h-5 w-5 text-green-500" />
-                        <span className="text-sm font-semibold text-slate-600">Performance</span>
-                      </div>
-                      <div className="text-2xl font-bold text-slate-800">
-                        {station.efficiency || 0}%
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Efficiency rating
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Revenue Summary (if available) */}
-                  {(station.todaySales || station.monthlySales) && (
-                    <div className="mt-3 bg-white/70 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <DollarSign className="h-4 w-4 text-emerald-500" />
-                        <span className="text-sm font-semibold text-slate-600">Revenue Overview</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-center">
-                        {station.todaySales && (
-                          <div>
-                            <div className="text-lg font-bold text-slate-800">
-                              ₹{station.todaySales.toLocaleString()}
-                            </div>
-                            <div className="text-xs text-slate-500">Today</div>
-                          </div>
-                        )}
-                        {station.monthlySales && (
-                          <div>
-                            <div className="text-lg font-bold text-slate-800">
-                              ₹{station.monthlySales.toLocaleString()}
-                            </div>
-                            <div className="text-xs text-slate-500">This Month</div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 pb-8">
+            {stations.map((station, index) => {
+              const statusConfig = getStatusConfig(station.status);
+              const StatusIcon = statusConfig.icon;
+              
+              return (
+                <div
+                  key={station.id}
+                  className={cn(
+                    "group relative overflow-hidden rounded-3xl border backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] cursor-pointer",
+                    "bg-white/5 dark:bg-white/5 border-white/10 dark:border-white/10",
+                    "shadow-2xl hover:shadow-3xl",
+                    statusConfig.glow
                   )}
-                </CardHeader>
-
-                <CardContent className="pt-0 pb-6">
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white text-sm font-medium"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/dashboard/stations/${station.id}/edit`);
-                      }}
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      Manage
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white text-sm font-medium"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/dashboard/pumps?stationId=${station.id}`);
-                      }}
-                    >
-                      <Fuel className="w-4 h-4 mr-2" />
-                      View Pumps
-                    </Button>
+                  onClick={() => navigate(`/dashboard/stations/${station.id}`)}
+                >
+                  {/* Animated Background */}
+                  <div className={cn(
+                    "absolute inset-0 bg-gradient-to-br opacity-10 group-hover:opacity-20 transition-opacity duration-500",
+                    getStationGradient(index)
+                  )}></div>
+                  
+                  {/* Floating Orbs */}
+                  <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <Building2 className="h-6 w-6 text-white/80" />
                   </div>
-                </CardContent>
-              </ColorfulCard>
-            ))}
+                  
+                  <div className="relative p-8 space-y-6">
+                    {/* Header */}
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-2 flex-1 min-w-0">
+                          <h3 className="font-bold text-2xl text-white dark:text-white truncate">
+                            {station.name}
+                          </h3>
+                          <p className="text-slate-300 dark:text-slate-300 flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate">{station.address}</span>
+                          </p>
+                        </div>
+                        
+                        <div className={cn(
+                          "px-3 py-1 rounded-full border flex items-center gap-2 backdrop-blur-sm",
+                          statusConfig.bg
+                        )}>
+                          <StatusIcon className={cn("w-3 h-3", statusConfig.color)} />
+                          <span className={cn("text-xs font-semibold", statusConfig.color)}>
+                            {station.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white/10 dark:bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 dark:border-white/20">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="p-2 rounded-xl bg-blue-500/20 dark:bg-blue-500/20">
+                            <Fuel className="h-5 w-5 text-blue-400 dark:text-blue-400" />
+                          </div>
+                          <span className="text-sm font-semibold text-slate-200 dark:text-slate-200">Pumps</span>
+                        </div>
+                        <div className="text-2xl font-bold text-white dark:text-white">
+                          {station.pumpCount || 0}
+                        </div>
+                        <div className="text-xs text-slate-400 dark:text-slate-400 mt-1">
+                          {station.activePumps || 0} active
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white/10 dark:bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 dark:border-white/20">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="p-2 rounded-xl bg-emerald-500/20 dark:bg-emerald-500/20">
+                            <Star className="h-5 w-5 text-emerald-400 dark:text-emerald-400" />
+                          </div>
+                          <span className="text-sm font-semibold text-slate-200 dark:text-slate-200">Rating</span>
+                        </div>
+                        <div className="text-2xl font-bold text-white dark:text-white">
+                          {station.efficiency || 0}%
+                        </div>
+                        <div className="text-xs text-slate-400 dark:text-slate-400 mt-1">
+                          Performance
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Revenue Section */}
+                    {(station.todaySales || station.monthlySales) && (
+                      <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 dark:from-purple-500/10 dark:to-pink-500/10 backdrop-blur-sm rounded-2xl p-4 border border-purple-500/20 dark:border-purple-500/20">
+                        <div className="flex items-center gap-2 mb-3">
+                          <DollarSign className="h-5 w-5 text-purple-400 dark:text-purple-400" />
+                          <span className="text-sm font-semibold text-purple-200 dark:text-purple-200">Revenue Performance</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          {station.todaySales && (
+                            <div className="text-center">
+                              <div className="text-xl font-bold text-white dark:text-white">
+                                ₹{station.todaySales.toLocaleString()}
+                              </div>
+                              <div className="text-xs text-purple-300 dark:text-purple-300">Today</div>
+                            </div>
+                          )}
+                          {station.monthlySales && (
+                            <div className="text-center">
+                              <div className="text-xl font-bold text-white dark:text-white">
+                                ₹{station.monthlySales.toLocaleString()}
+                              </div>
+                              <div className="text-xs text-purple-300 dark:text-purple-300">This Month</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 pt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1 bg-white/10 dark:bg-white/10 backdrop-blur-sm border-white/20 dark:border-white/20 text-white dark:text-white hover:bg-white/20 dark:hover:bg-white/20 hover:border-white/30 dark:hover:border-white/30"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/dashboard/stations/${station.id}/edit`);
+                        }}
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Manage
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1 bg-white/10 dark:bg-white/10 backdrop-blur-sm border-white/20 dark:border-white/20 text-white dark:text-white hover:bg-white/20 dark:hover:bg-white/20 hover:border-white/30 dark:hover:border-white/30"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/dashboard/pumps?stationId=${station.id}`);
+                        }}
+                      >
+                        <Fuel className="w-4 h-4 mr-2" />
+                        Pumps
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
