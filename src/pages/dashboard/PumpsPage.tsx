@@ -1,12 +1,12 @@
 
 /**
  * @file pages/dashboard/PumpsPage.tsx
- * @description Redesigned pumps page with creative cards and dark mode support
+ * @description Redesigned pumps page with white theme and improved cards
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Plus, Fuel, Loader2, Filter, Search, Building2 } from 'lucide-react';
+import { Plus, Fuel, Loader2, Filter, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { usePumps, useDeletePump } from '@/hooks/api/usePumps';
 import { useStations } from '@/hooks/api/useStations';
@@ -60,25 +60,25 @@ export default function PumpsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black dark:from-gray-950 dark:via-slate-950 dark:to-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="relative">
-          <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
-          <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-cyan-400/20"></div>
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-blue-600/20"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black dark:from-gray-950 dark:via-slate-950 dark:to-black">
-      <div className="container mx-auto p-6 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
               🔧 Fuel Pump Management
             </h1>
-            <p className="text-slate-400 text-lg">Control and monitor your fuel dispensing systems</p>
+            <p className="text-gray-600 text-lg">Control and monitor your fuel dispensing systems</p>
           </div>
           
           <Button 
@@ -92,20 +92,20 @@ export default function PumpsPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white/5 dark:bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 dark:border-white/10 p-6 shadow-2xl">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-gray-200 p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
-            <Filter className="h-5 w-5 text-cyan-400" />
-            <h3 className="text-lg font-semibold text-white dark:text-white">Filter Pumps</h3>
+            <Filter className="h-5 w-5 text-cyan-600" />
+            <h3 className="text-lg font-semibold text-gray-800">Filter Pumps</h3>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search pumps by name or serial..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white placeholder:text-slate-400 rounded-xl"
+                  className="pl-10 bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 rounded-xl"
                 />
               </div>
             </div>
@@ -115,7 +115,7 @@ export default function PumpsPage() {
                 onChange={setSelectedStation}
                 showAll={true}
                 placeholder="All Stations"
-                className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl"
+                className="bg-white border-gray-300 text-gray-800 rounded-xl"
               />
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function PumpsPage() {
         {filteredPumps.length === 0 ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <EmptyState
-              icon={<Fuel className="h-16 w-16 text-cyan-400" />}
+              icon={<Fuel className="h-16 w-16 text-cyan-600" />}
               title={searchQuery || selectedStation ? "No pumps found" : "No pumps yet"}
               description={
                 searchQuery || selectedStation 

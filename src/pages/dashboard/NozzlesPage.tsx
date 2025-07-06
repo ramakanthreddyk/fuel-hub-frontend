@@ -1,7 +1,7 @@
 
 /**
  * @file pages/dashboard/NozzlesPage.tsx
- * @description Redesigned nozzles page with white theme and fixed select items
+ * @description Redesigned nozzles page with white theme and fixed filtering
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -21,21 +21,25 @@ import { StationSelector } from '@/components/filters/StationSelector';
 export default function NozzlesPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [selectedStation, setSelectedStation] = useState<string | undefined>();
-  const [selectedPump, setSelectedPump] = useState<string | undefined>();
-  const [fuelTypeFilter, setFuelTypeFilter] = useState<string | undefined>();
+  const [selectedStation, setSelectedStation] = useState<string>('');
+  const [selectedPump, setSelectedPump] = useState<string>('');
+  const [fuelTypeFilter, setFuelTypeFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [nozzleToDelete, setNozzleToDelete] = useState<string | null>(null);
 
-  const { data: nozzles = [], isLoading } = useNozzles(selectedPump);
-  const { data: pumps = [] } = usePumps(selectedStation);
   const { data: stations = [] } = useStations();
+  const { data: pumps = [] } = usePumps(selectedStation || undefined);
+  
+  // Get all nozzles when no pump is selected, or nozzles for selected pump
+  const { data: nozzles = [], isLoading } = useNozzles(selectedPump || undefined);
   const deleteNozzleMutation = useDeleteNozzle();
 
+  // Filter nozzles based on search and fuel type
   const filteredNozzles = nozzles.filter(nozzle => {
-    const matchesSearch = nozzle.nozzleNumber?.toString().includes(searchQuery) ||
-                         nozzle.fuelType?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !searchQuery || 
+      nozzle.nozzleNumber?.toString().includes(searchQuery) ||
+      nozzle.fuelType?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFuelType = !fuelTypeFilter || nozzle.fuelType === fuelTypeFilter;
     return matchesSearch && matchesFuelType;
   });
@@ -78,9 +82,9 @@ export default function NozzlesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      <div className="container mx-auto p-6 space-y-8">
+      <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               🛢️ Fuel Nozzle Control
@@ -99,7 +103,7 @@ export default function NozzlesPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-gray-200 p-6 shadow-lg">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-gray-200 p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
             <Filter className="h-5 w-5 text-blue-600" />
             <h3 className="text-lg font-semibold text-gray-800">Filter Nozzles</h3>
@@ -115,24 +119,34 @@ export default function NozzlesPage() {
               />
             </div>
             
-            <StationSelector
+            <Select
               value={selectedStation}
-              onChange={setSelectedStation}
-              showAll={true}
-              placeholder="All Stations"
-              className="bg-white border-gray-300 text-gray-800 rounded-xl"
-            />
+              onValueChange={(val) => {
+                setSelectedStation(val === 'all-stations' ? '' : val);
+                setSelectedPump(''); // Reset pump when station changes
+              }}
+            >
+              <SelectTrigger className="bg-white border-gray-300 text-gray-800 rounded-xl">
+                <SelectValue placeholder="All Stations" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-200 z-50">
+                <SelectItem value="all-stations" className="text-gray-800">All Stations</SelectItem>
+                {stations.map((station) => (
+                  <SelectItem key={station.id} value={station.id} className="text-gray-800">
+                    {station.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             
             <Select
-              value={selectedPump || 'all-pumps'}
-              onValueChange={(val) =>
-                setSelectedPump(val === 'all-pumps' ? undefined : val)
-              }
+              value={selectedPump}
+              onValueChange={(val) => setSelectedPump(val === 'all-pumps' ? '' : val)}
             >
               <SelectTrigger className="bg-white border-gray-300 text-gray-800 rounded-xl">
                 <SelectValue placeholder="All Pumps" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-gray-200">
+              <SelectContent className="bg-white border-gray-200 z-50">
                 <SelectItem value="all-pumps" className="text-gray-800">All Pumps</SelectItem>
                 {pumps.map((pump) => (
                   <SelectItem key={pump.id} value={pump.id} className="text-gray-800">
@@ -143,15 +157,13 @@ export default function NozzlesPage() {
             </Select>
             
             <Select
-              value={fuelTypeFilter || 'all-fuel-types'}
-              onValueChange={(val) =>
-                setFuelTypeFilter(val === 'all-fuel-types' ? undefined : val)
-              }
+              value={fuelTypeFilter}
+              onValueChange={(val) => setFuelTypeFilter(val === 'all-fuel-types' ? '' : val)}
             >
               <SelectTrigger className="bg-white border-gray-300 text-gray-800 rounded-xl">
                 <SelectValue placeholder="All Fuel Types" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-gray-200">
+              <SelectContent className="bg-white border-gray-200 z-50">
                 <SelectItem value="all-fuel-types" className="text-gray-800">All Fuel Types</SelectItem>
                 <SelectItem value="petrol" className="text-gray-800">⛽ Petrol</SelectItem>
                 <SelectItem value="diesel" className="text-gray-800">🛢️ Diesel</SelectItem>
