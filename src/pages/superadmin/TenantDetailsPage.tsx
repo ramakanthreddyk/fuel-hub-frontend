@@ -11,7 +11,10 @@ export default function TenantDetailsPage() {
   const { tenantId } = useParams<{ tenantId: string }>();
   const navigate = useNavigate();
   
+  console.log('TenantDetailsPage - tenantId:', tenantId);
+  
   if (!tenantId) {
+    console.error('TenantDetailsPage - No tenant ID provided');
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
@@ -34,6 +37,10 @@ export default function TenantDetailsPage() {
   
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { data: tenant, isLoading, error, refetch } = useTenantDetails(tenantId);
+  
+  console.log('TenantDetailsPage - tenant data:', tenant);
+  console.log('TenantDetailsPage - loading:', isLoading);
+  console.log('TenantDetailsPage - error:', error);
 
   if (isLoading) {
     return (
@@ -54,10 +61,10 @@ export default function TenantDetailsPage() {
   }
 
   if (error) {
+    console.error('TenantDetailsPage - Error loading tenant:', error);
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header */}
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
@@ -69,7 +76,6 @@ export default function TenantDetailsPage() {
             </Button>
           </div>
 
-          {/* Error State */}
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardContent className="p-12 text-center">
               <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
@@ -94,10 +100,10 @@ export default function TenantDetailsPage() {
   }
 
   if (!tenant) {
+    console.warn('TenantDetailsPage - No tenant data found');
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header */}
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
@@ -128,7 +134,6 @@ export default function TenantDetailsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
@@ -148,7 +153,6 @@ export default function TenantDetailsPage() {
           </div>
         </div>
 
-        {/* Content */}
         <DashboardErrorBoundary error={null} onRetry={() => refetch()}>
           <TenantHierarchy tenant={tenant} />
         </DashboardErrorBoundary>

@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SuperAdminErrorBoundary } from '@/components/admin/SuperAdminErrorBoundary';
 import { TenantForm } from '@/components/admin/TenantForm';
 import { TenantCard } from '@/components/admin/TenantCard';
+import { TenantCardActions } from '@/components/admin/TenantCardActions';
 
 export default function SuperAdminTenantsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -101,7 +102,13 @@ export default function SuperAdminTenantsPage() {
   };
 
   const handleViewTenant = (id: string) => {
+    console.log('Navigating to tenant details:', id);
     navigate(`/superadmin/tenants/${id}`);
+  };
+
+  const handleTenantSettings = (id: string) => {
+    console.log('Navigating to tenant settings:', id);
+    navigate(`/superadmin/tenants/${id}/settings`);
   };
 
   // Ensure tenants is always an array
@@ -177,13 +184,21 @@ export default function SuperAdminTenantsPage() {
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {tenantsArray.map((tenant) => (
-                <TenantCard
-                  key={tenant.id}
-                  tenant={tenant}
-                  onUpdateStatus={handleUpdateStatus}
-                  onDelete={handleDeleteTenant}
-                  onView={handleViewTenant}
-                />
+                <div key={tenant.id} className="space-y-3">
+                  <TenantCard
+                    tenant={tenant}
+                    onUpdateStatus={handleUpdateStatus}
+                    onDelete={handleDeleteTenant}
+                    onView={handleViewTenant}
+                  />
+                  <TenantCardActions
+                    tenant={tenant}
+                    onStatusChange={handleUpdateStatus}
+                    onDelete={handleDeleteTenant}
+                    onView={handleViewTenant}
+                    onSettings={handleTenantSettings}
+                  />
+                </div>
               ))}
             </div>
           )}
