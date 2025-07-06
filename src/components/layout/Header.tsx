@@ -30,7 +30,13 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
   } catch {
     sidebarToggle = undefined;
   }
-  const handleMobileMenuClick = onMobileMenuClick ?? sidebarToggle;
+  const handleMobileMenuClick = (e) => {
+    if (onMobileMenuClick) {
+      onMobileMenuClick(e);
+    } else if (sidebarToggle) {
+      sidebarToggle();
+    }
+  };
 
   // Get current page title based on route
   const getPageTitle = () => {
