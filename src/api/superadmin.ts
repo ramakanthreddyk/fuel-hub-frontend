@@ -1,4 +1,3 @@
-
 import { apiClient, extractApiData } from './client';
 import { 
   Tenant, 
@@ -127,4 +126,4 @@ export const superAdminApi = {
 
 // Backward compatibility exports
 export const superadminApi = superAdminApi;
-export { SuperAdminSummary };
+export type { SuperAdminSummary };
