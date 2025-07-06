@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -6,9 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Building2, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { tenantsApi } from '@/api/tenants';
-import { CreateTenantRequest } from '@/api/api-contract';
 import { superAdminApi } from '@/api/superadmin';
+import { CreateTenantRequest } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
 import { SuperAdminErrorBoundary } from '@/components/admin/SuperAdminErrorBoundary';
 import { TenantForm } from '@/components/admin/TenantForm';
@@ -23,7 +21,7 @@ export default function SuperAdminTenantsPage() {
 
   const { data: tenants, isLoading, error, refetch } = useQuery({
     queryKey: ['tenants'],
-    queryFn: tenantsApi.getTenants,
+    queryFn: superAdminApi.getTenants,
     retry: 2
   });
 
@@ -33,7 +31,7 @@ export default function SuperAdminTenantsPage() {
   });
 
   const createTenantMutation = useMutation({
-    mutationFn: tenantsApi.createTenant,
+    mutationFn: superAdminApi.createTenant,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
       setIsCreateDialogOpen(false);
@@ -52,8 +50,8 @@ export default function SuperAdminTenantsPage() {
   });
 
   const updateTenantStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'active' | 'suspended' | 'cancelled' }) => 
-      tenantsApi.updateTenantStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: 'active' | 'suspended' | 'cancelled' }) =>
+      superAdminApi.updateTenantStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
       toast({
@@ -71,7 +69,7 @@ export default function SuperAdminTenantsPage() {
   });
 
   const deleteTenantMutation = useMutation({
-    mutationFn: tenantsApi.deleteTenant,
+    mutationFn: superAdminApi.deleteTenant,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
       toast({
