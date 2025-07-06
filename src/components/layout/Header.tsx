@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -117,7 +117,8 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
 
   const handleSettingsClick = () => {
     if (user?.role === 'superadmin') {
-      navigate('/superadmin/settings');
+      // No settings page for superadmin yet
+      return;
     } else {
       navigate('/dashboard/settings');
     }
@@ -127,7 +128,6 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
     <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 shadow-sm dark:bg-gray-950/95 dark:border-gray-800">
       <div className="flex h-14 md:h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2 md:gap-4">
-          <SidebarTrigger />
           
           {/* Page Title - Show current page context */}
           <div className="hidden sm:flex items-center gap-2">
