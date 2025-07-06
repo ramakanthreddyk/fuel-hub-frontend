@@ -123,7 +123,12 @@ export default function NozzlesPage() {
               className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl"
             />
             
-            <Select value={selectedPump || ''} onValueChange={(val) => setSelectedPump(val || undefined)}>
+            <Select
+              value={selectedPump ?? 'all'}
+              onValueChange={(val) =>
+                setSelectedPump(val === 'all' ? undefined : val)
+              }
+            >
               <SelectTrigger className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl">
                 <SelectValue placeholder="All Pumps" />
               </SelectTrigger>
@@ -137,12 +142,17 @@ export default function NozzlesPage() {
               </SelectContent>
             </Select>
             
-            <Select value={fuelTypeFilter || ''} onValueChange={(val) => setFuelTypeFilter(val || undefined)}>
+            <Select
+              value={fuelTypeFilter ?? 'all'}
+              onValueChange={(val) =>
+                setFuelTypeFilter(val === 'all' ? undefined : val)
+              }
+            >
               <SelectTrigger className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl">
                 <SelectValue placeholder="All Fuel Types" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
-                <SelectItem value="">All Fuel Types</SelectItem>
+                <SelectItem value="all">All Fuel Types</SelectItem>
                 <SelectItem value="petrol" className="text-white">⛽ Petrol</SelectItem>
                 <SelectItem value="diesel" className="text-white">🛢️ Diesel</SelectItem>
                 <SelectItem value="premium" className="text-white">✨ Premium</SelectItem>
