@@ -10,7 +10,7 @@ import { Header } from './Header';
  */
 export function SuperAdminLayout() {
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <SuperAdminSidebar />
         <SidebarInset className="flex-1 flex flex-col">
