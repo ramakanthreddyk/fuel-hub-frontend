@@ -3210,3 +3210,20 @@ Each entry is tied to a step from the implementation index.
 - `PumpsPage` no longer requires a station; selecting **All Pumps** now lists every pump.
 - Added an "All Stations" option to the dropdown filter.
 - Documented in `STEP_fix_20260721_COMMAND.md`.
+
+## [Fix 2026-07-22] – Fuel price service tests
+
+### 🟥 Fixes
+- Added unit tests verifying fuel price overlap errors and automatic closure of open ranges.
+## [Fix 2026-07-22] – Remove duplicate backend brain doc
+
+### 🟥 Fixes
+- Deleted duplicate architecture file `docs/architecture/BACKEND_BRAIN.md`.
+- Updated architecture README link to `backend_brain.md`.
+- Documented in `STEP_fix_20260722_COMMAND.md`.
+
+## [Fix 2026-07-23] – Attendant role endpoints
+
+### 🟥 Fixes
+- Updated frontend pages to use attendant-specific hooks when role is attendant.
+- Documented in `STEP_fix_20260723_COMMAND.md`.

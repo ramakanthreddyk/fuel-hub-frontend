@@ -354,3 +354,20 @@ All notable changes to this project will be documented in this file.
 - Removed station requirement in `PumpsPage` so `/dashboard/pumps` lists every pump.
 - Added "All Stations" option to the station dropdown and updated navigation handling.
 - Documented in `STEP_fix_20260721_COMMAND.md`.
+
+## [Fix 2026-07-22] - Fuel price service tests
+
+### Added
+- Unit tests for fuel price creation covering overlapping ranges and open range closure.
+## [Fix 2026-07-22] - Remove duplicate backend brain doc
+
+### Changed
+- Deleted `docs/architecture/BACKEND_BRAIN.md` which duplicated `docs/backend_brain.md`.
+- Updated architecture README link.
+- Documented in `STEP_fix_20260722_COMMAND.md`.
+
+## [Fix 2026-07-23] - Attendant pages use proper APIs
+
+### Changed
+- Attendant dashboard and related pages now call `/attendant/*` endpoints when logged in as an attendant.
+- Documented in `STEP_fix_20260723_COMMAND.md`.

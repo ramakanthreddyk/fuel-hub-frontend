@@ -13,13 +13,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useStations } from '@/hooks/api/useStations';
 import { useCreditors } from '@/hooks/api/useCreditors';
-import { useCreateCashReport } from '@/hooks/useAttendant';
+import {
+  useAttendantStations,
+  useAttendantCreditors,
+  useCreateCashReport,
+} from '@/hooks/api/useAttendant';
+import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ArrowLeft, Plus, Trash, DollarSign, CreditCard, Loader2 } from 'lucide-react';
 
 export default function CashReportPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isAttendant = user?.role === 'attendant';
   const today = format(new Date(), 'yyyy-MM-dd');
   
   // State
@@ -30,10 +37,18 @@ export default function CashReportPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Fetch stations
-  const { data: stations = [], isLoading: stationsLoading } = useStations();
-  
+  const {
+    data: stations = [],
+    isLoading: stationsLoading,
+  } = isAttendant ? useAttendantStations() : useStations();
+
   // Fetch creditors for selected station
-  const { data: creditors = [], isLoading: creditorsLoading } = useCreditors(selectedStationId);
+  const {
+    data: creditors = [],
+    isLoading: creditorsLoading,
+  } = isAttendant
+    ? useAttendantCreditors(selectedStationId)
+    : useCreditors(selectedStationId);
   
   // Submit cash report mutation
   const submitCashReport = useCreateCashReport();

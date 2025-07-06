@@ -296,7 +296,7 @@ export interface FuelPrice {
   fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
   price: number;
   validFrom: string;
-  validTo?: string;
+  effectiveTo?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -308,13 +308,13 @@ export interface CreateFuelPriceRequest {
   fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
   price: number;
   validFrom?: string;
-  validTo?: string;
+  effectiveTo?: string;
 }
 
 export interface UpdateFuelPriceRequest {
   price?: number;
   validFrom?: string;
-  validTo?: string;
+  effectiveTo?: string;
   isActive?: boolean;
 }
 

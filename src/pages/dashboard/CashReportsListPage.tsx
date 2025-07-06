@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useStations } from '@/hooks/api/useStations';
 import { useCashReports } from '@/hooks/useAttendant';
+import { useAttendantStations } from '@/hooks/api/useAttendant';
+import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ArrowLeft, RefreshCw, Loader2, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -16,9 +18,14 @@ import { Badge } from '@/components/ui/badge';
 export default function CashReportsListPage() {
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { user } = useAuth();
+  const isAttendant = user?.role === 'attendant';
   
   // Fetch stations
-  const { data: stations = [], isLoading: stationsLoading } = useStations();
+  const {
+    data: stations = [],
+    isLoading: stationsLoading,
+  } = isAttendant ? useAttendantStations() : useStations();
   
   // Fetch cash reports - no parameters as per API spec
   const { 

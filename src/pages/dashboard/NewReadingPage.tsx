@@ -15,6 +15,12 @@ import { ArrowLeft, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useStations } from '@/hooks/api/useStations';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
+import {
+  useAttendantStations,
+  useAttendantPumps,
+  useAttendantNozzles,
+} from '@/hooks/api/useAttendant';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCreateReading, useLatestReading } from '@/hooks/api/useReadings';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +29,8 @@ export default function NewReadingPage() {
   const navigate = useNavigate();
   const { nozzleId } = useParams();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isAttendant = user?.role === 'attendant';
   
   // Form state
   const [selectedStationId, setSelectedStationId] = useState('');
@@ -34,9 +42,18 @@ export default function NewReadingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Data fetching
-  const { data: stations = [], isLoading: stationsLoading } = useStations();
-  const { data: pumps = [], isLoading: pumpsLoading } = usePumps(selectedStationId);
-  const { data: nozzles = [], isLoading: nozzlesLoading } = useNozzles(selectedPumpId);
+  const {
+    data: stations = [],
+    isLoading: stationsLoading,
+  } = isAttendant ? useAttendantStations() : useStations();
+  const {
+    data: pumps = [],
+    isLoading: pumpsLoading,
+  } = isAttendant ? useAttendantPumps(selectedStationId) : usePumps(selectedStationId);
+  const {
+    data: nozzles = [],
+    isLoading: nozzlesLoading,
+  } = isAttendant ? useAttendantNozzles(selectedPumpId) : useNozzles(selectedPumpId);
   const { data: latestReading, isLoading: latestReadingLoading } = useLatestReading(selectedNozzleId);
   const { data: fuelPrices = [] } = useFuelPrices(selectedStationId);
   const createReading = useCreateReading();

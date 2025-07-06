@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStations } from '@/hooks/api/useStations';
+import { useAttendantStations } from '@/hooks/api/useAttendant';
+import { useAuth } from '@/contexts/AuthContext';
 import { useReadings } from '@/hooks/api/useReadings';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { format } from 'date-fns';
@@ -15,11 +17,16 @@ import { Loader2, FileText, Fuel, CreditCard, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function AttendantDashboardPage() {
+  const { user } = useAuth();
+  const isAttendant = user?.role === 'attendant';
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedStationId, setSelectedStationId] = useState<string | undefined>();
   
-  // Fetch stations
-  const { data: stations = [], isLoading: stationsLoading } = useStations();
+  // Fetch stations using role appropriate endpoint
+  const {
+    data: stations = [],
+    isLoading: stationsLoading,
+  } = isAttendant ? useAttendantStations() : useStations();
   
   // Set default station if not selected
   if (!selectedStationId && stations.length > 0 && !stationsLoading) {

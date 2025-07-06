@@ -523,3 +523,23 @@ Integrated latest fuel prices widget on the Owner dashboard and fixed missing fi
 - Removed early return so the pumps page lists all pumps when opened from the sidebar.
 - Dropdown now includes an **All Stations** option and clears the query when selected.
 - Documented in `STEP_fix_20260721_COMMAND.md`.
+
+### 🛠️ Fix 2026-07-22 – Remove duplicate backend brain doc
+
+**Status:** ✅ Done
+**Files:** `docs/architecture/README.md`
+
+**Overview:**
+- Deleted duplicated `BACKEND_BRAIN.md` from the architecture docs.
+- Updated README link to point to `../backend_brain.md`.
+- Documented in `STEP_fix_20260722_COMMAND.md`.
+
+### 🛠️ Fix 2026-07-23 – Attendant role API usage
+
+**Status:** ✅ Done
+**Files:** `src/pages/dashboard/AttendantDashboardPage.tsx`, `src/pages/dashboard/CashReportPage.tsx`, `src/pages/dashboard/CashReportsListPage.tsx`, `src/pages/dashboard/NewReadingPage.tsx`
+
+**Overview:**
+- Pages now load stations, pumps, nozzles and creditors via `/attendant/*` endpoints when the logged user is an attendant.
+- Maintains existing behaviour for owners and managers.
+- Documented in `STEP_fix_20260723_COMMAND.md`.

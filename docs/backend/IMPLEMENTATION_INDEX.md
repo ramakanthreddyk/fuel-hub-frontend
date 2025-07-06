@@ -288,3 +288,6 @@ This file tracks every build step taken by AI agents or developers. It maintains
 | fix | 2026-07-15 | Reading meta fields | ✅ Done | `src/services/nozzleReading.service.ts`, `src/api/api-contract.ts`, `src/api/services/readingsService.ts` | `docs/STEP_fix_20260715_COMMAND.md` |
 | fix | 2026-07-20 | Reading card metadata | ✅ Done | `src/components/readings/ReadingReceiptCard.tsx` | `docs/STEP_fix_20260720_COMMAND.md` |
 | fix | 2026-07-21 | Pumps page default listing | ✅ Done | `src/pages/dashboard/PumpsPage.tsx` | `docs/STEP_fix_20260721_COMMAND.md` |
+| fix | 2026-07-22 | Fuel price service tests | ✅ Done | `backend/tests/fuelPrice.service.test.ts` | `docs/STEP_fix_20260722_COMMAND.md` |
+| fix | 2026-07-22 | Remove duplicate backend brain doc | ✅ Done | `docs/architecture/README.md` | `docs/STEP_fix_20260722_COMMAND.md` |
+| fix | 2026-07-23 | Attendant pages use role APIs | ✅ Done | `src/pages/dashboard/*` | `docs/STEP_fix_20260723_COMMAND.md` |
