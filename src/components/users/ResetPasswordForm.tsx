@@ -6,20 +6,20 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ResetPasswordFormProps {
-  onSubmit: (data: { password: string; confirmPassword: string }) => void;
+  onSubmit: (data: { newPassword: string; confirmPassword: string }) => void;
   onCancel: () => void;
   isLoading: boolean;
 }
 
 export function ResetPasswordForm({ onSubmit, onCancel, isLoading }: ResetPasswordFormProps) {
   const [formData, setFormData] = useState({
-    password: '',
+    newPassword: '',
     confirmPassword: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
+    if (formData.newPassword !== formData.confirmPassword) {
       alert('Passwords do not match');
       return;
     }
@@ -38,12 +38,12 @@ export function ResetPasswordForm({ onSubmit, onCancel, isLoading }: ResetPasswo
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">New Password</Label>
+            <Label htmlFor="newPassword">New Password</Label>
             <Input
-              id="password"
+              id="newPassword"
               type="password"
-              value={formData.password}
-              onChange={(e) => handleChange('password', e.target.value)}
+              value={formData.newPassword}
+              onChange={(e) => handleChange('newPassword', e.target.value)}
               required
             />
           </div>

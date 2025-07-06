@@ -1,3 +1,4 @@
+
 /**
  * @file UsersPage.tsx
  * @description User management page component
@@ -72,8 +73,13 @@ export default function UsersPage() {
     });
   };
 
-  const handleResetPassword = (userId: string, passwordData: ResetPasswordRequest) => {
-    resetPassword.mutate({ userId, data: passwordData }, {
+  const handleResetPassword = (userId: string, passwordData: { newPassword: string; confirmPassword: string }) => {
+    const resetPasswordData: ResetPasswordRequest = {
+      newPassword: passwordData.newPassword,
+      confirmPassword: passwordData.confirmPassword
+    };
+    
+    resetPassword.mutate({ userId, data: resetPasswordData }, {
       onSuccess: () => {
         setIsResetPasswordDialogOpen(false);
         toast({
