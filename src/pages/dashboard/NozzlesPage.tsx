@@ -1,7 +1,7 @@
 
 /**
  * @file pages/dashboard/NozzlesPage.tsx
- * @description Redesigned nozzles page with creative cards and dark mode support
+ * @description Redesigned nozzles page with white theme and fixed select items
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -67,30 +67,30 @@ export default function NozzlesPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black dark:from-gray-950 dark:via-slate-950 dark:to-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="relative">
-          <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
-          <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-cyan-400/20"></div>
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-blue-600/20"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black dark:from-gray-950 dark:via-slate-950 dark:to-black">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="container mx-auto p-6 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-4">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               🛢️ Fuel Nozzle Control
             </h1>
-            <p className="text-slate-400 text-lg">Precision fuel dispensing at your fingertips</p>
+            <p className="text-gray-600 text-lg">Precision fuel dispensing at your fingertips</p>
           </div>
           
           <Button 
             onClick={() => navigate('/dashboard/nozzles/new')} 
-            className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 transform hover:scale-105"
+            className="group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             <Plus className="mr-2 h-5 w-5" />
@@ -99,19 +99,19 @@ export default function NozzlesPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white/10 dark:bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-white/20 p-6 shadow-2xl">
+        <div className="bg-white/70 backdrop-blur-xl rounded-3xl border border-gray-200 p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
-            <Filter className="h-5 w-5 text-cyan-400" />
-            <h3 className="text-lg font-semibold text-white dark:text-white">Filter Nozzles</h3>
+            <Filter className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-800">Filter Nozzles</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search nozzles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white placeholder:text-slate-400 rounded-xl"
+                className="pl-10 bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 rounded-xl"
               />
             </div>
             
@@ -120,22 +120,22 @@ export default function NozzlesPage() {
               onChange={setSelectedStation}
               showAll={true}
               placeholder="All Stations"
-              className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl"
+              className="bg-white border-gray-300 text-gray-800 rounded-xl"
             />
             
             <Select
-              value={selectedPump ?? 'all'}
+              value={selectedPump || 'all-pumps'}
               onValueChange={(val) =>
-                setSelectedPump(val === 'all' ? undefined : val)
+                setSelectedPump(val === 'all-pumps' ? undefined : val)
               }
             >
-              <SelectTrigger className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl">
+              <SelectTrigger className="bg-white border-gray-300 text-gray-800 rounded-xl">
                 <SelectValue placeholder="All Pumps" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
-                <SelectItem value="">All Pumps</SelectItem>
+              <SelectContent className="bg-white border-gray-200">
+                <SelectItem value="all-pumps" className="text-gray-800">All Pumps</SelectItem>
                 {pumps.map((pump) => (
-                  <SelectItem key={pump.id} value={pump.id} className="text-white">
+                  <SelectItem key={pump.id} value={pump.id} className="text-gray-800">
                     {pump.name}
                   </SelectItem>
                 ))}
@@ -143,19 +143,19 @@ export default function NozzlesPage() {
             </Select>
             
             <Select
-              value={fuelTypeFilter ?? 'all'}
+              value={fuelTypeFilter || 'all-fuel-types'}
               onValueChange={(val) =>
-                setFuelTypeFilter(val === 'all' ? undefined : val)
+                setFuelTypeFilter(val === 'all-fuel-types' ? undefined : val)
               }
             >
-              <SelectTrigger className="bg-white/10 dark:bg-white/10 border-white/20 dark:border-white/20 text-white dark:text-white rounded-xl">
+              <SelectTrigger className="bg-white border-gray-300 text-gray-800 rounded-xl">
                 <SelectValue placeholder="All Fuel Types" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
-                <SelectItem value="all">All Fuel Types</SelectItem>
-                <SelectItem value="petrol" className="text-white">⛽ Petrol</SelectItem>
-                <SelectItem value="diesel" className="text-white">🛢️ Diesel</SelectItem>
-                <SelectItem value="premium" className="text-white">✨ Premium</SelectItem>
+              <SelectContent className="bg-white border-gray-200">
+                <SelectItem value="all-fuel-types" className="text-gray-800">All Fuel Types</SelectItem>
+                <SelectItem value="petrol" className="text-gray-800">⛽ Petrol</SelectItem>
+                <SelectItem value="diesel" className="text-gray-800">🛢️ Diesel</SelectItem>
+                <SelectItem value="premium" className="text-gray-800">✨ Premium</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -165,7 +165,7 @@ export default function NozzlesPage() {
         {filteredNozzles.length === 0 ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <EmptyState
-              icon={<Droplets className="h-16 w-16 text-cyan-400" />}
+              icon={<Droplets className="h-16 w-16 text-blue-600" />}
               title={searchQuery || selectedPump || fuelTypeFilter ? "No nozzles found" : "No nozzles yet"}
               description={
                 searchQuery || selectedPump || fuelTypeFilter
