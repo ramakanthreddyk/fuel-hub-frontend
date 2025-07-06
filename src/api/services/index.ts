@@ -11,6 +11,7 @@ export { creditorsService } from './creditors.service';
 export { dashboardService } from './dashboard.service';
 export { alertsService } from './alerts.service';
 export { reportsService } from './reports.service';
+export { dailySalesService } from './dailySalesService';
 
 // Export contract services (these exist)
 export { authService } from '../contract/auth.service';

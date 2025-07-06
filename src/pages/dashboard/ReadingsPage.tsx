@@ -14,6 +14,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { useReadings } from '@/hooks/api/useReadings';
 import { usePendingReadings } from '@/hooks/api/usePendingReadings';
+import { usePumps } from '@/hooks/api/usePumps';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatReading, formatDateTime } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { ReadingReceiptCard } from '@/components/readings/ReadingReceiptCard';
@@ -21,19 +23,23 @@ import { ReadingReceiptCard } from '@/components/readings/ReadingReceiptCard';
 export default function ReadingsPage() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'discrepancy'>('all');
+  const [selectedPumpId, setSelectedPumpId] = useState<string>('all');
 
   // Fetch readings using the API hook
   const { data: readings, isLoading, error } = useReadings();
+  const { data: pumps = [] } = usePumps();
   const {
     data: pendingAlerts = [],
     acknowledge: acknowledgeAlert,
     dismiss: dismissAlert,
   } = usePendingReadings();
 
-  // Filter readings based on selected filter
-  const filteredReadings = readings?.filter(reading => 
-    filter === 'all' || reading.status === filter
-  ) || [];
+  // Filter readings based on selected filter and pump
+  const filteredReadings = readings?.filter(reading => {
+    const statusMatch = filter === 'all' || reading.status === filter;
+    const pumpMatch = selectedPumpId === 'all' || reading.pumpId === selectedPumpId;
+    return statusMatch && pumpMatch;
+  }) || [];
 
   // Calculate stats
   const totalReadings = readings?.length || 0;
@@ -170,21 +176,40 @@ export default function ReadingsPage() {
       )}
 
       {/* Enhanced Filter Buttons */}
-      <div className="flex flex-wrap gap-2">
-        {(['all', 'pending', 'completed', 'discrepancy'] as const).map((status) => (
-          <Button
-            key={status}
-            variant={filter === status ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter(status)}
-            className={cn(
-              "capitalize transition-all duration-200",
-              filter === status && "shadow-lg scale-105"
-            )}
-          >
-            {status === 'all' ? 'All Readings' : status}
-          </Button>
-        ))}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-wrap gap-2">
+          {(['all', 'pending', 'completed', 'discrepancy'] as const).map((status) => (
+            <Button
+              key={status}
+              variant={filter === status ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter(status)}
+              className={cn(
+                "capitalize transition-all duration-200",
+                filter === status && "shadow-lg scale-105"
+              )}
+            >
+              {status === 'all' ? 'All Readings' : status}
+            </Button>
+          ))}
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Pump:</span>
+          <Select value={selectedPumpId} onValueChange={setSelectedPumpId}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Select pump" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Pumps</SelectItem>
+              {pumps.map((pump) => (
+                <SelectItem key={pump.id} value={pump.id}>
+                  {pump.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Readings List with Receipt Cards */}
