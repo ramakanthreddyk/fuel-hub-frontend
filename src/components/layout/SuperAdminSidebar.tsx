@@ -31,7 +31,7 @@ const navigation = [
 ];
 
 export function SuperAdminSidebar() {
-  const { state, setOpenMobile, isMobile } = useSidebar();
+  const { setOpenMobile, isMobile, state } = useSidebar();
   const isCollapsed = state === 'collapsed';
 
   const handleNavClick = () => {
@@ -44,9 +44,9 @@ export function SuperAdminSidebar() {
   return (
     <Sidebar 
       collapsible="icon" 
-      className="border-r border-gray-200/60 backdrop-blur-sm bg-white/95"
+      className="border-r border-gray-200/60 bg-white shadow-sm"
     >
-      <SidebarHeader className="border-b border-gray-200/60 p-4">
+      <SidebarHeader className="border-b border-gray-200/60 p-4 bg-white">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg shadow-sm">
             <TrendingUp className="h-5 w-5 text-white" />
@@ -62,7 +62,7 @@ export function SuperAdminSidebar() {
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="p-2">
+      <SidebarContent className="p-2 bg-white">
         <SidebarGroup>
           <SidebarGroupLabel className={cn(
             "text-xs font-semibold text-gray-600 mb-2",
