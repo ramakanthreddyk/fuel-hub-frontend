@@ -55,6 +55,7 @@ import SuperAdminUsersPage from './pages/superadmin/UsersPage';
 import SuperAdminPlansPage from './pages/superadmin/PlansPage';
 import SuperAdminAnalyticsPage from './pages/superadmin/AnalyticsPage';
 import TenantSettingsPage from './pages/superadmin/TenantSettingsPage';
+import TenantDetailsPage from './pages/superadmin/TenantDetailsPage';
 
 function App() {
   console.log('[APP] App component mounting');
@@ -157,6 +158,7 @@ function App() {
                 <Route index element={<Navigate to="/superadmin/overview" replace />} />
                 <Route path="overview" element={<SuperAdminOverviewPage />} />
                 <Route path="tenants" element={<SuperAdminTenantsPage />} />
+                <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
                 <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
                 <Route path="users" element={<SuperAdminUsersPage />} />
                 <Route path="plans" element={<SuperAdminPlansPage />} />

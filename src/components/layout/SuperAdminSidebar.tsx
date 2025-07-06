@@ -106,7 +106,7 @@ export function SuperAdminSidebar() {
                           'focus:outline-none focus:ring-2 focus:ring-purple-500/20',
                           isActive
                             ? 'bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 shadow-sm border border-purple-200/50 font-semibold'
-                            : 'text-gray-700 hover:text-purple-700'
+                            : 'text-gray-900 hover:text-purple-700'
                         )
                       }
                     >
@@ -115,7 +115,7 @@ export function SuperAdminSidebar() {
                         "group-hover:text-purple-700"
                       )} />
                       {!isCollapsed && (
-                        <span className="truncate">{item.name}</span>
+                        <span className="truncate text-gray-900 font-medium">{item.name}</span>
                       )}
                     </NavLink>
                   </SidebarMenuButton>

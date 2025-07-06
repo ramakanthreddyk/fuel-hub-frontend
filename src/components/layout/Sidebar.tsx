@@ -179,7 +179,7 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
                 </div>
                 <span className={cn(
                   "font-medium transition-colors",
-                  active ? "text-blue-800" : "text-gray-700 group-hover:text-gray-900"
+                  active ? "text-blue-800" : "text-gray-900 group-hover:text-gray-900"
                 )}>{item.name}</span>
               </div>
               <ChevronDown
@@ -201,7 +201,7 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
                 level > 0 && 'ml-4',
                 active 
                   ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-xl shadow-blue-500/30' 
-                  : 'text-gray-700 hover:text-gray-900'
+                  : 'text-gray-900 hover:text-gray-900'
               )}
             >
               <div className={cn(

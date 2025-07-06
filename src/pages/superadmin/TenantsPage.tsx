@@ -91,9 +91,16 @@ export default function SuperAdminTenantsPage() {
     }
   });
 
-  const handleCreateTenant = (data: CreateTenantRequest) => {
+  const handleCreateTenant = (data: { name: string; planId: string; ownerName: string; ownerEmail: string; ownerPassword: string; }) => {
     console.log('Creating tenant with data:', data);
-    createTenantMutation.mutate(data);
+    const createRequest: CreateTenantRequest = {
+      name: data.name,
+      planId: data.planId,
+      ownerName: data.ownerName,
+      ownerEmail: data.ownerEmail,
+      ownerPassword: data.ownerPassword
+    };
+    createTenantMutation.mutate(createRequest);
   };
 
   const handleUpdateStatus = (id: string, status: 'active' | 'suspended' | 'cancelled') => {
@@ -161,7 +168,7 @@ export default function SuperAdminTenantsPage() {
               Add Tenant
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold">Create New Tenant</DialogTitle>
               <DialogDescription>

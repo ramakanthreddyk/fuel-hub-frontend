@@ -2,7 +2,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, Eye, Users, MapPin, Calendar } from 'lucide-react';
+import { Building2, Eye, Users, MapPin, Calendar, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { formatDate } from '@/utils/formatters';
 import { Tenant } from '@/api/api-contract';
 import { TenantStats } from './TenantStats';
@@ -15,6 +16,7 @@ interface TenantCardProps {
 }
 
 export function TenantCard({ tenant, onUpdateStatus, onDelete, onView }: TenantCardProps) {
+  const navigate = useNavigate();
   console.log('TenantCard - tenant ID:', tenant.id, 'tenant name:', tenant.name);
   
   const getPlanColor = (planName: string) => {
@@ -40,6 +42,11 @@ export function TenantCard({ tenant, onUpdateStatus, onDelete, onView }: TenantC
   const handleViewClick = () => {
     console.log('TenantCard - View button clicked for tenant:', tenant.id);
     onView(tenant.id);
+  };
+
+  const handleSettingsClick = () => {
+    console.log('TenantCard - Settings button clicked for tenant:', tenant.id);
+    navigate(`/superadmin/tenants/${tenant.id}/settings`);
   };
 
   return (
@@ -89,6 +96,14 @@ export function TenantCard({ tenant, onUpdateStatus, onDelete, onView }: TenantC
           >
             <Eye className="h-4 w-4 mr-2" />
             View Details
+          </Button>
+          <Button
+            onClick={handleSettingsClick}
+            variant="outline"
+            className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 font-medium shadow-sm hover:shadow-md transition-all duration-200"
+            size="sm"
+          >
+            <Settings className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>

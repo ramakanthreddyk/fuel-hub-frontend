@@ -10,9 +10,9 @@ interface TenantFormProps {
   onSubmit: (data: { 
     name: string; 
     planId: string;
-    ownerName?: string;
-    ownerEmail?: string;
-    ownerPassword?: string;
+    ownerName: string;
+    ownerEmail: string;
+    ownerPassword: string;
   }) => void;
   plans: Plan[];
   isLoading?: boolean;
@@ -32,9 +32,9 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
     onSubmit({
       name: formData.name,
       planId: formData.planId,
-      ownerName: formData.ownerName || undefined,
-      ownerEmail: formData.ownerEmail || undefined,
-      ownerPassword: formData.ownerPassword || undefined
+      ownerName: formData.ownerName,
+      ownerEmail: formData.ownerEmail,
+      ownerPassword: formData.ownerPassword
     });
   };
 
@@ -66,22 +66,54 @@ export function TenantForm({ onSubmit, plans, isLoading }: TenantFormProps) {
         </Select>
       </div>
 
-      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-        <h4 className="font-medium text-blue-900 mb-2">Auto-Generated Admin User</h4>
-        <p className="text-sm text-blue-700 mb-2">
-          The system will automatically create an admin user for this tenant:
-        </p>
-        <ul className="text-sm text-blue-600 space-y-1">
-          <li>• <strong>Email:</strong> admin@{formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'tenant'}.com</li>
-          <li>• <strong>Role:</strong> Owner (Full access to tenant resources)</li>
-          <li>• <strong>Password:</strong> Will be auto-generated and provided after creation</li>
-        </ul>
-        <p className="text-xs text-blue-500 mt-2">
-          All tenant data is isolated by tenant_id (UUID) for security.
-        </p>
+      <div className="space-y-4 p-4 bg-gray-50 rounded-lg border">
+        <h4 className="font-medium text-gray-900">Owner Account Details</h4>
+        
+        <div className="space-y-2">
+          <Label htmlFor="ownerName">Owner Name *</Label>
+          <Input
+            id="ownerName"
+            value={formData.ownerName}
+            onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+            placeholder="Enter owner's full name"
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="ownerEmail">Owner Email *</Label>
+          <Input
+            id="ownerEmail"
+            type="email"
+            value={formData.ownerEmail}
+            onChange={(e) => setFormData({ ...formData, ownerEmail: e.target.value })}
+            placeholder="owner@company.com"
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="ownerPassword">Initial Password *</Label>
+          <Input
+            id="ownerPassword"
+            type="password"
+            value={formData.ownerPassword}
+            onChange={(e) => setFormData({ ...formData, ownerPassword: e.target.value })}
+            placeholder="Enter initial password"
+            required
+            minLength={8}
+          />
+          <p className="text-xs text-gray-500">
+            Password must be at least 8 characters long
+          </p>
+        </div>
       </div>
       
-      <Button type="submit" disabled={isLoading || !formData.name || !formData.planId}>
+      <Button 
+        type="submit" 
+        disabled={isLoading || !formData.name || !formData.planId || !formData.ownerName || !formData.ownerEmail || !formData.ownerPassword}
+        className="w-full"
+      >
         {isLoading ? "Creating..." : "Create Tenant"}
       </Button>
     </form>
