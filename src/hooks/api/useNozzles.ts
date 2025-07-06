@@ -14,14 +14,7 @@ import { nozzlesService } from '@/api/nozzles';
 export const useNozzles = (pumpId?: string) => {
   return useQuery({
     queryKey: ['nozzles', pumpId || 'all'],
-    queryFn: () => {
-      if (pumpId) {
-        return nozzlesService.getNozzles(pumpId);
-      } else {
-        // For fetching all nozzles, we'll call without pumpId
-        return nozzlesService.getNozzles('');
-      }
-    },
+    queryFn: () => nozzlesService.getNozzles(pumpId),
     staleTime: 60000, // 1 minute
     retry: 2
   });

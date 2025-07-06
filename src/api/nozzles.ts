@@ -2,7 +2,7 @@
  * @file nozzles.ts
  * @description API client for nozzles endpoints
  */
-import { apiClient } from './client';
+import apiClient from './core/apiClient';
 
 // Types
 export interface Nozzle {
@@ -48,16 +48,15 @@ const normalizeNozzle = (nozzle: any): Nozzle => {
 };
 
 export const nozzlesService = {
-  getNozzles: async (pumpId: string): Promise<Nozzle[]> => {
+  getNozzles: async (pumpId?: string): Promise<Nozzle[]> => {
     try {
-      console.log('[NOZZLES-API] Fetching nozzles for pump:', pumpId);
+      console.log('[NOZZLES-API] Fetching nozzles for pump:', pumpId || 'all');
       
       if (!pumpId) {
-        console.error('[NOZZLES-API] No pumpId provided to getNozzles');
-        return [];
+        console.log('[NOZZLES-API] No pumpId provided, fetching all nozzles');
       }
       
-      const response = await apiClient.get(`/nozzles?pumpId=${pumpId}`);
+      const response = await apiClient.get(pumpId ? `/nozzles?pumpId=${pumpId}` : '/nozzles');
       
       // Extract nozzles from response
       let nozzlesArray = [];
@@ -94,8 +93,17 @@ export const nozzlesService = {
 
   createNozzle: async (data: CreateNozzleRequest): Promise<Nozzle | null> => {
     try {
+      console.log('[NOZZLES-API] Creating nozzle with data:', data);
       const response = await apiClient.post('/nozzles', data);
-      return normalizeNozzle(response.data);
+      console.log('[NOZZLES-API] Create nozzle response:', response.data);
+      
+      // Handle different response formats
+      let nozzleData = response.data;
+      if (response.data?.data) {
+        nozzleData = response.data.data;
+      }
+      
+      return normalizeNozzle(nozzleData);
     } catch (error) {
       console.error('[NOZZLES-API] Error in createNozzle:', error);
       throw error;

@@ -42,29 +42,23 @@ apiClient.interceptors.request.use(
 
     // Add tenant context - important for attendant role
     const storedUser = localStorage.getItem('fuelsync_user');
-    let tenantId = DEFAULT_TENANT_ID; // Default tenant ID
     
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         if (user.tenantId && user.role !== 'superadmin') {
-          tenantId = user.tenantId;
+          config.headers['x-tenant-id'] = user.tenantId;
         }
         // For superadmin, don't add tenant header for admin endpoints
         if (user.role === 'superadmin' && config.url?.startsWith('/admin')) {
           // Don't add tenant header for superadmin admin endpoints
-        } else if (user.role !== 'superadmin') {
-          config.headers['x-tenant-id'] = tenantId;
         }
       } catch (error) {
         console.error('[API-CLIENT] Error parsing stored user:', error);
-        if (!config.url?.startsWith('/admin')) {
-          config.headers['x-tenant-id'] = tenantId;
-        }
       }
-    } else if (!config.url?.startsWith('/admin')) {
-      // Always include tenant ID header for non-admin requests
-      config.headers['x-tenant-id'] = tenantId;
+    } else if (!config.url?.startsWith('/admin') && !isAuthEndpoint) {
+      // Only add default tenant ID for non-auth, non-admin requests when no user is stored
+      config.headers['x-tenant-id'] = DEFAULT_TENANT_ID;
     }
     
     // Log request details in development

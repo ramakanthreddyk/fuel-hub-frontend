@@ -17,8 +17,13 @@ export const alertsService = {
     acknowledged?: boolean;
     isActive?: boolean;
   }): Promise<Alert[]> => {
-    const response = await apiClient.get<ApiResponse<{ alerts: Alert[] }>>('/alerts', { params });
-    return response.data.data.alerts;
+    try {
+      const response = await apiClient.get<ApiResponse<{ alerts: Alert[] }>>('/alerts', { params });
+      return response.data?.data?.alerts || [];
+    } catch (error) {
+      console.error('[ALERTS-SERVICE] Error fetching alerts:', error);
+      return [];
+    }
   },
 
   // Get alert by ID

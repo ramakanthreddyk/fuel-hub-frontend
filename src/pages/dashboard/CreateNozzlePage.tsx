@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { usePump } from '@/hooks/api/usePumps';
+import { usePump, usePumps } from '@/hooks/api/usePumps';
 import { useCreateNozzle } from '@/hooks/api/useNozzles';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,15 +22,22 @@ export default function CreateNozzlePage() {
   const { toast } = useToast();
   
   // Get IDs from URL params or search params
+  const { pumpId: urlPumpId } = useParams();
   const stationId = searchParams.get('stationId');
-  const pumpId = searchParams.get('pumpId');
+  const pumpId = urlPumpId || searchParams.get('pumpId');
+  
+  console.log('[CREATE-NOZZLE] URL params:', useParams());
+  console.log('[CREATE-NOZZLE] Search params:', Object.fromEntries(searchParams));
+  console.log('[CREATE-NOZZLE] Final pumpId:', pumpId);
   
   const [nozzleNumber, setNozzleNumber] = useState('');
   const [fuelType, setFuelType] = useState('');
+  const [selectedPumpId, setSelectedPumpId] = useState(pumpId || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Fetch pump details
-  const { data: pump, isLoading: pumpLoading } = usePump(pumpId || '');
+  // Fetch pump details and all pumps for selection
+  const { data: pump, isLoading: pumpLoading } = usePump(selectedPumpId || '');
+  const { data: allPumps = [], isLoading: pumpsLoading } = usePumps();
   
   // Create nozzle mutation
   const createNozzleMutation = useCreateNozzle();
@@ -38,8 +45,10 @@ export default function CreateNozzlePage() {
   // Handle form submission with proper error handling
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[CREATE-NOZZLE] Form submitted');
     
-    if (!pumpId || !nozzleNumber || !fuelType) {
+    if (!selectedPumpId || !nozzleNumber || !fuelType) {
+      console.log('[CREATE-NOZZLE] Validation failed:', { pumpId: selectedPumpId, nozzleNumber, fuelType });
       toast({
         title: 'Validation Error',
         description: 'Please fill in all required fields',
@@ -49,14 +58,21 @@ export default function CreateNozzlePage() {
     }
     
     setIsSubmitting(true);
+    console.log('[CREATE-NOZZLE] Calling mutation with:', {
+      pumpId: selectedPumpId,
+      nozzleNumber: parseInt(nozzleNumber),
+      fuelType,
+      status: 'active'
+    });
     
     try {
       await createNozzleMutation.mutateAsync({
-        pumpId,
+        pumpId: selectedPumpId,
         nozzleNumber: parseInt(nozzleNumber),
         fuelType: fuelType as 'petrol' | 'diesel' | 'premium',
         status: 'active'
       });
+      console.log('[CREATE-NOZZLE] Mutation successful');
       
       toast({
         title: 'Success',
@@ -64,18 +80,15 @@ export default function CreateNozzlePage() {
       });
       
       // Navigate back to nozzles page
-      if (stationId && pumpId) {
-        navigate(`/dashboard/nozzles?pumpId=${pumpId}&stationId=${stationId}`);
-      } else {
-        navigate('/dashboard/nozzles');
-      }
+      navigate('/dashboard/nozzles');
     } catch (error) {
-      console.error('Error creating nozzle:', error);
+      console.error('[CREATE-NOZZLE] Error creating nozzle:', error);
       toast({
         title: 'Error',
         description: 'Failed to create nozzle. Please try again.',
         variant: 'destructive'
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -120,40 +133,66 @@ export default function CreateNozzlePage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="nozzleNumber" className="text-sm font-medium">
-                  Nozzle Number
-                </Label>
-                <Input
-                  id="nozzleNumber"
-                  type="number"
-                  min="1"
-                  placeholder="Enter nozzle number"
-                  value={nozzleNumber}
-                  onChange={(e) => setNozzleNumber(e.target.value)}
-                  required
-                />
-              </div>
+            <div className="space-y-4">
+              {!pumpId && (
+                <div className="space-y-2">
+                  <Label htmlFor="pumpSelect" className="text-sm font-medium">
+                    Select Pump
+                  </Label>
+                  <Select
+                    value={selectedPumpId}
+                    onValueChange={setSelectedPumpId}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a pump" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allPumps.map((pump) => (
+                        <SelectItem key={pump.id} value={pump.id}>
+                          {pump.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               
-              <div className="space-y-2">
-                <Label htmlFor="fuelType" className="text-sm font-medium">
-                  Fuel Type
-                </Label>
-                <Select
-                  value={fuelType}
-                  onValueChange={setFuelType}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select fuel type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="petrol">Petrol</SelectItem>
-                    <SelectItem value="diesel">Diesel</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nozzleNumber" className="text-sm font-medium">
+                    Nozzle Number
+                  </Label>
+                  <Input
+                    id="nozzleNumber"
+                    type="number"
+                    min="1"
+                    placeholder="Enter nozzle number"
+                    value={nozzleNumber}
+                    onChange={(e) => setNozzleNumber(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="fuelType" className="text-sm font-medium">
+                    Fuel Type
+                  </Label>
+                  <Select
+                    value={fuelType}
+                    onValueChange={setFuelType}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select fuel type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="petrol">Petrol</SelectItem>
+                      <SelectItem value="diesel">Diesel</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             
@@ -168,7 +207,7 @@ export default function CreateNozzlePage() {
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !nozzleNumber || !fuelType}
+                disabled={isSubmitting || !selectedPumpId || !nozzleNumber || !fuelType}
                 className="order-1 sm:order-2"
               >
                 {isSubmitting ? (

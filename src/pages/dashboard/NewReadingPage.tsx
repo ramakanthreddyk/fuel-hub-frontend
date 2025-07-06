@@ -63,20 +63,23 @@ export default function NewReadingPage() {
   });
   const createReading = useCreateReading();
   
+  // Fetch all nozzles to find the preselected one
+  const { data: allNozzles = [] } = useNozzles();
+  
   // If nozzleId is provided in URL, find its details to set station and pump
   useEffect(() => {
-    if (nozzleId && nozzles.length > 0) {
-      const nozzle = nozzles.find(n => n.id === nozzleId);
-      if (nozzle) {
+    if (nozzleId && allNozzles.length > 0) {
+      const nozzle = allNozzles.find(n => n.id === nozzleId);
+      if (nozzle && nozzle.pumpId) {
         setSelectedPumpId(nozzle.pumpId);
-        // Find the station by looking through pumps
+        // Find the station by looking through all pumps
         const pump = pumps.find(p => p.id === nozzle.pumpId);
-        if (pump) {
+        if (pump && pump.stationId) {
           setSelectedStationId(pump.stationId);
         }
       }
     }
-  }, [nozzleId, nozzles, pumps]);
+  }, [nozzleId, allNozzles, pumps]);
   
   // Set minimum reading based on latest reading
   const minReading = latestReading?.reading || 0;

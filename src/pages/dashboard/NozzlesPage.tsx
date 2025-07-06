@@ -30,25 +30,8 @@ export default function NozzlesPage() {
   const { data: stations = [] } = useStations();
   const { data: pumps = [] } = usePumps(selectedStation === 'all' ? undefined : selectedStation);
   
-  // Get all nozzles from all pumps or specific pump
-  const getAllNozzles = () => {
-    const allNozzles: any[] = [];
-    
-    if (selectedPump !== 'all') {
-      // If specific pump selected, get nozzles for that pump only
-      const { data: pumpNozzles = [] } = useNozzles(selectedPump);
-      return pumpNozzles;
-    } else {
-      // Get nozzles from all pumps
-      pumps.forEach(pump => {
-        const { data: pumpNozzles = [] } = useNozzles(pump.id);
-        allNozzles.push(...pumpNozzles);
-      });
-      return allNozzles;
-    }
-  };
-
-  const nozzles = getAllNozzles();
+  // Get nozzles based on selected pump
+  const { data: nozzles = [] } = useNozzles(selectedPump !== 'all' ? selectedPump : undefined);
   const deleteNozzleMutation = useDeleteNozzle();
 
   // Filter nozzles based on search, fuel type, and station
