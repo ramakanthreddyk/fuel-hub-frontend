@@ -2,23 +2,28 @@
 /**
  * @file useNozzles.ts
  * @description React Query hooks for nozzles API
- * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
- * @see docs/journeys/MANAGER.md - Manager journey for managing nozzles
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { nozzlesService } from '@/api/nozzles';
 
 /**
- * Hook to fetch nozzles for a pump
- * @param pumpId Pump ID
+ * Hook to fetch nozzles for a pump or all nozzles
+ * @param pumpId Pump ID (optional - if not provided, fetches all nozzles)
  * @returns Query result with nozzles data
  */
 export const useNozzles = (pumpId?: string) => {
   return useQuery({
-    queryKey: ['nozzles', pumpId],
-    queryFn: () => nozzlesService.getNozzles(pumpId || ''),
-    enabled: !!pumpId,
+    queryKey: ['nozzles', pumpId || 'all'],
+    queryFn: () => {
+      if (pumpId) {
+        return nozzlesService.getNozzles(pumpId);
+      } else {
+        // For fetching all nozzles, we'll call without pumpId
+        return nozzlesService.getNozzles('');
+      }
+    },
     staleTime: 60000, // 1 minute
+    retry: 2
   });
 };
 
@@ -47,7 +52,7 @@ export const useCreateNozzle = () => {
     mutationFn: (data: any) => nozzlesService.createNozzle(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['nozzles', variables.pumpId] });
-      queryClient.invalidateQueries({ queryKey: ['nozzles'] });
+      queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
       queryClient.invalidateQueries({ queryKey: ['pump', variables.pumpId] });
     },
   });
@@ -65,6 +70,7 @@ export const useUpdateNozzle = () => {
     onSuccess: (nozzle, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['nozzle', id] });
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
+      queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
       // Also invalidate the pump that this nozzle belongs to
       if (nozzle && nozzle.pumpId) {
         queryClient.invalidateQueries({ queryKey: ['pump', nozzle.pumpId] });
@@ -85,6 +91,7 @@ export const useDeleteNozzle = () => {
     mutationFn: (id: string) => nozzlesService.deleteNozzle(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
+      queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
       // We don't know which pump this nozzle belonged to, so we invalidate all pumps
       queryClient.invalidateQueries({ queryKey: ['pumps'] });
     },

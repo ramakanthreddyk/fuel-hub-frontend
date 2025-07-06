@@ -16,31 +16,62 @@ import { useToast } from '@/hooks/use-toast';
 import { FuelNozzleCard } from '@/components/nozzles/FuelNozzleCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { StationSelector } from '@/components/filters/StationSelector';
 
 export default function NozzlesPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [selectedStation, setSelectedStation] = useState<string>('');
-  const [selectedPump, setSelectedPump] = useState<string>('');
-  const [fuelTypeFilter, setFuelTypeFilter] = useState<string>('');
+  const [selectedStation, setSelectedStation] = useState<string>('all');
+  const [selectedPump, setSelectedPump] = useState<string>('all');
+  const [fuelTypeFilter, setFuelTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [nozzleToDelete, setNozzleToDelete] = useState<string | null>(null);
 
   const { data: stations = [] } = useStations();
-  const { data: pumps = [] } = usePumps(selectedStation || undefined);
+  const { data: pumps = [] } = usePumps(selectedStation === 'all' ? undefined : selectedStation);
   
-  // Get all nozzles when no pump is selected, or nozzles for selected pump
-  const { data: nozzles = [], isLoading } = useNozzles(selectedPump || undefined);
+  // Get all nozzles from all pumps or specific pump
+  const getAllNozzles = () => {
+    const allNozzles: any[] = [];
+    
+    if (selectedPump !== 'all') {
+      // If specific pump selected, get nozzles for that pump only
+      const { data: pumpNozzles = [] } = useNozzles(selectedPump);
+      return pumpNozzles;
+    } else {
+      // Get nozzles from all pumps
+      pumps.forEach(pump => {
+        const { data: pumpNozzles = [] } = useNozzles(pump.id);
+        allNozzles.push(...pumpNozzles);
+      });
+      return allNozzles;
+    }
+  };
+
+  const nozzles = getAllNozzles();
   const deleteNozzleMutation = useDeleteNozzle();
 
-  // Filter nozzles based on search and fuel type
+  // Filter nozzles based on search, fuel type, and station
   const filteredNozzles = nozzles.filter(nozzle => {
+    // Get pump and station info for this nozzle
+    const nozzlePump = pumps.find(p => p.id === nozzle.pumpId);
+    const nozzleStation = stations.find(s => s.id === nozzlePump?.stationId);
+    
+    // Station filter
+    if (selectedStation !== 'all' && nozzlePump?.stationId !== selectedStation) {
+      return false;
+    }
+    
+    // Search filter
     const matchesSearch = !searchQuery || 
       nozzle.nozzleNumber?.toString().includes(searchQuery) ||
-      nozzle.fuelType?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFuelType = !fuelTypeFilter || nozzle.fuelType === fuelTypeFilter;
+      nozzle.fuelType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      nozzlePump?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      nozzleStation?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Fuel type filter
+    const matchesFuelType = fuelTypeFilter === 'all' || nozzle.fuelType === fuelTypeFilter;
+    
     return matchesSearch && matchesFuelType;
   });
 
@@ -66,12 +97,15 @@ export default function NozzlesPage() {
       });
     } finally {
       setNozzleToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
+  const isLoading = false; // We'll handle loading per pump
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="relative">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
           <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-blue-600/20"></div>
@@ -81,8 +115,8 @@ export default function NozzlesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      <div className="space-y-8">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -103,7 +137,7 @@ export default function NozzlesPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-gray-200 p-6 shadow-lg">
+        <div className="bg-gray-50 rounded-3xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <Filter className="h-5 w-5 text-blue-600" />
             <h3 className="text-lg font-semibold text-gray-800">Filter Nozzles</h3>
@@ -121,18 +155,15 @@ export default function NozzlesPage() {
             
             <Select
               value={selectedStation}
-              onValueChange={(val) => {
-                setSelectedStation(val === 'all-stations' ? '' : val);
-                setSelectedPump(''); // Reset pump when station changes
-              }}
+              onValueChange={setSelectedStation}
             >
               <SelectTrigger className="bg-white border-gray-300 text-gray-800 rounded-xl">
                 <SelectValue placeholder="All Stations" />
               </SelectTrigger>
               <SelectContent className="bg-white border-gray-200 z-50">
-                <SelectItem value="all-stations" className="text-gray-800">All Stations</SelectItem>
+                <SelectItem value="all">All Stations</SelectItem>
                 {stations.map((station) => (
-                  <SelectItem key={station.id} value={station.id} className="text-gray-800">
+                  <SelectItem key={station.id} value={station.id}>
                     {station.name}
                   </SelectItem>
                 ))}
@@ -141,15 +172,15 @@ export default function NozzlesPage() {
             
             <Select
               value={selectedPump}
-              onValueChange={(val) => setSelectedPump(val === 'all-pumps' ? '' : val)}
+              onValueChange={setSelectedPump}
             >
               <SelectTrigger className="bg-white border-gray-300 text-gray-800 rounded-xl">
                 <SelectValue placeholder="All Pumps" />
               </SelectTrigger>
               <SelectContent className="bg-white border-gray-200 z-50">
-                <SelectItem value="all-pumps" className="text-gray-800">All Pumps</SelectItem>
+                <SelectItem value="all">All Pumps</SelectItem>
                 {pumps.map((pump) => (
-                  <SelectItem key={pump.id} value={pump.id} className="text-gray-800">
+                  <SelectItem key={pump.id} value={pump.id}>
                     {pump.name}
                   </SelectItem>
                 ))}
@@ -158,16 +189,16 @@ export default function NozzlesPage() {
             
             <Select
               value={fuelTypeFilter}
-              onValueChange={(val) => setFuelTypeFilter(val === 'all-fuel-types' ? '' : val)}
+              onValueChange={setFuelTypeFilter}
             >
               <SelectTrigger className="bg-white border-gray-300 text-gray-800 rounded-xl">
                 <SelectValue placeholder="All Fuel Types" />
               </SelectTrigger>
               <SelectContent className="bg-white border-gray-200 z-50">
-                <SelectItem value="all-fuel-types" className="text-gray-800">All Fuel Types</SelectItem>
-                <SelectItem value="petrol" className="text-gray-800">⛽ Petrol</SelectItem>
-                <SelectItem value="diesel" className="text-gray-800">🛢️ Diesel</SelectItem>
-                <SelectItem value="premium" className="text-gray-800">✨ Premium</SelectItem>
+                <SelectItem value="all">All Fuel Types</SelectItem>
+                <SelectItem value="petrol">⛽ Petrol</SelectItem>
+                <SelectItem value="diesel">🛢️ Diesel</SelectItem>
+                <SelectItem value="premium">✨ Premium</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -178,9 +209,9 @@ export default function NozzlesPage() {
           <div className="flex items-center justify-center min-h-[400px]">
             <EmptyState
               icon={<Droplets className="h-16 w-16 text-blue-600" />}
-              title={searchQuery || selectedPump || fuelTypeFilter ? "No nozzles found" : "No nozzles yet"}
+              title={searchQuery || selectedPump !== 'all' || fuelTypeFilter !== 'all' ? "No nozzles found" : "No nozzles yet"}
               description={
-                searchQuery || selectedPump || fuelTypeFilter
+                searchQuery || selectedPump !== 'all' || fuelTypeFilter !== 'all'
                   ? "Try adjusting your search or filter criteria"
                   : "Begin with your first fuel dispensing nozzle"
               }
@@ -194,7 +225,7 @@ export default function NozzlesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 pb-8">
             {filteredNozzles.map((nozzle) => {
               const pump = pumps.find(p => p.id === nozzle.pumpId);
-              const pumpName = pump?.name;
+              const station = stations.find(s => s.id === pump?.stationId);
               
               return (
                 <FuelNozzleCard
@@ -205,11 +236,28 @@ export default function NozzlesPage() {
                     fuelType: (nozzle.fuelType as 'petrol' | 'diesel' | 'premium') || 'petrol',
                     status: (nozzle.status as 'active' | 'maintenance' | 'inactive') || 'inactive',
                     lastReading: undefined,
-                    pumpName
+                    pumpName: pump?.name,
+                    stationName: station?.name,
+                    pumpId: pump?.id,
+                    stationId: station?.id
                   }}
                   onEdit={(id) => navigate(`/dashboard/nozzles/${id}/edit`)}
                   onDelete={handleDeleteNozzle}
-                  onRecordReading={(id) => navigate(`/dashboard/nozzles/${id}/readings/new`)}
+                  onRecordReading={(nozzleId) => {
+                    const nozzle = filteredNozzles.find(n => n.id === nozzleId);
+                    const pump = pumps.find(p => p.id === nozzle?.pumpId);
+                    const station = stations.find(s => s.id === pump?.stationId);
+                    
+                    navigate(`/dashboard/nozzles/${nozzleId}/readings/new`, {
+                      state: {
+                        preselected: {
+                          stationId: station?.id,
+                          pumpId: pump?.id,
+                          nozzleId: nozzleId
+                        }
+                      }
+                    });
+                  }}
                 />
               );
             })}
