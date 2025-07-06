@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { tenantsApi } from '@/api/tenants';
+import { superAdminApi } from '@/api/superadmin';
 
 export const useTenantDetails = (tenantId: string) => {
   return useQuery({
     queryKey: ['tenant-details', tenantId],
-    queryFn: () => tenantsApi.getTenantDetails(tenantId),
+    queryFn: () => superAdminApi.getTenant(tenantId),
     enabled: !!tenantId,
   });
 };
