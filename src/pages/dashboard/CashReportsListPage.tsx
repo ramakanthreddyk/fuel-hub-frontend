@@ -1,3 +1,4 @@
+
 /**
  * @file pages/dashboard/CashReportsListPage.tsx
  * @description Page for viewing cash reports history
@@ -7,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useStations } from '@/hooks/api/useStations';
-import { useCashReports } from '@/hooks/api/useAttendant';
+import { useCashReports } from '@/hooks/useAttendant';
 import { format } from 'date-fns';
 import { ArrowLeft, RefreshCw, Loader2, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useStations } from '@/hooks/api/useStations';
 import { useCreditors } from '@/hooks/api/useCreditors';
-import { useSubmitCashReport } from '@/hooks/api/useAttendant';
+import { useCreateCashReport } from '@/hooks/useAttendant';
 import { format } from 'date-fns';
 import { ArrowLeft, Plus, Trash, DollarSign, CreditCard, Loader2 } from 'lucide-react';
 import { CashReport, CreditEntry } from '@/api/services/attendantService';
@@ -35,7 +35,7 @@ export default function CashReportPage() {
   const { data: creditors = [], isLoading: creditorsLoading } = useCreditors(selectedStationId);
   
   // Submit cash report mutation
-  const submitCashReport = useSubmitCashReport();
+  const submitCashReport = useCreateCashReport();
   
   // Set default station if not selected
   if (!selectedStationId && stations.length > 0 && !stationsLoading) {
