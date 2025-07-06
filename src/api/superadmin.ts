@@ -1,5 +1,5 @@
 
-import { apiClient } from './client';
+import { apiClient, extractApiData } from './client';
 import { 
   Tenant, 
   CreateTenantRequest, 
@@ -49,7 +49,7 @@ export const superAdminApi = {
   // Analytics and Summary
   getSummary: (): Promise<SuperAdminSummary> => {
     return apiClient.get('/admin/dashboard').then(response => {
-      const data = response.data;
+      const data = extractApiData<SuperAdminSummary>(response);
       return {
         totalTenants: data.totalTenants || 0,
         totalStations: data.totalStations || 0,
@@ -70,7 +70,7 @@ export const superAdminApi = {
   },
   getAnalytics: (): Promise<SuperAdminAnalytics> => {
     return apiClient.get('/analytics/superadmin').then(response => {
-      const data = response.data;
+      const data = extractApiData<SuperAdminAnalytics>(response);
       return {
         // Ensure all required properties exist
         tenantCount: data.totalTenants || data.tenantCount || 0,
