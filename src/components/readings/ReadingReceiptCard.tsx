@@ -113,7 +113,7 @@ export function ReadingReceiptCard({ reading, onView, onEdit }: ReadingReceiptCa
           </div>
           
           <div className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded border">
-            <span className="text-gray-700 font-semibold text-sm">DIFFERENCE:</span>
+            <span className="text-gray-700 font-semibold text-sm">VOLUME SOLD:</span>
             <div className="flex items-center gap-2">
               {difference > 0 ? (
                 <TrendingUp className={cn("w-4 h-4", isLargeJump ? "text-red-500" : "text-green-500")} />
@@ -124,10 +124,19 @@ export function ReadingReceiptCard({ reading, onView, onEdit }: ReadingReceiptCa
                 "font-bold",
                 isLargeJump ? "text-red-600" : "text-green-600"
               )}>
-                +{formatReading(difference)}L
+                {formatReading(difference)}L
               </span>
             </div>
           </div>
+          
+          {(reading as any).amount && (
+            <div className="flex justify-between items-center bg-green-50 px-3 py-2 rounded border border-green-200">
+              <span className="text-green-700 font-semibold text-sm">SALE AMOUNT:</span>
+              <span className="font-bold text-green-700">
+                ₹{((reading as any).amount).toLocaleString()}
+              </span>
+            </div>
+          )}
 
           {isLargeJump && (
             <div className="flex items-center gap-2 text-xs text-orange-700 bg-orange-50 px-3 py-2 rounded border border-orange-200">

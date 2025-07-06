@@ -8,51 +8,43 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { TrendingUp, BadgeIndianRupee, Fuel, Users, Calendar, Download } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
-import { useSales } from '@/hooks/useSales';
-import {
-  useSalesSummary,
-  usePaymentMethodBreakdown,
-  useFuelTypeBreakdown
-} from '@/hooks/useDashboard';
+import { useSales } from '@/hooks/api/useSales';
 import { formatCurrency, formatDate, formatVolume } from '@/utils/formatters';
 import { SalesTable } from '@/components/sales/SalesTable';
-import { SalesFilterBar } from '@/components/sales/SalesFilterBar';
-import type { SalesFilters } from '@/api/sales';
+import { StationSelector } from '@/components/filters/StationSelector';
+import { DateRangePicker, DateRange } from '@/components/filters/DateRangePicker';
+import type { SalesFilters } from '@/api/services/salesService';
 
 export default function SalesOverviewPage() {
-  const [filters, setFilters] = useState<SalesFilters>({
-    startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
+  const [selectedStation, setSelectedStation] = useState<string | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    to: new Date()
   });
+  
+  const filters: SalesFilters = {
+    stationId: selectedStation,
+    startDate: dateRange?.from?.toISOString().split('T')[0],
+    endDate: dateRange?.to?.toISOString().split('T')[0],
+  };
+  
+  console.log('Sales filters:', filters);
 
   const { data: sales = [], isLoading, error } = useSales(filters);
+  
+  console.log('Sales data:', sales.length, 'records');
+  console.log('First sale:', sales[0]);
 
-  // Aggregated metrics from dashboard endpoints
-  const { data: summary } = useSalesSummary('daily', {
-    stationId: filters.stationId,
-    dateFrom: filters.startDate,
-    dateTo: filters.endDate,
-  });
-  const { data: paymentMethods = [] } = usePaymentMethodBreakdown({
-    stationId: filters.stationId,
-    dateFrom: filters.startDate,
-    dateTo: filters.endDate,
-  });
-  const { data: fuelTypes = [] } = useFuelTypeBreakdown({
-    stationId: filters.stationId,
-    dateFrom: filters.startDate,
-    dateTo: filters.endDate,
-  });
-
-  // Metrics
-  const totalSales = summary?.totalRevenue || 0;
-  const totalVolume = summary?.totalVolume || 0;
-  const totalTransactions = summary?.salesCount || 0;
+  // Calculate metrics from sales data
+  const totalSales = sales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
+  const totalVolume = sales.reduce((sum, sale) => sum + (sale.volume || 0), 0);
+  const totalTransactions = sales.length;
   const averageTransactionValue = totalTransactions > 0 ? totalSales / totalTransactions : 0;
 
   // Payment method breakdown
-  const paymentBreakdown = paymentMethods.reduce((acc, item) => {
-    acc[item.paymentMethod] = item.amount;
+  const paymentBreakdown = sales.reduce((acc, sale) => {
+    const method = sale.paymentMethod || 'unknown';
+    acc[method] = (acc[method] || 0) + (sale.amount || 0);
     return acc;
   }, {} as Record<string, number>);
 
@@ -132,8 +124,8 @@ export default function SalesOverviewPage() {
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold text-orange-700">
-              {filters.startDate && filters.endDate ? 
-                `${formatDate(filters.startDate)} - ${formatDate(filters.endDate)}` : 
+              {dateRange?.from && dateRange?.to ? 
+                `${formatDate(dateRange.from.toISOString())} - ${formatDate(dateRange.to.toISOString())}` : 
                 'All Time'
               }
             </div>
@@ -146,7 +138,40 @@ export default function SalesOverviewPage() {
       </div>
 
       {/* Filters */}
-      <SalesFilterBar filters={filters} onFiltersChange={setFilters} />
+      <Card className="bg-gradient-to-r from-blue-50 via-white to-green-50 border-2 border-blue-200/50 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <div className="p-2 bg-blue-500 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+            Sales Filters
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <StationSelector
+              value={selectedStation}
+              onChange={setSelectedStation}
+              showAll={true}
+              placeholder="All Stations"
+            />
+            <DateRangePicker
+              value={dateRange}
+              onChange={setDateRange}
+              placeholder="Select date range"
+            />
+            <Button 
+              onClick={() => {
+                setSelectedStation(undefined);
+                setDateRange(undefined);
+              }}
+              variant="outline"
+            >
+              Clear Filters
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Sales Table */}
       <Card className="shadow-lg border-2 border-gray-200/50">

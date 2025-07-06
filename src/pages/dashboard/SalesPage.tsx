@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SalesTable } from '@/components/sales/SalesTable';
 import { StationSelector } from '@/components/filters/StationSelector';
 import { DateRangePicker } from '@/components/filters/DateRangePicker';
-import { useEnhancedSales } from '@/hooks/useEnhancedSales';
-import { SalesFilters } from '@/api/sales';
+import { useSales } from '@/hooks/api/useSales';
+import { SalesFilters } from '@/api/services/salesService';
+import { useStations } from '@/hooks/api/useStations';
 import { BadgeIndianRupee, TrendingUp, CreditCard, Users, Download, Filter, BarChart3, Fuel } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DateRange } from 'react-day-picker';
@@ -21,7 +22,8 @@ export default function SalesPage() {
     endDate: dateRange?.to?.toISOString(),
   };
   
-  const { data: sales = [], isLoading } = useEnhancedSales(filters);
+  const { data: sales = [], isLoading } = useSales(filters);
+  const { data: stations = [] } = useStations();
 
   // Calculate summary stats with safe number handling
   const totalAmount = sales.reduce((sum, sale) => {

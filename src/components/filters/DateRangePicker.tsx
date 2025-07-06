@@ -1,12 +1,16 @@
-
+/**
+ * @file components/filters/DateRangePicker.tsx
+ * @description Date range picker component
+ */
 import { useState } from 'react';
-import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { DateRange } from 'react-day-picker';
+import { Input } from '@/components/ui/input';
+import { Calendar } from 'lucide-react';
+
+export interface DateRange {
+  from?: Date;
+  to?: Date;
+}
 
 interface DateRangePickerProps {
   value?: DateRange;
@@ -14,42 +18,47 @@ interface DateRangePickerProps {
   placeholder?: string;
 }
 
-export function DateRangePicker({ value, onChange, placeholder = "Pick date range" }: DateRangePickerProps) {
+export function DateRangePicker({ value, onChange, placeholder = "Select date range" }: DateRangePickerProps) {
+  const [startDate, setStartDate] = useState(value?.from?.toISOString().split('T')[0] || '');
+  const [endDate, setEndDate] = useState(value?.to?.toISOString().split('T')[0] || '');
+
+  const handleApply = () => {
+    if (startDate || endDate) {
+      onChange({
+        from: startDate ? new Date(startDate) : undefined,
+        to: endDate ? new Date(endDate) : undefined
+      });
+    } else {
+      onChange(undefined);
+    }
+  };
+
+  const handleClear = () => {
+    setStartDate('');
+    setEndDate('');
+    onChange(undefined);
+  };
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-[260px] justify-start text-left font-normal bg-white",
-            !value && "text-muted-foreground"
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4 text-purple-600" />
-          {value?.from ? (
-            value.to ? (
-              <>
-                {format(value.from, "LLL dd, y")} - {format(value.to, "LLL dd, y")}
-              </>
-            ) : (
-              format(value.from, "LLL dd, y")
-            )
-          ) : (
-            <span>{placeholder}</span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          initialFocus
-          mode="range"
-          defaultMonth={value?.from}
-          selected={value}
-          onSelect={onChange}
-          numberOfMonths={2}
-          className="pointer-events-auto"
-        />
-      </PopoverContent>
-    </Popover>
+    <div className="flex items-center gap-2">
+      <Calendar className="h-4 w-4 text-muted-foreground" />
+      <Input
+        type="date"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+        placeholder="Start date"
+        className="w-36"
+      />
+      <span className="text-muted-foreground">to</span>
+      <Input
+        type="date"
+        value={endDate}
+        onChange={(e) => setEndDate(e.target.value)}
+        placeholder="End date"
+        className="w-36"
+      />
+      <Button onClick={handleApply} size="sm">Apply</Button>
+      <Button onClick={handleClear} variant="outline" size="sm">Clear</Button>
+    </div>
   );
 }

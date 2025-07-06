@@ -116,15 +116,15 @@ export const formatVolume = (volume: number | string | null | undefined, unit: s
 };
 
 // Format price with consistent decimal places
-export const formatPrice = (price: number | string | null | undefined, currency: string = '₹'): string => {
+export const formatPrice = (price: number | string | null | undefined, currency: string = ''): string => {
   try {
     const numPrice = typeof price === 'string' ? parseFloat(price) : price;
     if (numPrice === null || numPrice === undefined || isNaN(numPrice)) {
-      return `${currency}0.00`;
+      return currency ? `${currency}0.00` : '0.00';
     }
-    return `${currency}${numPrice.toFixed(2)}`;
+    return currency ? `${currency}${numPrice.toFixed(2)}` : numPrice.toFixed(2);
   } catch (error) {
-    return `${currency}0.00`;
+    return currency ? `${currency}0.00` : '0.00';
   }
 };
 

@@ -48,6 +48,7 @@ import CashReportPage from './pages/dashboard/CashReportPage';
 import CashReportsListPage from './pages/dashboard/CashReportsListPage';
 import AttendancePage from './pages/dashboard/AttendancePage';
 import SalesOverviewPage from './pages/dashboard/SalesOverviewPage';
+import SalesPage from './pages/dashboard/SalesPage';
 import DailySalesPage from './pages/dashboard/DailySalesPage';
 
 // SuperAdmin Pages
@@ -128,7 +129,7 @@ function App() {
                 <Route path="cash-reports/:reportId" element={<CashReportPage />} />
                 
                 {/* Sales Routes */}
-                <Route path="sales" element={<SalesOverviewPage />} />
+                <Route path="sales" element={<SalesPage />} />
                 <Route path="sales/overview" element={<SalesOverviewPage />} />
                 <Route path="sales/daily" element={<DailySalesPage />} />
                 
