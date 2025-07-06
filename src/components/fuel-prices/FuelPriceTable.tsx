@@ -108,13 +108,15 @@ export function FuelPriceTable() {
     return station?.name || 'Unknown Station';
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     setDeletingId(id);
-    deleteFuelPrice.mutate({ id, stationId: fuelPrices.find(p => p.id === id)?.stationId || '' }, {
-      onSettled: () => {
-        setDeletingId(null);
-      }
-    });
+    try {
+      await deleteFuelPrice.mutateAsync(id);
+    } catch (error) {
+      console.error('Failed to delete fuel price:', error);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   // Helper function to safely format price

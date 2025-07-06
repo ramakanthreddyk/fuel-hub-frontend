@@ -22,6 +22,7 @@ import StationsPage from './pages/dashboard/StationsPage';
 import StationDetailPage from './pages/dashboard/StationDetailPage';
 import NewStationPage from './pages/dashboard/NewStationPage';
 import EditStationPage from './pages/dashboard/EditStationPage';
+import StationSettingsPage from './pages/dashboard/StationSettingsPage';
 import PumpsPage from './pages/dashboard/PumpsPage';
 import PumpDetailPage from './pages/dashboard/PumpDetailPage';
 import CreatePumpPage from './pages/dashboard/CreatePumpPage';
@@ -89,6 +90,7 @@ function App() {
                 <Route path="stations" element={<StationsPage />} />
                 <Route path="stations/new" element={<NewStationPage />} />
                 <Route path="stations/:stationId/edit" element={<EditStationPage />} />
+                <Route path="stations/:stationId/settings" element={<StationSettingsPage />} />
                 <Route path="stations/:stationId" element={<StationDetailPage />} />
                 <Route path="stations/:stationId/pumps" element={<PumpsPage />} />
                 <Route path="stations/:stationId/pumps/:pumpId" element={<PumpDetailPage />} />

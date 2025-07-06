@@ -4,14 +4,15 @@
  * Updated layout for mobile-friendliness – 2025-07-03
  */
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, CheckCircle, AlertTriangle, DollarSign } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useStations } from '@/hooks/api/useStations';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
@@ -29,14 +30,18 @@ import { useToast } from '@/hooks/use-toast';
 export default function NewReadingPage() {
   const navigate = useNavigate();
   const { nozzleId } = useParams();
+  const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Get preselected values from location state
+  const preselected = location.state?.preselected;
   const isAttendant = user?.role === 'attendant';
   
-  // Form state
-  const [selectedStationId, setSelectedStationId] = useState('');
-  const [selectedPumpId, setSelectedPumpId] = useState('');
-  const [selectedNozzleId, setSelectedNozzleId] = useState(nozzleId || '');
+  // Form state - initialize with preselected values if available
+  const [selectedStationId, setSelectedStationId] = useState(preselected?.stationId || '');
+  const [selectedPumpId, setSelectedPumpId] = useState(preselected?.pumpId || '');
+  const [selectedNozzleId, setSelectedNozzleId] = useState(nozzleId || preselected?.nozzleId || '');
   const [reading, setReading] = useState(0);
   const [recordedAt, setRecordedAt] = useState(new Date().toISOString().slice(0, 16));
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -47,6 +52,11 @@ export default function NewReadingPage() {
     data: stations = [],
     isLoading: stationsLoading,
   } = isAttendant ? useAttendantStations() : useStations();
+  
+  // Fetch all pumps for nozzle lookup
+  const { data: allPumps = [], isLoading: allPumpsLoading } = usePumps();
+  
+  // Fetch station-specific pumps for the dropdown
   const {
     data: pumps = [],
     isLoading: pumpsLoading,
@@ -66,20 +76,36 @@ export default function NewReadingPage() {
   // Fetch all nozzles to find the preselected one
   const { data: allNozzles = [] } = useNozzles();
   
-  // If nozzleId is provided in URL, find its details to set station and pump
+  // If nozzleId is provided in URL and we don't have preselected values, find its details to set station and pump
   useEffect(() => {
-    if (nozzleId && allNozzles.length > 0) {
+    // Skip if we already have preselected values
+    if (preselected?.stationId && preselected?.pumpId && preselected?.nozzleId) {
+      console.log('[NEW-READING] Using preselected values:', preselected);
+      return;
+    }
+    
+    if (nozzleId && allNozzles.length > 0 && allPumps.length > 0) {
+      console.log('[NEW-READING] Looking for nozzle:', nozzleId);
+      console.log('[NEW-READING] Available nozzles:', allNozzles.length);
+      
       const nozzle = allNozzles.find(n => n.id === nozzleId);
+      console.log('[NEW-READING] Found nozzle:', nozzle);
+      
       if (nozzle && nozzle.pumpId) {
+        console.log('[NEW-READING] Setting pump ID:', nozzle.pumpId);
         setSelectedPumpId(nozzle.pumpId);
+        
         // Find the station by looking through all pumps
-        const pump = pumps.find(p => p.id === nozzle.pumpId);
+        const pump = allPumps.find(p => p.id === nozzle.pumpId);
+        console.log('[NEW-READING] Found pump:', pump);
+        
         if (pump && pump.stationId) {
+          console.log('[NEW-READING] Setting station ID:', pump.stationId);
           setSelectedStationId(pump.stationId);
         }
       }
     }
-  }, [nozzleId, allNozzles, pumps]);
+  }, [nozzleId, allNozzles, allPumps, preselected]);
   
   // Set minimum reading based on latest reading
   const minReading = latestReading?.reading || 0;
@@ -113,6 +139,25 @@ export default function NewReadingPage() {
       return;
     }
     
+    // Check for fuel prices before submission
+    if (!isAttendant && !hasFuelPrices && selectedStationId) {
+      toast({
+        title: 'Missing Fuel Prices',
+        description: 'This station needs fuel prices set before recording readings.',
+        variant: 'destructive',
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate(`/dashboard/fuel-prices?stationId=${selectedStationId}`)}
+          >
+            Set Prices
+          </Button>
+        )
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -130,19 +175,43 @@ export default function NewReadingPage() {
       
       // Navigate to readings page
       navigate('/dashboard/readings');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating reading:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to record reading. Please try again.',
-        variant: 'destructive'
-      });
+      
+      // Check for specific error messages
+      const errorMessage = error?.response?.data?.message || error?.message || 'Unknown error';
+      
+      if (errorMessage.includes('fuel price') || errorMessage.includes('price')) {
+        // Show a specific error for missing fuel prices
+        toast({
+          title: 'Missing Fuel Prices',
+          description: 'This station needs fuel prices set before recording readings.',
+          variant: 'destructive',
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate(`/dashboard/fuel-prices?stationId=${selectedStationId}`)}
+            >
+              Set Prices
+            </Button>
+          )
+        });
+      } else {
+        // Generic error message
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive'
+        });
+      }
+      
       setIsSubmitting(false);
     }
   };
   
   // Loading state
-  if (stationsLoading || (nozzleId && nozzlesLoading)) {
+  if (stationsLoading || allPumpsLoading || (nozzleId && nozzlesLoading)) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -373,12 +442,22 @@ export default function NewReadingPage() {
             {/* Submit button with better validation feedback */}
             <div className="space-y-3">
               {!isAttendant && !hasFuelPrices && selectedStationId && (
-                <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                  <AlertCircle className="h-4 w-4 text-yellow-600" />
-                  <p className="text-sm text-yellow-800">
-                    This station has no active fuel prices. Please add fuel prices before recording readings.
-                  </p>
-                </div>
+                <Alert variant="warning" className="bg-red-50 border-red-200">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertTitle className="text-red-800">Missing Fuel Prices</AlertTitle>
+                  <AlertDescription className="text-red-700">
+                    This station has no active fuel prices. You must add fuel prices before recording readings.
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="mt-2 w-full border-red-300 text-red-700 hover:bg-red-100"
+                      onClick={() => navigate(`/dashboard/fuel-prices?stationId=${selectedStationId}`)}
+                    >
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      Set Fuel Prices
+                    </Button>
+                  </AlertDescription>
+                </Alert>
               )}
               
               <Button 

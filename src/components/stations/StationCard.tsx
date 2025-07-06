@@ -21,6 +21,7 @@ import {
   Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FuelPricesInfo } from './FuelPricesInfo';
 
 interface StationCardProps {
   station: {
@@ -202,19 +203,14 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
             </div>
           </div>
           
-          <div className="bg-amber-50/80 backdrop-blur-sm rounded-2xl p-4 border border-amber-200/60">
+          <div className="bg-blue-50/80 backdrop-blur-sm rounded-2xl p-4 border border-blue-200/60">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-xl bg-amber-500/20 ring-1 ring-amber-400/30">
-                <Star className="h-5 w-5 text-amber-600" />
+              <div className="p-2 rounded-xl bg-blue-500/20 ring-1 ring-blue-400/30">
+                <Star className="h-5 w-5 text-blue-600" />
               </div>
-              <span className="text-sm font-semibold text-amber-700">Rating</span>
+              <span className="text-sm font-semibold text-blue-700">Fuel Prices</span>
             </div>
-            <div className="text-2xl font-bold text-gray-800">
-              {station.rating?.toFixed(1) || 'N/A'}
-            </div>
-            <div className="text-xs text-gray-600 mt-1">
-              Service quality
-            </div>
+            <FuelPricesInfo stationId={station.id} />
           </div>
         </div>
 

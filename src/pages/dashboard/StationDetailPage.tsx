@@ -63,11 +63,11 @@ export default function StationDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => navigate(`/dashboard/stations/${stationId}/settings`)}>
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Button>
-          <Button>
+          <Button onClick={() => navigate(`/dashboard/pumps/new?stationId=${stationId}`)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Pump
           </Button>
@@ -139,7 +139,7 @@ export default function StationDetailPage() {
               <p className="text-muted-foreground mb-4">
                 Add fuel pumps to start managing this station.
               </p>
-              <Button>
+              <Button onClick={() => navigate(`/dashboard/pumps/new?stationId=${stationId}`)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add First Pump
               </Button>

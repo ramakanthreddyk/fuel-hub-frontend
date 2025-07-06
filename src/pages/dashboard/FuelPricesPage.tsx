@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, X, RefreshCw } from 'lucide-react';
-import { FuelPriceTable } from '@/components/fuel-prices/FuelPriceTable';
+import { FuelPriceCards } from '@/components/fuel-prices/FuelPriceCards';
 import { FuelPriceForm } from '@/components/fuel-prices/FuelPriceForm';
 import { PageHeader } from '@/components/ui/page-header';
 import { TooltipWrapper } from '@/components/ui/tooltip-wrapper';
@@ -96,9 +96,9 @@ export default function FuelPricesPage() {
         </div>
       )}
 
-      {/* Fuel Prices Table */}
+      {/* Fuel Prices Cards */}
       <div>
-        <FuelPriceTable />
+        <FuelPriceCards />
       </div>
     </div>
   );

@@ -1,22 +1,34 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCreateFuelPrice } from '@/hooks/useFuelPrices';
-import { useStations } from '@/hooks/useStations';
+import { useStations } from '@/hooks/api/useStations';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { fuelPricesService } from '@/api/services/fuelPricesService';
 import { AlertCircle, Building2, Fuel, Calendar } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function FuelPriceForm() {
-  const [stationId, setStationId] = useState('');
-  const [fuelType, setFuelType] = useState<'petrol' | 'diesel' | 'premium'>('petrol');
+  const [searchParams] = useSearchParams();
+  const [stationId, setStationId] = useState(searchParams.get('stationId') || '');
+  const [fuelType, setFuelType] = useState<'petrol' | 'diesel' | 'premium'>(
+    (searchParams.get('fuelType') as 'petrol' | 'diesel' | 'premium') || 'petrol'
+  );
   const [price, setPrice] = useState('');
   const [validFrom, setValidFrom] = useState(new Date().toISOString().slice(0, 16));
   
-  const createFuelPrice = useCreateFuelPrice();
+  const queryClient = useQueryClient();
+  
+  const createFuelPrice = useMutation({
+    mutationFn: (data: any) => fuelPricesService.createFuelPrice(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
+    },
+  });
   const { data: stations = [], isLoading: stationsLoading, error: stationsError } = useStations();
 
   const handleSubmit = async (e: React.FormEvent) => {

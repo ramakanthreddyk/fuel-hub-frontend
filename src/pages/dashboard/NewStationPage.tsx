@@ -5,7 +5,8 @@
  */
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, DollarSign } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { StationForm } from '@/components/stations/StationForm';
 import { useCreateStation } from '@/hooks/api/useStations';
@@ -18,12 +19,30 @@ export default function NewStationPage() {
 
   const handleSubmit = async (data: any) => {
     try {
-      await createStation.mutateAsync(data);
+      const result = await createStation.mutateAsync(data);
       toast({
         title: 'Success',
         description: 'Station created successfully'
       });
-      navigate('/dashboard/stations');
+      
+      // Show a toast reminding to set fuel prices
+      toast({
+        title: 'Important',
+        description: 'Remember to set fuel prices for this station',
+        variant: 'default',
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate(`/dashboard/fuel-prices?stationId=${result.id}`)}
+          >
+            Set Prices
+          </Button>
+        )
+      });
+      
+      // Navigate to fuel prices page directly
+      navigate(`/dashboard/fuel-prices?stationId=${result.id}`);
     } catch (error) {
       toast({
         title: 'Error',
@@ -53,6 +72,16 @@ export default function NewStationPage() {
         </div>
       </div>
 
+      {/* Fuel Price Warning */}
+      <Alert variant="warning" className="bg-amber-50 border-amber-200">
+        <AlertTriangle className="h-4 w-4 text-amber-600" />
+        <AlertTitle className="text-amber-800">Important: Fuel Prices Required</AlertTitle>
+        <AlertDescription className="text-amber-700">
+          After creating a station, you'll need to set fuel prices before readings can be recorded.
+          You'll be redirected to the fuel prices page after station creation.
+        </AlertDescription>
+      </Alert>
+      
       {/* Station Form */}
       <StationForm
         onSubmit={handleSubmit}
