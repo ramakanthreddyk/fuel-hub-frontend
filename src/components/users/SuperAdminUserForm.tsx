@@ -1,84 +1,81 @@
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { CreateSuperAdminRequest, User } from '@/api/api-contract';
+import { CreateSuperAdminRequest, AdminUser } from '@/api/api-contract';
 
 interface SuperAdminUserFormProps {
-  user?: User;
+  user?: AdminUser;
   onSubmit: (data: CreateSuperAdminRequest) => void;
   onCancel: () => void;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
 export function SuperAdminUserForm({ user, onSubmit, onCancel, isLoading }: SuperAdminUserFormProps) {
-  const { register, handleSubmit, formState: { errors } } = useForm<CreateSuperAdminRequest>({
-    defaultValues: {
-      name: user?.name || '',
-      email: user?.email || '',
-      password: ''
-    }
+  const [formData, setFormData] = useState<CreateSuperAdminRequest>({
+    name: user?.name || '',
+    email: user?.email || '',
+    password: ''
   });
 
-  const handleFormSubmit = (data: CreateSuperAdminRequest) => {
-    onSubmit(data);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const handleChange = (field: keyof CreateSuperAdminRequest, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>{user ? 'Edit User' : 'Create New User'}</CardTitle>
+        <CardTitle>{user ? 'Edit Admin User' : 'Create Admin User'}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name">Name</Label>
             <Input
               id="name"
-              {...register('name', { required: 'Name is required' })}
-              placeholder="Enter full name"
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              required
             />
-            {errors.name && (
-              <p className="text-sm text-red-600">{errors.name.message}</p>
-            )}
           </div>
-
+          
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
-              {...register('email', { required: 'Email is required' })}
-              placeholder="Enter email address"
+              value={formData.email}
+              onChange={(e) => handleChange('email', e.target.value)}
+              required
             />
-            {errors.email && (
-              <p className="text-sm text-red-600">{errors.email.message}</p>
-            )}
           </div>
-
+          
           {!user && (
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
-                {...register('password', { required: 'Password is required' })}
-                placeholder="Enter password"
+                value={formData.password}
+                onChange={(e) => handleChange('password', e.target.value)}
+                required
               />
-              {errors.password && (
-                <p className="text-sm text-red-600">{errors.password.message}</p>
-              )}
             </div>
           )}
-
+          
           <div className="flex gap-2 pt-4">
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : user ? 'Update User' : 'Create User'}
+            <Button type="submit" disabled={isLoading} className="flex-1">
+              {isLoading ? 'Saving...' : (user ? 'Update' : 'Create')}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
             </Button>
           </div>

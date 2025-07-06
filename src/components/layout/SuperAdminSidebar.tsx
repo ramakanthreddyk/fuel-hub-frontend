@@ -75,7 +75,7 @@ export function SuperAdminSidebar() {
 
   return (
     <Sidebar className="border-r-0 shadow-xl">
-      <SidebarHeader className="p-6 bg-gradient-to-br from-slate-50 to-blue-50">
+      <SidebarHeader className="p-6 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-700">
         <div className="flex items-center space-x-3 mb-4">
           <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl shadow-lg">
             <Fuel className="h-6 w-6 text-white" />
@@ -108,7 +108,7 @@ export function SuperAdminSidebar() {
                         "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group hover:shadow-md",
                         location.pathname === item.url 
                           ? `${item.bgColor} ${item.color} font-semibold shadow-sm border border-current/20` 
-                          : "hover:bg-gray-50 text-gray-700 hover:text-gray-900"
+                          : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
                       )}
                     >
                       <div className={cn(
@@ -131,7 +131,7 @@ export function SuperAdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 border-t border-gray-100">
+      <SidebarFooter className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 border-t border-gray-100 dark:border-gray-700">
         <div className="text-center space-y-2">
           <div className="text-xs text-muted-foreground font-medium">
             Powered by FuelSync Hub

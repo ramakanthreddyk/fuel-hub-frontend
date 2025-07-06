@@ -37,10 +37,13 @@ export default function UsersPage() {
   const queryClient = useQueryClient();
 
   // Use SuperAdmin API for getting admin users
-  const { data: users, isLoading } = useQuery({
+  const { data: usersResponse, isLoading } = useQuery({
     queryKey: ['superadmin-users'],
     queryFn: () => superAdminApi.getAdminUsers(),
   });
+
+  // Ensure users is always an array
+  const users = Array.isArray(usersResponse) ? usersResponse : [];
 
   const { mutateAsync: createUser } = useMutation({
     mutationFn: (data: CreateSuperAdminRequest) => superAdminApi.createAdminUser(data),
@@ -205,12 +208,12 @@ export default function UsersPage() {
                   <TableCell colSpan={5} className="text-center">Loading admin users...</TableCell>
                 </TableRow>
               )}
-              {!isLoading && users?.length === 0 && (
+              {!isLoading && users.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">No admin users found.</TableCell>
                 </TableRow>
               )}
-              {!isLoading && users?.map((user) => (
+              {!isLoading && users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>

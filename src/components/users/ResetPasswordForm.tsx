@@ -1,67 +1,69 @@
 
-import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ResetPasswordRequest } from '@/api/api-contract';
 
 interface ResetPasswordFormProps {
-  onSubmit: (data: ResetPasswordRequest) => void;
+  onSubmit: (data: { password: string; confirmPassword: string }) => void;
   onCancel: () => void;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
 export function ResetPasswordForm({ onSubmit, onCancel, isLoading }: ResetPasswordFormProps) {
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<ResetPasswordRequest>();
+  const [formData, setFormData] = useState({
+    password: '',
+    confirmPassword: ''
+  });
 
-  const newPassword = watch('newPassword');
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+    onSubmit(formData);
+  };
 
-  const handleFormSubmit = (data: ResetPasswordRequest) => {
-    onSubmit(data);
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle>Reset Password</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="newPassword">New Password</Label>
+            <Label htmlFor="password">New Password</Label>
             <Input
-              id="newPassword"
+              id="password"
               type="password"
-              {...register('newPassword', { required: 'New password is required' })}
-              placeholder="Enter new password"
+              value={formData.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              required
             />
-            {errors.newPassword && (
-              <p className="text-sm text-red-600">{errors.newPassword.message}</p>
-            )}
           </div>
-
+          
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
               id="confirmPassword"
               type="password"
-              {...register('confirmPassword', { 
-                required: 'Please confirm your password',
-                validate: (value) => value === newPassword || 'Passwords do not match'
-              })}
-              placeholder="Confirm new password"
+              value={formData.confirmPassword}
+              onChange={(e) => handleChange('confirmPassword', e.target.value)}
+              required
             />
-            {errors.confirmPassword && (
-              <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
-            )}
           </div>
-
+          
           <div className="flex gap-2 pt-4">
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="flex-1">
               {isLoading ? 'Resetting...' : 'Reset Password'}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
             </Button>
           </div>
