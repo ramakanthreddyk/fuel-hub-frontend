@@ -14,33 +14,33 @@ import {
 // Main SuperAdmin API object
 export const superAdminApi = {
   // Tenant Management
-  getTenants: (): Promise<Tenant[]> => apiClient.get('/admin/tenants').then(response => response.data || []),
+  getTenants: (): Promise<Tenant[]> => apiClient.get('/admin/tenants').then(response => extractApiData(response) || []),
   createTenant: (data: CreateTenantRequest): Promise<Tenant> =>
-    apiClient.post('/admin/tenants', data).then(response => response.data),
+    apiClient.post('/admin/tenants', data).then(response => extractApiData(response)),
   getTenant: (id: string): Promise<Tenant> =>
-    apiClient.get(`/admin/tenants/${id}`).then(response => response.data),
+    apiClient.get(`/admin/tenants/${id}`).then(response => extractApiData(response)),
   updateTenant: (id: string, data: Partial<Tenant>): Promise<Tenant> =>
-    apiClient.put(`/admin/tenants/${id}`, data).then(response => response.data),
+    apiClient.put(`/admin/tenants/${id}`, data).then(response => extractApiData(response)),
   updateTenantStatus: (id: string, status: string): Promise<Tenant> =>
-    apiClient.put(`/admin/tenants/${id}/status`, { status }).then(response => response.data),
+    apiClient.put(`/admin/tenants/${id}/status`, { status }).then(response => extractApiData(response)),
   deleteTenant: (id: string): Promise<void> =>
     apiClient.delete(`/admin/tenants/${id}`),
 
   // Plan Management
-  getPlans: (): Promise<Plan[]> => apiClient.get('/admin/plans').then(response => response.data || []),
+  getPlans: (): Promise<Plan[]> => apiClient.get('/admin/plans').then(response => extractApiData(response) || []),
   createPlan: (data: CreatePlanRequest): Promise<Plan> =>
-    apiClient.post('/admin/plans', data).then(response => response.data),
+    apiClient.post('/admin/plans', data).then(response => extractApiData(response)),
   updatePlan: (id: string, data: Partial<Plan>): Promise<Plan> =>
-    apiClient.put(`/admin/plans/${id}`, data).then(response => response.data),
+    apiClient.put(`/admin/plans/${id}`, data).then(response => extractApiData(response)),
   deletePlan: (id: string): Promise<void> =>
     apiClient.delete(`/admin/plans/${id}`),
 
   // Admin User Management
-  getAdminUsers: (): Promise<AdminUser[]> => apiClient.get('/admin/users').then(response => response.data || []),
+  getAdminUsers: (): Promise<AdminUser[]> => apiClient.get('/admin/users').then(response => extractApiData(response) || []),
   createAdminUser: (data: CreateSuperAdminRequest): Promise<AdminUser> =>
-    apiClient.post('/admin/users', data).then(response => response.data),
+    apiClient.post('/admin/users', data).then(response => extractApiData(response)),
   updateAdminUser: (id: string, data: Partial<AdminUser>): Promise<AdminUser> =>
-    apiClient.put(`/admin/users/${id}`, data).then(response => response.data),
+    apiClient.put(`/admin/users/${id}`, data).then(response => extractApiData(response)),
   deleteAdminUser: (id: string): Promise<void> =>
     apiClient.delete(`/admin/users/${id}`),
   resetAdminPassword: (id: string, passwordData: any): Promise<void> =>
