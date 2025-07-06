@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, Eye, Users, MapPin } from 'lucide-react';
+import { Building2, Eye, Users, MapPin, Calendar } from 'lucide-react';
 import { formatDate } from '@/utils/formatters';
 import { Tenant } from '@/api/api-contract';
 import { TenantStats } from './TenantStats';
@@ -15,6 +15,8 @@ interface TenantCardProps {
 }
 
 export function TenantCard({ tenant, onUpdateStatus, onDelete, onView }: TenantCardProps) {
+  console.log('TenantCard - tenant ID:', tenant.id, 'tenant name:', tenant.name);
+  
   const getPlanColor = (planName: string) => {
     if (planName.toLowerCase().includes('basic')) return 'bg-blue-100 text-blue-800 border-blue-200';
     if (planName.toLowerCase().includes('premium')) return 'bg-purple-100 text-purple-800 border-purple-200';
@@ -35,56 +37,59 @@ export function TenantCard({ tenant, onUpdateStatus, onDelete, onView }: TenantC
     }
   };
 
+  const handleViewClick = () => {
+    console.log('TenantCard - View button clicked for tenant:', tenant.id);
+    onView(tenant.id);
+  };
+
   return (
-    <Card className="hover:shadow-lg transition-all duration-300 border-0 bg-white/95 backdrop-blur-sm">
+    <Card className="hover:shadow-xl transition-all duration-300 border-0 bg-white shadow-md hover:shadow-purple-100/50">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="flex items-center gap-2 text-lg min-w-0 flex-1">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex-shrink-0">
+            <div className="p-2.5 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex-shrink-0 shadow-sm">
               <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
-            <span className="truncate text-sm sm:text-lg">{tenant.name}</span>
+            <div className="min-w-0 flex-1">
+              <span className="truncate text-sm sm:text-lg font-bold text-gray-900">{tenant.name}</span>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge className={`${getStatusColor(tenant.status)} border text-xs px-2 py-0.5 font-medium`}>
+                  {tenant.status}
+                </Badge>
+                {tenant.status === 'active' && (
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                )}
+              </div>
+            </div>
           </CardTitle>
-          <div className="flex items-center gap-2">
-            {tenant.status === 'active' && (
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            )}
-            <Badge className={`${getPlanColor(tenant.planName)} border font-medium text-xs px-2 py-1 flex-shrink-0`}>
-              <span className="hidden sm:inline">{tenant.planName}</span>
-              <span className="sm:hidden">{tenant.planName.slice(0, 3)}</span>
-            </Badge>
-          </div>
+          <Badge className={`${getPlanColor(tenant.planName)} border font-semibold text-xs px-3 py-1 flex-shrink-0`}>
+            {tenant.planName}
+          </Badge>
         </div>
-        <CardDescription className="text-xs sm:text-sm text-muted-foreground">
-          <div className="flex items-center justify-between">
-            <span className="font-medium">{tenant.name}</span>
-            <Badge className={`${getStatusColor(tenant.status)} text-xs px-2 py-1`}>
-              {tenant.status}
-            </Badge>
+        <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-2">
+          <div className="flex items-center gap-1 text-gray-500">
+            <Calendar className="h-3 w-3" />
+            <span>Created {formatDate(tenant.createdAt)}</span>
           </div>
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3 sm:space-y-4">
+      
+      <CardContent className="space-y-4">
         <TenantStats 
           stationCount={tenant.stationCount || 0}
           userCount={tenant.userCount || 0}
         />
         
-        {/* Action Button */}
-        <div className="pt-2 border-t">
+        {/* Action Buttons */}
+        <div className="flex gap-2 pt-3 border-t border-gray-100">
           <Button
-            onClick={() => onView(tenant.id)}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+            onClick={handleViewClick}
+            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200"
             size="sm"
           >
             <Eye className="h-4 w-4 mr-2" />
             View Details
           </Button>
-        </div>
-        
-        <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-          <span className="hidden sm:inline">Created: </span>
-          {formatDate(tenant.createdAt)}
         </div>
       </CardContent>
     </Card>

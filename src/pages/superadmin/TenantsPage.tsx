@@ -43,6 +43,7 @@ export default function SuperAdminTenantsPage() {
       });
     },
     onError: (error) => {
+      console.error('Error creating tenant:', error);
       toast({
         title: "Error",
         description: "Failed to create tenant",
@@ -62,6 +63,7 @@ export default function SuperAdminTenantsPage() {
       });
     },
     onError: (error) => {
+      console.error('Error updating tenant status:', error);
       toast({
         title: "Error",
         description: "Failed to update tenant status",
@@ -80,6 +82,7 @@ export default function SuperAdminTenantsPage() {
       });
     },
     onError: (error) => {
+      console.error('Error deleting tenant:', error);
       toast({
         title: "Error",
         description: "Failed to delete tenant",
@@ -89,24 +92,55 @@ export default function SuperAdminTenantsPage() {
   });
 
   const handleCreateTenant = (data: CreateTenantRequest) => {
+    console.log('Creating tenant with data:', data);
     createTenantMutation.mutate(data);
   };
 
   const handleUpdateStatus = (id: string, status: 'active' | 'suspended' | 'cancelled') => {
+    console.log('Updating tenant status:', id, status);
     updateTenantStatusMutation.mutate({ id, status });
   };
 
   const handleDeleteTenant = (id: string) => {
+    console.log('Deleting tenant:', id);
     deleteTenantMutation.mutate(id);
   };
 
   const handleViewTenant = (id: string) => {
-    console.log('Navigating to tenant details:', id);
-    navigate(`/superadmin/tenants/${id}`);
+    console.log('Navigating to tenant details page for ID:', id);
+    console.log('Current location:', window.location.pathname);
+    
+    // Ensure we have a valid tenant ID
+    if (!id) {
+      console.error('No tenant ID provided for navigation');
+      toast({
+        title: "Error",
+        description: "Invalid tenant ID",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Navigate to tenant details
+    const targetRoute = `/superadmin/tenants/${id}`;
+    console.log('Navigating to:', targetRoute);
+    
+    try {
+      navigate(targetRoute);
+      console.log('Navigation successful');
+    } catch (error) {
+      console.error('Navigation failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to navigate to tenant details",
+        variant: "destructive",
+      });
+    }
   };
 
   // Ensure tenants is always an array
   const tenantsArray = Array.isArray(tenants) ? tenants : [];
+  console.log('Tenants data:', tenantsArray);
 
   return (
     <div className="space-y-6">
@@ -122,7 +156,7 @@ export default function SuperAdminTenantsPage() {
         
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg">
+            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200">
               <Plus className="mr-2 h-4 w-4" />
               Add Tenant
             </Button>
@@ -176,15 +210,18 @@ export default function SuperAdminTenantsPage() {
           </Card>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {tenantsArray.map((tenant) => (
-              <TenantCard
-                key={tenant.id}
-                tenant={tenant}
-                onUpdateStatus={handleUpdateStatus}
-                onDelete={handleDeleteTenant}
-                onView={handleViewTenant}
-              />
-            ))}
+            {tenantsArray.map((tenant) => {
+              console.log('Rendering tenant card for:', tenant.id, tenant.name);
+              return (
+                <TenantCard
+                  key={tenant.id}
+                  tenant={tenant}
+                  onUpdateStatus={handleUpdateStatus}
+                  onDelete={handleDeleteTenant}
+                  onView={handleViewTenant}
+                />
+              );
+            })}
           </div>
         )}
       </SuperAdminErrorBoundary>
