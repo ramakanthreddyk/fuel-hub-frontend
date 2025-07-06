@@ -53,7 +53,7 @@ export default function ReportsPage() {
       format: 'pdf',
       startDate: format(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
       endDate: format(new Date(), 'yyyy-MM-dd'),
-      stationId: ''
+      stationId: 'all'
     }
   });
 
@@ -76,7 +76,10 @@ export default function ReportsPage() {
         start: new Date(data.startDate).toISOString(),
         end: new Date(data.endDate).toISOString()
       },
-      filters: data.stationId ? { stationId: data.stationId } : undefined
+      filters:
+        data.stationId && data.stationId !== 'all'
+          ? { stationId: data.stationId }
+          : undefined
     }, {
       onSuccess: () => {
         setIsDialogOpen(false);
@@ -280,7 +283,7 @@ export default function ReportsPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">All Stations</SelectItem>
+                            <SelectItem value="all">All Stations</SelectItem>
                             {stations.map((station) => (
                               <SelectItem key={station.id} value={station.id}>
                                 {station.name}
