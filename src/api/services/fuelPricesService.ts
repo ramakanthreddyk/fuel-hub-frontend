@@ -57,39 +57,16 @@ export const fuelPricesService = {
     try {
       console.log('[FUEL-PRICES-API] Fetching fuel prices', stationId ? `for station: ${stationId}` : '');
       
-      // Use query parameter approach as per API spec
-      const params = stationId ? { stationId } : {};
-      const response = await apiClient.get(API_CONFIG.endpoints.fuelPrices.base, { params });
+      const params = new URLSearchParams();
+      if (stationId) params.append('stationId', stationId);
       
+      const url = `/fuel-prices${params.toString() ? '?' + params.toString() : ''}`;
+      console.log('[FUEL-PRICES-API] Request URL:', url);
+      
+      const response = await apiClient.get(url);
       console.log('[FUEL-PRICES-API] Response received:', response.data);
       
-      // Extract prices from response - keys are already converted to camelCase by apiClient
-      let pricesArray: FuelPrice[] = [];
-      
-      if (response.data?.data?.prices) {
-        pricesArray = response.data.data.prices;
-      } else if (response.data?.prices) {
-        pricesArray = response.data.prices;
-      } else if (Array.isArray(response.data)) {
-        pricesArray = response.data;
-      } else if (response.data?.data && Array.isArray(response.data.data)) {
-        pricesArray = response.data.data;
-      } else {
-        // Use the helper function as fallback
-        pricesArray = extractArray<FuelPrice>(response, 'prices');
-      }
-      
-      console.log(`[FUEL-PRICES-API] Successfully fetched ${pricesArray.length} fuel prices`);
-      
-      // Ensure all prices have stationId
-      if (stationId) {
-        pricesArray = pricesArray.map(price => ({
-          ...price,
-          stationId: price.stationId || stationId
-        }));
-      }
-      
-      return pricesArray;
+      return extractArray<FuelPrice>(response, 'prices');
     } catch (error) {
       console.error('[FUEL-PRICES-API] Error fetching fuel prices:', error);
       throw error;

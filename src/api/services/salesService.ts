@@ -35,6 +35,8 @@ export const salesService = {
    */
   getSales: async (filters: SalesFilters = {}): Promise<Sale[]> => {
     try {
+      console.log('[SALES-API] Fetching sales with filters:', filters);
+      
       const params = new URLSearchParams();
       if (filters.stationId) params.append('stationId', filters.stationId);
       if (filters.startDate) params.append('startDate', filters.startDate);
@@ -42,7 +44,15 @@ export const salesService = {
       if (filters.limit) params.append('limit', filters.limit.toString());
       if (filters.page) params.append('page', filters.page.toString());
 
+      console.log('[SALES-API] Request URL:', `/sales?${params.toString()}`);
+      
+      // Check if user is logged in
+      const storedUser = localStorage.getItem('fuelsync_user');
+      console.log('[SALES-API] Stored user:', storedUser ? JSON.parse(storedUser) : 'None');
+      
       const response = await apiClient.get(`/sales?${params.toString()}`);
+      console.log('[SALES-API] Response received:', response.data);
+      
       return extractArray<Sale>(response, 'sales');
     } catch (error) {
       console.error('[SALES-API] Error fetching sales:', error);
