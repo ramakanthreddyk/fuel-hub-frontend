@@ -127,6 +127,7 @@ export const superAdminApi = {
 
 // Backward compatibility exports
 export const superadminApi = superAdminApi;
+export { superAdminApi };
 
 // Fix the export type issue
 export type { SuperAdminSummary };
