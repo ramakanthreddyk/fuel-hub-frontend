@@ -1,4 +1,3 @@
-
 /**
  * @file components/nozzles/FuelNozzleCard.tsx
  * @description Enhanced fuel nozzle card with improved visibility and white theme
@@ -212,20 +211,20 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - Improved layout for better visibility */}
         <div className="flex gap-2 pt-2">
           <Button 
             onClick={() => onRecordReading(nozzle.id)}
-            className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-xl shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all duration-300"
+            className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-xl shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all duration-300 text-sm px-3 py-2"
           >
-            <FileText className="w-4 h-4 mr-2" />
-            Record Reading
+            <FileText className="w-4 h-4 mr-1" />
+            Record
           </Button>
           <Button 
             onClick={() => onEdit(nozzle.id)}
             variant="outline"
             size="sm"
-            className="bg-blue-50 border-blue-300 text-blue-600 hover:bg-blue-100 hover:border-blue-400 rounded-xl"
+            className="bg-blue-50 border-blue-300 text-blue-600 hover:bg-blue-100 hover:border-blue-400 rounded-xl px-3"
           >
             <Eye className="w-4 h-4" />
           </Button>
@@ -233,7 +232,7 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
             onClick={() => onDelete(nozzle.id)}
             variant="outline"
             size="sm"
-            className="bg-red-50 border-red-300 text-red-600 hover:bg-red-100 hover:border-red-400 rounded-xl"
+            className="bg-red-50 border-red-300 text-red-600 hover:bg-red-100 hover:border-red-400 rounded-xl px-3"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

@@ -1,4 +1,3 @@
-
 /**
  * @file contexts/AuthContext.tsx
  * @description Authentication context provider
@@ -44,7 +43,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const token = localStorage.getItem('fuelsync_token');
   const isAuthenticated = !!user && !!token;
 
-  // Initialize auth state on mount - prevent immediate refresh
+  // Initialize auth state on mount
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -104,20 +103,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(authUser as User);
       console.log('[AUTH-CONTEXT] Login successful:', authUser);
       
-      // Small delay before navigation to ensure state is set
+      // Delay navigation to prevent immediate page refresh
       setTimeout(() => {
         const currentPath = location.pathname;
         
         if (authUser.role === 'superadmin') {
+          // Only navigate if not already on superadmin route
           if (!currentPath.startsWith('/superadmin')) {
             navigate('/superadmin/overview', { replace: true });
           }
         } else {
+          // Only navigate if not already on dashboard route
           if (!currentPath.startsWith('/dashboard')) {
             navigate('/dashboard', { replace: true });
           }
         }
-      }, 100);
+      }, 500); // Increased delay to prevent refresh
     } catch (error: any) {
       console.error('[AUTH-CONTEXT] Login error:', error);
       throw new Error(error.response?.data?.message || error.message || 'Login failed');
