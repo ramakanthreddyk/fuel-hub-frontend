@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStations } from '@/hooks/api/useStations';
 import { useAttendantStations } from '@/hooks/api/useAttendant';
 import { useAuth } from '@/contexts/AuthContext';
-import { useReadings } from '@/hooks/api/useReadings';
-import { useFuelPrices } from '@/hooks/api/useFuelPrices';
+import { useQuery } from '@tanstack/react-query';
+import { readingsService } from '@/api/services/readingsService';
+import { fuelPricesService } from '@/api/services/fuelPricesService';
 import { format } from 'date-fns';
 import { Loader2, FileText, Fuel, CreditCard, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -33,11 +34,25 @@ export default function AttendantDashboardPage() {
     setSelectedStationId(stations[0].id);
   }
   
-  // Fetch readings for today
-  const { data: readings = [], isLoading: readingsLoading } = useReadings();
-  
-  // Fetch fuel prices
-  const { data: fuelPrices = [], isLoading: pricesLoading } = useFuelPrices(selectedStationId);
+  // Fetch readings for today (disabled for attendants)
+  const {
+    data: readings = [],
+    isLoading: readingsLoading,
+  } = useQuery({
+    queryKey: ['readings'],
+    queryFn: () => readingsService.getReadings(),
+    enabled: !isAttendant,
+  });
+
+  // Fetch fuel prices (owners/managers only)
+  const {
+    data: fuelPrices = [],
+    isLoading: pricesLoading,
+  } = useQuery({
+    queryKey: ['fuel-prices', selectedStationId],
+    queryFn: () => fuelPricesService.getFuelPrices(selectedStationId),
+    enabled: !isAttendant && !!selectedStationId,
+  });
   
   const isLoading = stationsLoading || readingsLoading || pricesLoading;
   

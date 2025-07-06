@@ -22,7 +22,8 @@ import {
 } from '@/hooks/api/useAttendant';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateReading, useLatestReading } from '@/hooks/api/useReadings';
-import { useFuelPrices } from '@/hooks/api/useFuelPrices';
+import { useQuery } from '@tanstack/react-query';
+import { fuelPricesService } from '@/api/services/fuelPricesService';
 import { useToast } from '@/hooks/use-toast';
 
 export default function NewReadingPage() {
@@ -55,7 +56,11 @@ export default function NewReadingPage() {
     isLoading: nozzlesLoading,
   } = isAttendant ? useAttendantNozzles(selectedPumpId) : useNozzles(selectedPumpId);
   const { data: latestReading, isLoading: latestReadingLoading } = useLatestReading(selectedNozzleId);
-  const { data: fuelPrices = [] } = useFuelPrices(selectedStationId);
+  const { data: fuelPrices = [] } = useQuery({
+    queryKey: ['fuel-prices', selectedStationId],
+    queryFn: () => fuelPricesService.getFuelPrices(selectedStationId),
+    enabled: !isAttendant && !!selectedStationId,
+  });
   const createReading = useCreateReading();
   
   // If nozzleId is provided in URL, find its details to set station and pump
@@ -77,7 +82,7 @@ export default function NewReadingPage() {
   const minReading = latestReading?.reading || 0;
   
   // Check if we can submit (has fuel prices)
-  const hasFuelPrices = fuelPrices.length > 0;
+  const hasFuelPrices = isAttendant ? true : fuelPrices.length > 0;
   
   // Handle station change
   const handleStationChange = (value: string) => {
@@ -364,7 +369,7 @@ export default function NewReadingPage() {
             
             {/* Submit button with better validation feedback */}
             <div className="space-y-3">
-              {!hasFuelPrices && selectedStationId && (
+              {!isAttendant && !hasFuelPrices && selectedStationId && (
                 <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                   <AlertCircle className="h-4 w-4 text-yellow-600" />
                   <p className="text-sm text-yellow-800">
@@ -375,7 +380,7 @@ export default function NewReadingPage() {
               
               <Button 
                 type="submit" 
-                disabled={isSubmitting || !selectedNozzleId || reading < minReading || !hasFuelPrices} 
+                disabled={isSubmitting || !selectedNozzleId || reading < minReading || (!isAttendant && !hasFuelPrices)}
                 className="w-full"
               >
                 {isSubmitting ? (

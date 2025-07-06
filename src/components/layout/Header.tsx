@@ -13,14 +13,24 @@ import {
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap, Menu } from 'lucide-react';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
 
-export function Header() {
+export interface HeaderProps {
+  onMobileMenuClick?: () => void;
+}
+
+export function Header({ onMobileMenuClick }: HeaderProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  let sidebarToggle: (() => void) | undefined;
+  try {
+    sidebarToggle = useSidebar().toggleSidebar;
+  } catch {
+    sidebarToggle = undefined;
+  }
+  const handleMobileMenuClick = onMobileMenuClick ?? sidebarToggle;
 
   // Get current page title based on route
   const getPageTitle = () => {
@@ -128,7 +138,7 @@ export function Header() {
             variant="ghost"
             size="icon"
             className="h-8 w-8 lg:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={handleMobileMenuClick}
           >
             <Menu className="h-4 w-4" />
           </Button>

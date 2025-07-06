@@ -543,3 +543,40 @@ Integrated latest fuel prices widget on the Owner dashboard and fixed missing fi
 - Pages now load stations, pumps, nozzles and creditors via `/attendant/*` endpoints when the logged user is an attendant.
 - Maintains existing behaviour for owners and managers.
 - Documented in `STEP_fix_20260723_COMMAND.md`.
+
+### 🛠️ Fix 2026-07-24 – Clarify attendant API limits
+
+**Status:** ✅ Done
+**Files:** `docs/journeys/ATTENDANT.md`
+
+**Overview:**
+- Documented missing listing endpoints for attendants and stubbed attendance/shifts APIs.
+- See `STEP_fix_20260724_COMMAND.md`.
+
+### 🛠️ Fix 2026-07-25 – Skip restricted API calls
+
+**Status:** ✅ Done
+**Files:** `src/pages/dashboard/AttendantDashboardPage.tsx`, `src/pages/dashboard/NewReadingPage.tsx`
+
+**Overview:**
+- Dashboard and new reading pages no longer issue requests to `/fuel-prices` or `/nozzle-readings` when the logged user is an attendant.
+- Documentation updated accordingly (`STEP_fix_20260725_COMMAND.md`).
+### 🛠️ Fix 2026-07-24 – Mobile sidebar toggle
+
+**Status:** ✅ Done
+**Files:** `src/components/layout/Header.tsx`, `src/components/layout/Sidebar.tsx`, `src/components/layout/DashboardLayout.tsx`
+
+**Overview:**
+- Hoisted sidebar open state to `DashboardLayout`.
+- Header hamburger button now opens the sidebar on mobile.
+- Documented in `STEP_fix_20260724_COMMAND.md`.
+
+### 🛠️ Fix 2026-07-25 – SuperAdmin sidebar toggle
+
+**Status:** ✅ Done
+**Files:** `src/components/layout/Header.tsx`
+
+**Overview:**
+- Header now toggles the `SidebarProvider` sidebar when no click handler is passed.
+- Ensures the hamburger menu works for SuperAdmin pages.
+- Documented in `STEP_fix_20260725_COMMAND.md`.

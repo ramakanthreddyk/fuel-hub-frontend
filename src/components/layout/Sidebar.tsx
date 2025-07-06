@@ -260,8 +260,16 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
   );
 }
 
-export function Sidebar() {
-  const [open, setOpen] = useState(false);
+export interface SidebarProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function Sidebar({ open: openProp, onOpenChange }: SidebarProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const controlled = typeof openProp === 'boolean' && onOpenChange;
+  const open = controlled ? openProp : internalOpen;
+  const setOpen = controlled ? onOpenChange! : setInternalOpen;
   return (
     <>
       {/* Desktop Sidebar */}

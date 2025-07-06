@@ -498,3 +498,12 @@
 ## Previous Changes
 
 [Previous changelog entries...]
+## 2026-07-24: Mobile sidebar toggle fix
+
+### Fixed
+- Header hamburger button now toggles the sidebar on mobile screens.
+
+## 2026-07-25: SuperAdmin sidebar toggle fix
+
+### Fixed
+- Hamburger menu now works for SuperAdmin pages by falling back to `useSidebar` when no click handler is provided.
