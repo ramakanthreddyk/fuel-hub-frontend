@@ -544,6 +544,8 @@ export interface CashReport {
 export interface CreateCashReportRequest {
   stationId: string;
   cashAmount: number;
+  cardAmount?: number;
+  upiAmount?: number;
   reportDate?: string;
   shift: 'morning' | 'afternoon' | 'night';
   notes?: string;

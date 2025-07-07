@@ -32,6 +32,8 @@ export default function CashReportPage() {
   // State
   const [selectedStationId, setSelectedStationId] = useState<string>('');
   const [cashAmount, setCashAmount] = useState<number>(0);
+  const [cardAmount, setCardAmount] = useState<number>(0);
+  const [upiAmount, setUpiAmount] = useState<number>(0);
   const [shift, setShift] = useState<'morning' | 'afternoon' | 'night'>('morning');
   const [notes, setNotes] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,6 +78,8 @@ export default function CashReportPage() {
     const reportData = {
       stationId: selectedStationId,
       cashAmount,
+      cardAmount,
+      upiAmount,
       reportDate: today,
       shift,
       notes: notes.trim() || undefined
@@ -174,20 +178,62 @@ export default function CashReportPage() {
               </Select>
             </div>
             
-            {/* Cash Amount */}
-            <div className="space-y-2">
-              <Label htmlFor="cashAmount">Cash Amount</Label>
-              <div className="relative">
-                <DollarSign className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="cashAmount" 
-                  type="number" 
-                  min="0" 
-                  step="0.01" 
-                  className="pl-8" 
-                  value={cashAmount || ''} 
-                  onChange={(e) => setCashAmount(parseFloat(e.target.value) || 0)} 
-                />
+            {/* Payment Method Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cashAmount">Cash Amount</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="cashAmount" 
+                    type="number" 
+                    min="0" 
+                    step="0.01" 
+                    className="pl-8" 
+                    value={cashAmount || ''} 
+                    onChange={(e) => setCashAmount(parseFloat(e.target.value) || 0)} 
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="cardAmount">Card Amount</Label>
+                <div className="relative">
+                  <CreditCard className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="cardAmount" 
+                    type="number" 
+                    min="0" 
+                    step="0.01" 
+                    className="pl-8" 
+                    value={cardAmount || ''} 
+                    onChange={(e) => setCardAmount(parseFloat(e.target.value) || 0)} 
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="upiAmount">UPI Amount</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="upiAmount" 
+                    type="number" 
+                    min="0" 
+                    step="0.01" 
+                    className="pl-8" 
+                    value={upiAmount || ''} 
+                    onChange={(e) => setUpiAmount(parseFloat(e.target.value) || 0)} 
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Total Amount Display */}
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Total Amount:</span>
+                <span className="text-xl font-bold">₹{(cashAmount + cardAmount + upiAmount).toFixed(2)}</span>
               </div>
             </div>
             

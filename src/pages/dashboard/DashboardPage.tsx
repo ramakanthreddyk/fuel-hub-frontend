@@ -16,6 +16,7 @@ import { useReadings } from '@/hooks/api/useReadings';
 import { useSalesSummary } from '@/hooks/useDashboard';
 import { usePendingReadings } from '@/hooks/api/usePendingReadings';
 import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
+import { CashDiscrepancyAlert } from '@/components/dashboard/CashDiscrepancyAlert';
 import { Link } from 'react-router-dom';
 
 export default function DashboardPage() {
@@ -230,6 +231,9 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Cash Discrepancy Alert */}
+      <CashDiscrepancyAlert />
     </div>
   );
 }
