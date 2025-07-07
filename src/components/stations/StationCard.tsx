@@ -1,27 +1,23 @@
 
 /**
  * @file components/stations/StationCard.tsx
- * @description Enhanced station card with improved layout and fuel type indicators
+ * @description Enhanced station card with improved layout and fuel price display
  */
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Building2, 
   MapPin, 
-  Hash, 
   Eye, 
   Trash2, 
   Fuel,
-  Activity,
   CheckCircle,
   AlertTriangle,
   Clock,
-  Star,
-  Droplets,
-  Zap
+  Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { FuelPricesInfo } from './FuelPricesInfo';
+import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 
 interface StationCardProps {
   station: {
@@ -37,31 +33,7 @@ interface StationCardProps {
 }
 
 export function StationCard({ station, onView, onDelete }: StationCardProps) {
-  // Get card variant based on station ID for visual variety
-  const getCardVariant = (id: string) => {
-    const variants = [
-      {
-        name: 'petrol',
-        bg: 'from-emerald-50 via-teal-50 to-green-50',
-        border: 'border-emerald-200',
-        glow: 'hover:ring-2 hover:ring-emerald-300/50 hover:shadow-emerald-200/40'
-      },
-      {
-        name: 'diesel', 
-        bg: 'from-amber-50 via-orange-50 to-yellow-50',
-        border: 'border-amber-200',
-        glow: 'hover:ring-2 hover:ring-amber-300/50 hover:shadow-amber-200/40'
-      },
-      {
-        name: 'premium',
-        bg: 'from-purple-50 via-indigo-50 to-violet-50', 
-        border: 'border-purple-200',
-        glow: 'hover:ring-2 hover:ring-purple-300/50 hover:shadow-purple-200/40'
-      }
-    ];
-    const hash = id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-    return variants[hash % variants.length];
-  };
+  const { data: fuelPrices = [], isLoading: pricesLoading } = useFuelPrices(station.id);
 
   const getStatusConfig = () => {
     switch (station.status) {
@@ -70,7 +42,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
           icon: CheckCircle,
           label: 'Active',
           iconColor: 'text-emerald-600',
-          bgColor: 'bg-emerald-100/80 border-emerald-300/60 ring-emerald-300/30',
+          bgColor: 'bg-emerald-100/80 border-emerald-300/60',
           textColor: 'text-emerald-700'
         };
       case 'maintenance':
@@ -78,7 +50,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
           icon: Clock,
           label: 'Maintenance',
           iconColor: 'text-amber-600',
-          bgColor: 'bg-amber-100/80 border-amber-300/60 ring-amber-300/30',
+          bgColor: 'bg-amber-100/80 border-amber-300/60',
           textColor: 'text-amber-700'
         };
       case 'inactive':
@@ -86,7 +58,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
           icon: AlertTriangle,
           label: 'Inactive',
           iconColor: 'text-red-600',
-          bgColor: 'bg-red-100/80 border-red-300/60 ring-red-300/30',
+          bgColor: 'bg-red-100/80 border-red-300/60',
           textColor: 'text-red-700'
         };
       default:
@@ -94,166 +66,162 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
           icon: AlertTriangle,
           label: 'Unknown',
           iconColor: 'text-gray-600',
-          bgColor: 'bg-gray-100/80 border-gray-300/60 ring-gray-300/30',
+          bgColor: 'bg-gray-100/80 border-gray-300/60',
           textColor: 'text-gray-700'
         };
     }
   };
 
-  const cardVariant = getCardVariant(station.id);
+  // Process fuel prices to get the latest price for each fuel type
+  const processedPrices = React.useMemo(() => {
+    if (!Array.isArray(fuelPrices) || fuelPrices.length === 0) return {};
+    
+    const pricesByType: Record<string, any> = {};
+    
+    fuelPrices.forEach(price => {
+      if (price && price.fuelType && price.price !== undefined) {
+        if (!pricesByType[price.fuelType] || 
+            new Date(price.validFrom || 0) > new Date(pricesByType[price.fuelType].validFrom || 0)) {
+          pricesByType[price.fuelType] = price;
+        }
+      }
+    });
+    
+    return pricesByType;
+  }, [fuelPrices]);
+
   const statusConfig = getStatusConfig();
   const StatusIcon = statusConfig.icon;
+  const hasPrices = Object.keys(processedPrices).length > 0;
 
   return (
-    <div className={cn(
-      "group relative overflow-hidden rounded-3xl border backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] bg-white/90",
-      `bg-gradient-to-br ${cardVariant.bg}`,
-      cardVariant.border,
-      cardVariant.glow,
-      "shadow-xl hover:shadow-2xl"
-    )}>
-      {/* Fuel type indicator badges - improved spacing */}
-      <div className="absolute top-4 left-4 flex gap-2">
-        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-sm">
-          <div className="w-2 h-2 rounded-full bg-emerald-500" title="Petrol Available" />
-          <span className="text-xs font-medium text-emerald-700">P</span>
-        </div>
-        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-sm">
-          <div className="w-2 h-2 rounded-full bg-amber-500" title="Diesel Available" />
-          <span className="text-xs font-medium text-amber-700">D</span>
-        </div>
-        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-sm">
-          <div className="w-2 h-2 rounded-full bg-purple-500" title="Premium Available" />
-          <span className="text-xs font-medium text-purple-700">S</span>
-        </div>
-      </div>
-
-      {/* Floating Station Icon */}
-      <div className="absolute top-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ring-2 ring-blue-300/30">
-        <Building2 className="h-7 w-7 text-blue-600 drop-shadow-sm" />
-        {station.status === 'active' && (
-          <div className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping"></div>
-        )}
-      </div>
-
-      <div className="relative p-8 space-y-6 pt-16">
-        {/* Header */}
-        <div className="space-y-3">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2 flex-1 min-w-0 pr-4">
-              <h3 className="font-bold text-2xl text-gray-800 truncate group-hover:text-blue-700 transition-colors">
-                {station.name}
-              </h3>
-              <div className="flex items-center gap-2 text-gray-600 text-sm">
-                <MapPin className="h-3 w-3 flex-shrink-0" />
-                <span className="truncate">{station.address}</span>
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+      {/* Header */}
+      <div className="p-6 pb-4">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <Building2 className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-gray-900">{station.name}</h3>
+              <div className="flex items-center gap-1 text-sm text-gray-500">
+                <MapPin className="h-3 w-3" />
+                <span>{station.address}</span>
               </div>
             </div>
           </div>
           
-          <div className={cn(
-            "inline-flex px-4 py-2 rounded-full border items-center gap-2 backdrop-blur-sm ring-1",
-            statusConfig.bgColor
-          )}>
-            <StatusIcon className={cn("w-4 h-4", statusConfig.iconColor)} />
-            <span className={cn("text-sm font-semibold", statusConfig.textColor)}>
-              {statusConfig.label}
-            </span>
+          {/* Fuel type indicators */}
+          <div className="flex gap-1">
+            <div className="w-3 h-3 rounded-full bg-green-500" title="Petrol" />
+            <div className="w-3 h-3 rounded-full bg-orange-500" title="Diesel" />
+            <div className="w-3 h-3 rounded-full bg-purple-500" title="Super" />
           </div>
         </div>
+        
+        <div className={cn(
+          "inline-flex px-3 py-1 rounded-full border items-center gap-2 text-sm font-medium",
+          statusConfig.bgColor,
+          statusConfig.textColor
+        )}>
+          <StatusIcon className={cn("w-3 h-3", statusConfig.iconColor)} />
+          {statusConfig.label}
+        </div>
+      </div>
 
-        {/* Station Visual */}
-        <div className="relative">
-          <div className="bg-gradient-to-b from-gray-100/80 to-gray-200/80 rounded-2xl p-6 border border-gray-200/60 backdrop-blur-sm shadow-inner">
-            <div className="flex items-center justify-center">
-              <div className="relative">
-                {/* Station Building */}
-                <div className="w-32 h-20 bg-gradient-to-b from-gray-300 to-gray-500 rounded-2xl border border-gray-400/60 shadow-2xl relative overflow-hidden">
-                  {/* Station Sign */}
-                  <div className="absolute top-2 left-2 right-2 h-6 bg-gray-800 rounded border border-blue-400/60 flex items-center justify-center">
-                    <div className={cn(
-                      "text-xs font-bold truncate px-2",
-                      station.status === 'active' ? "text-blue-400" : 
-                      station.status === 'maintenance' ? "text-amber-400" : "text-red-400"
-                    )}>
-                      {station.name.slice(0, 12)}
-                    </div>
+      {/* Station Visual */}
+      <div className="px-6 pb-4">
+        <div className="bg-gray-100 rounded-xl p-4 mb-4">
+          <div className="flex justify-center">
+            <div className="relative">
+              {/* Station Building */}
+              <div className="w-24 h-16 bg-gradient-to-b from-gray-300 to-gray-500 rounded-lg shadow-lg relative">
+                {/* Station Sign */}
+                <div className="absolute top-1 left-1 right-1 h-4 bg-gray-800 rounded flex items-center justify-center">
+                  <div className="text-xs font-bold text-blue-400 truncate px-1">
+                    {station.name.slice(0, 8)}
                   </div>
-                  
-                  {/* Canopy Structure */}
-                  <div className="absolute -top-2 -left-4 -right-4 h-3 bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 rounded-t-2xl shadow-lg border border-gray-300/60"></div>
-                  
-                  {/* Fuel Islands with colored indicators */}
-                  <div className="absolute bottom-2 left-4 right-4 flex justify-between">
-                    {Array.from({ length: Math.min(station.pumpCount, 4) }, (_, i) => (
-                      <div key={i} className="relative">
-                        <div className="w-3 h-6 bg-gradient-to-b from-gray-400 to-gray-600 rounded shadow-sm border border-gray-400/60"></div>
-                        {/* Fuel type indicators on pumps */}
-                        <div className="absolute -top-1 -left-0.5 w-1 h-1 rounded-full bg-emerald-500"></div>
-                        <div className="absolute -top-1 left-0.5 w-1 h-1 rounded-full bg-amber-500"></div>
-                        <div className="absolute -top-1 left-1.5 w-1 h-1 rounded-full bg-purple-500"></div>
-                      </div>
-                    ))}
-                  </div>
+                </div>
+                
+                {/* Canopy */}
+                <div className="absolute -top-1 -left-2 -right-2 h-2 bg-gray-400 rounded-t-lg"></div>
+                
+                {/* Fuel Islands */}
+                <div className="absolute bottom-1 left-2 right-2 flex justify-between">
+                  {Array.from({ length: Math.min(station.pumpCount, 3) }, (_, i) => (
+                    <div key={i} className="w-2 h-4 bg-gray-600 rounded shadow-sm"></div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Enhanced Stats Grid - Better spacing and layout */}
-        <div className="grid grid-cols-1 gap-4">
-          {/* Pumps Section */}
-          <div className="bg-blue-50/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-200/60">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-xl bg-blue-500/20 ring-1 ring-blue-400/30">
-                <Fuel className="h-5 w-5 text-blue-600" />
-              </div>
-              <span className="text-sm font-semibold text-blue-700">Fuel Dispensers</span>
+      {/* Stats Sections */}
+      <div className="px-6 space-y-4">
+        {/* Fuel Dispensers */}
+        <div className="bg-blue-50 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Fuel className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-semibold text-blue-700">Fuel Dispensers</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="text-2xl font-bold text-gray-900">{station.pumpCount}</div>
+            <div className="flex gap-1">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-xs">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                Petrol
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-100 text-xs">
+                <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                Diesel
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100 text-xs">
+                <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                Super
+              </span>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-gray-800">
-                {station.pumpCount}
-              </div>
-              <div className="flex gap-1">
-                <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100/80">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                  <span className="text-xs font-medium text-emerald-700">Petrol</span>
-                </div>
-                <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-100/80">
-                  <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                  <span className="text-xs font-medium text-amber-700">Diesel</span>
-                </div>
-                <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-100/80">
-                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                  <span className="text-xs font-medium text-purple-700">Super</span>
-                </div>
-              </div>
-            </div>
-            <div className="text-xs text-gray-600 mt-2">
-              Active dispensers ready for service
-            </div>
+          </div>
+          <div className="text-xs text-gray-600 mt-1">
+            Active dispensers ready for service
+          </div>
+        </div>
+        
+        {/* Fuel Prices */}
+        <div className="bg-blue-50 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Star className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-semibold text-blue-700">Current Fuel Prices</span>
           </div>
           
-          {/* Fuel Prices Section - Fixed overflow */}
-          <div className="bg-blue-50/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-200/60">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-xl bg-blue-500/20 ring-1 ring-blue-400/30">
-                <Star className="h-5 w-5 text-blue-600" />
-              </div>
-              <span className="text-sm font-semibold text-blue-700">Current Fuel Prices</span>
+          {pricesLoading ? (
+            <div className="text-sm text-gray-600">Loading prices...</div>
+          ) : hasPrices ? (
+            <div className="space-y-2">
+              {Object.entries(processedPrices).map(([fuelType, price]) => (
+                <div key={fuelType} className="flex justify-between items-center">
+                  <span className="text-sm capitalize font-medium">{fuelType}:</span>
+                  <span className="font-bold text-gray-900">₹{price.price?.toFixed(2) || '0.00'}</span>
+                </div>
+              ))}
             </div>
-            <div className="overflow-hidden">
-              <FuelPricesInfo stationId={station.id} />
+          ) : (
+            <div className="flex items-center gap-1 text-red-600">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-sm font-medium">Missing fuel prices</span>
             </div>
-          </div>
+          )}
         </div>
+      </div>
 
-        {/* Enhanced Action Buttons */}
-        <div className="flex gap-3 pt-2">
+      {/* Action Buttons */}
+      <div className="p-6 pt-4">
+        <div className="flex gap-3">
           <Button 
             onClick={() => onView(station.id)}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 ring-2 ring-blue-400/20 hover:ring-blue-300/40"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
           >
             <Eye className="w-4 h-4 mr-2" />
             View Details
@@ -261,7 +229,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
           <Button 
             onClick={() => onDelete(station.id)}
             variant="outline"
-            className="bg-red-50/80 backdrop-blur-sm border-red-300/60 text-red-600 hover:bg-red-100/80 hover:border-red-400/70 hover:text-red-700 rounded-xl transition-all duration-300 ring-1 ring-red-300/20 hover:ring-red-400/40"
+            className="border-red-300 text-red-600 hover:bg-red-50 rounded-xl"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
