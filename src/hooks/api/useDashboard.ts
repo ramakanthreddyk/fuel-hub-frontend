@@ -1,3 +1,4 @@
+
 /**
  * @file useDashboard.ts
  * @description React Query hooks for dashboard API
@@ -5,43 +6,44 @@
  * @see docs/journeys/OWNER.md - Owner journey for dashboard
  */
 import { useQuery } from '@tanstack/react-query';
-import { dashboardService, SalesSummary, PaymentMethodBreakdown, FuelTypeBreakdown, DailySalesTrend, StationMetric } from '@/api/services/dashboardService';
+import { dashboardService, SalesSummary, PaymentMethodBreakdown, FuelTypeBreakdown, DailySalesTrend, StationMetric, DashboardFilters } from '@/api/services/dashboardService';
 
 /**
  * Hook to fetch sales summary for the dashboard
  * @param period Optional period (today, week, month, year)
+ * @param filters Optional dashboard filters
  * @returns Query result with sales summary data
  */
-export const useSalesSummary = (period: string = 'today') => {
+export const useSalesSummary = (period: string = 'today', filters: DashboardFilters = {}) => {
   return useQuery({
-    queryKey: ['sales-summary', period],
-    queryFn: () => dashboardService.getSalesSummary(period),
+    queryKey: ['sales-summary', period, filters],
+    queryFn: () => dashboardService.getSalesSummary(period, filters),
     staleTime: 300000, // 5 minutes
   });
 };
 
 /**
  * Hook to fetch payment method breakdown
- * @param period Optional period (today, week, month, year)
+ * @param filters Optional dashboard filters
  * @returns Query result with payment method breakdown data
  */
-export const usePaymentMethodBreakdown = (period: string = 'today') => {
+export const usePaymentMethodBreakdown = (filters: DashboardFilters = {}) => {
   return useQuery({
-    queryKey: ['payment-method-breakdown', period],
-    queryFn: () => dashboardService.getPaymentMethodBreakdown(period),
+    queryKey: ['payment-method-breakdown', filters],
+    queryFn: () => dashboardService.getPaymentMethodBreakdown(filters),
     staleTime: 300000, // 5 minutes
   });
 };
 
 /**
  * Hook to fetch fuel type breakdown
- * @param period Optional period (today, week, month, year)
+ * @param filters Optional dashboard filters
  * @returns Query result with fuel type breakdown data
  */
-export const useFuelTypeBreakdown = (period: string = 'today') => {
+export const useFuelTypeBreakdown = (filters: DashboardFilters = {}) => {
   return useQuery({
-    queryKey: ['fuel-type-breakdown', period],
-    queryFn: () => dashboardService.getFuelTypeBreakdown(period),
+    queryKey: ['fuel-type-breakdown', filters],
+    queryFn: () => dashboardService.getFuelTypeBreakdown(filters),
     staleTime: 300000, // 5 minutes
   });
 };

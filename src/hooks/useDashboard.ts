@@ -2,8 +2,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService, DashboardFilters } from '@/api/services/dashboardService';
 
-
-
 export const useSalesSummary = (range: string = 'monthly', filters: DashboardFilters = {}) => {
   return useQuery({
     queryKey: ['sales-summary', range, filters],
@@ -44,6 +42,15 @@ export const useDailySalesTrend = (days: number = 7, filters: DashboardFilters =
   return useQuery({
     queryKey: ['sales-trend', days, filters],
     queryFn: () => dashboardService.getDailySalesTrend(days, filters),
+    retry: 1,
+    staleTime: 60000,
+  });
+};
+
+export const useStationMetrics = () => {
+  return useQuery({
+    queryKey: ['station-metrics'],
+    queryFn: () => dashboardService.getStationMetrics(),
     retry: 1,
     staleTime: 60000,
   });

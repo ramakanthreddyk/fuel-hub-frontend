@@ -1,239 +1,213 @@
-
-/**
- * @file DashboardPage.tsx
- * @description Dashboard page showing key metrics and stats with enhanced analytics
- */
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, TrendingUp, Users, Fuel, Loader2, Building2, Shield, Package, BarChart3 } from 'lucide-react';
+import { RefreshCw, TrendingUp, Users, Fuel, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { useSalesSummary, useStationMetrics } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
-import { useStations } from '@/hooks/api/useStations';
-import { usePumps } from '@/hooks/api/usePumps';
-import { useFuelPrices } from '@/hooks/api/useFuelPrices';
-import { useReadings } from '@/hooks/api/useReadings';
-import { useSalesSummary } from '@/hooks/useDashboard';
-import { usePendingReadings } from '@/hooks/api/usePendingReadings';
-import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
-import { CashDiscrepancyAlert } from '@/components/dashboard/CashDiscrepancyAlert';
-import { Link } from 'react-router-dom';
+
+// Dashboard Components
+import { SalesSummaryCard } from '@/components/dashboard/SalesSummaryCard';
+import { PaymentMethodChart } from '@/components/dashboard/PaymentMethodChart';
+import { FuelBreakdownChart } from '@/components/dashboard/FuelBreakdownChart';
+import { SalesTrendChart } from '@/components/dashboard/SalesTrendChart';
+import { ProfitMetricsCard } from '@/components/dashboard/ProfitMetricsCard';
+import { TopCreditorsTable } from '@/components/dashboard/TopCreditorsTable';
+import { StationMetricsCard } from '@/components/dashboard/StationMetricsCard';
+import { StationMetricsList } from '@/components/dashboard/StationMetricsList';
+
+// Filters
+import { SearchableStationSelector } from '@/components/filters/SearchableStationSelector';
+
+interface DashboardFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'superadmin';
+  const [filters, setFilters] = useState<DashboardFilters>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Fetch basic data
-  const { data: stations = [], isLoading: stationsLoading, refetch: refetchStations } = useStations();
-  const { data: pumps = [], isLoading: pumpsLoading, refetch: refetchPumps } = usePumps();
-  const { data: fuelPrices = [], isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
-  const { data: readings = [], isLoading: readingsLoading, refetch: refetchReadings } = useReadings();
 
-  // Pending reading alerts
-  const { data: pendingAlerts = [] } = usePendingReadings();
-  
-  // Fetch dashboard data
-  const { data: salesSummary, isLoading: summaryLoading } = useSalesSummary('monthly');
-  
-  // Calculate metrics from dashboard data or fallback to basic calculations
-  const totalRevenue = salesSummary?.totalRevenue || salesSummary?.totalSales || readings.reduce((sum, reading) => sum + (reading.amount || 0), 0);
-  const totalVolume = salesSummary?.totalVolume || readings.reduce((sum, reading) => sum + (reading.volume || 0), 0);
-  const activeStations = stations.filter(s => s.status === 'active').length;
-  
+  // API hooks
+  const { data: salesSummary, isLoading: salesLoading, refetch: refetchSales } = useSalesSummary('monthly', filters);
+  const { data: stationMetrics = [], isLoading: metricsLoading, refetch: refetchMetrics } = useStationMetrics();
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    const promises: Promise<any>[] = [refetchStations(), refetchPumps(), refetchPrices(), refetchReadings()];
-    await Promise.all(promises);
-    setIsRefreshing(false);
+    try {
+      await Promise.all([
+        refetchSales(),
+        refetchMetrics(),
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
-  const isLoading =
-    stationsLoading ||
-    pumpsLoading ||
-    pricesLoading ||
-    readingsLoading ||
-    summaryLoading;
+  const handleFilterChange = (newFilters: DashboardFilters) => {
+    setFilters(newFilters);
+  };
+
+  const isLoading = salesLoading || metricsLoading;
+
+  // Calculate summary stats - fix totalSales reference
+  const totalStations = Array.isArray(stationMetrics) ? stationMetrics.length : 0;
+  const activeStations = Array.isArray(stationMetrics) 
+    ? stationMetrics.filter(station => station.status === 'active').length 
+    : 0;
+  const totalRevenue = salesSummary?.totalRevenue || 0;
+  const totalVolume = salesSummary?.totalVolume || 0;
+
+  // Get recent stations for display
+  const recentStations = Array.isArray(stationMetrics) ? stationMetrics.slice(0, 5) : [];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
-            <span>Dashboard</span>
-            {pendingAlerts.length > 0 && (
-              <Badge variant="destructive">{pendingAlerts.length}</Badge>
-            )}
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600">
-            Welcome back, {user?.name || 'User'}! Here's your business overview.
+            Welcome back, {user?.name}! Here's your business overview.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Button
             onClick={handleRefresh}
-            disabled={isRefreshing || isLoading}
+            disabled={isRefreshing}
             variant="outline"
             size="sm"
             className="flex items-center gap-2"
           >
-            {isRefreshing || isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
       </div>
 
-      {/* Enhanced Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <EnhancedMetricsCard
-          title="Total Revenue"
-          value={`₹${totalRevenue.toFixed(2)}`}
-          icon={<TrendingUp className="h-5 w-5" />}
-          description="This month's earnings"
-          gradient="from-emerald-500 to-teal-600"
-          trend={{ value: 12.5, isPositive: true }}
-        />
-
-        <EnhancedMetricsCard
-          title="Fuel Volume"
-          value={`${totalVolume.toFixed(3)}L`}
-          icon={<Fuel className="h-5 w-5" />}
-          description="Total fuel dispensed"
-          gradient="from-blue-500 to-cyan-600"
-          trend={{ value: 8.3, isPositive: true }}
-        />
-
-        <EnhancedMetricsCard
-          title="Active Stations"
-          value={activeStations}
-          icon={<Building2 className="h-5 w-5" />}
-          description={`${stations.length} total stations`}
-          gradient="from-purple-500 to-indigo-600"
-        />
-
-        <EnhancedMetricsCard
-          title="Analytics Score"
-          value={`${Math.round((activeStations / Math.max(stations.length, 1)) * 100)}%`}
-          icon={<BarChart3 className="h-5 w-5" />}
-          description="Performance rating"
-          gradient="from-orange-500 to-red-600"
-          trend={{ value: 5.2, isPositive: true }}
-        />
-      </div>
-
-      {/* Additional Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <EnhancedMetricsCard
-          title="Total Transactions"
-          value={salesSummary?.salesCount || readings.length}
-          icon={<Users className="h-5 w-5" />}
-          description="This month"
-          gradient="from-pink-500 to-rose-600"
-        />
-        
-        <EnhancedMetricsCard
-          title="Total Pumps"
-          value={pumps.length}
-          icon={<Shield className="h-5 w-5" />}
-          description="Across all stations"
-          gradient="from-green-500 to-emerald-600"
-        />
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200 hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="text-lg text-blue-700">Station Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Manage your fuel stations, pumps, and nozzles efficiently.
-            </p>
-            <div className="flex gap-2">
-              <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
-                <Link to="/dashboard/stations">View Stations</Link>
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/dashboard/pumps">Manage Pumps</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-white to-green-50 border-green-200 hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="text-lg text-green-700">Fuel Operations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Monitor readings, set prices, and track inventory.
-            </p>
-            <div className="flex gap-2">
-              <Button asChild size="sm" className="bg-green-600 hover:bg-green-700">
-                <Link to="/dashboard/readings">New Reading</Link>
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/dashboard/fuel-prices">Set Prices</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-white to-purple-50 border-purple-200 hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="text-lg text-purple-700">Reports & Analytics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Generate insights and export business reports.
-            </p>
-            <div className="flex gap-2">
-              <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700">
-                <Link to="/dashboard/reports">View Reports</Link>
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/dashboard/reconciliation">Reconciliation</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Business Insights */}
-      <Card className="bg-gradient-to-br from-white to-gray-50 border-gray-200">
+      {/* Filters */}
+      <Card>
         <CardHeader>
-          <CardTitle>Business Insights</CardTitle>
+          <CardTitle className="text-lg">Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 bg-white rounded-lg border">
-              <div className="text-2xl font-bold text-blue-600">{stations.length}</div>
-              <div className="text-sm text-muted-foreground">Total Stations</div>
-            </div>
-            <div className="p-4 bg-white rounded-lg border">
-              <div className="text-2xl font-bold text-green-600">{pumps.length}</div>
-              <div className="text-sm text-muted-foreground">Total Pumps</div>
-            </div>
-            <div className="p-4 bg-white rounded-lg border">
-              <div className="text-2xl font-bold text-purple-600">{fuelPrices.length}</div>
-              <div className="text-sm text-muted-foreground">Fuel Prices Set</div>
-            </div>
-            <div className="p-4 bg-white rounded-lg border">
-              <div className="text-2xl font-bold text-orange-600">{pendingAlerts.length}</div>
-              <div className="text-sm text-muted-foreground">Pending Alerts</div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <SearchableStationSelector
+              value={filters.stationId}
+              onChange={(stationId) => handleFilterChange({ ...filters, stationId })}
+              placeholder="All Stations"
+            />
+            {/* Add date range pickers here if needed */}
           </div>
         </CardContent>
       </Card>
-      
-      {/* Cash Discrepancy Alert */}
-      <CashDiscrepancyAlert />
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600">Total Revenue</p>
+                <p className="text-2xl font-bold text-blue-700">₹{totalRevenue.toLocaleString()}</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-white to-green-50 border-green-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600">Total Volume</p>
+                <p className="text-2xl font-bold text-green-700">{totalVolume.toLocaleString()}L</p>
+              </div>
+              <Fuel className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-white to-purple-50 border-purple-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-600">Active Stations</p>
+                <p className="text-2xl font-bold text-purple-700">{activeStations}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-white to-orange-50 border-orange-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-orange-600">Total Stations</p>
+                <p className="text-2xl font-bold text-orange-700">{totalStations}</p>
+              </div>
+              <Users className="h-8 w-8 text-orange-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Dashboard Components */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SalesSummaryCard filters={filters} />
+        <ProfitMetricsCard filters={filters} />
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PaymentMethodChart filters={filters} />
+        <FuelBreakdownChart filters={filters} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        <SalesTrendChart filters={filters} />
+      </div>
+
+      {/* Station Metrics and Top Creditors */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <StationMetricsList />
+        <TopCreditorsTable />
+      </div>
+
+      {/* Recent Stations */}
+      {recentStations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Stations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentStations.map((station) => (
+                <div key={station.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h3 className="font-medium">{station.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      Today: ₹{station.todaySales?.toLocaleString() || 0} | 
+                      Monthly: ₹{station.monthlySales?.toLocaleString() || 0}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={station.status === 'active' ? 'default' : 'secondary'}>
+                      {station.status}
+                    </Badge>
+                    <span className="text-sm text-gray-500">
+                      {station.activePumps || 0}/{station.totalPumps || 0} pumps
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

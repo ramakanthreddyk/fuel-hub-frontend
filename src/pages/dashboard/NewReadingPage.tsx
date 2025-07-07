@@ -1,480 +1,166 @@
 /**
- * @file pages/dashboard/NewReadingPage.tsx
- * @description Simplified page component for recording new nozzle readings
- * Updated layout for mobile-friendliness – 2025-07-03
+ * @file NewReadingPage.tsx
+ * @description Form to enter a new reading for a nozzle
  */
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, AlertCircle, CheckCircle, AlertTriangle, DollarSign } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useStations } from '@/hooks/api/useStations';
-import { usePumps } from '@/hooks/api/usePumps';
-import { useNozzles } from '@/hooks/api/useNozzles';
-import {
-  useAttendantStations,
-  useAttendantPumps,
-  useAttendantNozzles,
-} from '@/hooks/api/useAttendant';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCreateReading, useLatestReading } from '@/hooks/api/useReadings';
-import { useQuery } from '@tanstack/react-query';
-import { fuelPricesService } from '@/api/services/fuelPricesService';
 import { useToast } from '@/hooks/use-toast';
+import { useMutation } from '@tanstack/react-query';
+import apiClient from '@/api/core/apiClient';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { useNozzle } from '@/hooks/api/useNozzles';
 
 export default function NewReadingPage() {
   const navigate = useNavigate();
-  const { nozzleId } = useParams();
-  const location = useLocation();
   const { toast } = useToast();
-  const { user } = useAuth();
-  
-  // Get preselected values from location state
-  const preselected = location.state?.preselected;
-  const isAttendant = user?.role === 'attendant';
-  
-  // Form state - initialize with preselected values if available
-  const [selectedStationId, setSelectedStationId] = useState(preselected?.stationId || '');
-  const [selectedPumpId, setSelectedPumpId] = useState(preselected?.pumpId || '');
-  const [selectedNozzleId, setSelectedNozzleId] = useState(nozzleId || preselected?.nozzleId || '');
-  const [reading, setReading] = useState(0);
-  const [recordedAt, setRecordedAt] = useState(new Date().toISOString().slice(0, 16));
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const { nozzleId } = useParams<{ nozzleId: string }>();
+  const [reading, setReading] = useState<number | undefined>(undefined);
+  const [paymentMethod, setPaymentMethod] = useState<string>('cash');
+  const [creditorId, setCreditorId] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Data fetching
-  const {
-    data: stations = [],
-    isLoading: stationsLoading,
-  } = isAttendant ? useAttendantStations() : useStations();
-  
-  // Fetch all pumps for nozzle lookup
-  const { data: allPumps = [], isLoading: allPumpsLoading } = usePumps();
-  
-  // Fetch station-specific pumps for the dropdown
-  const {
-    data: pumps = [],
-    isLoading: pumpsLoading,
-  } = isAttendant ? useAttendantPumps(selectedStationId) : usePumps(selectedStationId);
-  const {
-    data: nozzles = [],
-    isLoading: nozzlesLoading,
-  } = isAttendant ? useAttendantNozzles(selectedPumpId) : useNozzles(selectedPumpId);
-  const { data: latestReading, isLoading: latestReadingLoading } = useLatestReading(selectedNozzleId);
-  const { data: fuelPrices = [] } = useQuery({
-    queryKey: ['fuel-prices', selectedStationId],
-    queryFn: () => fuelPricesService.getFuelPrices(selectedStationId),
-    enabled: !isAttendant && !!selectedStationId,
-  });
-  const createReading = useCreateReading();
-  
-  // Fetch all nozzles to find the preselected one
-  const { data: allNozzles = [] } = useNozzles();
-  
-  // If nozzleId is provided in URL and we don't have preselected values, find its details to set station and pump
+
+  const { data: nozzle, isLoading: nozzleLoading, isError: nozzleError } = useNozzle(nozzleId);
+
   useEffect(() => {
-    // Skip if we already have preselected values
-    if (preselected?.stationId && preselected?.pumpId && preselected?.nozzleId) {
-      console.log('[NEW-READING] Using preselected values:', preselected);
-      return;
-    }
-    
-    if (nozzleId && allNozzles.length > 0 && allPumps.length > 0) {
-      console.log('[NEW-READING] Looking for nozzle:', nozzleId);
-      console.log('[NEW-READING] Available nozzles:', allNozzles.length);
-      
-      const nozzle = allNozzles.find(n => n.id === nozzleId);
-      console.log('[NEW-READING] Found nozzle:', nozzle);
-      
-      if (nozzle && nozzle.pumpId) {
-        console.log('[NEW-READING] Setting pump ID:', nozzle.pumpId);
-        setSelectedPumpId(nozzle.pumpId);
-        
-        // Find the station by looking through all pumps
-        const pump = allPumps.find(p => p.id === nozzle.pumpId);
-        console.log('[NEW-READING] Found pump:', pump);
-        
-        if (pump && pump.stationId) {
-          console.log('[NEW-READING] Setting station ID:', pump.stationId);
-          setSelectedStationId(pump.stationId);
-        }
-      }
-    }
-  }, [nozzleId, allNozzles, allPumps, preselected]);
-  
-  // Set minimum reading based on latest reading
-  const minReading = latestReading?.reading || 0;
-  
-  // Check if we can submit (has fuel prices)
-  const hasFuelPrices = isAttendant ? true : fuelPrices.length > 0;
-  
-  // Handle station change
-  const handleStationChange = (value: string) => {
-    setSelectedStationId(value);
-    setSelectedPumpId('');
-    setSelectedNozzleId('');
-  };
-  
-  // Handle pump change
-  const handlePumpChange = (value: string) => {
-    setSelectedPumpId(value);
-    setSelectedNozzleId('');
-  };
-  
-  // Handle form submission with better error handling
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!selectedNozzleId || reading < minReading) {
+    if (nozzleError) {
       toast({
-        title: 'Validation Error',
-        description: 'Please ensure all fields are filled correctly and reading is valid',
+        title: 'Error',
+        description: 'Failed to load nozzle details',
         variant: 'destructive'
       });
-      return;
+      navigate('/dashboard/readings');
     }
-    
-    // Check for fuel prices before submission
-    if (!isAttendant && !hasFuelPrices && selectedStationId) {
-      toast({
-        title: 'Missing Fuel Prices',
-        description: 'This station needs fuel prices set before recording readings.',
-        variant: 'destructive',
-        action: (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate(`/dashboard/fuel-prices?stationId=${selectedStationId}`)}
-          >
-            Set Prices
-          </Button>
-        )
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      await createReading.mutateAsync({
-        nozzleId: selectedNozzleId,
+  }, [nozzleError, navigate, toast]);
+
+  const createReadingMutation = useMutation({
+    mutationFn: async () => {
+      if (!nozzleId || reading === undefined) {
+        throw new Error('Nozzle ID and reading are required');
+      }
+
+      setIsSubmitting(true);
+
+      const response = await apiClient.post('/readings', {
+        nozzleId: nozzleId,
         reading: reading,
-        recordedAt: new Date(recordedAt).toISOString(),
-        paymentMethod: paymentMethod as 'cash' | 'card' | 'upi' | 'credit'
+        paymentMethod: paymentMethod,
+        creditorId: creditorId,
+        notes: notes
       });
-      
+
+      setIsSubmitting(false);
+      return response.data;
+    },
+    onSuccess: () => {
       toast({
         title: 'Success',
-        description: 'Reading recorded successfully'
+        description: 'Reading created successfully',
       });
-      
-      // Navigate to readings page
       navigate('/dashboard/readings');
-    } catch (error: any) {
-      console.error('Error creating reading:', error);
-      
-      // Check for specific error messages
-      const errorMessage = error?.response?.data?.message || error?.message || 'Unknown error';
-      
-      if (errorMessage.includes('fuel price') || errorMessage.includes('price')) {
-        // Show a specific error for missing fuel prices
-        toast({
-          title: 'Missing Fuel Prices',
-          description: 'This station needs fuel prices set before recording readings.',
-          variant: 'destructive',
-          action: (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate(`/dashboard/fuel-prices?stationId=${selectedStationId}`)}
-            >
-              Set Prices
-            </Button>
-          )
-        });
-      } else {
-        // Generic error message
+    },
+    onError: (error: any) => {
+      setIsSubmitting(false);
         toast({
           title: 'Error',
-          description: errorMessage,
-          variant: 'destructive'
+          description: error.response?.data?.message || 'Failed to create reading',
+          variant: 'destructive',
         });
-      }
-      
-      setIsSubmitting(false);
     }
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    createReadingMutation.mutate();
   };
-  
-  // Loading state
-  if (stationsLoading || allPumpsLoading || (nozzleId && nozzlesLoading)) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+
+  if (nozzleLoading) {
+    return <div>Loading...</div>;
   }
-  
-  // Get selected nozzle details
-  const selectedNozzle = nozzles.find(n => n.id === selectedNozzleId);
-  
-  // Get station and pump details for display
-  const selectedStation = stations.find(s => s.id === selectedStationId);
-  const selectedPump = pumps.find(p => p.id === selectedPumpId);
-  
+
+  if (!nozzle) {
+    return <div>Nozzle not found.</div>;
+  }
+
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => navigate('/dashboard/readings')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Back to Readings</span>
-            <span className="sm:hidden">Back</span>
-          </Button>
-          <h1 className="text-xl sm:text-2xl font-bold">New Reading Entry</h1>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="outline" onClick={() => navigate('/dashboard/readings')}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Readings
+        </Button>
+        <h1 className="text-2xl font-bold">New Reading for Nozzle #{nozzle.nozzleNumber}</h1>
       </div>
-      
-      <Card className="overflow-hidden">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Reading Details</CardTitle>
+
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle>Enter Reading Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Station, Pump, Nozzle Selection - Improved mobile layout */}
-            <div className="grid grid-cols-1 gap-4">
-              {/* Station */}
-              <div className="space-y-2">
-                <Label htmlFor="station" className="text-sm font-medium">Station</Label>
-                {nozzleId && selectedStation ? (
-                  <div className="p-3 border rounded-md bg-muted/50">
-                    <span className="font-medium text-sm">{selectedStation.name}</span>
-                  </div>
-                ) : (
-                  <Select 
-                    value={selectedStationId} 
-                    onValueChange={handleStationChange}
-                    disabled={!!nozzleId}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select station" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {stations.map((station) => (
-                        <SelectItem key={station.id} value={station.id}>
-                          {station.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-              
-              {/* Pump */}
-              <div className="space-y-2">
-                <Label htmlFor="pump" className="text-sm font-medium">Pump</Label>
-                {nozzleId && selectedPump ? (
-                  <div className="p-3 border rounded-md bg-muted/50">
-                    <span className="font-medium text-sm">{selectedPump.name}</span>
-                  </div>
-                ) : (
-                  <Select 
-                    value={selectedPumpId} 
-                    onValueChange={handlePumpChange}
-                    disabled={!selectedStationId || !!nozzleId}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select pump" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {pumps.length > 0 ? (
-                        pumps.map((pump) => (
-                          <SelectItem key={pump.id} value={pump.id}>
-                            {pump.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem key="no-pumps" value="no-pumps" disabled>
-                          No pumps available
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-              
-              {/* Nozzle */}
-              <div className="space-y-2">
-                <Label htmlFor="nozzle" className="text-sm font-medium">Nozzle</Label>
-                {nozzleId && selectedNozzle ? (
-                  <div className="p-3 border rounded-md bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">
-                        Nozzle {selectedNozzle.nozzleNumber}
-                      </span>
-                      <Badge variant="secondary" className="text-xs">
-                        {selectedNozzle.fuelType}
-                      </Badge>
-                    </div>
-                  </div>
-                ) : (
-                  <Select 
-                    value={selectedNozzleId} 
-                    onValueChange={setSelectedNozzleId}
-                    disabled={!selectedPumpId || !!nozzleId}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select nozzle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {nozzles.length > 0 ? (
-                        nozzles.map((nozzle) => (
-                          <SelectItem key={nozzle.id} value={nozzle.id}>
-                            Nozzle {nozzle.nozzleNumber || 'N/A'} ({nozzle.fuelType})
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem key="no-nozzles" value="no-nozzles" disabled>
-                          No nozzles available
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </div>
-            
-            {/* Nozzle Info Panel - Improved mobile layout */}
-            {selectedNozzle && (
-              <div className="p-4 bg-muted/30 rounded-lg border">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Fuel Type:</span>
-                    <Badge variant="outline" className="text-xs">
-                      {selectedNozzle.fuelType}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Previous Reading:</span>
-                    <span className="font-mono font-medium">
-                      {latestReadingLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        `${Number(latestReading?.reading ?? 0).toFixed(3)} L`
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Nozzle Number:</span>
-                    <span className="font-medium">#{selectedNozzle.nozzleNumber || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Status:</span>
-                    <Badge variant={selectedNozzle.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                      {selectedNozzle.status}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Reading and Time - Improved mobile layout */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="reading" className="text-sm font-medium">Current Reading (L)</Label>
-                <Input
-                  id="reading"
-                  type="number"
-                  step="0.01"
-                  min={minReading}
-                  value={reading || ''}
-                  onChange={(e) => setReading(Number(e.target.value))}
-                  placeholder="Enter current reading"
-                  required
-                  className="font-mono"
-                />
-                {reading > 0 && reading < minReading && (
-                  <div className="flex items-center gap-2 text-sm text-red-600">
-                    <AlertCircle className="h-4 w-4" />
-                    Reading must be at least {Number(minReading).toFixed(3)}
-                  </div>
-                )}
-                {reading > minReading && (
-                  <div className="flex items-center gap-2 text-sm text-green-600">
-                    <CheckCircle className="h-4 w-4" />
-                    Volume: {Number(reading - minReading).toFixed(3)} L
-                  </div>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="recordedAt" className="text-sm font-medium">Recorded At</Label>
-                <Input
-                  id="recordedAt"
-                  type="datetime-local"
-                  value={recordedAt}
-                  onChange={(e) => setRecordedAt(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            
-            {/* Payment Method */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="paymentMethod" className="text-sm font-medium">Payment Method</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="card">Card</SelectItem>
-                  <SelectItem value="upi">UPI</SelectItem>
-                  <SelectItem value="credit">Credit</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="reading">Current Reading</Label>
+              <Input
+                id="reading"
+                type="number"
+                placeholder="Enter current reading"
+                value={reading === undefined ? '' : reading.toString()}
+                onChange={(e) => setReading(parseFloat(e.target.value))}
+                required
+              />
             </div>
-            
-            {/* Submit button with better validation feedback */}
-            <div className="space-y-3">
-              {!isAttendant && !hasFuelPrices && selectedStationId && (
-                <Alert variant="warning" className="bg-red-50 border-red-200">
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                  <AlertTitle className="text-red-800">Missing Fuel Prices</AlertTitle>
-                  <AlertDescription className="text-red-700">
-                    This station has no active fuel prices. You must add fuel prices before recording readings.
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="mt-2 w-full border-red-300 text-red-700 hover:bg-red-100"
-                      onClick={() => navigate(`/dashboard/fuel-prices?stationId=${selectedStationId}`)}
-                    >
-                      <DollarSign className="mr-2 h-4 w-4" />
-                      Set Fuel Prices
-                    </Button>
-                  </AlertDescription>
-                </Alert>
+
+            <div className="space-y-2">
+              <Label htmlFor="paymentMethod">Payment Method</Label>
+              <Input
+                id="paymentMethod"
+                type="text"
+                placeholder="Enter payment method"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="creditorId">Creditor ID (if applicable)</Label>
+              <Input
+                id="creditorId"
+                type="text"
+                placeholder="Enter creditor ID"
+                value={creditorId}
+                onChange={(e) => setCreditorId(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Input
+                id="notes"
+                type="text"
+                placeholder="Enter any notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Reading
+                </>
               )}
-              
-              <Button 
-                type="submit" 
-                disabled={isSubmitting || !selectedNozzleId || reading < minReading || (!isAttendant && !hasFuelPrices)}
-                className="w-full"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Recording...
-                  </>
-                ) : (
-                  'Record Reading'
-                )}
-              </Button>
-            </div>
+            </Button>
           </form>
         </CardContent>
       </Card>

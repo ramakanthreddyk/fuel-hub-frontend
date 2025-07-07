@@ -1,3 +1,4 @@
+
 /**
  * @file api/services/dashboardService.ts
  * @description Service for dashboard API endpoints
@@ -9,6 +10,16 @@ export interface SalesSummary {
   totalVolume: number;
   salesCount: number;
   period: string;
+  cashSales: number;
+  creditSales: number;
+  cardSales?: number;
+  upiSales?: number;
+  growthPercentage: number;
+  totalSales?: number; // Alias for totalRevenue
+  averageTicketSize?: number;
+  totalProfit?: number;
+  profitMargin?: number;
+  previousPeriodRevenue?: number;
 }
 
 export interface PaymentMethodBreakdown {
@@ -34,6 +45,19 @@ export interface DailySalesTrend {
   date: string;
   amount: number;
   volume: number;
+}
+
+export interface StationMetric {
+  id: string;
+  name: string;
+  todaySales: number;
+  monthlySales: number;
+  salesGrowth: number;
+  activePumps: number;
+  totalPumps: number;
+  status: "active" | "inactive" | "maintenance";
+  lastActivity?: string;
+  efficiency?: number;
 }
 
 export interface DashboardFilters {
@@ -124,6 +148,19 @@ export const dashboardService = {
       return extractArray<DailySalesTrend>(response);
     } catch (error) {
       console.error('[DASHBOARD-API] Error fetching sales trend:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get station metrics
+   */
+  getStationMetrics: async (): Promise<StationMetric[]> => {
+    try {
+      const response = await apiClient.get('/dashboard/station-metrics');
+      return extractArray<StationMetric>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching station metrics:', error);
       throw error;
     }
   }

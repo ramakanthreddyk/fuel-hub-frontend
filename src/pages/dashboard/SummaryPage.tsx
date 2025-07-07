@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, TrendingUp, Users, Fuel, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-import { useSalesSummary, useStationMetrics } from '@/hooks/useDashboard';
+import { useSalesSummary } from '@/hooks/useDashboard';
+import { useStationMetrics } from '@/hooks/api/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Dashboard Components

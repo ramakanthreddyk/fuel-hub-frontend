@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StationMetricsCard } from './StationMetricsCard';
-import { useStationMetrics } from '@/hooks/useDashboard';
+import { useStationMetrics } from '@/hooks/api/useDashboard';
 
 export function StationMetricsList() {
   const { data: stationMetrics = [], isLoading, error } = useStationMetrics();
