@@ -1,7 +1,7 @@
 
 /**
  * @file components/stations/StationCard.tsx
- * @description Enhanced station card with white theme and improved readability
+ * @description Enhanced station card with improved layout and fuel type indicators
  */
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -112,11 +112,20 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
       cardVariant.glow,
       "shadow-xl hover:shadow-2xl"
     )}>
-      {/* Fuel type indicator badge */}
-      <div className="absolute top-4 left-4 flex gap-1">
-        <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-lg" title="Petrol Available" />
-        <div className="w-3 h-3 rounded-full bg-amber-500 shadow-lg" title="Diesel Available" />
-        <div className="w-3 h-3 rounded-full bg-purple-500 shadow-lg" title="Premium Available" />
+      {/* Fuel type indicator badges - improved spacing */}
+      <div className="absolute top-4 left-4 flex gap-2">
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-sm">
+          <div className="w-2 h-2 rounded-full bg-emerald-500" title="Petrol Available" />
+          <span className="text-xs font-medium text-emerald-700">P</span>
+        </div>
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-sm">
+          <div className="w-2 h-2 rounded-full bg-amber-500" title="Diesel Available" />
+          <span className="text-xs font-medium text-amber-700">D</span>
+        </div>
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-sm">
+          <div className="w-2 h-2 rounded-full bg-purple-500" title="Premium Available" />
+          <span className="text-xs font-medium text-purple-700">S</span>
+        </div>
       </div>
 
       {/* Floating Station Icon */}
@@ -127,11 +136,11 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
         )}
       </div>
 
-      <div className="relative p-8 space-y-6 pt-12">
+      <div className="relative p-8 space-y-6 pt-16">
         {/* Header */}
         <div className="space-y-3">
-          <div className="flex items-start justify-between pr-16">
-            <div className="space-y-2 flex-1 min-w-0">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2 flex-1 min-w-0 pr-4">
               <h3 className="font-bold text-2xl text-gray-800 truncate group-hover:text-blue-700 transition-colors">
                 {station.name}
               </h3>
@@ -174,10 +183,16 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
                   {/* Canopy Structure */}
                   <div className="absolute -top-2 -left-4 -right-4 h-3 bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 rounded-t-2xl shadow-lg border border-gray-300/60"></div>
                   
-                  {/* Fuel Islands */}
+                  {/* Fuel Islands with colored indicators */}
                   <div className="absolute bottom-2 left-4 right-4 flex justify-between">
                     {Array.from({ length: Math.min(station.pumpCount, 4) }, (_, i) => (
-                      <div key={i} className="w-3 h-6 bg-gradient-to-b from-gray-400 to-gray-600 rounded shadow-sm border border-gray-400/60"></div>
+                      <div key={i} className="relative">
+                        <div className="w-3 h-6 bg-gradient-to-b from-gray-400 to-gray-600 rounded shadow-sm border border-gray-400/60"></div>
+                        {/* Fuel type indicators on pumps */}
+                        <div className="absolute -top-1 -left-0.5 w-1 h-1 rounded-full bg-emerald-500"></div>
+                        <div className="absolute -top-1 left-0.5 w-1 h-1 rounded-full bg-amber-500"></div>
+                        <div className="absolute -top-1 left-1.5 w-1 h-1 rounded-full bg-purple-500"></div>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -186,31 +201,51 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
           </div>
         </div>
 
-        {/* Enhanced Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-blue-50/80 backdrop-blur-sm rounded-2xl p-4 border border-blue-200/60">
-            <div className="flex items-center gap-3 mb-2">
+        {/* Enhanced Stats Grid - Better spacing and layout */}
+        <div className="grid grid-cols-1 gap-4">
+          {/* Pumps Section */}
+          <div className="bg-blue-50/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-200/60">
+            <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-xl bg-blue-500/20 ring-1 ring-blue-400/30">
                 <Fuel className="h-5 w-5 text-blue-600" />
               </div>
-              <span className="text-sm font-semibold text-blue-700">Pumps</span>
+              <span className="text-sm font-semibold text-blue-700">Fuel Dispensers</span>
             </div>
-            <div className="text-2xl font-bold text-gray-800">
-              {station.pumpCount}
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-gray-800">
+                {station.pumpCount}
+              </div>
+              <div className="flex gap-1">
+                <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100/80">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                  <span className="text-xs font-medium text-emerald-700">Petrol</span>
+                </div>
+                <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-100/80">
+                  <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                  <span className="text-xs font-medium text-amber-700">Diesel</span>
+                </div>
+                <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-100/80">
+                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                  <span className="text-xs font-medium text-purple-700">Super</span>
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-gray-600 mt-1">
-              Active dispensers
+            <div className="text-xs text-gray-600 mt-2">
+              Active dispensers ready for service
             </div>
           </div>
           
-          <div className="bg-blue-50/80 backdrop-blur-sm rounded-2xl p-4 border border-blue-200/60">
-            <div className="flex items-center gap-3 mb-2">
+          {/* Fuel Prices Section - Fixed overflow */}
+          <div className="bg-blue-50/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-200/60">
+            <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-xl bg-blue-500/20 ring-1 ring-blue-400/30">
                 <Star className="h-5 w-5 text-blue-600" />
               </div>
-              <span className="text-sm font-semibold text-blue-700">Fuel Prices</span>
+              <span className="text-sm font-semibold text-blue-700">Current Fuel Prices</span>
             </div>
-            <FuelPricesInfo stationId={station.id} />
+            <div className="overflow-hidden">
+              <FuelPricesInfo stationId={station.id} />
+            </div>
           </div>
         </div>
 
