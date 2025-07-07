@@ -87,7 +87,7 @@ const navigation: NavItem[] = [
     children: [
       { name: 'Attendance', href: '/dashboard/attendance', icon: Calendar },
       { name: 'Users', href: '/dashboard/users', icon: Users },
-      { name: 'Reset Passwords', href: '/dashboard/users/reset-password', icon: Settings, roles: ['owner'] },
+      { name: 'Reset Passwords', href: '/dashboard/users/reset-password', icon: Settings, roles: ['owner', 'superadmin'] },
     ],
   },
   {

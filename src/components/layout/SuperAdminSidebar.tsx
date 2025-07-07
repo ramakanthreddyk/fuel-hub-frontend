@@ -8,7 +8,8 @@ import {
   Package,
   Crown,
   Menu,
-  X
+  X,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Tenants', href: '/superadmin/tenants', icon: Building2 },
   { name: 'Plans', href: '/superadmin/plans', icon: Package },
   { name: 'Admin Users', href: '/superadmin/users', icon: Users },
+  { name: 'Settings', href: '/superadmin/settings', icon: Settings },
 ];
 
 export function SuperAdminSidebar() {

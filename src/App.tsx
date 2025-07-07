@@ -62,6 +62,7 @@ import SuperAdminPlansPage from './pages/superadmin/PlansPage';
 import SuperAdminAnalyticsPage from './pages/superadmin/AnalyticsPage';
 import TenantSettingsPage from './pages/superadmin/TenantSettingsPage';
 import TenantDetailsPage from './pages/superadmin/TenantDetailsPage';
+import SuperAdminSettingsPage from './pages/superadmin/SettingsPage';
 
 function App() {
   console.log('[APP] App component mounting');
@@ -175,6 +176,7 @@ function App() {
                 <Route path="users" element={<SuperAdminUsersPage />} />
                 <Route path="plans" element={<SuperAdminPlansPage />} />
                 <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
+                <Route path="settings" element={<SuperAdminSettingsPage />} />
               </Route>
 
               {/* Fallback Route */}
