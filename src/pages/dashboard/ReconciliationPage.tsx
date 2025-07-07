@@ -49,10 +49,13 @@ export default function ReconciliationPage() {
 
   const triggerReconciliation = useMutation({
     mutationFn: async ({ stationId, date }: { stationId: string; date: string }) => {
+      console.log('[RECONCILIATION] Triggering reconciliation for:', { stationId, date });
       const response = await apiClient.post('/reconciliation/run', { stationId, date });
+      console.log('[RECONCILIATION] Response received:', response.data);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('[RECONCILIATION] Success:', data);
       queryClient.invalidateQueries({ queryKey: ['reconciliations'] });
       toast({
         title: 'Success',
@@ -60,6 +63,7 @@ export default function ReconciliationPage() {
       });
     },
     onError: (error: any) => {
+      console.error('[RECONCILIATION] Error:', error);
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to run reconciliation',

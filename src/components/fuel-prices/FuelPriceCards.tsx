@@ -48,6 +48,9 @@ export function FuelPriceCards() {
     );
   }
 
+  // Ensure fuelPrices is an array
+  const pricesArray = Array.isArray(fuelPrices) ? fuelPrices : [];
+  
   // Group prices by station
   const stationPrices = new Map();
   
@@ -64,7 +67,7 @@ export function FuelPriceCards() {
   });
   
   // Then add the latest price for each fuel type
-  fuelPrices.forEach(price => {
+  pricesArray.forEach(price => {
     if (!stationPrices.has(price.stationId)) {
       // If station not found in our map, create an entry
       stationPrices.set(price.stationId, {

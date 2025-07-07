@@ -21,7 +21,7 @@ export function FuelPricesInfo({ stationId }: FuelPricesInfoProps) {
     );
   }
   
-  if (!hasFuelPrices) {
+  if (!hasFuelPrices || !Array.isArray(fuelPrices) || fuelPrices.length === 0) {
     return (
       <div className="flex items-center gap-2 text-red-600">
         <AlertTriangle className="h-4 w-4" />
@@ -30,22 +30,38 @@ export function FuelPricesInfo({ stationId }: FuelPricesInfoProps) {
     );
   }
   
-  // Group prices by fuel type
+  // Group prices by fuel type and get the latest price for each type
   const pricesByType: Record<string, any> = {};
   
-  fuelPrices.forEach(price => {
-    if (!pricesByType[price.fuelType] || 
-        new Date(price.validFrom) > new Date(pricesByType[price.fuelType].validFrom)) {
-      pricesByType[price.fuelType] = price;
+  // Ensure fuelPrices is an array before processing
+  const pricesArray = Array.isArray(fuelPrices) ? fuelPrices : [];
+  
+  pricesArray.forEach(price => {
+    if (price && price.fuelType && price.price !== undefined) {
+      if (!pricesByType[price.fuelType] || 
+          new Date(price.validFrom || 0) > new Date(pricesByType[price.fuelType].validFrom || 0)) {
+        pricesByType[price.fuelType] = price;
+      }
     }
   });
   
+  const priceEntries = Object.entries(pricesByType);
+  
+  if (priceEntries.length === 0) {
+    return (
+      <div className="flex items-center gap-2 text-red-600">
+        <AlertTriangle className="h-4 w-4" />
+        <span className="text-sm font-medium">No valid prices found</span>
+      </div>
+    );
+  }
+  
   return (
     <div className="space-y-1">
-      {Object.entries(pricesByType).map(([type, price]) => (
+      {priceEntries.map(([type, price]) => (
         <div key={type} className="flex justify-between items-center">
           <span className="text-xs capitalize">{type}:</span>
-          <span className="font-medium">₹{formatPrice(price.price)}</span>
+          <span className="font-medium">₹{price.price?.toFixed(2) || '0.00'}</span>
         </div>
       ))}
     </div>

@@ -57,7 +57,7 @@ export default function DashboardPage() {
   const activeStations = Array.isArray(stationMetrics) 
     ? stationMetrics.filter(station => station.status === 'active').length 
     : 0;
-  const totalRevenue = salesSummary?.totalRevenue || 0;
+  const totalRevenue = salesSummary?.totalSales || 0;
   const totalVolume = salesSummary?.totalVolume || 0;
 
   // Get recent stations for display

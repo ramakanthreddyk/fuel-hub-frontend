@@ -84,11 +84,14 @@ export const useDeleteFuelPrice = () => {
 };
 
 export const useHasFuelPrices = (stationId: string) => {
-  const { data: fuelPrices = [], isLoading } = useFuelPrices(stationId);
+  const { data, isLoading } = useFuelPrices(stationId);
+  
+  // Handle different API response formats
+  const fuelPrices = Array.isArray(data) ? data : (data?.data || data?.fuelPrices || []);
   
   return {
-    hasFuelPrices: fuelPrices.length > 0,
-    fuelPrices,
+    hasFuelPrices: Array.isArray(fuelPrices) && fuelPrices.length > 0,
+    fuelPrices: Array.isArray(fuelPrices) ? fuelPrices : [],
     isLoading
   };
 };
