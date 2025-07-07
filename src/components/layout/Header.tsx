@@ -13,7 +13,7 @@ import {
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap } from 'lucide-react';
+import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export interface HeaderProps {
@@ -127,12 +127,21 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 shadow-sm dark:bg-gray-950/95 dark:border-gray-800">
       <div className="flex h-14 md:h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-4 flex-1">
+          {/* Mobile hamburger menu */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="lg:hidden"
+            onClick={onMobileMenuClick}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
           
-          {/* Page Title - Show current page context */}
-          <div className="hidden sm:flex items-center gap-2">
-            <div className="h-6 w-px bg-border" />
-            <span className="text-sm font-medium text-muted-foreground">
+          {/* Page Title - Better mobile visibility */}
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:block h-6 w-px bg-border" />
+            <span className="text-sm md:text-base font-medium text-muted-foreground truncate">
               {getPageTitle()}
             </span>
           </div>
@@ -164,7 +173,7 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
           {/* User Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 md:h-10 md:w-10 rounded-full ring-2 ring-transparent hover:ring-purple-200 transition-all">
+              <Button variant="ghost" className="relative h-8 w-8 md:h-10 md:w-10 rounded-full ring-2 ring-transparent hover:ring-purple-200 dark:hover:ring-purple-800 transition-all">
                 <Avatar className="h-7 w-7 md:h-9 md:w-9">
                   <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`} alt={user?.name} />
                   <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-xs md:text-sm font-semibold">
@@ -194,7 +203,7 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="text-red-600">
+              <DropdownMenuItem onClick={logout} className="text-red-600 dark:text-red-400">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>

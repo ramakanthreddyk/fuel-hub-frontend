@@ -13,7 +13,10 @@ export const fuelPricesApi = {
       // Handle the actual response structure from backend
       let rawPrices: any[] = [];
       
-      if (response.data?.data?.prices) {
+      // Based on the data structure shown: {success: true, data: {prices: [...]}}
+      if (response.data?.success && response.data?.data?.prices) {
+        rawPrices = response.data.data.prices;
+      } else if (response.data?.data?.prices) {
         rawPrices = response.data.data.prices;
       } else if (response.data?.prices) {
         rawPrices = response.data.prices;
@@ -28,16 +31,17 @@ export const fuelPricesApi = {
       // Convert snake_case to camelCase
       const fuelPrices = rawPrices.map((price: any) => ({
         id: price.id,
-        stationId: price.station_id,
-        fuelType: price.fuel_type,
+        stationId: price.station_id || price.stationId,
+        fuelType: price.fuel_type || price.fuelType,
         price: parseFloat(price.price) || 0,
-        validFrom: price.valid_from,
-        createdAt: price.created_at,
+        validFrom: price.valid_from || price.validFrom,
+        createdAt: price.created_at || price.createdAt,
         isActive: price.is_active !== false, // Default to true if not specified
         // Include station info if available
         station: price.station ? {
           name: price.station.name
-        } : undefined
+        } : undefined,
+        stationName: price.station?.name || price.stationName
       }));
       
       console.log('[FUEL-PRICES-API] Converted fuel prices:', fuelPrices);
