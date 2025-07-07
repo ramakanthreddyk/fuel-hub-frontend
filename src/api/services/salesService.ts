@@ -4,6 +4,9 @@
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
 
+// Default tenant ID for demo purposes
+const DEFAULT_TENANT_ID = "df9347c2-9f6c-4d32-942f-1208b91fbb2b";
+
 export interface Sale {
   id: string;
   nozzleId: string;
@@ -50,7 +53,25 @@ export const salesService = {
       const storedUser = localStorage.getItem('fuelsync_user');
       console.log('[SALES-API] Stored user:', storedUser ? JSON.parse(storedUser) : 'None');
       
-      const response = await apiClient.get(`/sales?${params.toString()}`);
+      // Get tenant ID from stored user or use default
+      let tenantId = DEFAULT_TENANT_ID;
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          if (user.tenantId) {
+            tenantId = user.tenantId;
+          }
+        } catch (error) {
+          console.error('[SALES-API] Error parsing user data:', error);
+        }
+      }
+      
+      // Explicitly add tenant ID header to ensure it's sent
+      const response = await apiClient.get(`/sales?${params.toString()}`, {
+        headers: {
+          'x-tenant-id': tenantId
+        }
+      });
       console.log('[SALES-API] Response received:', response.data);
       
       return extractArray<Sale>(response, 'sales');

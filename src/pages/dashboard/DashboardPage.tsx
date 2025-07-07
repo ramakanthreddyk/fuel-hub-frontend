@@ -13,7 +13,7 @@ import { useStations } from '@/hooks/api/useStations';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { useReadings } from '@/hooks/api/useReadings';
-import { useAnalyticsDashboard, useAdminDashboard } from '@/hooks/useDashboard';
+import { useSalesSummary } from '@/hooks/useDashboard';
 import { usePendingReadings } from '@/hooks/api/usePendingReadings';
 import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
 import { Link } from 'react-router-dom';
@@ -32,31 +32,17 @@ export default function DashboardPage() {
   // Pending reading alerts
   const { data: pendingAlerts = [] } = usePendingReadings();
   
-  // Fetch analytics data
-  const {
-    data: analytics,
-    isLoading: analyticsLoading,
-    refetch: refetchAnalytics,
-  } = useAnalyticsDashboard(isSuperAdmin);
-
-  const {
-    data: adminData,
-    isLoading: adminLoading,
-    refetch: refetchAdmin,
-  } = useAdminDashboard(isSuperAdmin);
+  // Fetch dashboard data
+  const { data: salesSummary, isLoading: summaryLoading } = useSalesSummary('monthly');
   
-  // Calculate metrics
-  const totalRevenue = readings.reduce((sum, reading) => sum + (reading.amount || 0), 0);
-  const totalVolume = readings.reduce((sum, reading) => sum + (reading.volume || 0), 0);
+  // Calculate metrics from dashboard data or fallback to basic calculations
+  const totalRevenue = salesSummary?.totalRevenue || salesSummary?.totalSales || readings.reduce((sum, reading) => sum + (reading.amount || 0), 0);
+  const totalVolume = salesSummary?.totalVolume || readings.reduce((sum, reading) => sum + (reading.volume || 0), 0);
   const activeStations = stations.filter(s => s.status === 'active').length;
   
   const handleRefresh = async () => {
     setIsRefreshing(true);
     const promises: Promise<any>[] = [refetchStations(), refetchPumps(), refetchPrices(), refetchReadings()];
-    if (isSuperAdmin) {
-      promises.push(refetchAnalytics());
-      promises.push(refetchAdmin());
-    }
     await Promise.all(promises);
     setIsRefreshing(false);
   };
@@ -66,7 +52,7 @@ export default function DashboardPage() {
     pumpsLoading ||
     pricesLoading ||
     readingsLoading ||
-    (isSuperAdmin ? analyticsLoading || adminLoading : false);
+    summaryLoading;
 
   return (
     <div className="space-y-6">
@@ -139,34 +125,24 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Analytics Cards - Only show if we have analytics data */}
-      {isSuperAdmin && analytics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <EnhancedMetricsCard
-            title="Total Tenants"
-            value={analytics.overview?.totalTenants || analytics.totalTenants || 0}
-            icon={<Users className="h-5 w-5" />}
-            description="Across all stations"
-            gradient="from-pink-500 to-rose-600"
-          />
-          
-          <EnhancedMetricsCard
-            title="System Health"
-            value="99.9%"
-            icon={<Shield className="h-5 w-5" />}
-            description="Platform uptime"
-            gradient="from-green-500 to-emerald-600"
-          />
-          
-          <EnhancedMetricsCard
-            title="Features Active"
-            value={fuelPrices.length}
-            icon={<Package className="h-5 w-5" />}
-            description="Fuel price configurations"
-            gradient="from-violet-500 to-purple-600"
-          />
-        </div>
-      )}
+      {/* Additional Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <EnhancedMetricsCard
+          title="Total Transactions"
+          value={salesSummary?.salesCount || readings.length}
+          icon={<Users className="h-5 w-5" />}
+          description="This month"
+          gradient="from-pink-500 to-rose-600"
+        />
+        
+        <EnhancedMetricsCard
+          title="Total Pumps"
+          value={pumps.length}
+          icon={<Shield className="h-5 w-5" />}
+          description="Across all stations"
+          gradient="from-green-500 to-emerald-600"
+        />
+      </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -228,31 +204,32 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
-      {readings.length > 0 && (
-        <Card className="bg-gradient-to-br from-white to-gray-50 border-gray-200">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {readings.slice(0, 5).map((reading) => (
-                <div key={reading.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                  <div>
-                    <div className="font-medium">Reading #{reading.id.slice(0, 8)}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {reading.volume?.toFixed(3)}L • ₹{reading.amount?.toFixed(2)} • {reading.paymentMethod}
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(reading.recordedAt).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
+      {/* Business Insights */}
+      <Card className="bg-gradient-to-br from-white to-gray-50 border-gray-200">
+        <CardHeader>
+          <CardTitle>Business Insights</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 bg-white rounded-lg border">
+              <div className="text-2xl font-bold text-blue-600">{stations.length}</div>
+              <div className="text-sm text-muted-foreground">Total Stations</div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="p-4 bg-white rounded-lg border">
+              <div className="text-2xl font-bold text-green-600">{pumps.length}</div>
+              <div className="text-sm text-muted-foreground">Total Pumps</div>
+            </div>
+            <div className="p-4 bg-white rounded-lg border">
+              <div className="text-2xl font-bold text-purple-600">{fuelPrices.length}</div>
+              <div className="text-sm text-muted-foreground">Fuel Prices Set</div>
+            </div>
+            <div className="p-4 bg-white rounded-lg border">
+              <div className="text-2xl font-bold text-orange-600">{pendingAlerts.length}</div>
+              <div className="text-sm text-muted-foreground">Pending Alerts</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

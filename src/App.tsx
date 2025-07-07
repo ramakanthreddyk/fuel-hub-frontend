@@ -99,6 +99,7 @@ function App() {
                 <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
                 <Route path="stations/:stationId/pumps/:pumpId/nozzles/new" element={<CreateNozzlePage />} />
                 <Route path="stations/:stationId/pumps/:pumpId/nozzles/:nozzleId/edit" element={<EditNozzlePage />} />
+                <Route path="stations/:stationId/pumps/:pumpId/nozzles/:nozzleId/readings/new" element={<NewReadingPage />} />
                 
                 {/* Pump Routes */}
                 <Route path="pumps" element={<PumpsPage />} />

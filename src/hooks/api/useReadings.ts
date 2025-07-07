@@ -36,6 +36,13 @@ export const useReading = (id: string) => {
 };
 
 /**
+ * Hook to fetch a reading by ID (alias for useReading)
+ */
+export const useReadingById = (id: string) => {
+  return useReading(id);
+};
+
+/**
  * Hook to fetch the latest reading for a nozzle
  * @param nozzleId Nozzle ID
  * @returns Query result with latest reading data

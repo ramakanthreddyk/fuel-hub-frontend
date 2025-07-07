@@ -73,7 +73,7 @@ export const attendantApi = {
   // Submit cash report
   createCashReport: async (data: CreateCashReportRequest): Promise<CashReport> => {
     devLog('Creating cash report', data);
-    const response = await apiClient.post('/attendant/cash-reports', data);
+    const response = await apiClient.post('/attendant/cash-report', data);
     return extractApiData<CashReport>(response);
   },
 

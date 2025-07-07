@@ -1,115 +1,130 @@
 /**
- * @file dashboardService.ts
+ * @file api/services/dashboardService.ts
  * @description Service for dashboard API endpoints
- * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
- * @see docs/journeys/OWNER.md - Owner journey for dashboard
  */
-import apiClient, { extractData } from '../core/apiClient';
+import apiClient, { extractData, extractArray } from '../core/apiClient';
 
-// Types
 export interface SalesSummary {
   totalRevenue: number;
   totalVolume: number;
   salesCount: number;
-  averageTicketSize: number;
-  cashSales: number;
-  creditSales: number;
-  growthPercentage: number;
-  totalProfit?: number;
-  profitMargin?: number;
-  period?: string;
-  previousPeriodRevenue?: number;
-  revenue?: number; // Alias for totalRevenue
+  period: string;
 }
 
 export interface PaymentMethodBreakdown {
-  method: string;
+  paymentMethod: string;
   amount: number;
   percentage: number;
-  count: number;
 }
 
 export interface FuelTypeBreakdown {
   fuelType: string;
   volume: number;
-  revenue: number;
-  percentage: number;
-  averagePrice?: number;
+  amount: number;
+}
+
+export interface TopCreditor {
+  id: string;
+  partyName: string;
+  outstandingAmount: number;
+  creditLimit: number | null;
 }
 
 export interface DailySalesTrend {
   date: string;
-  revenue: number;
+  amount: number;
   volume: number;
-  salesCount: number;
-  dayOfWeek?: string;
 }
 
-export interface StationMetric {
-  id: string;
-  name: string;
-  todaySales: number;
-  monthlySales: number;
-  salesGrowth: number;
-  activePumps: number;
-  totalPumps: number;
-  status: "active" | "inactive" | "maintenance";
-  lastActivity?: string;
-  efficiency?: number;
+export interface DashboardFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
-/**
- * Service for dashboard API
- */
 export const dashboardService = {
   /**
-   * Get sales summary for the dashboard
-   * @param period Optional period (today, week, month, year)
-   * @returns Sales summary data
+   * Get sales summary
    */
-  getSalesSummary: async (period: string = 'today'): Promise<SalesSummary> => {
-    const response = await apiClient.get('/dashboard/sales-summary', { params: { period } });
-    return extractData<SalesSummary>(response);
+  getSalesSummary: async (range: string = 'monthly', filters: DashboardFilters = {}): Promise<SalesSummary> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('range', range);
+      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+
+      const response = await apiClient.get(`/dashboard/sales-summary?${params.toString()}`);
+      return extractData<SalesSummary>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching sales summary:', error);
+      throw error;
+    }
   },
-  
+
   /**
    * Get payment method breakdown
-   * @param period Optional period (today, week, month, year)
-   * @returns Payment method breakdown data
    */
-  getPaymentMethodBreakdown: async (period: string = 'today'): Promise<PaymentMethodBreakdown[]> => {
-    const response = await apiClient.get('/dashboard/payment-methods', { params: { period } });
-    return extractData<PaymentMethodBreakdown[]>(response);
+  getPaymentMethodBreakdown: async (filters: DashboardFilters = {}): Promise<PaymentMethodBreakdown[]> => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+
+      const response = await apiClient.get(`/dashboard/payment-methods?${params.toString()}`);
+      return extractArray<PaymentMethodBreakdown>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching payment methods:', error);
+      throw error;
+    }
   },
-  
+
   /**
    * Get fuel type breakdown
-   * @param period Optional period (today, week, month, year)
-   * @returns Fuel type breakdown data
    */
-  getFuelTypeBreakdown: async (period: string = 'today'): Promise<FuelTypeBreakdown[]> => {
-    const response = await apiClient.get('/dashboard/fuel-types', { params: { period } });
-    return extractData<FuelTypeBreakdown[]>(response);
+  getFuelTypeBreakdown: async (filters: DashboardFilters = {}): Promise<FuelTypeBreakdown[]> => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+
+      const response = await apiClient.get(`/dashboard/fuel-breakdown?${params.toString()}`);
+      return extractArray<FuelTypeBreakdown>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching fuel breakdown:', error);
+      throw error;
+    }
   },
-  
+
+  /**
+   * Get top creditors
+   */
+  getTopCreditors: async (limit: number = 5): Promise<TopCreditor[]> => {
+    try {
+      const response = await apiClient.get(`/dashboard/top-creditors?limit=${limit}`);
+      return extractArray<TopCreditor>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching top creditors:', error);
+      throw error;
+    }
+  },
+
   /**
    * Get daily sales trend
-   * @param days Number of days to include
-   * @returns Daily sales trend data
    */
-  getDailySalesTrend: async (days: number = 7): Promise<DailySalesTrend[]> => {
-    const response = await apiClient.get('/dashboard/daily-trend', { params: { days } });
-    return extractData<DailySalesTrend[]>(response);
-  },
-  
-  /**
-   * Get station metrics
-   * @returns Station metrics data
-   */
-  getStationMetrics: async (): Promise<StationMetric[]> => {
-    const response = await apiClient.get('/dashboard/station-metrics');
-    return extractData<StationMetric[]>(response);
+  getDailySalesTrend: async (days: number = 7, filters: DashboardFilters = {}): Promise<DailySalesTrend[]> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('days', days.toString());
+      if (filters.stationId) params.append('stationId', filters.stationId);
+
+      const response = await apiClient.get(`/dashboard/sales-trend?${params.toString()}`);
+      return extractArray<DailySalesTrend>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching sales trend:', error);
+      throw error;
+    }
   }
 };
-
-export default dashboardService;

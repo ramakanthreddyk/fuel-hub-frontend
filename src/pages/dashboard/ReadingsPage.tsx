@@ -22,7 +22,7 @@ import { ReadingReceiptCard } from '@/components/readings/ReadingReceiptCard';
 
 export default function ReadingsPage() {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'discrepancy'>('all');
+  const [filter, setFilter] = useState<'all' | 'today' | 'week'>('all');
   const [selectedPumpId, setSelectedPumpId] = useState<string>('all');
 
   // Fetch readings using the API hook
@@ -36,16 +36,23 @@ export default function ReadingsPage() {
 
   // Filter readings based on selected filter and pump
   const filteredReadings = readings?.filter(reading => {
-    const statusMatch = filter === 'all' || reading.status === filter;
-    const pumpMatch = selectedPumpId === 'all' || reading.pumpId === selectedPumpId;
-    return statusMatch && pumpMatch;
+    let dateMatch = true;
+    if (filter === 'today') {
+      const today = new Date().toDateString();
+      dateMatch = new Date(reading.recordedAt).toDateString() === today;
+    } else if (filter === 'week') {
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      dateMatch = new Date(reading.recordedAt) >= weekAgo;
+    }
+    const pumpMatch = selectedPumpId === 'all' || reading.pump_id === selectedPumpId || reading.pumpId === selectedPumpId;
+    return dateMatch && pumpMatch;
   }) || [];
 
   // Calculate stats
   const totalReadings = readings?.length || 0;
-  const pendingReadings = readings?.filter(r => r.status === 'pending').length || 0;
-  const discrepancyReadings = readings?.filter(r => r.status === 'discrepancy').length || 0;
-  const completedReadings = readings?.filter(r => r.status === 'completed').length || 0;
+  const todayReadings = readings?.filter(r => new Date(r.recordedAt).toDateString() === new Date().toDateString()).length || 0;
+  const weekReadings = readings?.filter(r => new Date(r.recordedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length || 0;
+  const totalRevenue = readings?.reduce((sum, r) => sum + (r.amount || 0), 0) || 0;
   const pendingAlertsCount = pendingAlerts.length;
 
   const getStatusBadge = (status: string) => {
@@ -88,49 +95,49 @@ export default function ReadingsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Readings</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Readings</CardTitle>
             <Gauge className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalReadings}</div>
             <p className="text-xs text-muted-foreground">
-              {isLoading ? 'Loading...' : `Total readings`}
+              {isLoading ? 'Loading...' : `All time`}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <CardTitle className="text-sm font-medium">Today</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingReadings + pendingAlertsCount}</div>
+            <div className="text-2xl font-bold">{todayReadings}</div>
             <p className="text-xs text-muted-foreground">
-              Need attention
+              Today's readings
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Discrepancies</CardTitle>
+            <CardTitle className="text-sm font-medium">This Week</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{discrepancyReadings}</div>
+            <div className="text-2xl font-bold">{weekReadings}</div>
             <p className="text-xs text-muted-foreground">
-              Requires review
+              Last 7 days
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedReadings}</div>
+            <div className="text-2xl font-bold">₹{totalRevenue.toFixed(0)}</div>
             <p className="text-xs text-muted-foreground">
-              Successfully recorded
+              From all readings
             </p>
           </CardContent>
         </Card>
@@ -178,18 +185,18 @@ export default function ReadingsPage() {
       {/* Enhanced Filter Buttons */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex flex-wrap gap-2">
-          {(['all', 'pending', 'completed', 'discrepancy'] as const).map((status) => (
+          {(['all', 'today', 'week'] as const).map((timeFilter) => (
             <Button
-              key={status}
-              variant={filter === status ? 'default' : 'outline'}
+              key={timeFilter}
+              variant={filter === timeFilter ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setFilter(status)}
+              onClick={() => setFilter(timeFilter)}
               className={cn(
                 "capitalize transition-all duration-200",
-                filter === status && "shadow-lg scale-105"
+                filter === timeFilter && "shadow-lg scale-105"
               )}
             >
-              {status === 'all' ? 'All Readings' : status}
+              {timeFilter === 'all' ? 'All Readings' : timeFilter === 'today' ? 'Today' : 'This Week'}
             </Button>
           ))}
         </div>
