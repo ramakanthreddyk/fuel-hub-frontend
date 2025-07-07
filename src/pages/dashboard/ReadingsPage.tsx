@@ -1,3 +1,4 @@
+
 /**
  * @file ReadingsPage.tsx
  * @description Page component for viewing and managing readings
@@ -44,7 +45,7 @@ export default function ReadingsPage() {
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       dateMatch = new Date(reading.recordedAt) >= weekAgo;
     }
-    const pumpMatch = selectedPumpId === 'all' || reading.pump_id === selectedPumpId || reading.pumpId === selectedPumpId;
+    const pumpMatch = selectedPumpId === 'all' || reading.pumpId === selectedPumpId;
     return dateMatch && pumpMatch;
   }) || [];
 

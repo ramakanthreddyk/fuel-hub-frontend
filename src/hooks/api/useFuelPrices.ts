@@ -5,6 +5,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/api/core/apiClient';
+import { useToast } from '@/hooks/use-toast';
 
 export interface FuelPrice {
   id: string;
@@ -54,4 +55,40 @@ export const useFuelPriceValidation = (stationId?: string) => {
     },
     enabled: !!stationId,
   });
+};
+
+export const useDeleteFuelPrice = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete(`/fuel-prices/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
+      toast({
+        title: 'Success',
+        description: 'Fuel price deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to delete fuel price',
+        variant: 'destructive',
+      });
+    }
+  });
+};
+
+export const useHasFuelPrices = (stationId: string) => {
+  const { data: fuelPrices = [], isLoading } = useFuelPrices(stationId);
+  
+  return {
+    hasFuelPrices: fuelPrices.length > 0,
+    fuelPrices,
+    isLoading
+  };
 };
