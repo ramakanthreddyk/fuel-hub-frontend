@@ -22,7 +22,8 @@ import {
   ClipboardList,
   Factory,
   Wrench,
-  Database
+  Database,
+  Calculator
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -86,7 +87,14 @@ const navigation: NavItem[] = [
     children: [
       { name: 'Attendance', href: '/dashboard/attendance', icon: Calendar },
       { name: 'Users', href: '/dashboard/users', icon: Users },
+      { name: 'Reset Passwords', href: '/dashboard/users/reset-password', icon: Settings, roles: ['owner'] },
     ],
+  },
+  {
+    name: 'Reconciliation',
+    href: '/dashboard/reconciliation',
+    icon: Calculator,
+    roles: ['owner', 'manager'],
   },
   {
     name: 'Reports',
