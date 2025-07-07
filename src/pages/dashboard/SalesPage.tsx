@@ -3,13 +3,12 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SalesTable } from '@/components/sales/SalesTable';
 import { StationSelector } from '@/components/filters/StationSelector';
-import { DateRangePicker } from '@/components/filters/DateRangePicker';
+import { DateRangePicker, DateRange } from '@/components/filters/DateRangePicker';
 import { useSales } from '@/hooks/api/useSales';
 import { SalesFilters } from '@/api/services/salesService';
 import { useStations } from '@/hooks/api/useStations';
 import { BadgeIndianRupee, TrendingUp, CreditCard, Users, Download, Filter, BarChart3, Fuel } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DateRange } from 'react-day-picker';
 import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
 
 export default function SalesPage() {

@@ -73,7 +73,7 @@ export default function ReadingDetailPage() {
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Fuel Type</label>
-              <Badge className="mt-1">{reading.fuel_type || reading.fuelType || 'Unknown'}</Badge>
+              <Badge className="mt-1">{reading.fuelType || 'Unknown'}</Badge>
             </div>
           </CardContent>
         </Card>
@@ -113,7 +113,7 @@ export default function ReadingDetailPage() {
           <CardContent className="space-y-3">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Fuel Price</label>
-              <p className="font-medium">{formatCurrency(reading.fuel_price || reading.price || 0)}/L</p>
+              <p className="font-medium">{formatCurrency(reading.pricePerLitre || 0)}/L</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Total Amount</label>
