@@ -3,6 +3,7 @@
  * @file components/stations/StationCard.tsx
  * @description Enhanced station card with improved layout and fuel price display
  */
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
