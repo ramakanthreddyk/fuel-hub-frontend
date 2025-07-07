@@ -42,6 +42,7 @@ import StationComparisonPage from './pages/dashboard/StationComparisonPage';
 import StationRankingPage from './pages/dashboard/StationRankingPage';
 import UpdateInventoryPage from './pages/dashboard/UpdateInventoryPage';
 import ReportExportPage from './pages/dashboard/ReportExportPage';
+import ResetPasswordPage from './pages/dashboard/ResetPasswordPage';
 import UsersPage from './pages/dashboard/UsersPage';
 import SettingsPage from './pages/dashboard/SettingsPage';
 import CashReportPage from './pages/dashboard/CashReportPage';
@@ -149,6 +150,7 @@ function App() {
                 <Route path="stations/comparison" element={<StationComparisonPage />} />
                 <Route path="stations/ranking" element={<StationRankingPage />} />
                 <Route path="users" element={<UsersPage />} />
+                <Route path="users/reset-password" element={<ResetPasswordPage />} />
                 <Route path="settings" element={<SettingsPage />} />
               </Route>
 

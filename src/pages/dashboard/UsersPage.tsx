@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { UserPlus, Users, Edit, Trash2, Key, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm } from '@/components/users/UserForm';
 import { ResetPasswordForm } from '@/components/users/ResetPasswordForm';
@@ -139,13 +140,20 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
           <p className="text-muted-foreground">Manage users and their roles within the tenant</p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Create User
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link to="/dashboard/users/reset-password">
+              <Key className="mr-2 h-4 w-4" />
+              Reset Passwords
+            </Link>
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Create User
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New User</DialogTitle>
@@ -160,6 +168,7 @@ export default function UsersPage() {
             />
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card>
