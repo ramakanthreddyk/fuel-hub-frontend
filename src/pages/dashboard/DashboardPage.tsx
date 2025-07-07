@@ -198,7 +198,7 @@ export default function DashboardPage() {
                 <Link to="/dashboard/reports">View Reports</Link>
               </Button>
               <Button variant="outline" size="sm" asChild>
-                <Link to="/dashboard/analytics">Analytics</Link>
+                <Link to="/dashboard/reconciliation">Reconciliation</Link>
               </Button>
             </div>
           </CardContent>
