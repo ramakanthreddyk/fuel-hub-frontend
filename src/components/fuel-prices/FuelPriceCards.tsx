@@ -1,11 +1,12 @@
+
 /**
  * @file FuelPriceCards.tsx
- * @description Simplified card view for fuel prices
+ * @description Improved card view for fuel prices with proper price display
  */
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, Fuel, AlertCircle, Loader2, Plus } from 'lucide-react';
+import { Building2, Fuel, AlertCircle, Loader2, Plus, Edit } from 'lucide-react';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { useStations } from '@/hooks/api/useStations';
 import { formatPrice } from '@/utils/formatters';
@@ -120,57 +121,77 @@ export function FuelPriceCards() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {stationPricesArray.map(({ station, prices }) => (
-        <Card key={station.id} className="overflow-hidden">
-          <CardHeader className="bg-muted/50 pb-3">
+        <Card key={station.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Building2 className="h-5 w-5" />
+              <div className="p-2 rounded-lg bg-blue-100">
+                <Building2 className="h-5 w-5 text-blue-600" />
+              </div>
               {station.name}
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-4">
-            <div className="space-y-3">
+          <CardContent className="pt-6">
+            <div className="space-y-4">
               {/* Petrol */}
-              <div className="flex items-center justify-between">
-                <Badge className={getFuelTypeColor('petrol')}>Petrol</Badge>
+              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <Badge className={getFuelTypeColor('petrol')}>Petrol</Badge>
+                </div>
                 {prices.petrol ? (
-                  <div className="font-bold text-lg">₹{formatPrice(prices.petrol.price)}</div>
+                  <div className="text-right">
+                    <div className="font-bold text-lg text-green-700">₹{formatPrice(prices.petrol.price)}</div>
+                    <div className="text-xs text-green-600">per litre</div>
+                  </div>
                 ) : (
-                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <div className="text-sm text-gray-500">Not set</div>
                 )}
               </div>
               
               {/* Diesel */}
-              <div className="flex items-center justify-between">
-                <Badge className={getFuelTypeColor('diesel')}>Diesel</Badge>
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <Badge className={getFuelTypeColor('diesel')}>Diesel</Badge>
+                </div>
                 {prices.diesel ? (
-                  <div className="font-bold text-lg">₹{formatPrice(prices.diesel.price)}</div>
+                  <div className="text-right">
+                    <div className="font-bold text-lg text-blue-700">₹{formatPrice(prices.diesel.price)}</div>
+                    <div className="text-xs text-blue-600">per litre</div>
+                  </div>
                 ) : (
-                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <div className="text-sm text-gray-500">Not set</div>
                 )}
               </div>
               
               {/* Premium */}
-              <div className="flex items-center justify-between">
-                <Badge className={getFuelTypeColor('premium')}>Premium</Badge>
+              <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                  <Badge className={getFuelTypeColor('premium')}>Premium</Badge>
+                </div>
                 {prices.premium ? (
-                  <div className="font-bold text-lg">₹{formatPrice(prices.premium.price)}</div>
+                  <div className="text-right">
+                    <div className="font-bold text-lg text-purple-700">₹{formatPrice(prices.premium.price)}</div>
+                    <div className="text-xs text-purple-600">per litre</div>
+                  </div>
                 ) : (
-                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <div className="text-sm text-gray-500">Not set</div>
                 )}
               </div>
             </div>
             
-            <div className="mt-4 pt-3 border-t">
+            <div className="mt-6 pt-4 border-t">
               <Button 
                 variant="outline" 
                 size="sm" 
                 className="w-full"
                 onClick={() => navigate(`/dashboard/fuel-prices?stationId=${station.id}`)}
               >
-                <Plus className="mr-2 h-4 w-4" />
-                {Object.values(prices).every(p => p) ? 'Update Prices' : 'Set Missing Prices'}
+                <Edit className="mr-2 h-4 w-4" />
+                Update Prices
               </Button>
             </div>
           </CardContent>

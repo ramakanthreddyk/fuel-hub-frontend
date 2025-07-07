@@ -95,6 +95,15 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
   const StatusIcon = statusConfig.icon;
   const hasPrices = Object.keys(processedPrices).length > 0;
 
+  const getFuelTypeColor = (fuelType: string) => {
+    switch (fuelType.toLowerCase()) {
+      case 'petrol': return { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500' };
+      case 'diesel': return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500' };
+      case 'premium': return { bg: 'bg-purple-100', text: 'text-purple-700', dot: 'bg-purple-500' };
+      default: return { bg: 'bg-gray-100', text: 'text-gray-700', dot: 'bg-gray-500' };
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
       {/* Header */}
@@ -113,45 +122,38 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
             </div>
           </div>
           
-          {/* Fuel type indicators */}
-          <div className="flex gap-1">
-            <div className="w-3 h-3 rounded-full bg-green-500" title="Petrol" />
-            <div className="w-3 h-3 rounded-full bg-orange-500" title="Diesel" />
-            <div className="w-3 h-3 rounded-full bg-purple-500" title="Super" />
+          <div className={cn(
+            "inline-flex px-3 py-1 rounded-full border items-center gap-2 text-sm font-medium",
+            statusConfig.bgColor,
+            statusConfig.textColor
+          )}>
+            <StatusIcon className={cn("w-3 h-3", statusConfig.iconColor)} />
+            {statusConfig.label}
           </div>
-        </div>
-        
-        <div className={cn(
-          "inline-flex px-3 py-1 rounded-full border items-center gap-2 text-sm font-medium",
-          statusConfig.bgColor,
-          statusConfig.textColor
-        )}>
-          <StatusIcon className={cn("w-3 h-3", statusConfig.iconColor)} />
-          {statusConfig.label}
         </div>
       </div>
 
       {/* Station Visual */}
       <div className="px-6 pb-4">
-        <div className="bg-gray-100 rounded-xl p-4 mb-4">
+        <div className="bg-gray-50 rounded-xl p-4 mb-4">
           <div className="flex justify-center">
             <div className="relative">
               {/* Station Building */}
-              <div className="w-24 h-16 bg-gradient-to-b from-gray-300 to-gray-500 rounded-lg shadow-lg relative">
+              <div className="w-28 h-20 bg-gradient-to-b from-gray-300 to-gray-500 rounded-lg shadow-lg relative">
                 {/* Station Sign */}
-                <div className="absolute top-1 left-1 right-1 h-4 bg-gray-800 rounded flex items-center justify-center">
+                <div className="absolute top-1 left-1 right-1 h-5 bg-gray-800 rounded flex items-center justify-center">
                   <div className="text-xs font-bold text-blue-400 truncate px-1">
-                    {station.name.slice(0, 8)}
+                    {station.name.slice(0, 10)}
                   </div>
                 </div>
                 
                 {/* Canopy */}
-                <div className="absolute -top-1 -left-2 -right-2 h-2 bg-gray-400 rounded-t-lg"></div>
+                <div className="absolute -top-1 -left-3 -right-3 h-3 bg-gray-400 rounded-t-lg shadow-md"></div>
                 
                 {/* Fuel Islands */}
-                <div className="absolute bottom-1 left-2 right-2 flex justify-between">
-                  {Array.from({ length: Math.min(station.pumpCount, 3) }, (_, i) => (
-                    <div key={i} className="w-2 h-4 bg-gray-600 rounded shadow-sm"></div>
+                <div className="absolute bottom-2 left-3 right-3 flex justify-between">
+                  {Array.from({ length: Math.min(station.pumpCount, 4) }, (_, i) => (
+                    <div key={i} className="w-2 h-5 bg-gray-600 rounded shadow-sm"></div>
                   ))}
                 </div>
               </div>
@@ -164,54 +166,44 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
       <div className="px-6 space-y-4">
         {/* Fuel Dispensers */}
         <div className="bg-blue-50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-3">
             <Fuel className="h-4 w-4 text-blue-600" />
             <span className="text-sm font-semibold text-blue-700">Fuel Dispensers</span>
           </div>
           <div className="flex items-center justify-between">
             <div className="text-2xl font-bold text-gray-900">{station.pumpCount}</div>
-            <div className="flex gap-1">
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-xs">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                Petrol
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-100 text-xs">
-                <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                Diesel
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100 text-xs">
-                <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                Super
-              </span>
-            </div>
-          </div>
-          <div className="text-xs text-gray-600 mt-1">
-            Active dispensers ready for service
+            <div className="text-xs text-gray-600">Active dispensers</div>
           </div>
         </div>
         
         {/* Fuel Prices */}
-        <div className="bg-blue-50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Star className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-semibold text-blue-700">Current Fuel Prices</span>
+        <div className="bg-green-50 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Star className="h-4 w-4 text-green-600" />
+            <span className="text-sm font-semibold text-green-700">Current Fuel Prices</span>
           </div>
           
           {pricesLoading ? (
             <div className="text-sm text-gray-600">Loading prices...</div>
           ) : hasPrices ? (
             <div className="space-y-2">
-              {Object.entries(processedPrices).map(([fuelType, price]) => (
-                <div key={fuelType} className="flex justify-between items-center">
-                  <span className="text-sm capitalize font-medium">{fuelType}:</span>
-                  <span className="font-bold text-gray-900">₹{price.price?.toFixed(2) || '0.00'}</span>
-                </div>
-              ))}
+              {Object.entries(processedPrices).map(([fuelType, price]) => {
+                const colors = getFuelTypeColor(fuelType);
+                return (
+                  <div key={fuelType} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={cn("w-2 h-2 rounded-full", colors.dot)}></div>
+                      <span className="text-sm capitalize font-medium">{fuelType}</span>
+                    </div>
+                    <div className="font-bold text-gray-900">₹{price.price?.toFixed(2) || '0.00'}</div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
-            <div className="flex items-center gap-1 text-red-600">
+            <div className="flex items-center gap-2 text-amber-600">
               <AlertTriangle className="h-4 w-4" />
-              <span className="text-sm font-medium">Missing fuel prices</span>
+              <span className="text-sm font-medium">Prices not set</span>
             </div>
           )}
         </div>
