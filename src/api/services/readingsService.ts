@@ -52,7 +52,18 @@ export interface UpdateReadingRequest {
 export const readingsService = {
   async getReadings(): Promise<Reading[]> {
     const response = await apiClient.get('/nozzle-readings');
-    return response.data || [];
+    // Handle different response formats
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data && Array.isArray(data.readings)) {
+      return data.readings;
+    }
+    if (data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    return [];
   },
 
   async getReading(id: string): Promise<Reading> {
