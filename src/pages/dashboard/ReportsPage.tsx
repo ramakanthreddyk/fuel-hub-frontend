@@ -344,7 +344,10 @@ export default function ReportsPage() {
                     <div>
                       <CardTitle>{report.name}</CardTitle>
                       <CardDescription>
-                        {new Date(report.dateRange.start).toLocaleDateString()} - {new Date(report.dateRange.end).toLocaleDateString()}
+                        {report.dateRange ? 
+                          `${new Date(report.dateRange.start).toLocaleDateString()} - ${new Date(report.dateRange.end).toLocaleDateString()}` :
+                          'Date range not available'
+                        }
                       </CardDescription>
                     </div>
                   </div>

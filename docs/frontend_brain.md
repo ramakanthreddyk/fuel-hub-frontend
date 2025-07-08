@@ -1,176 +1,335 @@
-# FuelSync Frontend Brain 🧠
+
+# FuelSync Hub - Frontend Brain 🧠
 
 ## Contract-First Architecture
 
-This document maps the frontend implementation to the **OpenAPI specification** and **journey documents** as the single source of truth.
+This document serves as the **single authoritative guide** for all frontend development in FuelSync Hub. Everything flows from the **OpenAPI specification** (`docs/openapi-spec.yaml`) as the single source of truth.
 
-## API Integration Strategy
+## Architecture Overview
 
-We've implemented a standardized API integration strategy with the following components:
+```
+OpenAPI Spec (docs/openapi-spec.yaml)
+    ↓
+API Contract (src/api/api-contract.ts)
+    ↓
+Contract Services (src/api/contract/*.service.ts)
+    ↓
+React Hooks (src/hooks/useContract*.ts)
+    ↓
+UI Components (src/components/*)
+    ↓
+Pages (src/pages/*)
+```
 
-### 1. Core Layer
-- **apiClient.ts**: Centralized axios instance with standardized request/response handling
-- **config.ts**: API configuration with endpoint definitions
+## ⚠️ CRITICAL ISSUES REQUIRING IMMEDIATE ATTENTION
 
-### 2. Service Layer
-- **stationsService.ts**: Station-specific API methods
-- **pumpsService.ts**: Pump-specific API methods
-- **nozzlesService.ts**: Nozzle-specific API methods
-- **readingsService.ts**: Reading operations
-- **fuelPricesService.ts**: Price management
-- **usersService.ts**: User management
-- **reportsService.ts**: Report generation
-- **dashboardService.ts**: Analytics & metrics
+### 1. Schema Mismatches Found
+- **Pump Fields**: OpenAPI uses different field names than current frontend implementation
+- **Nozzle Fuel Types**: OpenAPI doesn't include `kerosene`, frontend using invalid enum
+- **User Properties**: Inconsistent naming between OpenAPI and frontend types
 
-### 3. Hook Layer
-- **useStations.ts**: Hooks for station-related operations
-- **usePumps.ts**: Hooks for pump-related operations
-- **useNozzles.ts**: Hooks for nozzle-related operations
-- **useReadings.ts**: Hooks for reading operations
-- **useFuelPrices.ts**: Hooks for price management
-- **useUsers.ts**: Hooks for user management
-- **useReports.ts**: Hooks for report generation
-- **useDashboard.ts**: Hooks for analytics & metrics
+### 2. Large Files Needing Refactoring
+The `src/api/api-contract.ts` file has grown to over 583 lines and needs refactoring. After completing the current migration phase, it should be split into focused modules:
 
-### 4. Optimization Layer
-- **useQueryConfig.ts**: Centralized React Query configuration
-- **useErrorHandler.ts**: Centralized error handling
+```
+src/api/contract/
+├── auth.types.ts
+├── stations.types.ts  
+├── users.types.ts
+├── analytics.types.ts
+├── reports.types.ts
+└── index.ts (re-exports all)
+```
 
-## Development Process
+---
 
-To ensure maintainability and accountability, we've established a standardized development process:
-
-1. **Follow the Documentation**: Start with the README and Documentation Map
-2. **Use the Accountability Checklist**: Complete all items in the Development Accountability Checklist
-3. **Document Changes**: Update documentation and add JSDoc comments
-4. **Provide Implementation Summary**: Summarize what was changed and why
-
-For detailed process information, see:
-- [Development Accountability Checklist](./DEVELOPMENT_ACCOUNTABILITY_CHECKLIST.md)
-- [AI Agent Development Process](./AI_AGENT_DEVELOPMENT_PROCESS.md)
-
-## Persona Mapping
+## Persona Journey Mapping
 
 ### 🔧 SuperAdmin Journey
+**OpenAPI Prefix**: `/admin/*`  
+**Auth**: No tenant context required  
+**Journey Doc**: `docs/journeys/SUPERADMIN.md`
 
-**Journey File**: `docs/journeys/SUPERADMIN.md`
-**OpenAPI Paths**: `/admin/*`
-
-| Journey Step | Frontend Component | API Service | Contract Status |
-|--------------|-------------------|-------------|-----------------|
-| Login | `LoginPage.tsx` | `authService.adminLogin()` | ✅ ALIGNED |
-| Dashboard | `superadmin/OverviewPage.tsx` | `superAdminService.getDashboardSummary()` | ✅ ALIGNED |
-| Manage Tenants | `superadmin/TenantsPage.tsx` | `superAdminService.getTenants()` | ✅ ALIGNED |
-| Create Tenant | `superadmin/CreateTenantPage.tsx` | `superAdminService.createTenant()` | ✅ ALIGNED |
-| Manage Plans | `superadmin/PlansPage.tsx` | `superAdminService.getPlans()` | ✅ ALIGNED |
+| Feature | Component | Hook | Service | Status |
+|---------|-----------|------|---------|---------|
+| Login | `LoginPage.tsx` | `useContractAuth` | `authService.adminLogin()` | ✅ |
+| Dashboard | `superadmin/OverviewPage.tsx` | `useSuperAdminDashboard` | `superAdminService.getDashboard()` | ✅ |
+| Manage Tenants | `superadmin/TenantsPage.tsx` | `useTenants` | `superAdminService.getTenants()` | ✅ |
+| Manage Plans | `superadmin/PlansPage.tsx` | `usePlans` | `superAdminService.getPlans()` | ✅ |
 
 ### 👔 Owner Journey
+**OpenAPI Prefix**: `/stations`, `/users`, `/dashboard`  
+**Auth**: Requires `x-tenant-id` header  
+**Journey Doc**: `docs/journeys/OWNER.md`
 
-**Journey File**: `docs/journeys/OWNER.md`
-**OpenAPI Paths**: `/stations`, `/users`, `/dashboard`
-
-| Journey Step | Frontend Component | API Service | Contract Status |
-|--------------|-------------------|-------------|-----------------|
-| Login | `LoginPage.tsx` | `authService.login()` | ✅ ALIGNED |
-| Dashboard | `dashboard/SummaryPage.tsx` | `dashboardService.getSalesSummary()` | ✅ MIGRATED |
-| Manage Stations | `dashboard/StationsPage.tsx` | `stationsService.getStations()` | ✅ ALIGNED |
-| Create Station | `CreateStationDialog.tsx` | `stationsService.createStation()` | ✅ ALIGNED |
-| Manage Users | `dashboard/UsersPage.tsx` | `usersService.getUsers()` | ✅ MIGRATED |
-| View Reports | `dashboard/ReportsPage.tsx` | `reportsService.getSalesReport()` | ✅ MIGRATED |
+| Feature | Component | Hook | Service | Status |
+|---------|-----------|------|---------|---------|
+| Login | `LoginPage.tsx` | `useContractAuth` | `authService.login()` | ✅ |
+| Dashboard | `dashboard/SummaryPage.tsx` | `useDashboard` | `dashboardService.getSummary()` | ⚠️ |
+| Stations | `dashboard/StationsPage.tsx` | `useContractStations` | `stationsService.getStations()` | ✅ |
+| Users | `dashboard/UsersPage.tsx` | `useUsers` | `usersService.getUsers()` | ⚠️ |
+| Reports | `dashboard/ReportsPage.tsx` | `useReports` | `reportsService.getSales()` | ⚠️ |
 
 ### 👨‍💼 Manager Journey
+**OpenAPI Prefix**: `/pumps`, `/nozzles`, `/readings`, `/fuel-prices`  
+**Auth**: Requires `x-tenant-id` header  
+**Journey Doc**: `docs/journeys/MANAGER.md`
 
-**Journey File**: `docs/journeys/MANAGER.md`
-**OpenAPI Paths**: `/pumps`, `/nozzles`, `/readings`, `/fuel-prices`
-
-| Journey Step | Frontend Component | API Service | Contract Status |
-|--------------|-------------------|-------------|-----------------|
-| Login | `LoginPage.tsx` | `authService.login()` | ✅ ALIGNED |
-| Manage Pumps | `dashboard/PumpsPage.tsx` | `pumpsService.getPumps()` | ✅ MIGRATED |
-| Manage Nozzles | `dashboard/NozzlesPage.tsx` | `nozzlesService.getNozzles()` | ✅ MIGRATED |
-| Record Readings | `dashboard/NewReadingPage.tsx` | `readingsService.createReading()` | ✅ MIGRATED |
-| Set Fuel Prices | `dashboard/FuelPricesPage.tsx` | `fuelPricesService.createPrice()` | ✅ MIGRATED |
+| Feature | Component | Hook | Service | Status |
+|---------|-----------|------|---------|---------|
+| Pumps | `dashboard/PumpsPage.tsx` | `usePumps` | `pumpsService.getPumps()` | ⚠️ |
+| Nozzles | `dashboard/NozzlesPage.tsx` | `useNozzles` | `nozzlesService.getNozzles()` | ⚠️ |
+| Readings | `dashboard/NewReadingPage.tsx` | `useReadings` | `readingsService.create()` | ⚠️ |
+| Fuel Prices | `dashboard/FuelPricesPage.tsx` | `useFuelPrices` | `fuelPricesService.create()` | ⚠️ |
 
 ### 👷 Attendant Journey
+**OpenAPI Prefix**: `/attendant/*`  
+**Auth**: Requires `x-tenant-id` header  
+**Journey Doc**: `docs/journeys/ATTENDANT.md`
 
-**Journey File**: `docs/journeys/ATTENDANT.md`
-**OpenAPI Paths**: `/attendant/*`
+| Feature | Component | Hook | Service | Status |
+|---------|-----------|------|---------|---------|
+| Stations | `dashboard/StationsPage.tsx` | `useAttendantStations` | `attendantService.getStations()` | ✅ |
+| Cash Reports | Custom Component | `useCashReports` | `attendantService.createCashReport()` | ✅ |
+| Alerts | `dashboard/AlertsPage.tsx` | `useAttendantAlerts` | `attendantService.getAlerts()` | ✅ |
 
-| Journey Step | Frontend Component | API Service | Contract Status |
-|--------------|-------------------|-------------|-----------------|
-| Login | `LoginPage.tsx` | `authService.login()` | ✅ ALIGNED |
-| View Stations | `dashboard/StationsPage.tsx` | `attendantService.getAssignedStations()` | ✅ ALIGNED |
-| Record Readings | `dashboard/NewReadingPage.tsx` | `readingsService.createReading()` | ✅ MIGRATED |
-| Submit Cash Report | Custom Component | `attendantService.createCashReport()` | ✅ ALIGNED |
-| View Alerts | `dashboard/AlertsPage.tsx` | `attendantService.getAlerts()` | ✅ ALIGNED |
+---
 
-## Migration Status
+## Contract-First Development Process
 
-### Core Services (✅ Implemented)
-- `AuthService` - Authentication & token management
-- `SuperAdminService` - Platform administration
-- `AttendantService` - Attendant-specific operations
-- `StationsService` - Station management
-- `PumpsService` - Pump management
-- `NozzlesService` - Nozzle management
-- `ReadingsService` - Reading operations
-- `FuelPricesService` - Price management
-- `UsersService` - User management
-- `ReportsService` - Report generation
-- `DashboardService` - Analytics & metrics
+### 1. OpenAPI as Source of Truth
+- All API changes must be reflected in `docs/openapi-spec.yaml` first
+- Frontend types are generated from OpenAPI spec
+- No manual type creation - everything flows from the spec
 
-### Components (✅ Migrated)
-- `UsersPage.tsx` - User management page
-- `NewReadingPage.tsx` - Reading entry page
-- `ReadingEntryForm.tsx` - Reading entry form
-- `FuelPricesPage.tsx` - Fuel prices management page
-- `FuelPriceTable.tsx` - Fuel prices table
+### 2. Type Generation Workflow
+```bash
+# When OpenAPI spec changes, regenerate types
+npm run generate-types  # (to be implemented)
+```
 
-### Optimization (✅ Implemented)
-- Centralized React Query configuration
-- Optimized caching strategies
-- Centralized error handling
-- Enhanced API client with better error handling
-- Improved performance with proper timeout settings
+### 3. Service Implementation Pattern
+```typescript
+// All services follow this pattern
+export class ExampleService {
+  async getItems(): Promise<Item[]> {
+    return contractClient.getArray<Item>('/items', 'items');
+  }
+  
+  async createItem(data: CreateItemRequest): Promise<Item> {
+    return contractClient.post<Item>('/items', data);
+  }
+}
+```
 
-### Documentation (✅ Implemented)
-- Comprehensive README
-- Documentation Map
-- Development Accountability Checklist
-- AI Agent Development Process
-- Updated Documentation Reference System
+### 4. Hook Implementation Pattern
+```typescript
+// All hooks follow React Query + contract service pattern
+export const useItems = () => {
+  return useQuery({
+    queryKey: ['items'],
+    queryFn: () => itemsService.getItems(),
+  });
+};
+```
 
-## Best Practices
+---
 
-1. **Always Use the Service Layer**: Never make direct API calls from components
-2. **Handle Response Formats Consistently**: Use the extraction helpers
-3. **Type Everything**: Always define and use proper types
-4. **Use React Query for Data Fetching**: Always use React Query hooks in components
-5. **Handle Errors Properly**: Use the centralized error handler
-6. **Ensure Tenant Context**: Always include tenant headers for authenticated requests
-7. **Use Appropriate Caching**: Apply the right caching strategy for each data type
-8. **Document Changes**: Update documentation and add JSDoc comments
-9. **Follow the Accountability Checklist**: Complete all items in the checklist
+## File Organization
 
-## Documentation
+### ✅ Current Structure (Keep)
+```
+src/
+├── api/
+│   ├── api-contract.ts           # Single contract file (NEEDS REFACTORING)
+│   ├── contract-client.ts        # Contract-compliant client
+│   └── contract/
+│       ├── auth.service.ts       # ✅ Implemented
+│       ├── stations.service.ts   # ✅ Implemented
+│       ├── attendant.service.ts  # ✅ Implemented
+│       ├── superadmin.service.ts # ✅ Implemented
+│       ├── manager.service.ts    # ✅ Implemented
+│       ├── owner.service.ts      # ✅ Implemented
+│       └── [other].service.ts    # ⚠️ To implement
+├── hooks/
+│   ├── useContractAuth.ts        # ✅ Implemented
+│   ├── useContractStations.ts    # ✅ Implemented
+│   └── useContract[Entity].ts    # ⚠️ To implement
+└── pages/
+    ├── LoginPage.tsx             # ✅ Contract-aligned
+    ├── dashboard/                # ⚠️ Needs migration
+    └── superadmin/               # ✅ Contract-aligned
+```
 
-For detailed information, refer to:
-- [README](./README.md) - Main documentation entry point
-- [Documentation Map](./DOCUMENTATION_MAP.md) - Code-documentation relationships
-- [API Integration Guide](./API_INTEGRATION_GUIDE.md) - API integration patterns
-- [Documentation Reference System](./DOCUMENTATION_REFERENCE_SYSTEM.md) - How documentation works
-- [Development Accountability Checklist](./DEVELOPMENT_ACCOUNTABILITY_CHECKLIST.md) - Checklist for all changes
-- [AI Agent Development Process](./AI_AGENT_DEVELOPMENT_PROCESS.md) - Process for AI agents
+### 🗑️ Files to Remove (Redundant)
+```
+src/api/
+├── auth.ts                      # Replace with contract/auth.service.ts
+├── stations.ts                  # Replace with contract/stations.service.ts
+├── pumps.ts                     # Replace with contract/pumps.service.ts
+├── nozzles.ts                   # Replace with contract/nozzles.service.ts
+├── [legacy api files]           # Replace with contract services
+└── client.ts                    # Keep as base, but contract-client.ts is primary
+```
 
-## Maintenance
+---
 
-This document is updated when:
-- OpenAPI spec changes
-- Journey documents are modified  
-- New services are implemented
-- Contract drift is detected
-- Development process changes
+## Migration Checklist
 
-**Last Updated**: Documentation and Process Consolidation
-**Updated By**: Development Team
-**Next Review**: Quarterly
+### Phase 1: Core Services (Completed)
+- [x] AuthService - Contract aligned
+- [x] StationsService - Contract aligned
+- [x] SuperAdminService - Contract aligned
+- [x] AttendantService - Contract aligned
+- [x] ManagerService - Contract aligned
+- [x] OwnerService - Contract aligned
+
+### Phase 2: Feature Services (In Progress)
+- [ ] DashboardService - Needs migration
+- [ ] UsersService - Needs migration
+- [ ] PumpsService - From legacy to contract
+- [ ] NozzlesService - From legacy to contract
+- [ ] ReadingsService - From legacy to contract
+- [ ] FuelPricesService - From legacy to contract
+- [ ] CreditorsService - From legacy to contract
+- [ ] ReportsService - From legacy to contract
+
+### Phase 3: Hook Migration (Pending)
+- [ ] Migrate all `use*` hooks to use contract services
+- [ ] Remove dependencies on legacy API files
+- [ ] Update all components to use contract hooks
+
+### Phase 4: Component Updates (Pending)
+- [ ] Update all forms to handle optional fields per OpenAPI spec
+- [ ] Add proper loading states and error handling
+- [ ] Implement contract-compliant validation
+
+### Phase 5: Refactoring (Critical)
+- [ ] Split `api-contract.ts` into focused type modules
+- [ ] Implement automated type generation from OpenAPI spec
+- [ ] Remove legacy API files after migration
+- [ ] Clean up redundant type aliases
+
+---
+
+## Development Guidelines
+
+### 1. Never Modify OpenAPI Spec in Frontend
+- OpenAPI spec is owned by backend team
+- Frontend requests changes via backend team
+- Document mismatches in `docs/FRONTEND_BACKEND_MISMATCHES.md`
+
+### 2. Contract-First Development
+- Always implement from OpenAPI spec down
+- No manual type definitions
+- All services must use `contractClient`
+
+### 3. Error Handling Standards
+```typescript
+// All contract services use standardized error handling
+try {
+  const data = await contractClient.get<T>('/endpoint');
+  return data;
+} catch (error) {
+  // Contract client handles error transformation
+  throw error;
+}
+```
+
+### 4. Authentication & Tenant Context
+```typescript
+// Regular users (owner, manager, attendant)
+headers: {
+  'Authorization': 'Bearer <token>',
+  'x-tenant-id': '<tenant-uuid>'
+}
+
+// SuperAdmin
+headers: {
+  'Authorization': 'Bearer <token>'
+  // No tenant header
+}
+```
+
+---
+
+## Maintenance Workflow
+
+### When OpenAPI Spec Changes
+1. Backend team updates `docs/openapi-spec.yaml`
+2. Frontend team runs type generation (when implemented)
+3. Update affected contract services
+4. Update affected hooks and components
+5. Test all persona journeys
+
+### When Frontend Needs New API
+1. Frontend team documents requirement
+2. Backend team updates OpenAPI spec
+3. Frontend implements from updated spec
+4. No manual type creation
+
+### Regular Maintenance
+- Review `docs/FRONTEND_BACKEND_MISMATCHES.md` monthly
+- Ensure all legacy API files are migrated
+- Monitor contract compliance across all services
+- Update this brain document when architecture changes
+
+---
+
+## Contract Compliance Status
+
+### ✅ Fully Compliant
+- Authentication (login/logout)
+- SuperAdmin operations
+- Station management
+- Attendant operations
+- Manager operations (new)
+- Owner operations (new)
+
+### ⚠️ Partially Compliant
+- Dashboard operations (uses legacy API)
+- User management (uses legacy API)
+- Reports (uses legacy API)
+
+### ❌ Not Compliant (CRITICAL)
+- **Pump management** - Schema mismatch (field names), legacy API only
+- **Nozzle management** - Schema mismatch (fuel types), legacy API only  
+- **Reading operations** - No contract service, legacy API only
+- **Fuel price management** - No contract service, legacy API only
+- **Mixed API Usage** - Components using both contract and legacy APIs
+
+---
+
+## Key References
+
+- **OpenAPI Spec**: `docs/openapi-spec.yaml` (Backend owned)
+- **API Contract**: `src/api/api-contract.ts` (Generated from OpenAPI)
+- **Contract Client**: `src/api/contract-client.ts` (HTTP wrapper)
+- **Journey Docs**: `docs/journeys/*.md` (Persona requirements)
+- **Mismatch Log**: `docs/FRONTEND_BACKEND_MISMATCHES.md` (Issues tracking)
+
+---
+
+## Next Steps (PRIORITIZED)
+
+### 🔥 URGENT (This Sprint)
+1. **Fix Schema Mismatches**: Align Pump/Nozzle schemas with OpenAPI spec
+2. **Refactor api-contract.ts**: Split into focused type modules (CRITICAL - 583+ lines)
+3. **Complete Core Service Migration**: Finish Pumps, Nozzles, Readings services
+
+### 📋 HIGH PRIORITY (Next Sprint)  
+4. **Implement Type Generation**: Add automated type generation from OpenAPI spec
+5. **Update All Hooks**: Migrate remaining hooks to use contract services
+6. **Component Audit**: Update all forms for contract compliance
+
+### 🎯 MEDIUM PRIORITY (Following Sprint)
+7. **E2E Testing**: Validate all persona journeys work end-to-end
+8. **Performance Optimization**: Implement caching strategies
+9. **Documentation**: Complete migration of all docs to contract-first approach
+
+**Last Updated**: Contract alignment phase - Type compatibility fixes  
+**Next Review**: After completing service migration and api-contract refactoring
+
+---
+
+*This document is the single source of truth for frontend architecture. All development decisions should reference this guide.*
