@@ -1,10 +1,10 @@
+
 /**
  * @file components/stations/FuelPricesInfo.tsx
  * @description Simplified component to display fuel prices for a station
  */
 import { useHasFuelPrices } from '@/hooks/api/useFuelPrices';
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { formatPrice } from '@/utils/formatters';
 
 interface FuelPricesInfoProps {
   stationId: string;
@@ -33,17 +33,7 @@ export function FuelPricesInfo({ stationId }: FuelPricesInfoProps) {
   // Group prices by fuel type and get the latest price for each type
   const pricesByType: Record<string, any> = {};
   
-  // Extract prices array from the response object
-  let pricesArray = [];
-  if (Array.isArray(fuelPrices)) {
-    pricesArray = fuelPrices;
-  } else if (fuelPrices?.data?.prices && Array.isArray(fuelPrices.data.prices)) {
-    pricesArray = fuelPrices.data.prices;
-  } else if (fuelPrices?.prices && Array.isArray(fuelPrices.prices)) {
-    pricesArray = fuelPrices.prices;
-  }
-  
-  pricesArray.forEach(price => {
+  fuelPrices.forEach(price => {
     if (price && price.fuelType && price.price !== undefined) {
       if (!pricesByType[price.fuelType] || 
           new Date(price.validFrom || 0) > new Date(pricesByType[price.fuelType].validFrom || 0)) {

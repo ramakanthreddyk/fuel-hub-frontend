@@ -10,10 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 export interface FuelPrice {
   id: string;
   stationId: string;
+  stationName?: string;
   fuelType: string;
   price: number;
+  costPrice?: number;
   validFrom: string;
-  isActive: boolean;
+  isActive?: boolean;
+  createdAt: string;
 }
 
 export interface FuelPriceValidation {
@@ -29,10 +32,41 @@ export interface FuelPriceValidation {
 export const useFuelPrices = (stationId?: string) => {
   return useQuery({
     queryKey: ['fuel-prices', stationId],
-    queryFn: async () => {
+    queryFn: async (): Promise<FuelPrice[]> => {
       const params = stationId ? `?stationId=${stationId}` : '';
       const response = await apiClient.get(`/fuel-prices${params}`);
-      return Array.isArray(response.data) ? response.data : [];
+      
+      console.log('[FUEL-PRICES-HOOK] Raw response:', response.data);
+      
+      // Handle the API response structure: {success: true, data: {prices: [...]}}
+      let prices: any[] = [];
+      
+      if (response.data?.success && response.data?.data?.prices) {
+        prices = response.data.data.prices;
+      } else if (response.data?.data?.prices) {
+        prices = response.data.data.prices;
+      } else if (response.data?.prices) {
+        prices = response.data.prices;
+      } else if (Array.isArray(response.data)) {
+        prices = response.data;
+      } else {
+        prices = [];
+      }
+      
+      console.log('[FUEL-PRICES-HOOK] Processed prices:', prices);
+      
+      // Convert to proper format with type safety
+      return prices.map((price: any) => ({
+        id: price.id || '',
+        stationId: price.stationId || price.station_id || '',
+        stationName: price.stationName || price.station_name || '',
+        fuelType: price.fuelType || price.fuel_type || '',
+        price: parseFloat(price.price) || 0,
+        costPrice: price.costPrice ? parseFloat(price.costPrice) : undefined,
+        validFrom: price.validFrom || price.valid_from || new Date().toISOString(),
+        isActive: price.isActive !== false,
+        createdAt: price.createdAt || price.created_at || new Date().toISOString()
+      }));
     },
     enabled: true,
   });
@@ -53,7 +87,18 @@ export const useFuelPriceValidation = (stationId?: string) => {
       try {
         // Get fuel prices for the station and check if they exist
         const response = await apiClient.get(`/fuel-prices?stationId=${stationId}`);
-        const prices = Array.isArray(response.data) ? response.data : [];
+        let prices: any[] = [];
+        
+        if (response.data?.success && response.data?.data?.prices) {
+          prices = response.data.data.prices;
+        } else if (response.data?.data?.prices) {
+          prices = response.data.data.prices;
+        } else if (response.data?.prices) {
+          prices = response.data.prices;
+        } else if (Array.isArray(response.data)) {
+          prices = response.data;
+        }
+        
         const hasValidPrices = prices.length > 0;
         
         return {
