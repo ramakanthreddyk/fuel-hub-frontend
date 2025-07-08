@@ -52,8 +52,24 @@ export const useFuelPriceValidation = (stationId?: string) => {
         };
       }
       
-      const response = await apiClient.get(`/fuel-prices/validation/${stationId}`);
-      return response.data;
+      try {
+        // Get fuel prices for the station and check if they exist
+        const response = await apiClient.get(`/fuel-prices?stationId=${stationId}`);
+        const prices = response.data?.prices || response.data || [];
+        const hasValidPrices = Array.isArray(prices) && prices.length > 0;
+        
+        return {
+          stationId,
+          missingPrices: hasValidPrices ? [] : [{ fuelType: 'all', message: 'No fuel prices set' }],
+          hasValidPrices
+        };
+      } catch (error) {
+        return {
+          stationId,
+          missingPrices: [{ fuelType: 'all', message: 'Unable to check fuel prices' }],
+          hasValidPrices: false
+        };
+      }
     },
     enabled: !!stationId,
   });

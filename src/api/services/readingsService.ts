@@ -83,8 +83,10 @@ export const readingsService = {
 
   async getLatestReading(nozzleId: string): Promise<Reading | null> {
     try {
-      const response = await apiClient.get(`/nozzle-readings/latest/${nozzleId}`);
-      return response.data;
+      // Get the latest reading by querying with nozzleId and limit=1
+      const response = await apiClient.get(`/nozzle-readings?nozzleId=${nozzleId}&limit=1`);
+      const readings = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+      return readings.length > 0 ? readings[0] : null;
     } catch (error) {
       console.warn('Failed to get latest reading:', error);
       return null;
