@@ -22,10 +22,10 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Sales Trend (Last 7 Days)</CardTitle>
+          <CardTitle className="text-sm sm:text-base">Sales Trend (Last 7 Days)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px] bg-muted animate-pulse rounded" />
+          <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-muted animate-pulse rounded" />
         </CardContent>
       </Card>
     );
@@ -43,15 +43,25 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
 
   return (
     <Card className="bg-gradient-to-br from-white to-purple-50 border-purple-200">
-      <CardHeader>
-        <CardTitle className="text-purple-700">Daily Sales Trend</CardTitle>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm sm:text-base lg:text-lg text-purple-700">Daily Sales Trend</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
+      <CardContent className="pt-2">
+        <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] lg:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <XAxis dataKey="date" />
-              <YAxis />
+            <LineChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+              <XAxis 
+                dataKey="date" 
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis 
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                width={40}
+              />
               <ChartTooltip 
                 content={<ChartTooltipContent />}
                 formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Sales']}
@@ -60,8 +70,8 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
                 type="monotone"
                 dataKey="amount"
                 stroke={chartConfig.amount.color}
-                strokeWidth={3}
-                dot={{ fill: chartConfig.amount.color, strokeWidth: 2, r: 4 }}
+                strokeWidth={2}
+                dot={{ fill: chartConfig.amount.color, strokeWidth: 1, r: 3 }}
               />
             </LineChart>
           </ResponsiveContainer>

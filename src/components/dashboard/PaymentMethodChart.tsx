@@ -28,10 +28,10 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Payment Methods</CardTitle>
+          <CardTitle className="text-sm sm:text-base">Payment Methods</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px] bg-muted animate-pulse rounded" />
+          <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-muted animate-pulse rounded" />
         </CardContent>
       </Card>
     );
@@ -52,20 +52,21 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
 
   return (
     <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200">
-      <CardHeader>
-        <CardTitle className="text-blue-700">Payment Method Breakdown</CardTitle>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm sm:text-base lg:text-lg text-blue-700">Payment Methods</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
+      <CardContent className="pt-2">
+        <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] lg:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                outerRadius={100}
+                outerRadius="70%"
                 dataKey="value"
                 label={({ name, percentage }) => `${name}: ${percentage}%`}
+                labelStyle={{ fontSize: '10px' }}
               >
                 {chartData.map((entry, index) => (
                   <Cell 

@@ -1,3 +1,4 @@
+
 /**
  * @file FuelPricesPage.tsx
  * @description Fuel prices management page
@@ -35,12 +36,12 @@ export default function FuelPricesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <PageHeader
         title="Fuel Prices"
         description="Manage and monitor fuel pricing across all stations"
         actions={
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex items-center gap-2">
             <TooltipWrapper content="Refresh fuel prices">
               <Button 
                 onClick={handleRefresh}
@@ -48,8 +49,9 @@ export default function FuelPricesPage() {
                 size="sm"
                 disabled={isLoading}
                 aria-label="Refresh fuel prices"
+                className="flex-shrink-0"
               >
-                <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''} sm:mr-2`} />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
             </TooltipWrapper>
@@ -62,17 +64,17 @@ export default function FuelPricesPage() {
                 variant={showForm ? 'outline' : 'default'}
                 size="sm"
                 aria-label={showForm ? 'Cancel price update' : 'Update fuel prices'}
+                className="flex-shrink-0"
               >
                 {showForm ? (
                   <>
-                    <X className="mr-2 h-4 w-4" />
+                    <X className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">Cancel</span>
                   </>
                 ) : (
                   <>
-                    <Plus className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Update Prices</span>
-                    <span className="sm:hidden">Add</span>
+                    <Plus className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Add</span>
                   </>
                 )}
               </Button>

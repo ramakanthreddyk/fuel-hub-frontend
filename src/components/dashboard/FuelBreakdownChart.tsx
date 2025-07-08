@@ -21,10 +21,10 @@ export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Fuel Sales Breakdown</CardTitle>
+          <CardTitle className="text-sm sm:text-base">Fuel Sales Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px] bg-muted animate-pulse rounded" />
+          <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-muted animate-pulse rounded" />
         </CardContent>
       </Card>
     );
@@ -43,17 +43,32 @@ export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
 
   return (
     <Card className="bg-gradient-to-br from-white to-green-50 border-green-200">
-      <CardHeader>
-        <CardTitle className="text-green-700">Fuel Sales by Type</CardTitle>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm sm:text-base lg:text-lg text-green-700">Fuel Sales by Type</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
+      <CardContent className="pt-2">
+        <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] lg:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <XAxis dataKey="fuelType" />
-              <YAxis />
+            <BarChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+              <XAxis 
+                dataKey="fuelType" 
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis 
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                width={40}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="volume" fill={chartConfig.volume.color} name="Volume (L)" />
+              <Bar 
+                dataKey="volume" 
+                fill={chartConfig.volume.color} 
+                name="Volume (L)"
+                radius={[2, 2, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
