@@ -51,28 +51,28 @@ export interface UpdateReadingRequest {
 
 export const readingsService = {
   async getReadings(): Promise<Reading[]> {
-    const response = await apiClient.get('/readings');
+    const response = await apiClient.get('/nozzle-readings');
     return response.data || [];
   },
 
   async getReading(id: string): Promise<Reading> {
-    const response = await apiClient.get(`/readings/${id}`);
+    const response = await apiClient.get(`/nozzle-readings/${id}`);
     return response.data;
   },
 
   async createReading(data: CreateReadingRequest): Promise<Reading> {
-    const response = await apiClient.post('/readings', data);
+    const response = await apiClient.post('/nozzle-readings', data);
     return response.data;
   },
 
   async updateReading(id: string, data: UpdateReadingRequest): Promise<Reading> {
-    const response = await apiClient.put(`/readings/${id}`, data);
+    const response = await apiClient.put(`/nozzle-readings/${id}`, data);
     return response.data;
   },
 
   async getLatestReading(nozzleId: string): Promise<Reading | null> {
     try {
-      const response = await apiClient.get(`/readings/latest/${nozzleId}`);
+      const response = await apiClient.get(`/nozzle-readings/latest/${nozzleId}`);
       return response.data;
     } catch (error) {
       console.warn('Failed to get latest reading:', error);
@@ -82,7 +82,7 @@ export const readingsService = {
 
   async canCreateReading(nozzleId: string): Promise<{ canCreate: boolean; reason?: string; missingPrice?: boolean }> {
     try {
-      const response = await apiClient.get(`/readings/can-create/${nozzleId}`);
+      const response = await apiClient.get(`/nozzle-readings/can-create/${nozzleId}`);
       return response.data;
     } catch (error) {
       console.warn('Failed to check reading creation:', error);
