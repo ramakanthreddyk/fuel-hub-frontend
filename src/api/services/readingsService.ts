@@ -51,12 +51,14 @@ export interface UpdateReadingRequest {
 
 export const readingsService = {
   async getReadings(): Promise<Reading[]> {
+    console.log('[READINGS-SERVICE] Making API call to /nozzle-readings');
     const response = await apiClient.get('/nozzle-readings');
-    // Handle standard response format: {success: true, data: {readings: [...]}}
-    if (response.data?.data?.readings && Array.isArray(response.data.data.readings)) {
-      return response.data.data.readings;
-    }
-    return Array.isArray(response.data) ? response.data : [];
+    console.log('[READINGS-SERVICE] Response received:', response.data);
+    
+    // With centralized response handling, data should already be extracted
+    const readings = Array.isArray(response.data) ? response.data : [];
+    console.log('[READINGS-SERVICE] Final readings:', readings);
+    return readings;
   },
 
   async getReading(id: string): Promise<Reading> {

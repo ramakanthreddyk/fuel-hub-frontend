@@ -14,7 +14,10 @@ import { alertsService } from '@/api/services';
 export const useReadings = () => {
   return useQuery({
     queryKey: ['readings'],
-    queryFn: () => readingsService.getReadings(),
+    queryFn: () => {
+      console.log('[USE-READINGS] Fetching readings...');
+      return readingsService.getReadings();
+    },
     staleTime: 60000, // 1 minute
     retry: 2
   });
