@@ -1,8 +1,7 @@
+
 /**
  * @file FuelPriceTable.tsx
- * @description Table component for displaying fuel prices
- * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
- * @see docs/journeys/MANAGER.md - Manager journey for setting fuel prices
+ * @description Table component for displaying fuel prices with dialog accessibility
  */
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -103,7 +102,11 @@ export function FuelPriceTable() {
     }
   };
 
-  const getStationName = (stationId: string) => {
+  const getStationName = (stationId: string, stationName?: string) => {
+    // First try to use the stationName from the price object
+    if (stationName) return stationName;
+    
+    // Fallback to looking up in stations array
     const station = stations?.find(s => s.id === stationId);
     return station?.name || 'Unknown Station';
   };
@@ -161,7 +164,7 @@ export function FuelPriceTable() {
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{getStationName(price.stationId)}</span>
+                          <span className="font-medium">{getStationName(price.stationId, price.stationName)}</span>
                         </div>
                       </td>
                       <td className="p-3">
@@ -203,7 +206,7 @@ export function FuelPriceTable() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Delete Fuel Price</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to delete this fuel price for {price.fuelType} at {getStationName(price.stationId)}? This action cannot be undone.
+                                  Are you sure you want to delete this fuel price for {price.fuelType} at {getStationName(price.stationId, price.stationName)}? This action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -233,7 +236,7 @@ export function FuelPriceTable() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">{getStationName(price.stationId)}</span>
+                    <span className="font-medium text-sm">{getStationName(price.stationId, price.stationName)}</span>
                   </div>
                   <Badge className={getFuelTypeColor(price.fuelType)}>
                     {price.fuelType.charAt(0).toUpperCase() + price.fuelType.slice(1)}
@@ -276,7 +279,7 @@ export function FuelPriceTable() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete Fuel Price</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to delete this fuel price for {price.fuelType} at {getStationName(price.stationId)}? This action cannot be undone.
+                          Are you sure you want to delete this fuel price for {price.fuelType} at {getStationName(price.stationId, price.stationName)}? This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
