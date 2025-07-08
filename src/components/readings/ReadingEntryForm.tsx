@@ -316,25 +316,43 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                 />
               </div>
 
-              {/* Nozzle Info Panel */}
+              {/* Enhanced Nozzle Info Panel */}
               {selectedNozzleData && (
-                <div className="p-4 bg-gray-50 rounded-lg border">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600">Fuel Type:</span>
-                      <span className="ml-2 font-medium text-gray-900">{selectedNozzleData.fuelType}</span>
+                <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Nozzle Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Fuel Type:</span>
+                        <span className="font-semibold text-gray-900 capitalize">{selectedNozzleData.fuelType}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Nozzle Number:</span>
+                        <span className="font-semibold text-gray-900">#{selectedNozzleData.nozzleNumber}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Status:</span>
+                        <span className="font-semibold text-gray-900 capitalize">{selectedNozzleData.status}</span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-gray-600">Previous Reading:</span>
-                      <span className="ml-2 font-medium text-gray-900">{latestReading?.reading || 0} L</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Nozzle:</span>
-                      <span className="ml-2 font-medium text-gray-900">#{selectedNozzleData.nozzleNumber}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Status:</span>
-                      <span className="ml-2 font-medium text-gray-900 capitalize">{selectedNozzleData.status}</span>
+                    <div className="space-y-3">
+                      <div className="p-4 bg-white rounded-lg border border-gray-200">
+                        <div className="text-center">
+                          <div className="text-sm text-gray-600 mb-1">Previous Reading</div>
+                          <div className="text-2xl font-bold text-blue-600">{latestReading?.reading || 0} L</div>
+                          {latestReading?.recordedAt && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {new Date(latestReading.recordedAt).toLocaleDateString()} at{' '}
+                              {new Date(latestReading.recordedAt).toLocaleTimeString()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {latestReading && (
+                        <div className="text-xs text-gray-600 bg-yellow-50 p-2 rounded border border-yellow-200">
+                          ⚠️ New reading must be greater than {latestReading.reading} L
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

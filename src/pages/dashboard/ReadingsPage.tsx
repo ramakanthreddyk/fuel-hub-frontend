@@ -88,10 +88,16 @@ export default function ReadingsPage() {
         title="Pump Readings"
         description="Record and monitor fuel pump readings across all stations"
         actions={
-          <Button onClick={() => navigate('/dashboard/readings/new')}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Reading
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/dashboard/readings/new')} variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              Quick Record
+            </Button>
+            <Button onClick={() => navigate('/dashboard/nozzles')}>
+              <Plus className="mr-2 h-4 w-4" />
+              Record Reading
+            </Button>
+          </div>
         }
       />
 
