@@ -31,7 +31,7 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
           <CardTitle className="text-sm sm:text-base">Payment Methods</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-muted animate-pulse rounded" />
+          <div className="h-[150px] sm:h-[200px] lg:h-[250px] bg-muted animate-pulse rounded" />
         </CardContent>
       </Card>
     );
@@ -56,17 +56,16 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
         <CardTitle className="text-sm sm:text-base lg:text-lg text-blue-700">Payment Methods</CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
-        <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] lg:h-[300px]">
+        <ChartContainer config={chartConfig} className="h-[150px] sm:h-[200px] lg:h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                outerRadius="70%"
+                outerRadius="60%"
                 dataKey="value"
                 label={({ name, percentage }) => `${name}: ${percentage}%`}
-                labelStyle={{ fontSize: '10px' }}
               >
                 {chartData.map((entry, index) => (
                   <Cell 

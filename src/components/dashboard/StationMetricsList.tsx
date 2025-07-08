@@ -64,16 +64,25 @@ export function StationMetricsList() {
       </CardHeader>
       <CardContent className="p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {stationMetrics.slice(0, 8).map((station) => (
-            <StationMetricsCard
-              key={station.id}
-              station={station}
-              onClick={() => {
-                // TODO: Navigate to station details
-                console.log('Navigate to station:', station.id);
-              }}
-            />
-          ))}
+          {stationMetrics.slice(0, 8).map((stationMetric) => {
+            // Map StationMetric to StationMetrics interface
+            const mappedStation = {
+              id: stationMetric.id,
+              name: stationMetric.name,
+              totalSales: stationMetric.todaySales || 0,
+              totalVolume: stationMetric.monthlySales || 0, // Using monthly sales as volume placeholder
+              activePumps: stationMetric.activePumps,
+              totalPumps: stationMetric.totalPumps,
+              status: stationMetric.status,
+            };
+
+            return (
+              <StationMetricsCard
+                key={stationMetric.id}
+                station={mappedStation}
+              />
+            );
+          })}
         </div>
       </CardContent>
     </Card>
