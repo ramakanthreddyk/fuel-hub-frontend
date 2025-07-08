@@ -35,7 +35,8 @@ export const useFuelPrices = (stationId?: string) => {
       // Extract prices array from nested response
       return response.data?.prices || response.data || [];
     },
-    enabled: !!stationId,
+    // Enable query even without stationId to get all prices
+    enabled: true,
   });
 };
 
