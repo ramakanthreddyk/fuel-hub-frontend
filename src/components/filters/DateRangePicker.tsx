@@ -1,7 +1,7 @@
 
 /**
  * @file components/filters/DateRangePicker.tsx
- * @description Date range picker component
+ * @description Responsive date range picker component
  */
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -41,25 +41,33 @@ export function DateRangePicker({ value, onChange, placeholder = "Select date ra
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Calendar className="h-4 w-4 text-muted-foreground" />
-      <Input
-        type="date"
-        value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
-        placeholder="Start date"
-        className="w-36"
-      />
-      <span className="text-muted-foreground">to</span>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <Input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          placeholder="Start date"
+          className="w-full sm:w-32 text-xs sm:text-sm"
+        />
+      </div>
+      <span className="text-muted-foreground text-xs sm:text-sm hidden sm:block">to</span>
       <Input
         type="date"
         value={endDate}
         onChange={(e) => setEndDate(e.target.value)}
         placeholder="End date"
-        className="w-36"
+        className="w-full sm:w-32 text-xs sm:text-sm"
       />
-      <Button onClick={handleApply} size="sm">Apply</Button>
-      <Button onClick={handleClear} variant="outline" size="sm">Clear</Button>
+      <div className="flex gap-2 w-full sm:w-auto">
+        <Button onClick={handleApply} size="sm" className="flex-1 sm:flex-none text-xs">
+          Apply
+        </Button>
+        <Button onClick={handleClear} variant="outline" size="sm" className="flex-1 sm:flex-none text-xs">
+          Clear
+        </Button>
+      </div>
     </div>
   );
 }

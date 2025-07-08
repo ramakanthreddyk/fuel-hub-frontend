@@ -24,7 +24,7 @@ export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
           <CardTitle className="text-sm sm:text-base">Fuel Sales Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-muted animate-pulse rounded" />
+          <div className="h-[140px] sm:h-[200px] md:h-[240px] lg:h-[280px] bg-muted animate-pulse rounded" />
         </CardContent>
       </Card>
     );
@@ -47,27 +47,28 @@ export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
         <CardTitle className="text-sm sm:text-base lg:text-lg text-green-700">Fuel Sales by Type</CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
-        <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] lg:h-[300px]">
+        <ChartContainer config={chartConfig} className="h-[140px] sm:h-[200px] md:h-[240px] lg:h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+            <BarChart data={chartData} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
               <XAxis 
                 dataKey="fuelType" 
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 8 }}
                 axisLine={false}
                 tickLine={false}
+                interval={0}
               />
               <YAxis 
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 8 }}
                 axisLine={false}
                 tickLine={false}
-                width={40}
+                width={30}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar 
                 dataKey="volume" 
                 fill={chartConfig.volume.color} 
                 name="Volume (L)"
-                radius={[2, 2, 0, 0]}
+                radius={[1, 1, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>

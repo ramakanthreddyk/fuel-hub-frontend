@@ -25,7 +25,7 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
           <CardTitle className="text-sm sm:text-base">Sales Trend (Last 7 Days)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-muted animate-pulse rounded" />
+          <div className="h-[120px] sm:h-[180px] md:h-[220px] lg:h-[260px] bg-muted animate-pulse rounded" />
         </CardContent>
       </Card>
     );
@@ -47,20 +47,21 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
         <CardTitle className="text-sm sm:text-base lg:text-lg text-purple-700">Daily Sales Trend</CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
-        <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] lg:h-[300px]">
+        <ChartContainer config={chartConfig} className="h-[120px] sm:h-[180px] md:h-[220px] lg:h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+            <LineChart data={chartData} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
               <XAxis 
                 dataKey="date" 
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 8 }}
                 axisLine={false}
                 tickLine={false}
+                interval={0}
               />
               <YAxis 
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 8 }}
                 axisLine={false}
                 tickLine={false}
-                width={40}
+                width={30}
               />
               <ChartTooltip 
                 content={<ChartTooltipContent />}
@@ -71,7 +72,7 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
                 dataKey="amount"
                 stroke={chartConfig.amount.color}
                 strokeWidth={2}
-                dot={{ fill: chartConfig.amount.color, strokeWidth: 1, r: 3 }}
+                dot={{ fill: chartConfig.amount.color, strokeWidth: 1, r: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
