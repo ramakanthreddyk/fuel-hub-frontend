@@ -32,10 +32,8 @@ export const useFuelPrices = (stationId?: string) => {
     queryFn: async () => {
       const params = stationId ? `?stationId=${stationId}` : '';
       const response = await apiClient.get(`/fuel-prices${params}`);
-      // Extract prices array from nested response
-      return response.data?.prices || response.data || [];
+      return Array.isArray(response.data) ? response.data : [];
     },
-    // Enable query even without stationId to get all prices
     enabled: true,
   });
 };
@@ -55,17 +53,7 @@ export const useFuelPriceValidation = (stationId?: string) => {
       try {
         // Get fuel prices for the station and check if they exist
         const response = await apiClient.get(`/fuel-prices?stationId=${stationId}`);
-        
-        // Extract prices array from nested response structure
-        let prices = [];
-        if (Array.isArray(response.data)) {
-          prices = response.data;
-        } else if (response.data?.data?.prices && Array.isArray(response.data.data.prices)) {
-          prices = response.data.data.prices;
-        } else if (response.data?.prices && Array.isArray(response.data.prices)) {
-          prices = response.data.prices;
-        }
-        
+        const prices = Array.isArray(response.data) ? response.data : [];
         const hasValidPrices = prices.length > 0;
         
         return {
@@ -112,10 +100,7 @@ export const useDeleteFuelPrice = () => {
 };
 
 export const useHasFuelPrices = (stationId: string) => {
-  const { data, isLoading } = useFuelPrices(stationId);
-  
-  // Data should already be extracted as array from useFuelPrices
-  const fuelPrices = Array.isArray(data) ? data : [];
+  const { data: fuelPrices = [], isLoading } = useFuelPrices(stationId);
   
   return {
     hasFuelPrices: fuelPrices.length > 0,

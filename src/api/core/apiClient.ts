@@ -92,6 +92,22 @@ apiClient.interceptors.response.use(
     if (response.data) {
       response.data = convertKeysToCamelCase(response.data);
     }
+    
+    // Handle standard API response format: {success: true, data: {...}}
+    if (response.data?.success && response.data?.data) {
+      const dataObj = response.data.data;
+      // Check for common array properties and extract them
+      if (dataObj.readings && Array.isArray(dataObj.readings)) {
+        response.data = dataObj.readings;
+      } else if (dataObj.prices && Array.isArray(dataObj.prices)) {
+        response.data = dataObj.prices;
+      } else if (Array.isArray(dataObj)) {
+        response.data = dataObj;
+      } else {
+        response.data = dataObj;
+      }
+    }
+    
     return response;
   },
   async (error) => {
