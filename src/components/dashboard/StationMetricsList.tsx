@@ -9,7 +9,7 @@ export function StationMetricsList() {
 
   if (isLoading) {
     return (
-      <Card className="bg-white border border-gray-200 rounded-xl">
+      <Card className="bg-white border border-gray-200 rounded-xl w-full">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-xl font-semibold text-gray-900">
             <div className="p-2 rounded-lg bg-blue-100">
@@ -30,7 +30,7 @@ export function StationMetricsList() {
 
   if (error || !Array.isArray(stationMetrics) || stationMetrics.length === 0) {
     return (
-      <Card className="bg-white border border-gray-200 rounded-xl">
+      <Card className="bg-white border border-gray-200 rounded-xl w-full">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-xl font-semibold text-gray-900">
             <div className="p-2 rounded-lg bg-blue-100">
@@ -53,7 +53,7 @@ export function StationMetricsList() {
   }
 
   return (
-    <Card className="bg-white border border-gray-200 rounded-xl">
+    <Card className="bg-white border border-gray-200 rounded-xl w-full">
       <CardHeader className="pb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-xl">
         <CardTitle className="flex items-center gap-2 text-xl font-semibold">
           <div className="p-2 rounded-lg bg-white/20">
@@ -62,9 +62,9 @@ export function StationMetricsList() {
           Station Metrics
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {stationMetrics.slice(0, 6).map((station) => (
+      <CardContent className="p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {stationMetrics.slice(0, 8).map((station) => (
             <StationMetricsCard
               key={station.id}
               station={station}

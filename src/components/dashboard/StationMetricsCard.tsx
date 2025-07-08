@@ -31,55 +31,57 @@ export function StationMetricsCard({ station, onClick }: StationMetricsCardProps
 
   return (
     <Card 
-      className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-white border border-gray-200 rounded-xl"
+      className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-white border border-gray-200 rounded-xl w-full"
       onClick={onClick}
     >
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-3 px-4 pt-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-100">
-              <Building2 className="h-5 w-5 text-purple-600" />
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="p-1.5 rounded-lg bg-purple-100 flex-shrink-0">
+              <Building2 className="h-4 w-4 text-purple-600" />
             </div>
-            <CardTitle className="text-lg font-semibold text-gray-900">
+            <CardTitle className="text-base font-semibold text-gray-900 truncate">
               {station.name}
             </CardTitle>
           </div>
-          <Badge className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(station.status)}`}>
+          <Badge className={`px-2 py-1 rounded-full text-xs font-medium border flex-shrink-0 ${getStatusColor(station.status)}`}>
             {station.status}
           </Badge>
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-2 gap-6">
-          <div className="text-center">
-            <div className="text-sm text-gray-500 mb-1">Today</div>
-            <div className="text-2xl font-bold text-green-600">
-              ₹{station.todaySales.toLocaleString()}
+      <CardContent className="px-4 pb-4">
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-2 bg-green-50 rounded-lg">
+              <div className="text-xs text-gray-600 mb-1">Today</div>
+              <div className="text-lg font-bold text-green-600 truncate">
+                ₹{station.todaySales.toLocaleString()}
+              </div>
+            </div>
+            
+            <div className="text-center p-2 bg-blue-50 rounded-lg">
+              <div className="text-xs text-gray-600 mb-1">Pumps</div>
+              <div className="text-lg font-bold text-blue-600">
+                {station.activePumps}/{station.totalPumps}
+              </div>
             </div>
           </div>
-          
-          <div className="text-center">
-            <div className="text-sm text-gray-500 mb-1">Pumps</div>
-            <div className="text-2xl font-bold text-blue-600">
-              {station.activePumps}/{station.totalPumps}
-            </div>
-          </div>
-        </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <div className="text-sm text-gray-600">
-            Monthly: ₹{station.monthlySales.toLocaleString()}
-          </div>
-          <div className={`flex items-center gap-1 text-sm font-medium ${
-            station.salesGrowth >= 0 ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {station.salesGrowth >= 0 ? (
-              <TrendingUp className="h-4 w-4" />
-            ) : (
-              <TrendingDown className="h-4 w-4" />
-            )}
-            {Math.abs(station.salesGrowth)}%
+          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+            <div className="text-xs text-gray-600 truncate">
+              Monthly: ₹{station.monthlySales.toLocaleString()}
+            </div>
+            <div className={`flex items-center gap-1 text-xs font-medium flex-shrink-0 ${
+              station.salesGrowth >= 0 ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {station.salesGrowth >= 0 ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : (
+                <TrendingDown className="h-3 w-3" />
+              )}
+              {Math.abs(station.salesGrowth)}%
+            </div>
           </div>
         </div>
       </CardContent>

@@ -16,19 +16,20 @@ interface ResponsiveGridProps {
 export function ResponsiveGrid({ 
   children, 
   className,
-  cols = { default: 1, md: 2, lg: 3 }
+  cols = { default: 1, sm: 2, md: 2, lg: 3, xl: 4 }
 }: ResponsiveGridProps) {
-  const gridClasses = [
-    `grid gap-4`,
+  const gridClasses = cn(
+    'grid gap-4 w-full',
     cols.default && `grid-cols-${cols.default}`,
     cols.sm && `sm:grid-cols-${cols.sm}`,
     cols.md && `md:grid-cols-${cols.md}`,
     cols.lg && `lg:grid-cols-${cols.lg}`,
     cols.xl && `xl:grid-cols-${cols.xl}`,
-  ].filter(Boolean).join(' ');
+    className
+  );
 
   return (
-    <div className={cn(gridClasses, className)}>
+    <div className={gridClasses}>
       {children}
     </div>
   );

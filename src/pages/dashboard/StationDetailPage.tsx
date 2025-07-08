@@ -1,3 +1,4 @@
+
 /**
  * @file StationDetailPage.tsx
  * @description Station detail page component
@@ -50,40 +51,57 @@ export default function StationDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => navigate('/dashboard/stations')}>
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3 min-w-0">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/dashboard/stations')}
+            className="flex-shrink-0"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Stations
+            <span className="hidden sm:inline">Back to Stations</span>
+            <span className="sm:hidden">Back</span>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{station.name}</h1>
-            <p className="text-muted-foreground">{station.address}</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold truncate">{station.name}</h1>
+            <p className="text-muted-foreground text-sm truncate">{station.address}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(`/dashboard/stations/${stationId}/settings`)}>
+        <div className="flex gap-2 flex-shrink-0">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate(`/dashboard/stations/${stationId}/settings`)}
+            className="flex-1 sm:flex-none"
+          >
             <Settings className="mr-2 h-4 w-4" />
-            Settings
+            <span className="sm:inline">Settings</span>
           </Button>
-          <Button onClick={() => navigate(`/dashboard/pumps/new?stationId=${stationId}`)}>
+          <Button 
+            size="sm"
+            onClick={() => navigate(`/dashboard/pumps/new?stationId=${stationId}`)}
+            className="flex-1 sm:flex-none"
+          >
             <Plus className="mr-2 h-4 w-4" />
-            Add Pump
+            <span className="hidden sm:inline">Add Pump</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
       </div>
 
       {/* Station Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="w-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(station as any).todaySales?.toLocaleString() || '0'}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-xl sm:text-2xl font-bold">₹{(station as any).todaySales?.toLocaleString() || '0'}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               {(station as any).salesGrowth ? 
                 `+${(station as any).salesGrowth}% from yesterday` : 
                 'No growth data available'
@@ -92,27 +110,27 @@ export default function StationDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="w-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Monthly Sales</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(station as any).monthlySales?.toLocaleString() || '0'}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-xl sm:text-2xl font-bold">₹{(station as any).monthlySales?.toLocaleString() || '0'}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Current month performance
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="w-full sm:col-span-2 lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Pumps</CardTitle>
             <Fuel className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pumps.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-xl sm:text-2xl font-bold">{pumps.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Total pumps configured
             </p>
           </CardContent>
@@ -120,11 +138,11 @@ export default function StationDetailPage() {
       </div>
 
       {/* Pumps Grid */}
-      <Card>
+      <Card className="w-full">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <CardTitle>Fuel Pumps</CardTitle>
-            <Button asChild>
+            <Button asChild size="sm">
               <Link to={`/dashboard/stations/${stationId}/pumps`}>
                 View All Pumps
               </Link>
@@ -136,7 +154,7 @@ export default function StationDetailPage() {
             <div className="text-center py-8">
               <Fuel className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">No Pumps Added</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-4 text-sm">
                 Add fuel pumps to start managing this station.
               </p>
               <Button onClick={() => navigate(`/dashboard/pumps/new?stationId=${stationId}`)}>
@@ -145,16 +163,16 @@ export default function StationDetailPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {pumps.slice(0, 6).map((pump) => (
                 <Card key={pump.id} className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">{pump.name}</h3>
-                    <Badge variant={pump.status === 'active' ? 'default' : 'secondary'}>
+                    <h3 className="font-semibold truncate">{pump.name}</h3>
+                    <Badge variant={pump.status === 'active' ? 'default' : 'secondary'} className="flex-shrink-0">
                       {pump.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-muted-foreground mb-3 truncate">
                     Serial: {pump.serialNumber || 'N/A'}
                   </p>
                   <Button asChild variant="outline" size="sm" className="w-full">
