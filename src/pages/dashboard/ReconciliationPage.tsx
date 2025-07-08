@@ -42,7 +42,7 @@ export default function ReconciliationPage() {
       const params = new URLSearchParams();
       if (selectedStation !== 'all') params.append('stationId', selectedStation);
       
-      const response = await apiClient.get(`/reconciliation/list?${params.toString()}`);
+      const response = await apiClient.get(`/reconciliation?${params.toString()}`);
       return response.data.data || response.data || [];
     }
   });
@@ -50,7 +50,7 @@ export default function ReconciliationPage() {
   const triggerReconciliation = useMutation({
     mutationFn: async ({ stationId, date }: { stationId: string; date: string }) => {
       console.log('[RECONCILIATION] Triggering reconciliation for:', { stationId, date });
-      const response = await apiClient.post('/reconciliation/run', { stationId, date });
+      const response = await apiClient.post('/reconciliation', { stationId, date });
       console.log('[RECONCILIATION] Response received:', response.data);
       return response.data;
     },
