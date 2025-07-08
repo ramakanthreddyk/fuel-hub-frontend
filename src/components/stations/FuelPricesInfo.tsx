@@ -33,8 +33,15 @@ export function FuelPricesInfo({ stationId }: FuelPricesInfoProps) {
   // Group prices by fuel type and get the latest price for each type
   const pricesByType: Record<string, any> = {};
   
-  // Ensure fuelPrices is an array before processing
-  const pricesArray = Array.isArray(fuelPrices) ? fuelPrices : [];
+  // Extract prices array from the response object
+  let pricesArray = [];
+  if (Array.isArray(fuelPrices)) {
+    pricesArray = fuelPrices;
+  } else if (fuelPrices?.data?.prices && Array.isArray(fuelPrices.data.prices)) {
+    pricesArray = fuelPrices.data.prices;
+  } else if (fuelPrices?.prices && Array.isArray(fuelPrices.prices)) {
+    pricesArray = fuelPrices.prices;
+  }
   
   pricesArray.forEach(price => {
     if (price && price.fuelType && price.price !== undefined) {

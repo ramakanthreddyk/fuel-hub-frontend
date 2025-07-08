@@ -75,11 +75,21 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
 
   // Process fuel prices to get the latest price for each fuel type
   const processedPrices = React.useMemo(() => {
-    if (!Array.isArray(fuelPrices) || fuelPrices.length === 0) return {};
+    // Extract prices array from the response object
+    let pricesArray = [];
+    if (Array.isArray(fuelPrices)) {
+      pricesArray = fuelPrices;
+    } else if (fuelPrices?.data?.prices && Array.isArray(fuelPrices.data.prices)) {
+      pricesArray = fuelPrices.data.prices;
+    } else if (fuelPrices?.prices && Array.isArray(fuelPrices.prices)) {
+      pricesArray = fuelPrices.prices;
+    }
+    
+    if (pricesArray.length === 0) return {};
     
     const pricesByType: Record<string, any> = {};
     
-    fuelPrices.forEach(price => {
+    pricesArray.forEach(price => {
       if (price && price.fuelType && price.price !== undefined) {
         if (!pricesByType[price.fuelType] || 
             new Date(price.validFrom || 0) > new Date(pricesByType[price.fuelType].validFrom || 0)) {
@@ -195,7 +205,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
                       <div className={cn("w-2 h-2 rounded-full", colors.dot)}></div>
                       <span className="text-sm capitalize font-medium">{fuelType}</span>
                     </div>
-                    <div className="font-bold text-gray-900">₹{price.price?.toFixed(2) || '0.00'}</div>
+                    <div className="font-bold text-gray-900">₹{parseFloat(price.price || 0).toFixed(2)}</div>
                   </div>
                 );
               })}

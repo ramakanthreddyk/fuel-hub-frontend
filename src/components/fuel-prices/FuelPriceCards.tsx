@@ -17,7 +17,7 @@ export function FuelPriceCards() {
   const { data: fuelPrices = [], isLoading, error } = useFuelPrices();
   const { data: stations = [] } = useStations();
 
-  console.log('[FUEL-PRICE-CARDS] Raw fuel prices data:', fuelPrices);
+
 
   if (isLoading) {
     return (
@@ -51,9 +51,16 @@ export function FuelPriceCards() {
     );
   }
 
-  // Ensure fuelPrices is an array
-  const pricesArray = Array.isArray(fuelPrices) ? fuelPrices : [];
-  console.log('[FUEL-PRICE-CARDS] Processed prices array:', pricesArray);
+  // Extract prices array from the response object
+  let pricesArray = [];
+  if (Array.isArray(fuelPrices)) {
+    pricesArray = fuelPrices;
+  } else if (fuelPrices?.data?.prices && Array.isArray(fuelPrices.data.prices)) {
+    pricesArray = fuelPrices.data.prices;
+  } else if (fuelPrices?.prices && Array.isArray(fuelPrices.prices)) {
+    pricesArray = fuelPrices.prices;
+  }
+
   
   // Group prices by station and get the latest price for each fuel type
   const stationPrices = new Map();
@@ -72,7 +79,7 @@ export function FuelPriceCards() {
   
   // Then add the latest price for each fuel type per station
   pricesArray.forEach(price => {
-    console.log('[FUEL-PRICE-CARDS] Processing price:', price);
+
     
     if (!stationPrices.has(price.stationId)) {
       // If station not found in our map, create an entry using stationName from price
@@ -97,7 +104,7 @@ export function FuelPriceCards() {
   
   // Convert map to array for rendering
   const stationPricesArray = Array.from(stationPrices.values());
-  console.log('[FUEL-PRICE-CARDS] Final station prices array:', stationPricesArray);
+
 
   const getFuelTypeColor = (fuelType: string) => {
     switch (fuelType) {
