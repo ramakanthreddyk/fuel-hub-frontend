@@ -35,8 +35,11 @@ export default function ReadingsPage() {
     dismiss: dismissAlert,
   } = usePendingReadings();
 
+  // Ensure readings is always an array
+  const readingsArray = Array.isArray(readings) ? readings : [];
+  
   // Filter readings based on selected filter and pump
-  const filteredReadings = readings?.filter(reading => {
+  const filteredReadings = readingsArray.filter(reading => {
     let dateMatch = true;
     if (filter === 'today') {
       const today = new Date().toDateString();
@@ -47,13 +50,13 @@ export default function ReadingsPage() {
     }
     const pumpMatch = selectedPumpId === 'all' || reading.pumpId === selectedPumpId;
     return dateMatch && pumpMatch;
-  }) || [];
+  });
 
   // Calculate stats
-  const totalReadings = readings?.length || 0;
-  const todayReadings = readings?.filter(r => new Date(r.recordedAt).toDateString() === new Date().toDateString()).length || 0;
-  const weekReadings = readings?.filter(r => new Date(r.recordedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length || 0;
-  const totalRevenue = readings?.reduce((sum, r) => sum + (r.amount || 0), 0) || 0;
+  const totalReadings = readingsArray.length;
+  const todayReadings = readingsArray.filter(r => new Date(r.recordedAt).toDateString() === new Date().toDateString()).length;
+  const weekReadings = readingsArray.filter(r => new Date(r.recordedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
+  const totalRevenue = readingsArray.reduce((sum, r) => sum + (r.amount || 0), 0);
   const pendingAlertsCount = pendingAlerts.length;
 
   const getStatusBadge = (status: string) => {
