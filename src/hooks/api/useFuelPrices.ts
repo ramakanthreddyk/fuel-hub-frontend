@@ -32,7 +32,8 @@ export const useFuelPrices = (stationId?: string) => {
     queryFn: async () => {
       const params = stationId ? `?stationId=${stationId}` : '';
       const response = await apiClient.get(`/fuel-prices${params}`);
-      return response.data;
+      // Extract prices array from nested response
+      return response.data?.prices || response.data || [];
     },
     enabled: !!stationId,
   });
@@ -86,12 +87,12 @@ export const useDeleteFuelPrice = () => {
 export const useHasFuelPrices = (stationId: string) => {
   const { data, isLoading } = useFuelPrices(stationId);
   
-  // Handle different API response formats
-  const fuelPrices = Array.isArray(data) ? data : (data?.data || data?.fuelPrices || []);
+  // Data should already be extracted as array from useFuelPrices
+  const fuelPrices = Array.isArray(data) ? data : [];
   
   return {
-    hasFuelPrices: Array.isArray(fuelPrices) && fuelPrices.length > 0,
-    fuelPrices: Array.isArray(fuelPrices) ? fuelPrices : [],
+    hasFuelPrices: fuelPrices.length > 0,
+    fuelPrices,
     isLoading
   };
 };
