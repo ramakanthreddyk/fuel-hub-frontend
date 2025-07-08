@@ -12,9 +12,9 @@ export function DashboardLayout() {
       <Sidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
       <div className="lg:pl-72">
         <Header onMobileMenuClick={() => setSidebarOpen(true)} />
-        <main className="py-4 sm:py-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="w-full">
+        <main className="flex-1 overflow-x-hidden">
+          <div className="w-full max-w-full">
+            <div className="w-full min-w-0">
               <Outlet />
             </div>
           </div>

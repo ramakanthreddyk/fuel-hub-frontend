@@ -1,6 +1,7 @@
+
 /**
  * @file components/sales/SalesTable.tsx
- * @description Table component for displaying sales data
+ * @description Fully responsive table component for displaying sales data
  */
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -57,39 +58,39 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full">
+    <div className="w-full">
+      {/* Desktop Table - Hidden on mobile */}
+      <div className="hidden lg:block overflow-x-auto">
+        <table className="w-full min-w-full">
           <thead>
             <tr className="border-b">
-              <th className="text-left p-3 font-medium">Station/Pump</th>
-              <th className="text-left p-3 font-medium">Nozzle</th>
-              <th className="text-left p-3 font-medium">Volume</th>
-              <th className="text-left p-3 font-medium">Price</th>
-              <th className="text-left p-3 font-medium">Amount</th>
-              <th className="text-left p-3 font-medium">Payment</th>
-              <th className="text-left p-3 font-medium">Date</th>
+              <th className="text-left p-3 font-medium min-w-[150px]">Station/Pump</th>
+              <th className="text-left p-3 font-medium min-w-[100px]">Nozzle</th>
+              <th className="text-left p-3 font-medium min-w-[80px]">Volume</th>
+              <th className="text-left p-3 font-medium min-w-[80px]">Price</th>
+              <th className="text-left p-3 font-medium min-w-[100px]">Amount</th>
+              <th className="text-left p-3 font-medium min-w-[80px]">Payment</th>
+              <th className="text-left p-3 font-medium min-w-[120px]">Date</th>
             </tr>
           </thead>
           <tbody>
             {sales.map((sale) => (
               <tr key={sale.id} className="border-b hover:bg-muted/50">
                 <td className="p-3">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">{sale.stationName}</div>
-                      <div className="text-sm text-muted-foreground">{sale.pumpName}</div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium truncate">{sale.stationName}</div>
+                      <div className="text-sm text-muted-foreground truncate">{sale.pumpName}</div>
                     </div>
                   </div>
                 </td>
                 <td className="p-3">
-                  <div className="flex items-center gap-2">
-                    <Fuel className="h-4 w-4 text-muted-foreground" />
-                    <div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Fuel className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
                       <div className="font-medium">#{sale.nozzleNumber}</div>
-                      <Badge className={getFuelTypeColor(sale.fuelType)}>
+                      <Badge className={`text-xs ${getFuelTypeColor(sale.fuelType)}`}>
                         {sale.fuelType}
                       </Badge>
                     </div>
@@ -121,51 +122,55 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
         </table>
       </div>
 
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-4">
+      {/* Mobile/Tablet Cards - Visible on smaller screens */}
+      <div className="lg:hidden space-y-3">
         {sales.map((sale) => (
-          <Card key={sale.id} className="p-4">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <div className="font-medium text-sm">{sale.stationName}</div>
-                  <div className="text-xs text-muted-foreground">{sale.pumpName}</div>
+          <Card key={sale.id} className="w-full">
+            <CardContent className="p-4">
+              {/* Header with Station and Amount */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-sm truncate">{sale.stationName}</div>
+                    <div className="text-xs text-muted-foreground truncate">{sale.pumpName}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="font-bold text-lg text-green-600">
-                  {formatCurrency(sale.amount)}
-                </div>
-                <Badge className={getPaymentMethodColor(sale.paymentMethod)}>
-                  {sale.paymentMethod.toUpperCase()}
-                </Badge>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <span className="text-muted-foreground">Nozzle:</span>
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">#{sale.nozzleNumber}</span>
-                  <Badge className={getFuelTypeColor(sale.fuelType)}>
-                    {sale.fuelType}
+                <div className="text-right flex-shrink-0 ml-2">
+                  <div className="font-bold text-lg text-green-600">
+                    {formatCurrency(sale.amount)}
+                  </div>
+                  <Badge className={`${getPaymentMethodColor(sale.paymentMethod)} text-xs`}>
+                    {sale.paymentMethod.toUpperCase()}
                   </Badge>
                 </div>
               </div>
-              <div>
-                <span className="text-muted-foreground">Volume:</span>
-                <div className="font-medium">{formatVolume(sale.volume)}</div>
+              
+              {/* Details Grid */}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="min-w-0">
+                  <span className="text-muted-foreground block text-xs">Nozzle:</span>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="font-medium">#{sale.nozzleNumber}</span>
+                    <Badge className={`${getFuelTypeColor(sale.fuelType)} text-xs`}>
+                      {sale.fuelType}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <span className="text-muted-foreground block text-xs">Volume:</span>
+                  <div className="font-medium mt-1 truncate">{formatVolume(sale.volume)}</div>
+                </div>
+                <div className="min-w-0">
+                  <span className="text-muted-foreground block text-xs">Price:</span>
+                  <div className="font-medium mt-1 truncate">{formatCurrency(sale.fuelPrice)}/L</div>
+                </div>
+                <div className="min-w-0">
+                  <span className="text-muted-foreground block text-xs">Date:</span>
+                  <div className="font-medium mt-1 text-xs truncate">{formatDateTime(sale.recordedAt)}</div>
+                </div>
               </div>
-              <div>
-                <span className="text-muted-foreground">Price:</span>
-                <div className="font-medium">{formatCurrency(sale.fuelPrice)}/L</div>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Date:</span>
-                <div className="font-medium">{formatDateTime(sale.recordedAt)}</div>
-              </div>
-            </div>
+            </CardContent>
           </Card>
         ))}
       </div>
