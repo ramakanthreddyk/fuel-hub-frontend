@@ -55,8 +55,18 @@ export const useFuelPriceValidation = (stationId?: string) => {
       try {
         // Get fuel prices for the station and check if they exist
         const response = await apiClient.get(`/fuel-prices?stationId=${stationId}`);
-        const prices = response.data?.prices || response.data || [];
-        const hasValidPrices = Array.isArray(prices) && prices.length > 0;
+        
+        // Extract prices array from nested response structure
+        let prices = [];
+        if (Array.isArray(response.data)) {
+          prices = response.data;
+        } else if (response.data?.data?.prices && Array.isArray(response.data.data.prices)) {
+          prices = response.data.data.prices;
+        } else if (response.data?.prices && Array.isArray(response.data.prices)) {
+          prices = response.data.prices;
+        }
+        
+        const hasValidPrices = prices.length > 0;
         
         return {
           stationId,
