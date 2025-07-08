@@ -16,6 +16,8 @@ import { PageHeader } from '@/components/ui/page-header';
 import { useReadings } from '@/hooks/api/useReadings';
 import { usePendingReadings } from '@/hooks/api/usePendingReadings';
 import { usePumps } from '@/hooks/api/usePumps';
+import { useNozzles } from '@/hooks/api/useNozzles';
+import { useStations } from '@/hooks/api/useStations';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatReading, formatDateTime } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
@@ -29,17 +31,36 @@ export default function ReadingsPage() {
   // Fetch readings using the API hook
   const { data: readings, isLoading, error } = useReadings();
   const { data: pumps = [] } = usePumps();
+  const { data: nozzles = [] } = useNozzles();
+  const { data: stations = [] } = useStations();
   const {
     data: pendingAlerts = [],
     acknowledge: acknowledgeAlert,
     dismiss: dismissAlert,
   } = usePendingReadings();
 
-  // Ensure readings is always an array
+  // Ensure readings is always an array and enrich with related data
   const readingsArray = Array.isArray(readings) ? readings : [];
   
+  // Enrich readings with nozzle, pump, and station information
+  const enrichedReadings = readingsArray.map(reading => {
+    const nozzle = nozzles.find(n => n.id === reading.nozzleId);
+    const pump = pumps.find(p => p.id === nozzle?.pumpId);
+    const station = stations.find(s => s.id === pump?.stationId);
+    
+    return {
+      ...reading,
+      nozzleNumber: nozzle?.nozzleNumber,
+      fuelType: nozzle?.fuelType,
+      pumpName: pump?.name,
+      stationName: station?.name,
+      pumpId: pump?.id,
+      stationId: station?.id
+    };
+  });
+  
   // Filter readings based on selected filter and pump
-  const filteredReadings = readingsArray.filter(reading => {
+  const filteredReadings = enrichedReadings.filter(reading => {
     let dateMatch = true;
     if (filter === 'today') {
       const today = new Date().toDateString();
@@ -53,10 +74,10 @@ export default function ReadingsPage() {
   });
 
   // Calculate stats
-  const totalReadings = readingsArray.length;
-  const todayReadings = readingsArray.filter(r => new Date(r.recordedAt).toDateString() === new Date().toDateString()).length;
-  const weekReadings = readingsArray.filter(r => new Date(r.recordedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
-  const totalRevenue = readingsArray.reduce((sum, r) => sum + (r.amount || 0), 0);
+  const totalReadings = enrichedReadings.length;
+  const todayReadings = enrichedReadings.filter(r => new Date(r.recordedAt).toDateString() === new Date().toDateString()).length;
+  const weekReadings = enrichedReadings.filter(r => new Date(r.recordedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
+  const totalRevenue = enrichedReadings.reduce((sum, r) => sum + (r.amount || 0), 0);
   const pendingAlertsCount = pendingAlerts.length;
 
   const getStatusBadge = (status: string) => {
