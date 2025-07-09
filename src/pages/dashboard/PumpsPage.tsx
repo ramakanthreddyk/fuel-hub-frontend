@@ -1,4 +1,3 @@
-
 /**
  * @file pages/dashboard/PumpsPage.tsx
  * @description Redesigned pumps page with white theme and improved cards
@@ -142,13 +141,14 @@ export default function PumpsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 pb-8">
             {filteredPumps.map((pump) => {
               const stationName = stations.find(s => s.id === pump.stationId)?.name;
-              const needsAttention = pump.nozzleCount === 0 || pump.status === 'maintenance';
+              const needsAttention = (pump.nozzleCount || 0) === 0 || pump.status === 'maintenance';
               
               return (
                 <FuelPumpCard
                   key={pump.id}
                   pump={{
                     ...pump,
+                    nozzleCount: pump.nozzleCount || 0,
                     stationName
                   }}
                   onViewNozzles={(id) => navigate(`/dashboard/pumps/${id}/nozzles`)}

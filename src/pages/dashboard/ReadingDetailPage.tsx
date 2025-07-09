@@ -1,4 +1,3 @@
-
 /**
  * @file ReadingDetailPage.tsx
  * @description Page for viewing reading details
@@ -8,14 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Fuel, Building2, DollarSign, Calendar } from 'lucide-react';
-import { useReadingById } from '@/hooks/api/useReadings';
+import { useReading } from '@/hooks/api/useReadings';
 import { formatCurrency, formatVolume, formatDateTime } from '@/utils/formatters';
 
 export default function ReadingDetailPage() {
   const { readingId } = useParams<{ readingId: string }>();
   const navigate = useNavigate();
   
-  const { data: reading, isLoading, error } = useReadingById(readingId || '');
+  const { data: reading, isLoading, error } = useReading(readingId || '');
 
   if (isLoading) {
     return (

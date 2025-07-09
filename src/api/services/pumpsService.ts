@@ -1,4 +1,3 @@
-
 /**
  * @file api/services/pumpsService.ts
  * @description Service for pumps API endpoints
@@ -11,20 +10,23 @@ export interface Pump {
   id: string;
   stationId: string;
   name: string;
+  serialNumber?: string;
   status: 'active' | 'inactive' | 'maintenance';
   createdAt: string;
   updatedAt?: string;
-  nozzleCount?: number;
+  nozzleCount: number;
 }
 
 export interface CreatePumpRequest {
   stationId: string;
   name: string;
+  serialNumber?: string;
   status?: 'active' | 'inactive' | 'maintenance';
 }
 
 export interface UpdatePumpRequest {
   name?: string;
+  serialNumber?: string;
   status?: 'active' | 'inactive' | 'maintenance';
 }
 

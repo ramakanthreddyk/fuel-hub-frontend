@@ -1,3 +1,4 @@
+
 /**
  * FuelSync Hub - API Contract
  * 
@@ -157,16 +158,17 @@ export interface Pump {
   id: string;
   stationId: string;
   name: string;
-  serialNumber: string;
+  serialNumber?: string;
   status: 'active' | 'inactive' | 'maintenance';
   createdAt: string;
+  updatedAt?: string;
   nozzleCount: number;
 }
 
 export interface CreatePumpRequest {
   stationId: string;
   name: string;
-  serialNumber: string;
+  serialNumber?: string;
 }
 
 export interface UpdatePumpRequest {
