@@ -110,8 +110,8 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
       <div className="p-6 pb-4">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-blue-600" />
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+              <Building2 className="h-6 w-6 text-white" />
             </div>
             <div>
               <h3 className="font-bold text-lg text-gray-900">{station.name}</h3>
@@ -135,27 +135,44 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
 
       {/* Station Visual */}
       <div className="px-6 pb-4">
-        <div className="bg-gray-50 rounded-xl p-4 mb-4">
+        <div className="bg-gradient-to-br from-blue-50 to-orange-50 rounded-xl p-6 mb-4 border border-blue-100">
           <div className="flex justify-center">
             <div className="relative">
               {/* Station Building */}
-              <div className="w-28 h-20 bg-gradient-to-b from-gray-300 to-gray-500 rounded-lg shadow-lg relative">
+              <div className="w-32 h-24 bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 rounded-lg shadow-xl relative overflow-hidden">
                 {/* Station Sign */}
-                <div className="absolute top-1 left-1 right-1 h-5 bg-gray-800 rounded flex items-center justify-center">
-                  <div className="text-xs font-bold text-blue-400 truncate px-1">
-                    {station.name.slice(0, 10)}
+                <div className="absolute top-2 left-2 right-2 h-6 bg-gradient-to-r from-orange-500 to-orange-600 rounded flex items-center justify-center shadow-md">
+                  <div className="text-xs font-bold text-white truncate px-2">
+                    {station.name.slice(0, 12)}
                   </div>
                 </div>
                 
                 {/* Canopy */}
-                <div className="absolute -top-1 -left-3 -right-3 h-3 bg-gray-400 rounded-t-lg shadow-md"></div>
+                <div className="absolute -top-2 -left-4 -right-4 h-4 bg-gradient-to-r from-orange-400 to-orange-500 rounded-t-xl shadow-lg"></div>
                 
-                {/* Fuel Islands */}
-                <div className="absolute bottom-2 left-3 right-3 flex justify-between">
-                  {Array.from({ length: Math.min(station.pumpCount, 4) }, (_, i) => (
-                    <div key={i} className="w-2 h-5 bg-gray-600 rounded shadow-sm"></div>
-                  ))}
+                {/* Building Details */}
+                <div className="absolute bottom-3 left-3 right-3">
+                  <div className="h-1 bg-blue-300 rounded mb-1"></div>
+                  <div className="h-1 bg-blue-300 rounded"></div>
                 </div>
+              </div>
+
+              {/* Fuel Dispensers */}
+              <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 flex gap-3">
+                {Array.from({ length: Math.min(station.pumpCount, 4) }, (_, i) => (
+                  <div key={i} className="relative group">
+                    <div className="w-4 h-8 bg-gradient-to-b from-orange-400 to-orange-600 rounded-t shadow-lg border-2 border-white">
+                      {/* Pump Display */}
+                      <div className="absolute top-1 left-0 right-0 h-2 bg-gray-900 rounded-sm"></div>
+                      {/* Nozzle */}
+                      <div className="absolute -right-1 top-3 w-2 h-2 bg-gray-800 rounded-full"></div>
+                      {/* Hose */}
+                      <div className="absolute -right-1 top-4 w-1 h-3 bg-gray-700 rounded"></div>
+                    </div>
+                    {/* Base Platform */}
+                    <div className="w-6 h-2 bg-gray-400 rounded-b -mt-1"></div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -165,35 +182,39 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
       {/* Stats Sections */}
       <div className="px-6 space-y-4">
         {/* Fuel Dispensers */}
-        <div className="bg-blue-50 rounded-xl p-4">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
           <div className="flex items-center gap-2 mb-3">
-            <Fuel className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-semibold text-blue-700">Fuel Dispensers</span>
+            <div className="p-1 rounded-full bg-blue-500">
+              <Fuel className="h-3 w-3 text-white" />
+            </div>
+            <span className="text-sm font-semibold text-blue-800">Fuel Dispensers</span>
           </div>
           <div className="flex items-center justify-between">
-            <div className="text-2xl font-bold text-gray-900">{station.pumpCount}</div>
-            <div className="text-xs text-gray-600">Active dispensers</div>
+            <div className="text-2xl font-bold text-blue-900">{station.pumpCount}</div>
+            <div className="text-xs text-blue-700 font-medium">Active dispensers</div>
           </div>
         </div>
         
         {/* Fuel Prices */}
-        <div className="bg-green-50 rounded-xl p-4">
+        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
           <div className="flex items-center gap-2 mb-3">
-            <Star className="h-4 w-4 text-green-600" />
-            <span className="text-sm font-semibold text-green-700">Current Fuel Prices</span>
+            <div className="p-1 rounded-full bg-orange-500">
+              <Star className="h-3 w-3 text-white" />
+            </div>
+            <span className="text-sm font-semibold text-orange-800">Current Fuel Prices</span>
           </div>
           
           {pricesLoading ? (
-            <div className="text-sm text-gray-600">Loading prices...</div>
+            <div className="text-sm text-orange-600">Loading prices...</div>
           ) : hasPrices ? (
             <div className="space-y-2">
               {Object.entries(processedPrices).map(([fuelType, price]) => {
                 const colors = getFuelTypeColor(fuelType);
                 return (
-                  <div key={fuelType} className="flex items-center justify-between">
+                  <div key={fuelType} className="flex items-center justify-between bg-white/60 rounded-lg p-2">
                     <div className="flex items-center gap-2">
                       <div className={cn("w-2 h-2 rounded-full", colors.dot)}></div>
-                      <span className="text-sm capitalize font-medium">{fuelType}</span>
+                      <span className="text-sm capitalize font-medium text-gray-800">{fuelType}</span>
                     </div>
                     <div className="font-bold text-gray-900">₹{parseFloat(price.price || 0).toFixed(2)}</div>
                   </div>
@@ -201,7 +222,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
               })}
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-amber-600">
+            <div className="flex items-center gap-2 text-orange-600 bg-white/60 rounded-lg p-2">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-sm font-medium">Prices not set</span>
             </div>
@@ -214,7 +235,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
         <div className="flex gap-3">
           <Button 
             onClick={() => onView(station.id)}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
           >
             <Eye className="w-4 h-4 mr-2" />
             View Details
@@ -222,7 +243,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
           <Button 
             onClick={() => onDelete(station.id)}
             variant="outline"
-            className="border-red-300 text-red-600 hover:bg-red-50 rounded-xl"
+            className="border-red-300 text-red-600 hover:bg-red-50 rounded-xl hover:border-red-400 transition-all duration-200"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
