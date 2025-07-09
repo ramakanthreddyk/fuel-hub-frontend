@@ -17,7 +17,7 @@ export const useNozzles = (pumpId?: string) => {
   
   return useQuery({
     queryKey: ['nozzles', pumpId || 'all'],
-    queryFn: () => nozzlesService.getNozzlesWithReadings(pumpId),
+    queryFn: () => nozzlesService.getNozzles(pumpId),
     staleTime: 60000, // 1 minute
     retry: 2,
     meta: {
