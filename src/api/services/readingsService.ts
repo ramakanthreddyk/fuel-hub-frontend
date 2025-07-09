@@ -62,8 +62,14 @@ export const readingsService = {
   },
 
   async getReading(id: string): Promise<Reading> {
-    const response = await apiClient.get(`/nozzle-readings/${id}`);
-    return response.data;
+    // Since individual reading by ID endpoint doesn't exist,
+    // we'll need to get all readings and find the one with matching ID
+    const readings = await this.getReadings();
+    const reading = readings.find(r => r.id === id);
+    if (!reading) {
+      throw new Error('Reading not found');
+    }
+    return reading;
   },
 
   async createReading(data: CreateReadingRequest): Promise<Reading> {
