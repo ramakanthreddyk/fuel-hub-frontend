@@ -63,8 +63,8 @@ export function StationMetricsList() {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
-        {/* Improved responsive grid with max columns and better spacing */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 max-w-7xl mx-auto">
+        {/* Updated grid to show maximum 2 cards per row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl mx-auto">
           {stationMetrics.slice(0, 10).map((stationMetric) => {
             // Map StationMetric to StationMetrics interface
             const mappedStation = {
