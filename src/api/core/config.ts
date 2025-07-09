@@ -24,9 +24,17 @@ const API_CONFIG = {
       byId: (id: string) => `/nozzle-readings/${id}`,
       canCreate: (nozzleId: string) => `/nozzle-readings/can-create/${nozzleId}`,
     },
-    prices: {
+    fuelPrices: {
       base: '/fuel-prices',
       byId: (id: string) => `/fuel-prices/${id}`,
+      validate: (stationId: string) => `/fuel-prices/validate/${stationId}`,
+      missing: '/fuel-prices/missing',
+    },
+    users: {
+      base: '/users',
+      byId: (id: string) => `/users/${id}`,
+      changePassword: (userId: string) => `/users/${userId}/change-password`,
+      resetPassword: (userId: string) => `/users/${userId}/reset-password`,
     },
     auth: {
       login: '/auth/login',

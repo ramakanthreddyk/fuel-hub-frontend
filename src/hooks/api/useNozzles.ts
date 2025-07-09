@@ -4,8 +4,8 @@
  * @description React Query hooks for nozzles API with toast notifications
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { nozzlesService } from '@/api/nozzles';
-import { toast } from '@/hooks/use-toast';
+import { nozzlesService } from '@/api/services/nozzlesService';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Hook to fetch nozzles for a pump or all nozzles
@@ -13,18 +13,22 @@ import { toast } from '@/hooks/use-toast';
  * @returns Query result with nozzles data
  */
 export const useNozzles = (pumpId?: string) => {
+  const { toast } = useToast();
+  
   return useQuery({
     queryKey: ['nozzles', pumpId || 'all'],
     queryFn: () => nozzlesService.getNozzles(pumpId),
     staleTime: 60000, // 1 minute
     retry: 2,
-    onError: (error: any) => {
-      console.error('Failed to fetch nozzles:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load nozzles. Please try again.",
-        variant: "destructive",
-      });
+    meta: {
+      onError: (error: any) => {
+        console.error('Failed to fetch nozzles:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load nozzles. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   });
 };
@@ -35,18 +39,22 @@ export const useNozzles = (pumpId?: string) => {
  * @returns Query result with nozzle data
  */
 export const useNozzle = (id: string) => {
+  const { toast } = useToast();
+  
   return useQuery({
     queryKey: ['nozzle', id],
     queryFn: () => nozzlesService.getNozzle(id),
     enabled: !!id,
     staleTime: 60000, // 1 minute
-    onError: (error: any) => {
-      console.error('Failed to fetch nozzle:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load nozzle details. Please try again.",
-        variant: "destructive",
-      });
+    meta: {
+      onError: (error: any) => {
+        console.error('Failed to fetch nozzle:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load nozzle details. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   });
 };
@@ -57,6 +65,7 @@ export const useNozzle = (id: string) => {
  */
 export const useCreateNozzle = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
     mutationFn: (data: any) => nozzlesService.createNozzle(data),
@@ -86,6 +95,7 @@ export const useCreateNozzle = () => {
  */
 export const useUpdateNozzle = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => nozzlesService.updateNozzle(id, data),
@@ -120,6 +130,7 @@ export const useUpdateNozzle = () => {
  */
 export const useDeleteNozzle = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
     mutationFn: (id: string) => nozzlesService.deleteNozzle(id),

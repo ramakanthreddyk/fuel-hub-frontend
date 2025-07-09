@@ -1,3 +1,4 @@
+
 /**
  * @file ReadingEntryForm.tsx
  * @description Form component for recording nozzle readings
@@ -261,7 +262,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                           {pumps.length > 0 ? (
                             pumps.map((pump) => (
                               <SelectItem key={pump.id} value={pump.id}>
-                                {pump.name} {pump.serialNumber ? `(${pump.serialNumber})` : ''}
+                                {pump.name}
                               </SelectItem>
                             ))
                           ) : (
