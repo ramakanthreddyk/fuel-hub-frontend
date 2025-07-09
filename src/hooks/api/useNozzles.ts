@@ -1,10 +1,11 @@
 
 /**
  * @file useNozzles.ts
- * @description React Query hooks for nozzles API
+ * @description React Query hooks for nozzles API with toast notifications
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { nozzlesService } from '@/api/nozzles';
+import { toast } from '@/hooks/use-toast';
 
 /**
  * Hook to fetch nozzles for a pump or all nozzles
@@ -16,7 +17,15 @@ export const useNozzles = (pumpId?: string) => {
     queryKey: ['nozzles', pumpId || 'all'],
     queryFn: () => nozzlesService.getNozzles(pumpId),
     staleTime: 60000, // 1 minute
-    retry: 2
+    retry: 2,
+    onError: (error: any) => {
+      console.error('Failed to fetch nozzles:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load nozzles. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 };
 
@@ -31,6 +40,14 @@ export const useNozzle = (id: string) => {
     queryFn: () => nozzlesService.getNozzle(id),
     enabled: !!id,
     staleTime: 60000, // 1 minute
+    onError: (error: any) => {
+      console.error('Failed to fetch nozzle:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load nozzle details. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 };
 
@@ -43,10 +60,22 @@ export const useCreateNozzle = () => {
   
   return useMutation({
     mutationFn: (data: any) => nozzlesService.createNozzle(data),
-    onSuccess: (_, variables) => {
+    onSuccess: (newNozzle, variables) => {
       queryClient.invalidateQueries({ queryKey: ['nozzles', variables.pumpId] });
       queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
       queryClient.invalidateQueries({ queryKey: ['pump', variables.pumpId] });
+      toast({
+        title: "Success",
+        description: `Nozzle #${newNozzle.nozzleNumber} created successfully`,
+      });
+    },
+    onError: (error: any) => {
+      console.error('Failed to create nozzle:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create nozzle. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 };
@@ -69,6 +98,18 @@ export const useUpdateNozzle = () => {
         queryClient.invalidateQueries({ queryKey: ['pump', nozzle.pumpId] });
         queryClient.invalidateQueries({ queryKey: ['nozzles', nozzle.pumpId] });
       }
+      toast({
+        title: "Success",
+        description: `Nozzle #${nozzle.nozzleNumber} updated successfully`,
+      });
+    },
+    onError: (error: any) => {
+      console.error('Failed to update nozzle:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update nozzle. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 };
@@ -87,6 +128,18 @@ export const useDeleteNozzle = () => {
       queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
       // We don't know which pump this nozzle belonged to, so we invalidate all pumps
       queryClient.invalidateQueries({ queryKey: ['pumps'] });
+      toast({
+        title: "Success",
+        description: "Nozzle deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Failed to delete nozzle:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete nozzle. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 };

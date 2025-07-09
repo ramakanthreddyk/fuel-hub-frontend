@@ -1,7 +1,6 @@
-
 /**
  * @file pages/dashboard/NozzlesPage.tsx
- * @description Redesigned nozzles page with white theme and fixed filtering
+ * @description Redesigned nozzles page with improved error handling
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -12,14 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNozzles, useDeleteNozzle } from '@/hooks/api/useNozzles';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useStations } from '@/hooks/api/useStations';
-import { useToast } from '@/hooks/use-toast';
 import { FuelNozzleCard } from '@/components/nozzles/FuelNozzleCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
 export default function NozzlesPage() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [selectedStation, setSelectedStation] = useState<string>('all');
   const [selectedPump, setSelectedPump] = useState<string>('all');
   const [fuelTypeFilter, setFuelTypeFilter] = useState<string>('all');
@@ -30,9 +27,9 @@ export default function NozzlesPage() {
   const { data: stations = [] } = useStations();
   const { data: pumps = [] } = usePumps(selectedStation === 'all' ? undefined : selectedStation);
   
-  // Get nozzles based on selected pump
-  const { data: nozzles = [] } = useNozzles(selectedPump !== 'all' ? selectedPump : undefined);
-  const deleteNozzleMutation = useDeleteNozzle();
+  // Get nozzles based on selected pump - error handling is in the hook
+  const { data: nozzles = [], isLoading } = useNozzles(selectedPump !== 'all' ? selectedPump : undefined);
+  const deleteNozzleMutation = useDeleteNozzle(); // Toast handling is in the hook
 
   // Filter nozzles based on search, fuel type, and station
   const filteredNozzles = nozzles.filter(nozzle => {
@@ -68,23 +65,15 @@ export default function NozzlesPage() {
     
     try {
       await deleteNozzleMutation.mutateAsync(nozzleToDelete);
-      toast({
-        title: 'Success',
-        description: 'Nozzle deleted successfully'
-      });
+      // Success toast is handled by the hook
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete nozzle',
-        variant: 'destructive'
-      });
+      // Error toast is handled by the hook
+      console.error('Delete failed:', error);
     } finally {
       setNozzleToDelete(null);
       setDeleteDialogOpen(false);
     }
   };
-
-  const isLoading = false; // We'll handle loading per pump
 
   if (isLoading) {
     return (

@@ -1,7 +1,7 @@
 
 /**
  * @file CreateNozzlePage.tsx
- * @description Create nozzle page component
+ * @description Create nozzle page component with improved error handling
  * Updated layout for mobile-friendliness – 2025-07-03
  */
 import { useState } from 'react';
@@ -14,12 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { usePump, usePumps } from '@/hooks/api/usePumps';
 import { useCreateNozzle } from '@/hooks/api/useNozzles';
-import { useToast } from '@/hooks/use-toast';
 
 export default function CreateNozzlePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { toast } = useToast();
   
   // Get IDs from URL params or search params
   const { pumpId: urlPumpId } = useParams();
@@ -33,13 +31,12 @@ export default function CreateNozzlePage() {
   const [nozzleNumber, setNozzleNumber] = useState('');
   const [fuelType, setFuelType] = useState('');
   const [selectedPumpId, setSelectedPumpId] = useState(pumpId || '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Fetch pump details and all pumps for selection
   const { data: pump, isLoading: pumpLoading } = usePump(selectedPumpId || '');
   const { data: allPumps = [], isLoading: pumpsLoading } = usePumps();
   
-  // Create nozzle mutation
+  // Create nozzle mutation - toast handling is now in the hook
   const createNozzleMutation = useCreateNozzle();
   
   // Handle form submission with proper error handling
@@ -49,15 +46,9 @@ export default function CreateNozzlePage() {
     
     if (!selectedPumpId || !nozzleNumber || !fuelType) {
       console.log('[CREATE-NOZZLE] Validation failed:', { pumpId: selectedPumpId, nozzleNumber, fuelType });
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields',
-        variant: 'destructive'
-      });
       return;
     }
     
-    setIsSubmitting(true);
     console.log('[CREATE-NOZZLE] Calling mutation with:', {
       pumpId: selectedPumpId,
       nozzleNumber: parseInt(nozzleNumber),
@@ -74,22 +65,11 @@ export default function CreateNozzlePage() {
       });
       console.log('[CREATE-NOZZLE] Mutation successful');
       
-      toast({
-        title: 'Success',
-        description: 'Nozzle created successfully'
-      });
-      
       // Navigate back to nozzles page
       navigate('/dashboard/nozzles');
     } catch (error) {
       console.error('[CREATE-NOZZLE] Error creating nozzle:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create nozzle. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsSubmitting(false);
+      // Error toast is handled by the hook
     }
   };
   
@@ -207,10 +187,10 @@ export default function CreateNozzlePage() {
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !selectedPumpId || !nozzleNumber || !fuelType}
+                disabled={createNozzleMutation.isPending || !selectedPumpId || !nozzleNumber || !fuelType}
                 className="order-1 sm:order-2"
               >
-                {isSubmitting ? (
+                {createNozzleMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating...

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -7,20 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNozzle, useUpdateNozzle } from '@/hooks/api/useNozzles';
-import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 export default function EditNozzlePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { nozzleId } = useParams<{ nozzleId: string }>();
-  const { toast } = useToast();
 
   const stationId = searchParams.get('stationId');
   const pumpId = searchParams.get('pumpId');
 
   const { data: nozzle, isLoading } = useNozzle(nozzleId || '');
-  const updateNozzle = useUpdateNozzle();
+  const updateNozzle = useUpdateNozzle(); // Toast handling is now in the hook
 
   const [nozzleNumber, setNozzleNumber] = useState('');
   const [fuelType, setFuelType] = useState('');
@@ -35,16 +34,24 @@ export default function EditNozzlePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nozzleId) return;
+    
     try {
-      await updateNozzle.mutateAsync({ id: nozzleId, data: { nozzleNumber: parseInt(nozzleNumber), fuelType } });
-      toast({ title: 'Success', description: 'Nozzle updated successfully' });
+      await updateNozzle.mutateAsync({ 
+        id: nozzleId, 
+        data: { 
+          nozzleNumber: parseInt(nozzleNumber), 
+          fuelType 
+        } 
+      });
+      // Success toast is handled by the hook
       if (stationId && pumpId) {
         navigate(`/dashboard/nozzles?pumpId=${pumpId}&stationId=${stationId}`);
       } else {
         navigate('/dashboard/nozzles');
       }
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to update nozzle', variant: 'destructive' });
+      // Error toast is handled by the hook
+      console.error('Update failed:', error);
     }
   };
 
