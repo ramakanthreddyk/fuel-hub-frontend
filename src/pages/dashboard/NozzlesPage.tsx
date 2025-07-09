@@ -11,12 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNozzles, useDeleteNozzle } from '@/hooks/api/useNozzles';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useStations } from '@/hooks/api/useStations';
+import { useLatestReading } from '@/hooks/api/useReadings';
+import { useToast } from '@/hooks/use-toast';
 import { FuelNozzleCard } from '@/components/nozzles/FuelNozzleCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
 export default function NozzlesPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedStation, setSelectedStation] = useState<string>('all');
   const [selectedPump, setSelectedPump] = useState<string>('all');
   const [fuelTypeFilter, setFuelTypeFilter] = useState<string>('all');
@@ -65,9 +68,16 @@ export default function NozzlesPage() {
     
     try {
       await deleteNozzleMutation.mutateAsync(nozzleToDelete);
-      // Success toast is handled by the hook
-    } catch (error) {
-      // Error toast is handled by the hook
+      toast({
+        title: "Success",
+        description: "Nozzle deleted successfully"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete nozzle",
+        variant: "destructive"
+      });
       console.error('Delete failed:', error);
     } finally {
       setNozzleToDelete(null);
@@ -199,6 +209,9 @@ export default function NozzlesPage() {
               const pump = pumps.find(p => p.id === nozzle.pumpId);
               const station = stations.find(s => s.id === pump?.stationId);
               
+              // Use useLatestReading hook to get the last reading
+              const { data: latestReading } = useLatestReading(nozzle.id);
+              
               return (
                 <FuelNozzleCard
                   key={nozzle.id}
@@ -207,7 +220,7 @@ export default function NozzlesPage() {
                     nozzleNumber: nozzle.nozzleNumber || 0,
                     fuelType: (nozzle.fuelType as 'petrol' | 'diesel' | 'premium') || 'petrol',
                     status: (nozzle.status as 'active' | 'maintenance' | 'inactive') || 'inactive',
-                    lastReading: undefined,
+                    lastReading: latestReading?.reading,
                     pumpName: pump?.name,
                     stationName: station?.name,
                     pumpId: pump?.id,
