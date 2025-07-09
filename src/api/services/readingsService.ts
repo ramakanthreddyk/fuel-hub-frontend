@@ -112,16 +112,19 @@ export const readingsService = {
   
   /**
    * Get latest reading for a nozzle
+   * According to OpenAPI spec, this uses the /nozzle-readings endpoint with nozzleId and limit=1
    */
   getLatestReading: async (nozzleId: string): Promise<Reading | null> => {
     try {
       console.log(`[READINGS-API] Fetching latest reading for nozzle: ${nozzleId}`);
-      const response = await apiClient.get(`${API_CONFIG.endpoints.readings.base}?nozzleId=${nozzleId}&latest=true`);
+      // Use limit=1 to get only the most recent reading as per OpenAPI spec
+      const response = await apiClient.get(`${API_CONFIG.endpoints.readings.base}?nozzleId=${nozzleId}&limit=1`);
       const readings = extractArray<Reading>(response, 'readings');
       return readings.length > 0 ? readings[0] : null;
     } catch (error) {
       console.error(`[READINGS-API] Error fetching latest reading for nozzle ${nozzleId}:`, error);
-      throw error;
+      // Return null instead of throwing to handle missing readings gracefully
+      return null;
     }
   },
   

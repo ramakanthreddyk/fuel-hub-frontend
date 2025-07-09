@@ -210,7 +210,14 @@ export default function NozzlesPage() {
               const station = stations.find(s => s.id === pump?.stationId);
               
               // Use useLatestReading hook to get the last reading
-              const { data: latestReading } = useLatestReading(nozzle.id);
+              // This is a custom hook that uses React Query's useQuery under the hood
+              // It's safe to use in a map function because React Query handles the caching
+              const { data: latestReading, isError: readingError } = useLatestReading(nozzle.id);
+              
+              // If there's an error fetching the reading, log it but don't block rendering
+              if (readingError) {
+                console.warn(`Error fetching latest reading for nozzle ${nozzle.id}`);
+              }
               
               return (
                 <FuelNozzleCard

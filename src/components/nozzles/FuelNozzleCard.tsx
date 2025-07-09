@@ -196,7 +196,9 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
               <span className="text-xs font-medium text-blue-700">Last Reading</span>
             </div>
             <div className="text-lg font-bold text-gray-900">
-              {nozzle.lastReading ? `${nozzle.lastReading.toLocaleString()}L` : 'N/A'}
+              {nozzle.lastReading !== undefined && nozzle.lastReading !== null
+                ? `${nozzle.lastReading.toLocaleString()}L`
+                : 'No readings yet'}
             </div>
           </div>
           
