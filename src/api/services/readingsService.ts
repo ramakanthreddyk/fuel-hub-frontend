@@ -1,44 +1,29 @@
 
 /**
- * @file api/services/readingsService.ts
- * @description Readings service with proper type definitions
+ * @file readingsService.ts
+ * @description Service for nozzle readings API operations
  */
-import apiClient from '@/api/core/apiClient';
+import { apiClient, extractApiData, extractApiArray } from '@/api/client';
+import API_CONFIG from '@/api/core/config';
 
 export interface Reading {
   id: string;
   nozzleId: string;
   nozzleNumber?: number;
-  pumpName?: string;
-  stationName?: string;
   reading: number;
-  previousReading?: number;
-  volume?: number;
   recordedAt: string;
   paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
   creditorId?: string;
-  creditorName?: string;
-  notes?: string;
   createdAt: string;
-  updatedAt?: string;
-  // Calculated fields
-  amount?: number;
-  pricePerLitre?: number;
-  fuelType?: string;
-  stationId?: string;
-  pumpId?: string;
-  attendantId?: string;
-  attendantName?: string;
-  recordedBy?: string;
+  updatedAt: string;
 }
 
 export interface CreateReadingRequest {
   nozzleId: string;
   reading: number;
-  recordedAt?: string;
+  recordedAt: string;
   paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
   creditorId?: string;
-  notes?: string;
 }
 
 export interface UpdateReadingRequest {
@@ -46,61 +31,76 @@ export interface UpdateReadingRequest {
   recordedAt?: string;
   paymentMethod?: 'cash' | 'card' | 'upi' | 'credit';
   creditorId?: string;
-  notes?: string;
 }
 
 export const readingsService = {
-  async getReadings(): Promise<Reading[]> {
-    console.log('[READINGS-SERVICE] Making API call to /nozzle-readings');
-    const response = await apiClient.get('/nozzle-readings');
-    console.log('[READINGS-SERVICE] Response received:', response.data);
-    
-    // With centralized response handling, data should already be extracted
-    const readings = Array.isArray(response.data) ? response.data : [];
-    console.log('[READINGS-SERVICE] Final readings:', readings);
-    return readings;
+  /**
+   * Get all readings
+   */
+  getReadings: async (): Promise<Reading[]> => {
+    const response = await apiClient.get(API_CONFIG.endpoints.readings.base);
+    return extractApiArray<Reading>(response, 'readings');
   },
 
-  async getReading(id: string): Promise<Reading> {
-    // Since individual reading by ID endpoint doesn't exist,
-    // we'll need to get all readings and find the one with matching ID
-    const readings = await this.getReadings();
-    const reading = readings.find(r => r.id === id);
-    if (!reading) {
-      throw new Error('Reading not found');
-    }
-    return reading;
+  /**
+   * Get a reading by ID
+   */
+  getReading: async (id: string): Promise<Reading> => {
+    const response = await apiClient.get(API_CONFIG.endpoints.readings.byId(id));
+    return extractApiData<Reading>(response);
   },
 
-  async createReading(data: CreateReadingRequest): Promise<Reading> {
-    const response = await apiClient.post('/nozzle-readings', data);
-    return response.data;
+  /**
+   * Create a new reading
+   */
+  createReading: async (data: CreateReadingRequest): Promise<Reading> => {
+    const response = await apiClient.post(API_CONFIG.endpoints.readings.base, data);
+    return extractApiData<Reading>(response);
   },
 
-  async updateReading(id: string, data: UpdateReadingRequest): Promise<Reading> {
-    const response = await apiClient.put(`/nozzle-readings/${id}`, data);
-    return response.data;
+  /**
+   * Update a reading
+   */
+  updateReading: async (id: string, data: UpdateReadingRequest): Promise<Reading> => {
+    const response = await apiClient.put(API_CONFIG.endpoints.readings.byId(id), data);
+    return extractApiData<Reading>(response);
   },
 
-  async getLatestReading(nozzleId: string): Promise<Reading | null> {
+  /**
+   * Delete a reading
+   */
+  deleteReading: async (id: string): Promise<void> => {
+    await apiClient.delete(API_CONFIG.endpoints.readings.byId(id));
+  },
+
+  /**
+   * Get the latest reading for a nozzle
+   */
+  getLatestReading: async (nozzleId: string): Promise<Reading | null> => {
     try {
-      // Get the latest reading by querying with nozzleId and limit=1
-      const response = await apiClient.get(`/nozzle-readings?nozzleId=${nozzleId}&limit=1`);
-      const readings = Array.isArray(response.data) ? response.data : (response.data?.data || []);
-      return readings.length > 0 ? readings[0] : null;
-    } catch (error) {
-      console.warn('Failed to get latest reading:', error);
-      return null;
+      const response = await apiClient.get(`${API_CONFIG.endpoints.readings.base}/latest/${nozzleId}`);
+      return extractApiData<Reading>(response);
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
     }
   },
 
-  async canCreateReading(nozzleId: string): Promise<{ canCreate: boolean; reason?: string; missingPrice?: boolean }> {
+  /**
+   * Check if a reading can be created for a nozzle
+   */
+  canCreateReading: async (nozzleId: string): Promise<{ canCreate: boolean; reason?: string; missingPrice?: boolean }> => {
     try {
-      const response = await apiClient.get(`/nozzle-readings/can-create/${nozzleId}`);
-      return response.data;
-    } catch (error) {
-      console.warn('Failed to check reading creation:', error);
-      return { canCreate: false, reason: 'Unable to verify reading requirements' };
+      const response = await apiClient.get(API_CONFIG.endpoints.readings.canCreate(nozzleId));
+      return extractApiData(response);
+    } catch (error: any) {
+      return {
+        canCreate: false,
+        reason: error.response?.data?.message || 'Unable to validate reading creation',
+        missingPrice: error.response?.status === 400
+      };
     }
-  }
+  },
 };

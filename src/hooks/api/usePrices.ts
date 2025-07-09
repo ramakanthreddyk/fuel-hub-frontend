@@ -27,14 +27,6 @@ export const usePrices = () => {
     queryFn: pricesService.getPrices,
     staleTime: 60000,
     retry: 2,
-    onError: (error: any) => {
-      console.error('Failed to fetch prices:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load fuel prices. Please try again.",
-        variant: "destructive",
-      });
-    }
   });
 };
 

@@ -9,14 +9,6 @@ export const useReadings = () => {
     queryFn: readingsService.getReadings,
     staleTime: 30000,
     retry: 2,
-    onError: (error: any) => {
-      console.error('Failed to fetch readings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load readings. Please try again.",
-        variant: "destructive",
-      });
-    }
   });
 };
 
@@ -26,14 +18,6 @@ export const useReading = (id: string) => {
     queryFn: () => readingsService.getReading(id),
     enabled: !!id,
     staleTime: 30000,
-    onError: (error: any) => {
-      console.error('Failed to fetch reading:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load reading details. Please try again.",
-        variant: "destructive",
-      });
-    }
   });
 };
 
@@ -91,10 +75,6 @@ export const useLatestReading = (nozzleId: string) => {
     queryFn: () => readingsService.getLatestReading(nozzleId),
     enabled: !!nozzleId,
     staleTime: 30000,
-    onError: (error: any) => {
-      console.error('Failed to fetch latest reading:', error);
-      // Don't show toast for this as it's background data
-    }
   });
 };
 
@@ -104,9 +84,5 @@ export const useCanCreateReading = (nozzleId: string) => {
     queryFn: () => readingsService.canCreateReading(nozzleId),
     enabled: !!nozzleId,
     staleTime: 60000,
-    onError: (error: any) => {
-      console.error('Failed to check reading creation:', error);
-      // Don't show toast for this as it's background validation
-    }
   });
 };

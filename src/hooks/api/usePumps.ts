@@ -9,14 +9,6 @@ export const usePumps = (stationId?: string) => {
     queryFn: () => pumpsService.getPumps(stationId),
     staleTime: 60000,
     retry: 2,
-    onError: (error: any) => {
-      console.error('Failed to fetch pumps:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load pumps. Please try again.",
-        variant: "destructive",
-      });
-    }
   });
 };
 
@@ -26,14 +18,6 @@ export const usePump = (id: string) => {
     queryFn: () => pumpsService.getPump(id),
     enabled: !!id,
     staleTime: 60000,
-    onError: (error: any) => {
-      console.error('Failed to fetch pump:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load pump details. Please try again.",
-        variant: "destructive",
-      });
-    }
   });
 };
 

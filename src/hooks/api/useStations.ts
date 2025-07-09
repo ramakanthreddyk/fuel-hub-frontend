@@ -9,14 +9,6 @@ export const useStations = () => {
     queryFn: stationsService.getStations,
     staleTime: 60000,
     retry: 2,
-    onError: (error: any) => {
-      console.error('Failed to fetch stations:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load stations. Please try again.",
-        variant: "destructive",
-      });
-    }
   });
 };
 
@@ -26,14 +18,6 @@ export const useStation = (id: string) => {
     queryFn: () => stationsService.getStation(id),
     enabled: !!id,
     staleTime: 60000,
-    onError: (error: any) => {
-      console.error('Failed to fetch station:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load station details. Please try again.",
-        variant: "destructive",
-      });
-    }
   });
 };
 
