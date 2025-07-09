@@ -20,12 +20,12 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-sm sm:text-base">Sales Trend (Last 7 Days)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[120px] sm:h-[180px] md:h-[220px] lg:h-[260px] bg-muted animate-pulse rounded" />
+          <div className="h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[300px] bg-muted animate-pulse rounded" />
         </CardContent>
       </Card>
     );
@@ -42,41 +42,43 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
   };
 
   return (
-    <Card className="bg-gradient-to-br from-white to-purple-50 border-purple-200">
+    <Card className="bg-gradient-to-br from-white to-purple-50 border-purple-200 w-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm sm:text-base lg:text-lg text-purple-700">Daily Sales Trend</CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
-        <ChartContainer config={chartConfig} className="h-[120px] sm:h-[180px] md:h-[220px] lg:h-[260px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 8 }}
-                axisLine={false}
-                tickLine={false}
-                interval={0}
-              />
-              <YAxis 
-                tick={{ fontSize: 8 }}
-                axisLine={false}
-                tickLine={false}
-                width={30}
-              />
-              <ChartTooltip 
-                content={<ChartTooltipContent />}
-                formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Sales']}
-              />
-              <Line
-                type="monotone"
-                dataKey="amount"
-                stroke={chartConfig.amount.color}
-                strokeWidth={2}
-                dot={{ fill: chartConfig.amount.color, strokeWidth: 1, r: 2 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+        <div className="w-full overflow-hidden">
+          <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval={0}
+                />
+                <YAxis 
+                  tick={{ fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={40}
+                />
+                <ChartTooltip 
+                  content={<ChartTooltipContent />}
+                  formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Sales']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="amount"
+                  stroke={chartConfig.amount.color}
+                  strokeWidth={2}
+                  dot={{ fill: chartConfig.amount.color, strokeWidth: 1, r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );

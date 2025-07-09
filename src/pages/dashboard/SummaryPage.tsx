@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -66,7 +65,7 @@ export default function SummaryPage() {
   const recentStations = Array.isArray(stationMetrics) ? stationMetrics.slice(0, 5) : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -158,25 +157,39 @@ export default function SummaryPage() {
       </div>
 
       {/* Main Dashboard Components */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SalesSummaryCard filters={filters} />
-        <ProfitMetricsCard filters={filters} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full min-w-0">
+        <div className="min-w-0">
+          <SalesSummaryCard filters={filters} />
+        </div>
+        <div className="min-w-0">
+          <ProfitMetricsCard filters={filters} />
+        </div>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PaymentMethodChart filters={filters} />
-        <FuelBreakdownChart filters={filters} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full min-w-0">
+        <div className="min-w-0">
+          <PaymentMethodChart filters={filters} />
+        </div>
+        <div className="min-w-0">
+          <FuelBreakdownChart filters={filters} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <SalesTrendChart filters={filters} />
+      <div className="grid grid-cols-1 gap-6 w-full min-w-0">
+        <div className="min-w-0">
+          <SalesTrendChart filters={filters} />
+        </div>
       </div>
 
       {/* Station Metrics and Top Creditors */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <StationMetricsList />
-        <TopCreditorsTable />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full min-w-0">
+        <div className="min-w-0">
+          <StationMetricsList />
+        </div>
+        <div className="min-w-0">
+          <TopCreditorsTable />
+        </div>
       </div>
 
       {/* Recent Stations */}
