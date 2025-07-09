@@ -44,26 +44,9 @@ export const reportsService = {
     try {
       console.log('[REPORTS-API] Fetching reports');
       
-      // Use the implemented sales reports endpoint
-      const response = await apiClient.get('reports/sales');
-      
-      // Extract reports from response
-      let reportsArray: Report[] = [];
-      
-      if (response.data?.data?.reports) {
-        reportsArray = response.data.data.reports;
-      } else if (response.data?.reports) {
-        reportsArray = response.data.reports;
-      } else if (Array.isArray(response.data)) {
-        reportsArray = response.data;
-      } else if (response.data?.data && Array.isArray(response.data.data)) {
-        reportsArray = response.data.data;
-      } else {
-        reportsArray = extractArray<Report>(response, 'reports');
-      }
-      
-      console.log(`[REPORTS-API] Successfully fetched ${reportsArray.length} reports`);
-      return reportsArray;
+      // Return empty array for now since there's no reports storage endpoint
+      // Reports are generated on-demand
+      return [];
     } catch (error) {
       console.error('[REPORTS-API] Error fetching reports:', error);
       return [];
@@ -97,24 +80,26 @@ export const reportsService = {
     try {
       console.log('[REPORTS-API] Generating report with data:', data);
 
-      const payload = {
-        type: data.type,
-        format: data.format,
-        stationId: data.filters?.stationId,
-        dateRange: {
-          from: data.dateRange.start,
-          to: data.dateRange.end,
-        },
-      };
+      // Use the sales report endpoint with export
+      const params = new URLSearchParams();
+      if (data.filters?.stationId && data.filters.stationId !== 'all') {
+        params.append('stationId', data.filters.stationId);
+      }
+      if (data.dateRange.start) {
+        params.append('startDate', data.dateRange.start.split('T')[0]);
+      }
+      if (data.dateRange.end) {
+        params.append('endDate', data.dateRange.end.split('T')[0]);
+      }
 
-      const response = await apiClient.post('reports/export', payload, {
+      const response = await apiClient.get(`reports/sales/export?${params.toString()}`, {
         responseType: 'blob',
       });
 
       return response.data as Blob;
     } catch (error) {
       console.error('[REPORTS-API] Error generating report:', error);
-      return null;
+      throw error;
     }
   },
   

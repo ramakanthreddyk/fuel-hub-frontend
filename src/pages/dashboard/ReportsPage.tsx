@@ -86,7 +86,14 @@ export default function ReportsPage() {
         form.reset();
         toast({
           title: "Report Generated",
-          description: "Your report is being processed and will be available soon.",
+          description: "Your report has been generated and downloaded.",
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: "Error",
+          description: "Failed to generate report. Please try again.",
+          variant: "destructive"
         });
       }
     });
