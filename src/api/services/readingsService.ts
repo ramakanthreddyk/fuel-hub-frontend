@@ -26,6 +26,7 @@ export interface Reading {
   pumpId?: string;
   stationId?: string;
   attendantName?: string;
+  recordedBy?: string;
   amount?: number;
   pricePerLitre?: number;
 }
