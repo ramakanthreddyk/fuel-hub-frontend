@@ -377,10 +377,27 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                       <FormControl>
                         <Input
                           type="number"
+                          step="0.01"
                           min={minReading}
                           className="bg-white"
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value) {
+                              const normalized = parseFloat(value).toFixed(2);
+                              field.onChange(parseFloat(normalized));
+                            } else {
+                              field.onChange('');
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value;
+                            if (value && !isNaN(parseFloat(value))) {
+                              const normalized = parseFloat(value).toFixed(2);
+                              e.target.value = normalized;
+                              field.onChange(parseFloat(normalized));
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
