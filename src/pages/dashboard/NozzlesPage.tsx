@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNozzles, useDeleteNozzle } from '@/hooks/api/useNozzles';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useStations } from '@/hooks/api/useStations';
-import { useLatestReading } from '@/hooks/api/useReadings';
 import { useToast } from '@/hooks/use-toast';
 import { FuelNozzleCard } from '@/components/nozzles/FuelNozzleCard';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -209,16 +208,6 @@ export default function NozzlesPage() {
               const pump = pumps.find(p => p.id === nozzle.pumpId);
               const station = stations.find(s => s.id === pump?.stationId);
               
-              // Use useLatestReading hook to get the last reading
-              // This is a custom hook that uses React Query's useQuery under the hood
-              // It's safe to use in a map function because React Query handles the caching
-              const { data: latestReading, isError: readingError } = useLatestReading(nozzle.id);
-              
-              // If there's an error fetching the reading, log it but don't block rendering
-              if (readingError) {
-                console.warn(`Error fetching latest reading for nozzle ${nozzle.id}`);
-              }
-              
               return (
                 <FuelNozzleCard
                   key={nozzle.id}
@@ -227,7 +216,7 @@ export default function NozzlesPage() {
                     nozzleNumber: nozzle.nozzleNumber || 0,
                     fuelType: (nozzle.fuelType as 'petrol' | 'diesel' | 'premium') || 'petrol',
                     status: (nozzle.status as 'active' | 'maintenance' | 'inactive') || 'inactive',
-                    lastReading: latestReading?.reading,
+                    lastReading: nozzle.lastReading,
                     pumpName: pump?.name,
                     stationName: station?.name,
                     pumpId: pump?.id,

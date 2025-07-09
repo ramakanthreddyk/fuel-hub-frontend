@@ -23,11 +23,46 @@ export interface CreateNozzleRequest {
   status?: 'active' | 'inactive' | 'maintenance';
 }
 
+import { readingsService } from './readingsService';
+
 export const nozzlesService = {
   getNozzles: async (pumpId?: string): Promise<Nozzle[]> => {
     const params = pumpId ? `?pumpId=${pumpId}` : '';
     const response = await apiClient.get(`${API_CONFIG.endpoints.nozzles.base}${params}`);
-    return extractArray<Nozzle>(response, 'nozzles');
+    const nozzles = extractArray<Nozzle>(response, 'nozzles');
+    return nozzles;
+  },
+  
+  /**
+   * Get nozzles with their latest readings
+   * This method fetches nozzles and then enriches them with their latest readings
+   */
+  getNozzlesWithReadings: async (pumpId?: string): Promise<Nozzle[]> => {
+    try {
+      // First get all nozzles
+      const nozzles = await nozzlesService.getNozzles(pumpId);
+      
+      // Then fetch the latest reading for each nozzle
+      const nozzlesWithReadings = await Promise.all(
+        nozzles.map(async (nozzle) => {
+          try {
+            const latestReading = await readingsService.getLatestReading(nozzle.id);
+            return {
+              ...nozzle,
+              lastReading: latestReading?.reading
+            };
+          } catch (error) {
+            console.warn(`Failed to get latest reading for nozzle ${nozzle.id}:`, error);
+            return nozzle;
+          }
+        })
+      );
+      
+      return nozzlesWithReadings;
+    } catch (error) {
+      console.error('Failed to get nozzles with readings:', error);
+      throw error;
+    }
   },
 
   getNozzle: async (id: string): Promise<Nozzle> => {
