@@ -19,12 +19,12 @@ export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-sm sm:text-base">Fuel Sales Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[140px] sm:h-[200px] md:h-[240px] lg:h-[280px] bg-muted animate-pulse rounded" />
+          <div className="h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[300px] bg-muted animate-pulse rounded" />
         </CardContent>
       </Card>
     );
@@ -42,37 +42,39 @@ export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
   };
 
   return (
-    <Card className="bg-gradient-to-br from-white to-green-50 border-green-200">
+    <Card className="bg-gradient-to-br from-white to-green-50 border-green-200 w-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm sm:text-base lg:text-lg text-green-700">Fuel Sales by Type</CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
-        <ChartContainer config={chartConfig} className="h-[140px] sm:h-[200px] md:h-[240px] lg:h-[280px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
-              <XAxis 
-                dataKey="fuelType" 
-                tick={{ fontSize: 8 }}
-                axisLine={false}
-                tickLine={false}
-                interval={0}
-              />
-              <YAxis 
-                tick={{ fontSize: 8 }}
-                axisLine={false}
-                tickLine={false}
-                width={30}
-              />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar 
-                dataKey="volume" 
-                fill={chartConfig.volume.color} 
-                name="Volume (L)"
-                radius={[1, 1, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+        <div className="w-full overflow-hidden">
+          <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                <XAxis 
+                  dataKey="fuelType" 
+                  tick={{ fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval={0}
+                />
+                <YAxis 
+                  tick={{ fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={40}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar 
+                  dataKey="volume" 
+                  fill={chartConfig.volume.color} 
+                  name="Volume (L)"
+                  radius={[2, 2, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );
