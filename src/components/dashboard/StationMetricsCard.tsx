@@ -57,50 +57,50 @@ export function StationMetricsCard({ station }: StationMetricsCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-200 border-0 bg-white overflow-hidden">
+    <Card className="hover:shadow-lg transition-all duration-200 border-0 bg-white overflow-hidden w-full max-w-sm mx-auto">
       <div className={`h-1 bg-gradient-to-r ${getStatusGradient(station.status)}`} />
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 px-4 pt-4">
         <div className="flex items-start justify-between">
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-base font-bold text-gray-900 truncate mb-2">
+            <CardTitle className="text-sm font-bold text-gray-900 truncate mb-2">
               {station.name}
             </CardTitle>
-            <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusColor(station.status)}`}>
-              <div className={`w-2 h-2 rounded-full mr-1.5 ${status === 'active' ? 'bg-green-500' : status === 'inactive' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold border ${getStatusColor(station.status)}`}>
+              <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${station.status === 'active' ? 'bg-green-500' : station.status === 'inactive' ? 'bg-red-500' : 'bg-yellow-500'}`} />
               {station.status.charAt(0).toUpperCase() + station.status.slice(1)}
             </div>
           </div>
-          <div className="flex-shrink-0 ml-3">
-            <div className="p-2 rounded-lg bg-blue-100">
-              <Building2 className="h-5 w-5 text-blue-600" />
+          <div className="flex-shrink-0 ml-2">
+            <div className="p-1.5 rounded-lg bg-blue-100">
+              <Building2 className="h-4 w-4 text-blue-600" />
             </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-4">
+      <CardContent className="pt-0 px-4 pb-4">
+        <div className="space-y-3">
           {/* Today's Sales - Prominent Display */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-100">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-2.5 border border-blue-100">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs font-medium text-blue-600 mb-1">Today's Sales</div>
-                <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   {formatNumber(station.totalSales)}
                 </div>
               </div>
-              <TrendingUp className="h-6 w-6 text-blue-500" />
+              <TrendingUp className="h-5 w-5 text-blue-500 flex-shrink-0" />
             </div>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-green-50 rounded-lg p-3 border border-green-100">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-green-50 rounded-lg p-2.5 border border-green-100">
               <div className="text-xs font-medium text-green-600 mb-1">Monthly Est.</div>
               <div className="text-sm font-bold text-green-700">
                 {formatNumber(station.totalSales * 30)}
               </div>
             </div>
-            <div className="bg-orange-50 rounded-lg p-3 border border-orange-100">
+            <div className="bg-orange-50 rounded-lg p-2.5 border border-orange-100">
               <div className="text-xs font-medium text-orange-600 mb-1">Volume</div>
               <div className="text-sm font-bold text-orange-700">
                 {formatVolume(station.totalVolume)}
@@ -109,9 +109,9 @@ export function StationMetricsCard({ station }: StationMetricsCardProps) {
           </div>
 
           {/* Pumps Status */}
-          <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3 border border-gray-100">
+          <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2.5 border border-gray-100">
             <div className="flex items-center gap-2">
-              <Gauge className="h-4 w-4 text-gray-600" />
+              <Gauge className="h-4 w-4 text-gray-600 flex-shrink-0" />
               <span className="text-sm font-medium text-gray-700">Pumps Active</span>
             </div>
             <div className="text-sm font-bold text-gray-900">
