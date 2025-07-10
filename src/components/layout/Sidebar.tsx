@@ -42,6 +42,7 @@ const navigation: NavItem[] = [
     name: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
+    roles: ['owner', 'manager', 'superadmin'],
   },
   {
     name: 'Attendant Dashboard',
@@ -69,8 +70,9 @@ const navigation: NavItem[] = [
     name: 'Operations',
     href: '/dashboard/readings',
     icon: Database,
+    roles: ['owner', 'manager', 'superadmin'],
     children: [
-      { name: 'Readings', href: '/dashboard/readings', icon: Database },
+      { name: 'Readings', href: '/dashboard/readings', icon: Database, roles: ['owner', 'manager', 'superadmin'] },
       { name: 'Fuel Prices', href: '/dashboard/fuel-prices', icon: BadgeIndianRupee, roles: ['owner', 'manager'] },
       { name: 'Inventory', href: '/dashboard/fuel-inventory', icon: ClipboardList, roles: ['owner', 'manager'] },
     ],
@@ -79,9 +81,10 @@ const navigation: NavItem[] = [
     name: 'Sales',
     href: '/dashboard/sales',
     icon: BadgeIndianRupee,
+    roles: ['owner', 'manager', 'superadmin'],
     children: [
-      { name: 'Sales Overview', href: '/dashboard/sales/overview', icon: BarChart3 },
-      { name: 'Cash Reports', href: '/dashboard/cash-reports', icon: FileText },
+      { name: 'Sales Overview', href: '/dashboard/sales/overview', icon: BarChart3, roles: ['owner', 'manager', 'superadmin'] },
+      { name: 'Cash Reports', href: '/dashboard/cash-reports', icon: FileText, roles: ['owner', 'manager', 'superadmin'] },
     ],
   },
   {
@@ -117,6 +120,7 @@ const navigation: NavItem[] = [
     name: 'Settings',
     href: '/dashboard/settings',
     icon: Settings,
+    roles: ['owner', 'manager', 'superadmin'],
   },
 ];
 
