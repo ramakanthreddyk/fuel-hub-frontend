@@ -9,7 +9,7 @@ import { useAttendantStations, useCashReports, useCreateCashReport } from '@/hoo
 import { Plus, DollarSign } from 'lucide-react';
 
 export default function AttendantCashReportsPage() {
-  const [selectedStationId, setSelectedStationId] = useState<string>('');
+  const [selectedStationId, setSelectedStationId] = useState<string | undefined>();
   const [showNewReport, setShowNewReport] = useState(false);
   
   const { data: stations = [] } = useAttendantStations();
@@ -20,6 +20,11 @@ export default function AttendantCashReportsPage() {
     e.preventDefault();
     // Handle form submission logic here
     setShowNewReport(false);
+  };
+
+  const handleStationChange = (value: string) => {
+    // If "all" is selected, set to undefined to show all stations
+    setSelectedStationId(value === "all" ? undefined : value);
   };
 
   return (
@@ -34,12 +39,12 @@ export default function AttendantCashReportsPage() {
 
       <div className="mb-6">
         <Label htmlFor="station">Filter by Station</Label>
-        <Select value={selectedStationId} onValueChange={setSelectedStationId}>
+        <Select value={selectedStationId || "all"} onValueChange={handleStationChange}>
           <SelectTrigger id="station" className="w-full md:w-[300px]">
             <SelectValue placeholder="All stations" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All stations</SelectItem>
+            <SelectItem value="all">All stations</SelectItem>
             {stations.map(station => (
               <SelectItem key={station.id} value={station.id}>
                 {station.name}
