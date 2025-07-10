@@ -1,4 +1,3 @@
-
 /**
  * @file pages/dashboard/CashReportPage.tsx
  * @description Page for submitting cash reports
@@ -49,8 +48,8 @@ export default function CashReportPage() {
     data: creditors = [],
     isLoading: creditorsLoading,
   } = isAttendant
-    ? useAttendantCreditors(selectedStationId)
-    : useCreditors(selectedStationId);
+    ? useAttendantCreditors()
+    : useCreditors();
   
   // Submit cash report mutation
   const submitCashReport = useCreateCashReport();

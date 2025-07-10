@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,7 +40,7 @@ export function AttendantAlerts({ stationId }: AttendantAlertsProps) {
       case 'warning':
         return 'default' as const;
       default:
-        return 'outline' as const;
+        return 'default' as const;
     }
   };
 

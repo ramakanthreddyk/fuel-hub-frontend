@@ -80,8 +80,8 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                   <div className="flex items-center gap-2 min-w-0">
                     <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium truncate">{sale.stationName || sale.station_name || 'Unknown Station'}</div>
-                      <div className="text-sm text-muted-foreground truncate">{sale.pumpName || sale.pump_name || 'Unknown Pump'}</div>
+                      <div className="font-medium truncate">{sale.stationName || 'Unknown Station'}</div>
+                      <div className="text-sm text-muted-foreground truncate">{sale.pumpName || 'Unknown Pump'}</div>
                     </div>
                   </div>
                 </td>
@@ -89,7 +89,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                   <div className="flex items-center gap-2 min-w-0">
                     <Fuel className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium">#{sale.nozzleNumber || sale.nozzle_number || 'N/A'}</div>
+                      <div className="font-medium">#{sale.nozzleName || 'N/A'}</div>
                       <Badge className={`text-xs ${getFuelTypeColor(sale.fuelType)}`}>
                         {sale.fuelType}
                       </Badge>
@@ -100,7 +100,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                   <div className="font-medium">{formatVolume(sale.volume)}</div>
                 </td>
                 <td className="p-3">
-                  <div className="font-medium">{formatCurrency(sale.fuelPrice || sale.price_per_liter || sale.fuel_price || 0)}</div>
+                  <div className="font-medium">{formatCurrency(sale.fuelPrice || 0)}</div>
                   <div className="text-xs text-muted-foreground">per litre</div>
                 </td>
                 <td className="p-3">
@@ -132,8 +132,8 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium text-sm truncate">{sale.stationName || sale.station_name || 'Unknown Station'}</div>
-                    <div className="text-xs text-muted-foreground truncate">{sale.pumpName || sale.pump_name || 'Unknown Pump'}</div>
+                    <div className="font-medium text-sm truncate">{sale.stationName || 'Unknown Station'}</div>
+                    <div className="text-xs text-muted-foreground truncate">{sale.pumpName || 'Unknown Pump'}</div>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0 ml-2">
@@ -151,7 +151,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                 <div className="min-w-0">
                   <span className="text-muted-foreground block text-xs">Nozzle:</span>
                   <div className="flex items-center gap-1 mt-1">
-                    <span className="font-medium">#{sale.nozzleNumber || sale.nozzle_number || 'N/A'}</span>
+                    <span className="font-medium">#{sale.nozzleName || 'N/A'}</span>
                     <Badge className={`${getFuelTypeColor(sale.fuelType)} text-xs`}>
                       {sale.fuelType}
                     </Badge>
@@ -163,7 +163,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                 </div>
                 <div className="min-w-0">
                   <span className="text-muted-foreground block text-xs">Price:</span>
-                  <div className="font-medium mt-1 truncate">{formatCurrency(sale.fuelPrice || sale.price_per_liter || sale.fuel_price || 0)}/L</div>
+                  <div className="font-medium mt-1 truncate">{formatCurrency(sale.fuelPrice || 0)}/L</div>
                 </div>
                 <div className="min-w-0">
                   <span className="text-muted-foreground block text-xs">Date:</span>

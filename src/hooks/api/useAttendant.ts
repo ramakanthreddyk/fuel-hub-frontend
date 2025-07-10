@@ -150,6 +150,9 @@ export const useSubmitCashReport = () => {
   });
 };
 
+// Export alias for backward compatibility
+export const useCreateCashReport = useSubmitCashReport;
+
 /**
  * Hook to fetch cash reports
  */
