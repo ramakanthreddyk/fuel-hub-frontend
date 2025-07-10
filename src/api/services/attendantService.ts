@@ -53,7 +53,7 @@ export const attendantService = {
   getFuelInventory: async (stationId?: string) => {
     try {
       console.log('[ATTENDANT-API] Fetching fuel inventory');
-      let url = '/fuel-inventory';
+      let url = 'fuel-inventory';
       if (stationId) url += `?stationId=${stationId}`;
       
       const response = await apiClient.get(url);
@@ -71,7 +71,7 @@ export const attendantService = {
   getFuelInventorySummary: async () => {
     try {
       console.log('[ATTENDANT-API] Fetching fuel inventory summary');
-      const response = await apiClient.get('/fuel-inventory/summary');
+      const response = await apiClient.get('fuel-inventory/summary');
       return extractData(response);
     } catch (error) {
       console.error('[ATTENDANT-API] Error fetching fuel inventory summary:', error);

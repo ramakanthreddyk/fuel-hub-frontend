@@ -40,7 +40,7 @@ export const useCanCreateReading = (nozzleId?: string) => {
   return useQuery({
     queryKey: ['can-create-reading', nozzleId],
     queryFn: async () => {
-      const response = await apiClient.get(`/nozzle-readings/can-create/${nozzleId}`);
+      const response = await apiClient.get(`nozzle-readings/can-create/${nozzleId}`);
       return extractData<CanCreateReadingResponse>(response);
     },
     enabled: !!nozzleId,
@@ -58,7 +58,7 @@ export const useCreateAttendantReading = () => {
   
   return useMutation({
     mutationFn: async (data: CreateReadingRequest) => {
-      const response = await apiClient.post('/nozzle-readings', data);
+      const response = await apiClient.post('nozzle-readings', data);
       return extractData<NozzleReading>(response);
     },
     onSuccess: (newReading) => {
@@ -88,7 +88,7 @@ export const useLatestNozzleReading = (nozzleId?: string) => {
   return useQuery({
     queryKey: ['latest-reading', nozzleId],
     queryFn: async () => {
-      const response = await apiClient.get(`/nozzle-readings?nozzleId=${nozzleId}&limit=1`);
+      const response = await apiClient.get(`nozzle-readings?nozzleId=${nozzleId}&limit=1`);
       const readings = extractData<NozzleReading[]>(response);
       return readings && readings.length > 0 ? readings[0] : null;
     },
