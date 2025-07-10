@@ -11,6 +11,7 @@ import { Toaster } from './components/ui/toaster';
 // Layout Components
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { SuperAdminLayout } from './components/layout/SuperAdminLayout';
+import { AttendantLayout } from './components/layout/AttendantLayout';
 import { ProtectedRoute as AuthProtectedRoute } from './components/auth/ProtectedRoute';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 
@@ -18,7 +19,7 @@ import { ProtectedRoute } from './routes/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
-import AttendantDashboardPage from './pages/dashboard/AttendantDashboardPage';
+import AttendantDashboardPage from './pages/attendant/AttendantDashboardPage';
 import StationsPage from './pages/dashboard/StationsPage';
 import StationDetailPage from './pages/dashboard/StationDetailPage';
 import NewStationPage from './pages/dashboard/NewStationPage';
@@ -65,6 +66,12 @@ import TenantSettingsPage from './pages/superadmin/TenantSettingsPage';
 import TenantDetailsPage from './pages/superadmin/TenantDetailsPage';
 import SuperAdminSettingsPage from './pages/superadmin/SettingsPage';
 
+// Attendant Pages
+import AttendantReadingsPage from './pages/attendant/AttendantReadingsPage';
+import AttendantCashReportsPage from './pages/attendant/AttendantCashReportsPage';
+import AttendantAlertsPage from './pages/attendant/AttendantAlertsPage';
+import AttendantInventoryPage from './pages/attendant/AttendantInventoryPage';
+
 function App() {
   console.log('[APP] App component mounting');
 
@@ -82,7 +89,7 @@ function App() {
               <Route path="/login/admin" element={<LoginPage />} />
               
               {/* Dashboard Routes - for owners, managers, superadmins */}
-              <Route element={<ProtectedRoute allowedRoles={['owner', 'manager', 'superadmin']} redirectPath="/attendant/dashboard" />}>
+              <Route element={<ProtectedRoute allowedRoles={['owner', 'manager', 'superadmin']} redirectPath="/attendant" />}>
                 <Route
                   path="/dashboard"
                   element={<DashboardLayout />}
@@ -160,8 +167,14 @@ function App() {
 
               {/* Attendant Routes - for attendants only */}
               <Route element={<ProtectedRoute allowedRoles={['attendant']} redirectPath="/dashboard" />}>
-                <Route path="/attendant" element={<AttendantDashboardPage />} />
-                <Route path="/attendant/dashboard" element={<AttendantDashboardPage />} />
+                <Route path="/attendant" element={<AttendantLayout />}>
+                  <Route index element={<AttendantDashboardPage />} />
+                  <Route path="dashboard" element={<AttendantDashboardPage />} />
+                  <Route path="readings" element={<AttendantReadingsPage />} />
+                  <Route path="cash-reports" element={<AttendantCashReportsPage />} />
+                  <Route path="alerts" element={<AttendantAlertsPage />} />
+                  <Route path="inventory" element={<AttendantInventoryPage />} />
+                </Route>
               </Route>
 
               {/* SuperAdmin Routes */}
