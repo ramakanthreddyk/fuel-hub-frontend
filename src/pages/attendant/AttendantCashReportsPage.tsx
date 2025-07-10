@@ -114,18 +114,24 @@ export default function AttendantCashReportsPage() {
               <CardContent>
                 <div className="grid gap-2 md:grid-cols-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">Cash</p>
-                    <p className="font-medium">${report.cashAmount.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">Cash Amount</p>
+                    <p className="font-medium">${Number(report.cashAmount || 0).toFixed(2)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Card</p>
-                    <p className="font-medium">${(report.cardAmount || 0).toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">Shift</p>
+                    <p className="font-medium capitalize">{report.shift || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">UPI</p>
-                    <p className="font-medium">${(report.upiAmount || 0).toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <p className="font-medium capitalize">{report.status || 'pending'}</p>
                   </div>
                 </div>
+                {report.notes && (
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground">Notes</p>
+                    <p className="text-sm">{report.notes}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))
