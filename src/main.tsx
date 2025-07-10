@@ -19,10 +19,13 @@ const queryClient = new QueryClient({
   },
 });
 
+// Use the base URL from the environment or default to '/'
+const baseUrl = import.meta.env.VITE_BASE_URL || '/';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter basename={baseUrl}>
         <App />
       </BrowserRouter>
     </QueryClientProvider>

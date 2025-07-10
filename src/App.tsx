@@ -160,8 +160,13 @@ function App() {
 
               {/* Attendant Routes */}
               <Route element={<ProtectedRoute allowedRoles={['attendant']} redirectPath="/dashboard" />}>
-                <Route path="/attendant/*" element={<Navigate to="/attendant" replace />} />
+                {/* Handle both /attendant and aspirereach.com/attendant */}
                 <Route path="/attendant" element={<AttendantDashboardPage />} />
+                <Route path="/attendant/dashboard" element={<AttendantDashboardPage />} />
+                <Route path="/attendant/readings" element={<Navigate to="/attendant" replace />} />
+                <Route path="/attendant/cash-reports" element={<Navigate to="/attendant" replace />} />
+                <Route path="/attendant/alerts" element={<Navigate to="/attendant" replace />} />
+                <Route path="/attendant/inventory" element={<Navigate to="/attendant" replace />} />
               </Route>
 
               {/* SuperAdmin Routes */}
