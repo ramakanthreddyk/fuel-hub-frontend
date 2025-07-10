@@ -100,13 +100,13 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
         {/* Station Selection */}
         <div className="space-y-2">
           <Label htmlFor="station">Station</Label>
-          <Select value={selectedStationId} onValueChange={handleStationChange} disabled={stationsLoading}>
+          <Select value={selectedStationId || undefined} onValueChange={handleStationChange} disabled={stationsLoading}>
             <SelectTrigger id="station">
               <SelectValue placeholder={stationsLoading ? "Loading..." : "Select a station"} />
             </SelectTrigger>
             <SelectContent>
               {stations.map(station => (
-                <SelectItem key={station.id} value={station.id}>
+                <SelectItem key={station.id} value={station.id || "default-id"}>
                   {station.name}
                 </SelectItem>
               ))}
@@ -118,13 +118,13 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
         {selectedStationId && (
           <div className="space-y-2">
             <Label htmlFor="pump">Pump</Label>
-            <Select value={selectedPumpId} onValueChange={handlePumpChange} disabled={pumpsLoading || !pumps?.length}>
+            <Select value={selectedPumpId || undefined} onValueChange={handlePumpChange} disabled={pumpsLoading || !pumps?.length}>
               <SelectTrigger id="pump">
                 <SelectValue placeholder={pumpsLoading ? "Loading..." : pumps?.length ? "Select a pump" : "No pumps available"} />
               </SelectTrigger>
               <SelectContent>
                 {pumps?.map(pump => (
-                  <SelectItem key={pump.id} value={pump.id}>
+                  <SelectItem key={pump.id} value={pump.id || "default-pump-id"}>
                     {pump.name}
                   </SelectItem>
                 ))}
@@ -137,13 +137,13 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
         {selectedPumpId && (
           <div className="space-y-2">
             <Label htmlFor="nozzle">Nozzle</Label>
-            <Select value={selectedNozzleId} onValueChange={handleNozzleChange} disabled={nozzlesLoading || !nozzles?.length}>
+            <Select value={selectedNozzleId || undefined} onValueChange={handleNozzleChange} disabled={nozzlesLoading || !nozzles?.length}>
               <SelectTrigger id="nozzle">
                 <SelectValue placeholder={nozzlesLoading ? "Loading..." : nozzles?.length ? "Select a nozzle" : "No nozzles available"} />
               </SelectTrigger>
               <SelectContent>
                 {nozzles?.map(nozzle => (
-                  <SelectItem key={nozzle.id} value={nozzle.id}>
+                  <SelectItem key={nozzle.id} value={nozzle.id || "default-nozzle-id"}>
                     Nozzle #{nozzle.nozzleNumber} - {nozzle.fuelType}
                   </SelectItem>
                 ))}
@@ -199,14 +199,14 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
             {paymentMethod === "credit" && (
               <div className="space-y-2">
                 <Label htmlFor="creditor">Creditor</Label>
-                <Select value={creditorId} onValueChange={setCreditorId} disabled={creditorsLoading || !creditors?.length}>
+                <Select value={creditorId || undefined} onValueChange={setCreditorId} disabled={creditorsLoading || !creditors?.length}>
                   <SelectTrigger id="creditor">
                     <SelectValue placeholder={creditorsLoading ? "Loading..." : creditors?.length ? "Select a creditor" : "No creditors available"} />
                   </SelectTrigger>
                   <SelectContent>
                     {creditors?.map(creditor => (
-                      <SelectItem key={creditor.id} value={creditor.id}>
-                        {creditor.name || creditor.partyName}
+                      <SelectItem key={creditor.id} value={creditor.id || "default-creditor-id"}>
+                        {creditor.name || creditor.partyName || "Unknown Creditor"}
                       </SelectItem>
                     ))}
                   </SelectContent>

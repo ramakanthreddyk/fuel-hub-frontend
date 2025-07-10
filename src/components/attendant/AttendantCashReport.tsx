@@ -47,7 +47,7 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
         <div className="space-y-2">
           <Label htmlFor="station">Station</Label>
           <Select 
-            value={selectedStationId} 
+            value={selectedStationId || undefined} 
             onValueChange={setSelectedStationId} 
             disabled={stationsLoading || !!propStationId}
           >
@@ -56,7 +56,7 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
             </SelectTrigger>
             <SelectContent>
               {stations.map(station => (
-                <SelectItem key={station.id} value={station.id}>
+                <SelectItem key={station.id} value={station.id || "default-id"}>
                   {station.name}
                 </SelectItem>
               ))}

@@ -17,13 +17,13 @@ export default function AttendantInventoryPage() {
       
       <div className="mb-6">
         <Label htmlFor="station">Select Station</Label>
-        <Select value={selectedStationId} onValueChange={setSelectedStationId} disabled={stationsLoading}>
+        <Select value={selectedStationId || undefined} onValueChange={setSelectedStationId} disabled={stationsLoading}>
           <SelectTrigger id="station" className="w-full md:w-[300px]">
             <SelectValue placeholder={stationsLoading ? "Loading..." : "Select a station"} />
           </SelectTrigger>
           <SelectContent>
             {stations.map(station => (
-              <SelectItem key={station.id} value={station.id}>
+              <SelectItem key={station.id} value={station.id || "default-id"}>
                 {station.name}
               </SelectItem>
             ))}
