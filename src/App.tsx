@@ -81,8 +81,8 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/login/admin" element={<LoginPage />} />
               
-              {/* Dashboard Routes */}
-              <Route element={<ProtectedRoute allowedRoles={['owner', 'manager', 'superadmin']} redirectPath="/attendant" />}>
+              {/* Dashboard Routes - for owners, managers, superadmins */}
+              <Route element={<ProtectedRoute allowedRoles={['owner', 'manager', 'superadmin']} redirectPath="/attendant/dashboard" />}>
                 <Route
                   path="/dashboard"
                   element={<DashboardLayout />}
@@ -158,15 +158,10 @@ function App() {
                 </Route>
               </Route>
 
-              {/* Attendant Routes */}
+              {/* Attendant Routes - for attendants only */}
               <Route element={<ProtectedRoute allowedRoles={['attendant']} redirectPath="/dashboard" />}>
-                {/* Handle both /attendant and aspirereach.com/attendant */}
                 <Route path="/attendant" element={<AttendantDashboardPage />} />
                 <Route path="/attendant/dashboard" element={<AttendantDashboardPage />} />
-                <Route path="/attendant/readings" element={<Navigate to="/attendant" replace />} />
-                <Route path="/attendant/cash-reports" element={<Navigate to="/attendant" replace />} />
-                <Route path="/attendant/alerts" element={<Navigate to="/attendant" replace />} />
-                <Route path="/attendant/inventory" element={<Navigate to="/attendant" replace />} />
               </Route>
 
               {/* SuperAdmin Routes */}
@@ -207,7 +202,7 @@ function RoleDashboard() {
     const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
     
     if (user.role === 'attendant') {
-      return <Navigate to="/attendant" replace />;
+      return <Navigate to="/attendant/dashboard" replace />;
     }
     
     return <DashboardPage />;

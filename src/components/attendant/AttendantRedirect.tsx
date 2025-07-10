@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,17 +9,8 @@ export function AttendantRedirect() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Check if we're on the production URL
-    const isProduction = window.location.hostname === 'aspirereach.com';
-    const path = window.location.pathname;
-    
-    if (isProduction && path === '/attendant') {
-      // On production, redirect to the attendant dashboard
-      navigate('/attendant/dashboard', { replace: true });
-    } else {
-      // In development, just go to the attendant dashboard
-      navigate('/attendant', { replace: true });
-    }
+    // Simply redirect to the attendant dashboard
+    navigate('/attendant/dashboard', { replace: true });
   }, [navigate]);
   
   return (
