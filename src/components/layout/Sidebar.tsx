@@ -44,6 +44,12 @@ const navigation: NavItem[] = [
     icon: LayoutDashboard,
   },
   {
+    name: 'Attendant Dashboard',
+    href: '/attendant',
+    icon: Database,
+    roles: ['attendant'],
+  },
+  {
     name: 'Stations',
     href: '/dashboard/stations',
     icon: Factory,

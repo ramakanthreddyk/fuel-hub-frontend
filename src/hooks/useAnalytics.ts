@@ -24,6 +24,7 @@ export const useHourlySales = (stationId?: string, dateRange?: { from: Date; to:
   return useQuery({
     queryKey: ['analytics', 'hourly-sales', stationId, effectiveDateRange],
     queryFn: () => analyticsApi.getHourlySales(stationId, effectiveDateRange),
+    enabled: !!stationId, // Only run the query if stationId is provided
   });
 };
 

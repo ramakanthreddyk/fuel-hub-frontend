@@ -29,14 +29,18 @@ export const analyticsApi = {
 
   getHourlySales: async (stationId?: string, dateRange?: { from: Date; to: Date }): Promise<HourlySales[]> => {
     try {
+      if (!stationId) {
+        console.error('Error: stationId is required for hourly sales');
+        return [];
+      }
+      
       // If dateRange is not provided, use today as default
       const today = new Date();
       const startOfDay = new Date(today.setHours(0, 0, 0, 0));
       const endOfDay = new Date(today.setHours(23, 59, 59, 999));
       
       const params = new URLSearchParams();
-      if (stationId) params.append('stationId', stationId);
-      // Always include dateFrom and dateTo as they are required by the API
+      params.append('stationId', stationId); // stationId is required
       params.append('dateFrom', (dateRange?.from || startOfDay).toISOString());
       params.append('dateTo', (dateRange?.to || endOfDay).toISOString());
       
