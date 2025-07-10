@@ -1,3 +1,4 @@
+
 import { useAttendantAlerts, useAcknowledgeAlert } from "@/hooks/api/useAttendant";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -60,7 +61,7 @@ export function AttendantAlerts({ stationId }: AttendantAlertsProps) {
             key={alert.id} 
             variant={
               alert.severity === 'critical' ? 'destructive' : 
-              alert.severity === 'warning' ? 'default' : 'outline'
+              alert.severity === 'warning' ? 'warning' : 'default'
             }
           >
             <AlertTriangle className="h-4 w-4 mr-2" />

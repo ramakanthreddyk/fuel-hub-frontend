@@ -1,13 +1,15 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useFuelInventory, useAttendantStations } from "@/hooks/api/useAttendant";
+import { useAttendantStations } from "@/hooks/api/useAttendant";
+import { useInventory } from "@/hooks/api/useInventory";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
 export default function AttendantInventoryPage() {
   const [selectedStationId, setSelectedStationId] = useState<string>("");
   const { data: stations = [], isLoading: stationsLoading } = useAttendantStations();
-  const { data: inventory = [], isLoading: inventoryLoading } = useFuelInventory(selectedStationId);
+  const { data: inventory = [], isLoading: inventoryLoading } = useInventory(selectedStationId);
 
   return (
     <div className="container mx-auto py-6">
@@ -56,7 +58,7 @@ export default function AttendantInventoryPage() {
                   <CardTitle className="capitalize">{item.fuelType}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold mb-2">{item.currentVolume.toFixed(2)} L</div>
+                  <div className="text-3xl font-bold mb-2">{item.currentStock.toFixed(2)} L</div>
                   <div className="text-sm text-muted-foreground">
                     Status: <span className={`font-medium ${getStatusColor(item.status)}`}>{item.status}</span>
                   </div>
