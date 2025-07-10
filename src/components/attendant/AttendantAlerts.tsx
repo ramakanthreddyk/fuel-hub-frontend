@@ -1,10 +1,8 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, Info, AlertCircle, X } from 'lucide-react';
-import { useAttendantAlerts, useAcknowledgeAlert } from '@/hooks/api/useAttendant';
-import { AttendantAlert } from '@/api/services/attendantService';
+import { useAttendantAlerts, useAcknowledgeAlert } from "@/hooks/api/useAttendant";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 
 interface AttendantAlertsProps {
   stationId?: string;
@@ -14,63 +12,37 @@ export function AttendantAlerts({ stationId }: AttendantAlertsProps) {
   const { data: alerts = [], isLoading } = useAttendantAlerts(stationId, true);
   const acknowledgeAlert = useAcknowledgeAlert();
 
-  const handleAcknowledge = async (alertId: string) => {
-    try {
-      await acknowledgeAlert.mutateAsync(alertId);
-    } catch (error) {
-      console.error('Failed to acknowledge alert:', error);
-    }
-  };
-
-  const getAlertIcon = (severity: AttendantAlert['severity']) => {
-    switch (severity) {
-      case 'critical':
-        return <AlertTriangle className="h-4 w-4" />;
-      case 'warning':
-        return <AlertCircle className="h-4 w-4" />;
-      default:
-        return <Info className="h-4 w-4" />;
-    }
-  };
-
-  const getAlertVariant = (severity: AttendantAlert['severity']) => {
-    switch (severity) {
-      case 'critical':
-        return 'destructive' as const;
-      case 'warning':
-        return 'default' as const;
-      default:
-        return 'default' as const;
-    }
+  const handleAcknowledge = (alertId: string) => {
+    acknowledgeAlert.mutate(alertId);
   };
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>System Alerts</CardTitle>
+          <CardTitle>Alerts</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-2">
-            <div className="h-4 bg-muted rounded w-3/4"></div>
-            <div className="h-4 bg-muted rounded w-1/2"></div>
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="h-16 bg-muted rounded"></div>
+            ))}
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!alerts.length) {
+  if (alerts.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>System Alerts</CardTitle>
-          <CardDescription>All clear - no active alerts</CardDescription>
+          <CardTitle>Alerts</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6">
-            <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No alerts at this time</p>
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <CheckCircle className="h-12 w-12 text-green-500 mb-2" />
+            <p className="text-muted-foreground">No active alerts</p>
           </div>
         </CardContent>
       </Card>
@@ -80,36 +52,29 @@ export function AttendantAlerts({ stationId }: AttendantAlertsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>System Alerts</CardTitle>
-        <CardDescription>
-          {alerts.length} active alert{alerts.length !== 1 ? 's' : ''} requiring attention
-        </CardDescription>
+        <CardTitle>Active Alerts</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {alerts.map(alert => (
+        {alerts.map((alert) => (
           <Alert 
             key={alert.id} 
-            variant={getAlertVariant(alert.severity)}
-            className="relative"
+            variant={
+              alert.severity === 'critical' ? 'destructive' : 
+              alert.severity === 'warning' ? 'default' : 'outline'
+            }
           >
-            {getAlertIcon(alert.severity)}
-            <AlertTitle className="pr-8">{alert.title}</AlertTitle>
-            <AlertDescription className="mt-2">
-              {alert.message}
-              {alert.stationName && (
-                <div className="text-xs mt-1 opacity-75">
-                  Station: {alert.stationName}
-                </div>
-              )}
-            </AlertDescription>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-2 right-2 h-6 w-6 p-0"
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            <div className="flex-1">
+              <AlertTitle>{alert.title}</AlertTitle>
+              <AlertDescription>{alert.message}</AlertDescription>
+            </div>
+            <Button 
+              size="sm" 
+              variant="outline" 
               onClick={() => handleAcknowledge(alert.id)}
               disabled={acknowledgeAlert.isPending}
             >
-              <X className="h-3 w-3" />
+              Acknowledge
             </Button>
           </Alert>
         ))}

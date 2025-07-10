@@ -1,111 +1,111 @@
-
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from "react";
 import { 
   useAttendantStations, 
   useAttendantPumps, 
   useAttendantNozzles,
   useAttendantCreditors
-} from '@/hooks/api/useAttendant';
-import { useCanCreateReading, useCreateAttendantReading, useLatestNozzleReading } from '@/hooks/api/useAttendantReadings';
+} from "@/hooks/api/useAttendant";
+import { useCanCreateReading, useCreateAttendantReading, useLatestNozzleReading } from "@/hooks/api/useAttendantReadings";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, AlertTriangle, CheckCircle } from "lucide-react";
 
 interface AttendantReadingFormProps {
   onSuccess?: () => void;
 }
 
 export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
-  const [selectedStationId, setSelectedStationId] = useState<string>('');
-  const [selectedPumpId, setSelectedPumpId] = useState<string>('');
-  const [selectedNozzleId, setSelectedNozzleId] = useState<string>('');
-  const [readingValue, setReadingValue] = useState<string>('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | 'credit'>('cash');
-  const [creditorId, setCreditorId] = useState<string>('');
+  const [selectedStationId, setSelectedStationId] = useState<string>("");
+  const [selectedPumpId, setSelectedPumpId] = useState<string>("");
+  const [selectedNozzleId, setSelectedNozzleId] = useState<string>("");
+  const [readingValue, setReadingValue] = useState<string>("");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "upi" | "credit">("cash");
+  const [creditorId, setCreditorId] = useState<string>("");
 
-  const { data: stations, isLoading: stationsLoading } = useAttendantStations();
-  const { data: pumps, isLoading: pumpsLoading } = useAttendantPumps(selectedStationId);
-  const { data: nozzles, isLoading: nozzlesLoading } = useAttendantNozzles(selectedPumpId);
-  const { data: creditors, isLoading: creditorsLoading } = useAttendantCreditors();
+  // Fetch data using the attendant hooks
+  const { data: stations = [], isLoading: stationsLoading } = useAttendantStations();
+  const { data: pumps = [], isLoading: pumpsLoading } = useAttendantPumps(selectedStationId);
+  const { data: nozzles = [], isLoading: nozzlesLoading } = useAttendantNozzles(selectedPumpId);
+  const { data: creditors = [], isLoading: creditorsLoading } = useAttendantCreditors();
   const { data: canCreateData } = useCanCreateReading(selectedNozzleId);
   const { data: latestReading } = useLatestNozzleReading(selectedNozzleId);
   
+  // Mutations
   const createReading = useCreateAttendantReading();
 
+  // Set default station if not selected
+  useEffect(() => {
+    if (!selectedStationId && stations.length > 0 && !stationsLoading) {
+      setSelectedStationId(stations[0].id);
+    }
+  }, [stations, stationsLoading, selectedStationId]);
+
+  // Handle station selection
   const handleStationChange = (value: string) => {
     setSelectedStationId(value);
-    setSelectedPumpId('');
-    setSelectedNozzleId('');
-    setReadingValue('');
+    setSelectedPumpId("");
+    setSelectedNozzleId("");
   };
 
+  // Handle pump selection
   const handlePumpChange = (value: string) => {
     setSelectedPumpId(value);
-    setSelectedNozzleId('');
-    setReadingValue('');
+    setSelectedNozzleId("");
   };
 
+  // Handle nozzle selection
   const handleNozzleChange = (value: string) => {
     setSelectedNozzleId(value);
-    setReadingValue('');
+    setReadingValue("");
   };
 
-  const handlePaymentMethodChange = (value: 'cash' | 'card' | 'upi' | 'credit') => {
+  // Handle payment method selection
+  const handlePaymentMethodChange = (value: "cash" | "card" | "upi" | "credit") => {
     setPaymentMethod(value);
-    if (value !== 'credit') {
-      setCreditorId('');
+    if (value !== "credit") {
+      setCreditorId("");
     }
   };
 
-  const handleSubmitReading = async () => {
+  // Handle reading submission
+  const handleSubmitReading = () => {
     if (!selectedNozzleId || !readingValue) return;
     
-    try {
-      await createReading.mutateAsync({
-        nozzleId: selectedNozzleId,
-        reading: parseFloat(readingValue),
-        recordedAt: new Date().toISOString(),
-        paymentMethod,
-        creditorId: paymentMethod === 'credit' ? creditorId : undefined
-      });
-      
-      // Reset form
-      setReadingValue('');
-      setPaymentMethod('cash');
-      setCreditorId('');
-      
-      onSuccess?.();
-    } catch (error) {
-      console.error('Failed to submit reading:', error);
-    }
+    createReading.mutate({
+      nozzleId: selectedNozzleId,
+      reading: parseFloat(readingValue),
+      recordedAt: new Date().toISOString(),
+      paymentMethod,
+      creditorId: paymentMethod === "credit" ? creditorId : undefined
+    }, {
+      onSuccess: () => {
+        // Reset form
+        setReadingValue("");
+        if (onSuccess) onSuccess();
+      }
+    });
   };
 
-  const isSubmitDisabled = !canCreateData?.canCreate || 
-                          !readingValue || 
-                          createReading.isPending || 
-                          (paymentMethod === 'credit' && !creditorId);
-
   return (
-    <Card className="w-full">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-lg md:text-xl">Record Meter Reading</CardTitle>
-        <CardDescription>
-          Select a station, pump, and nozzle to record a reading
-        </CardDescription>
+        <CardTitle>Record Meter Reading</CardTitle>
+        <CardDescription>Enter the current meter reading for the selected nozzle</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Station Selection */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Station</label>
-          <Select value={selectedStationId} onValueChange={handleStationChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a station" />
+          <Label htmlFor="station">Station</Label>
+          <Select value={selectedStationId} onValueChange={handleStationChange} disabled={stationsLoading}>
+            <SelectTrigger id="station">
+              <SelectValue placeholder={stationsLoading ? "Loading..." : "Select a station"} />
             </SelectTrigger>
             <SelectContent>
-              {stations?.map(station => (
+              {stations.map(station => (
                 <SelectItem key={station.id} value={station.id}>
                   {station.name}
                 </SelectItem>
@@ -117,20 +117,10 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
         {/* Pump Selection */}
         {selectedStationId && (
           <div className="space-y-2">
-            <label className="text-sm font-medium">Pump</label>
-            <Select 
-              value={selectedPumpId} 
-              onValueChange={handlePumpChange} 
-              disabled={pumpsLoading || !pumps?.length}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue 
-                  placeholder={
-                    pumpsLoading ? "Loading..." : 
-                    pumps?.length ? "Select a pump" : 
-                    "No pumps available"
-                  } 
-                />
+            <Label htmlFor="pump">Pump</Label>
+            <Select value={selectedPumpId} onValueChange={handlePumpChange} disabled={pumpsLoading || !pumps?.length}>
+              <SelectTrigger id="pump">
+                <SelectValue placeholder={pumpsLoading ? "Loading..." : pumps?.length ? "Select a pump" : "No pumps available"} />
               </SelectTrigger>
               <SelectContent>
                 {pumps?.map(pump => (
@@ -146,20 +136,10 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
         {/* Nozzle Selection */}
         {selectedPumpId && (
           <div className="space-y-2">
-            <label className="text-sm font-medium">Nozzle</label>
-            <Select 
-              value={selectedNozzleId} 
-              onValueChange={handleNozzleChange} 
-              disabled={nozzlesLoading || !nozzles?.length}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue 
-                  placeholder={
-                    nozzlesLoading ? "Loading..." : 
-                    nozzles?.length ? "Select a nozzle" : 
-                    "No nozzles available"
-                  } 
-                />
+            <Label htmlFor="nozzle">Nozzle</Label>
+            <Select value={selectedNozzleId} onValueChange={handleNozzleChange} disabled={nozzlesLoading || !nozzles?.length}>
+              <SelectTrigger id="nozzle">
+                <SelectValue placeholder={nozzlesLoading ? "Loading..." : nozzles?.length ? "Select a nozzle" : "No nozzles available"} />
               </SelectTrigger>
               <SelectContent>
                 {nozzles?.map(nozzle => (
@@ -172,13 +152,12 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
           </div>
         )}
         
-        {/* Reading Input Section */}
+        {/* Reading Input */}
         {selectedNozzleId && (
-          <div className="space-y-4 pt-4 border-t">
+          <>
             {latestReading && (
-              <div className="text-sm bg-muted p-3 rounded-md">
-                <span className="font-medium">Previous reading: </span>
-                <span className="font-semibold">{latestReading.reading}</span>
+              <div className="text-sm bg-muted p-2 rounded">
+                Previous reading: <span className="font-semibold">{latestReading.reading}</span>
               </div>
             )}
             
@@ -191,24 +170,21 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
             )}
             
             <div className="space-y-2">
-              <label className="text-sm font-medium">Current Reading</label>
+              <Label htmlFor="reading">Current Reading</Label>
               <Input 
+                id="reading"
                 type="number" 
                 value={readingValue} 
                 onChange={(e) => setReadingValue(e.target.value)}
                 placeholder="Enter current meter reading"
                 disabled={!canCreateData?.canCreate}
-                className="w-full"
               />
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium">Payment Method</label>
-              <Select 
-                value={paymentMethod} 
-                onValueChange={handlePaymentMethodChange}
-              >
-                <SelectTrigger className="w-full">
+              <Label htmlFor="payment">Payment Method</Label>
+              <Select value={paymentMethod} onValueChange={(value: any) => handlePaymentMethodChange(value)}>
+                <SelectTrigger id="payment">
                   <SelectValue placeholder="Select payment method" />
                 </SelectTrigger>
                 <SelectContent>
@@ -220,22 +196,12 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
               </Select>
             </div>
             
-            {paymentMethod === 'credit' && (
+            {paymentMethod === "credit" && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">Creditor</label>
-                <Select 
-                  value={creditorId} 
-                  onValueChange={setCreditorId} 
-                  disabled={creditorsLoading || !creditors?.length}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue 
-                      placeholder={
-                        creditorsLoading ? "Loading..." : 
-                        creditors?.length ? "Select a creditor" : 
-                        "No creditors available"
-                      } 
-                    />
+                <Label htmlFor="creditor">Creditor</Label>
+                <Select value={creditorId} onValueChange={setCreditorId} disabled={creditorsLoading || !creditors?.length}>
+                  <SelectTrigger id="creditor">
+                    <SelectValue placeholder={creditorsLoading ? "Loading..." : creditors?.length ? "Select a creditor" : "No creditors available"} />
                   </SelectTrigger>
                   <SelectContent>
                     {creditors?.map(creditor => (
@@ -247,22 +213,33 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
                 </Select>
               </div>
             )}
-            
-            <Button 
-              onClick={handleSubmitReading} 
-              disabled={isSubmitDisabled}
-              className="w-full"
-            >
-              {createReading.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : "Submit Reading"}
-            </Button>
-          </div>
+          </>
         )}
       </CardContent>
+      <CardFooter>
+        <Button 
+          onClick={handleSubmitReading} 
+          disabled={!canCreateData?.canCreate || !readingValue || createReading.isPending || (paymentMethod === "credit" && !creditorId)}
+          className="w-full"
+        >
+          {createReading.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Submitting...
+            </>
+          ) : "Submit Reading"}
+        </Button>
+      </CardFooter>
+      
+      {createReading.isSuccess && (
+        <div className="px-6 pb-4">
+          <Alert variant="default" className="bg-green-50 border-green-200">
+            <CheckCircle className="h-4 w-4 text-green-500" />
+            <AlertTitle>Success</AlertTitle>
+            <AlertDescription>Reading recorded successfully</AlertDescription>
+          </Alert>
+        </div>
+      )}
     </Card>
   );
 }
