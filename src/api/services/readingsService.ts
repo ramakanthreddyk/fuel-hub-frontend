@@ -134,7 +134,7 @@ export const readingsService = {
   canCreateReading: async (nozzleId: string): Promise<{ canCreate: boolean; reason?: string; missingPrice?: boolean }> => {
     try {
       console.log(`[READINGS-API] Checking if reading can be created for nozzle: ${nozzleId}`);
-      const response = await apiClient.get(API_CONFIG.endpoints.nozzles.canCreate(nozzleId));
+      const response = await apiClient.get(API_CONFIG.endpoints.readings.canCreate(nozzleId));
       return extractData<{ canCreate: boolean; reason?: string; missingPrice?: boolean }>(response);
     } catch (error) {
       console.error(`[READINGS-API] Error checking reading creation for nozzle ${nozzleId}:`, error);

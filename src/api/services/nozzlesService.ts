@@ -48,6 +48,16 @@ export const nozzlesService = {
 
   deleteNozzle: async (id: string): Promise<void> => {
     await apiClient.delete(API_CONFIG.endpoints.nozzles.byId(id));
+  },
+  
+  getNozzleSettings: async (id: string): Promise<any> => {
+    const response = await apiClient.get(API_CONFIG.endpoints.nozzles.settings(id));
+    return extractData<any>(response);
+  },
+  
+  updateNozzleSettings: async (id: string, data: any): Promise<any> => {
+    const response = await apiClient.put(API_CONFIG.endpoints.nozzles.settings(id), data);
+    return extractData<any>(response);
   }
 };
 

@@ -17,7 +17,7 @@ const API_CONFIG = {
     nozzles: {
       base: '/nozzles',
       byId: (id: string) => `/nozzles/${id}`,
-      canCreate: (nozzleId: string) => `/nozzles/${nozzleId}/can-create-reading`,
+      settings: (id: string) => `/nozzles/${id}/settings`,
     },
     readings: {
       base: '/nozzle-readings',

@@ -154,3 +154,57 @@ export const useDeleteNozzle = () => {
     },
   });
 };
+
+/**
+ * Hook to fetch nozzle settings
+ * @param id Nozzle ID
+ * @returns Query result with nozzle settings
+ */
+export const useNozzleSettings = (id: string) => {
+  const { toast } = useToast();
+  
+  return useQuery({
+    queryKey: ['nozzle-settings', id],
+    queryFn: () => nozzlesService.getNozzleSettings(id),
+    enabled: !!id,
+    staleTime: 60000, // 1 minute
+    meta: {
+      onError: (error: any) => {
+        console.error('Failed to fetch nozzle settings:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load nozzle settings. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  });
+};
+
+/**
+ * Hook to update nozzle settings
+ * @returns Mutation result for updating nozzle settings
+ */
+export const useUpdateNozzleSettings = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => nozzlesService.updateNozzleSettings(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['nozzle-settings', id] });
+      toast({
+        title: "Success",
+        description: "Nozzle settings updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Failed to update nozzle settings:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update nozzle settings. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+};
