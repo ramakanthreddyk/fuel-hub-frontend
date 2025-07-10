@@ -29,10 +29,16 @@ export const analyticsApi = {
 
   getHourlySales: async (stationId?: string, dateRange?: { from: Date; to: Date }): Promise<HourlySales[]> => {
     try {
+      // If dateRange is not provided, use today as default
+      const today = new Date();
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+      
       const params = new URLSearchParams();
       if (stationId) params.append('stationId', stationId);
-      if (dateRange?.from) params.append('dateFrom', dateRange.from.toISOString());
-      if (dateRange?.to) params.append('dateTo', dateRange.to.toISOString());
+      // Always include dateFrom and dateTo as they are required by the API
+      params.append('dateFrom', (dateRange?.from || startOfDay).toISOString());
+      params.append('dateTo', (dateRange?.to || endOfDay).toISOString());
       
       const response = await apiClient.get(`/analytics/hourly-sales?${params}`);
       return extractApiArray<HourlySales>(response);

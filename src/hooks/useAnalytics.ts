@@ -12,9 +12,18 @@ export const useStationComparison = (opts: StationComparisonParams) => {
 };
 
 export const useHourlySales = (stationId?: string, dateRange?: { from: Date; to: Date }) => {
+  // If dateRange is not provided, create a default one for today
+  const effectiveDateRange = dateRange || (() => {
+    const today = new Date();
+    return {
+      from: new Date(today.setHours(0, 0, 0, 0)),
+      to: new Date(today.setHours(23, 59, 59, 999))
+    };
+  })();
+  
   return useQuery({
-    queryKey: ['analytics', 'hourly-sales', stationId, dateRange],
-    queryFn: () => analyticsApi.getHourlySales(stationId, dateRange),
+    queryKey: ['analytics', 'hourly-sales', stationId, effectiveDateRange],
+    queryFn: () => analyticsApi.getHourlySales(stationId, effectiveDateRange),
   });
 };
 
