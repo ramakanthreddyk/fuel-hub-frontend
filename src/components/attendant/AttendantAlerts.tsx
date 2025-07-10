@@ -17,6 +17,18 @@ export function AttendantAlerts({ stationId }: AttendantAlertsProps) {
     acknowledgeAlert.mutate(alertId);
   };
 
+  const getAlertVariant = (severity: string) => {
+    switch (severity) {
+      case 'high':
+        return 'destructive';
+      case 'medium':
+        return 'warning';
+      case 'low':
+      default:
+        return 'default';
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -59,10 +71,7 @@ export function AttendantAlerts({ stationId }: AttendantAlertsProps) {
         {alerts.map((alert) => (
           <Alert 
             key={alert.id} 
-            variant={
-              alert.severity === 'critical' ? 'destructive' : 
-              alert.severity === 'warning' ? 'warning' : 'default'
-            }
+            variant={getAlertVariant(alert.severity)}
           >
             <AlertTriangle className="h-4 w-4 mr-2" />
             <div className="flex-1">

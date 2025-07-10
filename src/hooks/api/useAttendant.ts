@@ -61,6 +61,11 @@ export const useCreateCashReport = () => {
   });
 };
 
+// Add the missing hook
+export const useSubmitCashReport = () => {
+  return useCreateCashReport();
+};
+
 export const useCashReports = (stationId?: string, dateFrom?: string, dateTo?: string) => {
   return useQuery({
     queryKey: ['attendant', 'cash-reports', stationId, dateFrom, dateTo],
@@ -90,5 +95,13 @@ export const useAcknowledgeAlert = () => {
         description: "Alert has been marked as acknowledged",
       });
     },
+  });
+};
+
+export const useInventory = () => {
+  return useQuery({
+    queryKey: ['attendant', 'inventory'],
+    queryFn: () => attendantApi.getAssignedStations(), // Replace with actual inventory API call
+    staleTime: 5 * 60 * 1000,
   });
 };

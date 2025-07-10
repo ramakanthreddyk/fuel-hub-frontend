@@ -52,7 +52,7 @@ export default function AttendantReadingsPage() {
             <SelectContent>
               {pumps.map(pump => (
                 <SelectItem key={pump.id} value={pump.id}>
-                  {pump.label}
+                  {pump.name || `Pump ${pump.id.slice(0, 8)}`}
                 </SelectItem>
               ))}
             </SelectContent>

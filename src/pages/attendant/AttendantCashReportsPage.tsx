@@ -57,20 +57,29 @@ export default function AttendantCashReportsPage() {
           <CardContent>
             <form onSubmit={handleSubmitReport} className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="opening">Opening Balance</Label>
-                <Input id="opening" type="number" step="0.01" placeholder="0.00" />
+                <Label htmlFor="cash">Cash Amount</Label>
+                <Input id="cash" type="number" step="0.01" placeholder="0.00" />
               </div>
               <div>
-                <Label htmlFor="closing">Closing Balance</Label>
-                <Input id="closing" type="number" step="0.01" placeholder="0.00" />
+                <Label htmlFor="card">Card Amount</Label>
+                <Input id="card" type="number" step="0.01" placeholder="0.00" />
               </div>
               <div>
-                <Label htmlFor="sales">Total Sales</Label>
-                <Input id="sales" type="number" step="0.01" placeholder="0.00" />
+                <Label htmlFor="upi">UPI Amount</Label>
+                <Input id="upi" type="number" step="0.01" placeholder="0.00" />
               </div>
               <div>
-                <Label htmlFor="expenses">Total Expenses</Label>
-                <Input id="expenses" type="number" step="0.01" placeholder="0.00" />
+                <Label htmlFor="shift">Shift</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select shift" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="morning">Morning</SelectItem>
+                    <SelectItem value="afternoon">Afternoon</SelectItem>
+                    <SelectItem value="night">Night</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="md:col-span-2 flex gap-2">
                 <Button type="submit">Submit Report</Button>
@@ -96,29 +105,25 @@ export default function AttendantCashReportsPage() {
             <Card key={report.id}>
               <CardHeader>
                 <CardTitle className="flex justify-between">
-                  <span>Report #{report.id.slice(0, 8)}</span>
+                  <span>Report #{report.id?.slice(0, 8)}</span>
                   <span className="text-sm text-muted-foreground">
-                    {new Date(report.createdAt).toLocaleDateString()}
+                    {new Date(report.reportDate).toLocaleDateString()}
                   </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-2 md:grid-cols-4">
+                <div className="grid gap-2 md:grid-cols-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">Opening</p>
-                    <p className="font-medium">${report.openingBalance.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">Cash</p>
+                    <p className="font-medium">${report.cashAmount.toFixed(2)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Closing</p>
-                    <p className="font-medium">${report.closingBalance.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">Card</p>
+                    <p className="font-medium">${(report.cardAmount || 0).toFixed(2)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Sales</p>
-                    <p className="font-medium">${report.totalSales.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Expenses</p>
-                    <p className="font-medium">${report.totalExpenses.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">UPI</p>
+                    <p className="font-medium">${(report.upiAmount || 0).toFixed(2)}</p>
                   </div>
                 </div>
               </CardContent>
