@@ -81,7 +81,48 @@ export const analyticsApi = {
   },
 
   getSuperAdminAnalytics: async (): Promise<SuperAdminAnalytics> => {
-    const response = await apiClient.get('/analytics/superadmin');
-    return extractApiData<SuperAdminAnalytics>(response);
+    try {
+      // Use the correct endpoint from the OpenAPI spec
+      const response = await apiClient.get('/admin/analytics');
+      return extractApiData<SuperAdminAnalytics>(response);
+    } catch (error) {
+      console.error('Error fetching super admin analytics:', error);
+      // Return a default object with empty values to prevent UI errors
+      return {
+        overview: {
+          totalTenants: 0,
+          totalRevenue: 0,
+          totalStations: 0,
+          growth: 0
+        },
+        tenantMetrics: {
+          activeTenants: 0,
+          trialTenants: 0,
+          suspendedTenants: 0,
+          monthlyGrowth: 0
+        },
+        revenueMetrics: {
+          mrr: 0,
+          arr: 0,
+          churnRate: 0,
+          averageRevenuePerTenant: 0
+        },
+        usageMetrics: {
+          totalUsers: 0,
+          totalStations: 0,
+          totalTransactions: 0,
+          averageStationsPerTenant: 0
+        },
+        totalTenants: 0,
+        activeTenants: 0,
+        totalRevenue: 0,
+        tenantCount: 0,
+        activeTenantCount: 0,
+        totalUsers: 0,
+        signupsThisMonth: 0,
+        tenantsByPlan: [],
+        recentTenants: []
+      };
+    }
   },
 };
