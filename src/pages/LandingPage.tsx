@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Fuel, 
   Building, 
@@ -19,14 +19,18 @@ import {
   LogIn,
   Star,
   Sparkles,
-  TrendingUp
+  TrendingUp,
+  Play,
+  Rocket
 } from 'lucide-react';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { FuelLoadingSpinner } from '@/components/common/FuelLoadingSpinner';
 
 export default function LandingPage() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const [showLoginOptions, setShowLoginOptions] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
+  const [showTrial, setShowTrial] = useState(false);
   const [animationStep, setAnimationStep] = useState(0);
 
   // Animated counter effect
@@ -40,6 +44,8 @@ export default function LandingPage() {
     if (isAuthenticated && user) {
       if (user.role === 'superadmin') {
         navigate('/superadmin/overview', { replace: true });
+      } else if (user.role === 'attendant') {
+        navigate('/attendant', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
@@ -83,10 +89,17 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Animated counter effect
+  const [counters, setCounters] = useState({
+    stations: 0,
+    pumps: 0,
+    users: 0
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <LoadingSpinner size="lg" />
+        <FuelLoadingSpinner size="lg" text="Initializing FuelSync Hub..." />
       </div>
     );
   }
@@ -94,6 +107,18 @@ export default function LandingPage() {
   if (isAuthenticated && user) {
     return null;
   }
+
+  const handleLaunchDashboard = () => {
+    setShowLoginOptions(true);
+  };
+
+  const handleWatchDemo = () => {
+    setShowDemo(true);
+  };
+
+  const handleStartTrial = () => {
+    setShowTrial(true);
+  };
 
   const handleUserLogin = () => {
     navigate('/login');
@@ -207,7 +232,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <Button 
               size="lg"
-              onClick={() => setShowLoginOptions(true)}
+              onClick={handleLaunchDashboard}
               className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white px-12 py-6 text-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
             >
               <Zap className="mr-3 h-6 w-6" />
@@ -217,9 +242,10 @@ export default function LandingPage() {
             <Button 
               size="lg"
               variant="outline"
+              onClick={handleWatchDemo}
               className="px-12 py-6 text-xl bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md"
             >
-              <Star className="mr-3 h-6 w-6" />
+              <Play className="mr-3 h-6 w-6" />
               Watch Demo
             </Button>
           </div>
@@ -300,9 +326,10 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   size="lg"
-                  onClick={() => setShowLoginOptions(true)}
+                  onClick={handleStartTrial}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300"
                 >
+                  <Rocket className="mr-2 h-5 w-5" />
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -342,6 +369,78 @@ export default function LandingPage() {
           <p className="text-sm text-gray-500">🚀 Secure • 🔄 Reliable • ⚡ Scalable</p>
         </div>
       </footer>
+
+      {/* Demo Dialog */}
+      <Dialog open={showDemo} onOpenChange={setShowDemo}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Play className="h-5 w-5 text-blue-500" />
+              FuelSync Hub Demo
+            </DialogTitle>
+            <DialogDescription>
+              Watch our interactive demo to see how FuelSync Hub transforms fuel station management.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center space-y-4 py-4">
+            <div className="w-full h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+              <FuelLoadingSpinner text="Loading demo..." />
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Demo coming soon! Our team is preparing an interactive showcase of all FuelSync Hub features.
+            </p>
+            <Button onClick={() => setShowLoginOptions(true)} className="w-full">
+              Try Live Demo Instead
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Trial Dialog */}
+      <Dialog open={showTrial} onOpenChange={setShowTrial}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Rocket className="h-5 w-5 text-purple-500" />
+              Start Your Free Trial
+            </DialogTitle>
+            <DialogDescription>
+              Get started with FuelSync Hub today. No credit card required for your 30-day trial.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col space-y-4 py-4">
+            <div className="space-y-2">
+              <h4 className="font-medium">What's included:</h4>
+              <ul className="text-sm space-y-1 text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Full access to all features
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Up to 5 fuel stations
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  24/7 customer support
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Data migration assistance
+                </li>
+              </ul>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleUserLogin} className="flex-1">
+                Sign Up Now
+              </Button>
+              <Button variant="outline" onClick={handleAdminLogin}>
+                Admin Setup
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -48,7 +49,10 @@ export function AttendantSidebar() {
   const { user, logout } = useAuth();
   
   const isActive = (href: string) => {
-    return location.pathname.startsWith(href);
+    if (href === '/attendant') {
+      return location.pathname === '/attendant' || location.pathname === '/attendant/';
+    }
+    return location.pathname === href;
   };
 
   return (
