@@ -89,13 +89,6 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Animated counter effect
-  const [counters, setCounters] = useState({
-    stations: 0,
-    pumps: 0,
-    users: 0
-  });
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">

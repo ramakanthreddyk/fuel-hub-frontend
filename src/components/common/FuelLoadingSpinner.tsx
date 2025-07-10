@@ -43,12 +43,13 @@ export function FuelLoadingSpinner({ size = 'md', className, text = 'Loading...'
       
       {/* Fuel gauge animation */}
       <div className="relative w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-blue-500 rounded-full animate-pulse" 
-             style={{ 
-               width: '60%',
-               animation: 'fuel-fill 2s ease-in-out infinite alternate'
-             }}>
-        </div>
+        <div 
+          className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-400 to-blue-500 rounded-full animate-pulse" 
+          style={{ 
+            width: '60%',
+            animation: 'fuel-fill 2s ease-in-out infinite alternate'
+          }}
+        />
       </div>
       
       {text && (
@@ -60,13 +61,15 @@ export function FuelLoadingSpinner({ size = 'md', className, text = 'Loading...'
         </p>
       )}
       
-      <style jsx>{`
-        @keyframes fuel-fill {
-          0% { width: 20%; }
-          50% { width: 80%; }
-          100% { width: 60%; }
-        }
-      `}</style>
+      <style>
+        {`
+          @keyframes fuel-fill {
+            0% { width: 20%; }
+            50% { width: 80%; }
+            100% { width: 60%; }
+          }
+        `}
+      </style>
     </div>
   );
 }
