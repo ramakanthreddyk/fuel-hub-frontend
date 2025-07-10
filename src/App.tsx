@@ -11,7 +11,8 @@ import { Toaster } from './components/ui/toaster';
 // Layout Components
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { SuperAdminLayout } from './components/layout/SuperAdminLayout';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { ProtectedRoute as AuthProtectedRoute } from './components/auth/ProtectedRoute';
+import { ProtectedRoute } from './routes/ProtectedRoute';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -81,14 +82,11 @@ function App() {
               <Route path="/login/admin" element={<LoginPage />} />
               
               {/* Dashboard Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={['owner', 'manager', 'attendant']}>
-                    <DashboardLayout />
-                  </ProtectedRoute>
-                }
-              >
+              <Route element={<ProtectedRoute allowedRoles={['owner', 'manager', 'superadmin']} redirectPath="/attendant" />}>
+                <Route
+                  path="/dashboard"
+                  element={<DashboardLayout />}
+                >
                 <Route index element={<RoleDashboard />} />
                 
                 {/* Station Routes */}
@@ -157,15 +155,22 @@ function App() {
                 <Route path="reconciliation" element={<ReconciliationPage />} />
                 <Route path="reconciliation/:reconciliationId" element={<ReconciliationDetailPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                </Route>
+              </Route>
+
+              {/* Attendant Routes */}
+              <Route element={<ProtectedRoute allowedRoles={['attendant']} redirectPath="/dashboard" />}>
+                <Route path="/attendant/*" element={<Navigate to="/attendant" replace />} />
+                <Route path="/attendant" element={<AttendantDashboardPage />} />
               </Route>
 
               {/* SuperAdmin Routes */}
               <Route
                 path="/superadmin"
                 element={
-                  <ProtectedRoute allowedRoles={['superadmin']}>
+                  <AuthProtectedRoute allowedRoles={['superadmin']}>
                     <SuperAdminLayout />
-                  </ProtectedRoute>
+                  </AuthProtectedRoute>
                 }
               >
                 <Route index element={<Navigate to="/superadmin/overview" replace />} />
@@ -194,10 +199,10 @@ function App() {
 // Component to show different dashboard based on user role
 function RoleDashboard() {
   try {
-    const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{"role":"attendant"}');
+    const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
     
     if (user.role === 'attendant') {
-      return <AttendantDashboardPage />;
+      return <Navigate to="/attendant" replace />;
     }
     
     return <DashboardPage />;
