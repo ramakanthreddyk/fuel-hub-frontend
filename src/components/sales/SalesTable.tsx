@@ -89,7 +89,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                   <div className="flex items-center gap-2 min-w-0">
                     <Fuel className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium">#{sale.nozzleName || 'N/A'}</div>
+                      <div className="font-medium">#{sale.nozzleNumber || 'N/A'}</div>
                       <Badge className={`text-xs ${getFuelTypeColor(sale.fuelType)}`}>
                         {sale.fuelType}
                       </Badge>
@@ -151,7 +151,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                 <div className="min-w-0">
                   <span className="text-muted-foreground block text-xs">Nozzle:</span>
                   <div className="flex items-center gap-1 mt-1">
-                    <span className="font-medium">#{sale.nozzleName || 'N/A'}</span>
+                    <span className="font-medium">#{sale.nozzleNumber || 'N/A'}</span>
                     <Badge className={`${getFuelTypeColor(sale.fuelType)} text-xs`}>
                       {sale.fuelType}
                     </Badge>
