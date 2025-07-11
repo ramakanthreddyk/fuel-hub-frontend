@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    /* Clean Professional White Theme - Light Mode */
+    /* CLEAN WHITE THEME - NO YELLOW ANYWHERE */
     --background: 255 255 255;
     --foreground: 15 23 42;
     --card: 255 255 255;
@@ -82,16 +82,26 @@
     background: white !important;
   }
   
-  /* Force clean white background everywhere */
-  html, body, #root {
+  /* FORCE CLEAN WHITE EVERYWHERE - OVERRIDE ALL YELLOWS */
+  html, body, #root, .bg-card, .card {
     background: white !important;
     background-color: white !important;
   }
   
-  /* Override any potential yellow/amber colors */
+  /* ELIMINATE ALL YELLOW COLORS GLOBALLY */
+  .bg-yellow-50, .bg-yellow-100, .bg-yellow-200, .bg-yellow-300, .bg-yellow-400, .bg-yellow-500,
+  .bg-amber-50, .bg-amber-100, .bg-amber-200, .bg-amber-300, .bg-amber-400, .bg-amber-500,
+  .from-yellow-50, .from-yellow-100, .to-yellow-50, .to-yellow-100,
+  .from-amber-50, .from-amber-100, .to-amber-50, .to-amber-100 {
+    background: white !important;
+    background-color: white !important;
+  }
+  
+  /* Override Tailwind gradient variables */
   * {
     --tw-gradient-from: rgb(255 255 255) !important;
     --tw-gradient-to: rgb(255 255 255) !important;
+    --tw-gradient-via: rgb(255 255 255) !important;
   }
 }
 

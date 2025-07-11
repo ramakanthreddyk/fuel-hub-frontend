@@ -124,7 +124,7 @@ export default function ReadingsPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="bg-white border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Readings</CardTitle>
             <Gauge className="h-4 w-4 text-muted-foreground" />
@@ -136,7 +136,7 @@ export default function ReadingsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -148,7 +148,7 @@ export default function ReadingsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">This Week</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
@@ -160,7 +160,7 @@ export default function ReadingsPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
