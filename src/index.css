@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    /* Clean Professional Theme - Proper HSL Values */
+    /* Clean Professional Theme - Light Mode */
     --background: 255 255 255;
     --foreground: 15 23 42;
     --card: 255 255 255;
@@ -132,6 +132,6 @@
   
   .hover-lift:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px hsl(var(--foreground) / 0.1);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   }
 }

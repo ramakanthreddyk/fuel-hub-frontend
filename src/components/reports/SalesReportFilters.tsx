@@ -25,42 +25,44 @@ export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFilt
   };
 
   return (
-    <Card>
+    <Card className="bg-card border border-border shadow-sm">
       <CardHeader>
-        <CardTitle>Report Filters</CardTitle>
+        <CardTitle className="text-card-foreground">Report Filters</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2">
-            <Label htmlFor="startDate">Start Date</Label>
+            <Label htmlFor="startDate" className="text-card-foreground">Start Date</Label>
             <Input
               id="startDate"
               type="date"
               value={filters.startDate || ''}
               onChange={(e) => handleFilterChange('startDate', e.target.value)}
+              className="bg-input border border-border text-foreground"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="endDate">End Date</Label>
+            <Label htmlFor="endDate" className="text-card-foreground">End Date</Label>
             <Input
               id="endDate"
               type="date"
               value={filters.endDate || ''}
               onChange={(e) => handleFilterChange('endDate', e.target.value)}
+              className="bg-input border border-border text-foreground"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Station</Label>
+            <Label className="text-card-foreground">Station</Label>
             <Select
               value={filters.stationId || 'all'}
               onValueChange={(value) => handleFilterChange('stationId', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-input border border-border text-foreground">
                 <SelectValue placeholder="All stations" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border border-border">
                 <SelectItem value="all">All stations</SelectItem>
                 {stations?.map((station) => (
                   <SelectItem key={station.id} value={station.id}>
@@ -72,15 +74,15 @@ export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFilt
           </div>
 
           <div className="space-y-2">
-            <Label>Payment Method</Label>
+            <Label className="text-card-foreground">Payment Method</Label>
             <Select
               value={filters.paymentMethod || 'all'}
               onValueChange={(value) => handleFilterChange('paymentMethod', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-input border border-border text-foreground">
                 <SelectValue placeholder="All methods" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border border-border">
                 <SelectItem value="all">All methods</SelectItem>
                 <SelectItem value="cash">Cash</SelectItem>
                 <SelectItem value="card">Card</SelectItem>

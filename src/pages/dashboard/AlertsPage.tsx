@@ -54,42 +54,44 @@ const AlertsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">System Alerts</h1>
-        <p className="text-muted-foreground">
-          Monitor important notifications and system status updates
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="space-y-6 p-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">System Alerts</h1>
+          <p className="text-muted-foreground">
+            Monitor important notifications and system status updates
+          </p>
+        </div>
 
-      <div className="grid gap-4">
-        {alerts.map((alert) => (
-          <Alert key={alert.id} variant={getAlertVariant(alert.type)}>
-            {getAlertIcon(alert.type)}
-            <AlertTitle className="flex items-center justify-between">
-              {alert.title}
-              <span className="text-sm font-normal text-muted-foreground">
-                {alert.timestamp}
-              </span>
-            </AlertTitle>
-            <AlertDescription>{alert.message}</AlertDescription>
-          </Alert>
-        ))}
-      </div>
+        <div className="grid gap-4">
+          {alerts.map((alert) => (
+            <Alert key={alert.id} variant={getAlertVariant(alert.type)} className="bg-card border border-border">
+              {getAlertIcon(alert.type)}
+              <AlertTitle className="flex items-center justify-between text-card-foreground">
+                {alert.title}
+                <span className="text-sm font-normal text-muted-foreground">
+                  {alert.timestamp}
+                </span>
+              </AlertTitle>
+              <AlertDescription className="text-muted-foreground">{alert.message}</AlertDescription>
+            </Alert>
+          ))}
+        </div>
 
-      {alerts.length === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              No Active Alerts
-            </CardTitle>
-            <CardDescription>
-              All systems are operating normally. You'll see notifications here when attention is needed.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
+        {alerts.length === 0 && (
+          <Card className="bg-card border border-border shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-card-foreground">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                No Active Alerts
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                All systems are operating normally. You'll see notifications here when attention is needed.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
