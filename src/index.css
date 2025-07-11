@@ -77,8 +77,13 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-white text-slate-900;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Force white background on root elements */
+  html, body, #root {
+    background-color: white !important;
   }
 }
 

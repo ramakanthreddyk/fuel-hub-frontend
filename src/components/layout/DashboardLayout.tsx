@@ -10,11 +10,11 @@ export function DashboardLayout() {
 
   return (
     <RoleRedirect allowedRoles={['owner', 'manager', 'superadmin']} redirectPath="/attendant">
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <Sidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
         <div className="lg:pl-72">
           <Header onMobileMenuClick={() => setSidebarOpen(true)} />
-          <main className="flex-1 overflow-x-hidden">
+          <main className="flex-1 overflow-x-hidden bg-white">
             <div className="w-full max-w-full">
               <div className="w-full min-w-0">
                 <Outlet />

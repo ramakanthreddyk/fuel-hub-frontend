@@ -5,13 +5,15 @@ import { Bell } from 'lucide-react';
 
 export default function AttendantAlertsPage() {
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Bell className="h-6 w-6" />
-        <h1 className="text-2xl font-bold">System Alerts</h1>
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto py-6">
+        <div className="flex items-center gap-3 mb-6">
+          <Bell className="h-6 w-6 text-slate-600" />
+          <h1 className="text-2xl font-bold text-slate-900">System Alerts</h1>
+        </div>
+        
+        <AttendantAlerts />
       </div>
-      
-      <AttendantAlerts />
     </div>
   );
 }
