@@ -1,3 +1,4 @@
+
 /**
  * Utility to check API connection and diagnose issues
  */
@@ -7,6 +8,12 @@ import axios from 'axios';
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
+
+interface ErrorDetails {
+  message: string;
+  code?: string;
+  diagnosis?: string;
+}
 
 export async function checkApiConnection() {
   console.log('Checking API connection to:', API_BASE_URL);
@@ -63,7 +70,7 @@ export async function checkApiConnection() {
         console.error('All endpoints failed');
         
         // Diagnose the error
-        let errorDetails = {
+        let errorDetails: ErrorDetails = {
           message: docsError.message,
           code: docsError.code
         };
