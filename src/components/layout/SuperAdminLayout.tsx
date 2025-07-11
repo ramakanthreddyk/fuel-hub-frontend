@@ -9,7 +9,7 @@ import { Header } from './Header';
  */
 export function SuperAdminLayout() {
   return (
-    <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen flex w-full bg-white">
       <SuperAdminSidebar />
       <div className="flex-1 flex flex-col min-w-0 lg:ml-72">
         <Header />
