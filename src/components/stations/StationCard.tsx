@@ -1,7 +1,7 @@
 
 /**
  * @file components/stations/StationCard.tsx
- * @description Clean station card with subtle hover effects - no blocking overlays
+ * @description Clean station card with proper styling and subtle hover effects
  */
 import React from 'react';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
@@ -55,7 +55,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
   const activePumps = pumps.filter(p => p.status === 'active').length;
 
   return (
-    <div className="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:scale-[1.02] hover:-translate-y-1">
+    <div className="group relative bg-card border rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-[1.02] hover:-translate-y-1">
       
       {/* Status Indicator */}
       <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${
@@ -109,7 +109,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
       </div>
 
       {/* Subtle Hover Enhancement */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-transparent to-blue-50/0 group-hover:from-blue-50/20 group-hover:to-blue-50/10 transition-all duration-300 pointer-events-none rounded-2xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-transparent to-primary/0 group-hover:from-primary/5 group-hover:to-primary/5 transition-all duration-300 pointer-events-none rounded-2xl"></div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 
 /**
  * @file pages/dashboard/StationsPage.tsx
- * @description Clean stations page with proper white background
+ * @description Stations management page with proper styling
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -56,7 +56,7 @@ export default function StationsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="relative">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-primary/20"></div>
@@ -66,20 +66,20 @@ export default function StationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="space-y-8 p-6 bg-white">
+    <div className="min-h-screen bg-background">
+      <div className="space-y-8 p-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-white">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold text-gray-900">
+            <h1 className="text-4xl font-bold text-foreground">
               Station Management
             </h1>
-            <p className="text-gray-600 text-lg">Manage your fuel station network</p>
+            <p className="text-muted-foreground text-lg">Manage your fuel station network</p>
           </div>
           
           <Button 
             onClick={() => navigate('/dashboard/stations/new')} 
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+            className="px-6 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Station
@@ -87,27 +87,27 @@ export default function StationsPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <div className="bg-card border rounded-lg p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <Filter className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Filter Stations</h3>
+            <Filter className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold text-card-foreground">Filter Stations</h3>
           </div>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search stations by name or address..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
+              className="pl-10"
             />
           </div>
         </div>
 
         {/* Stations Grid */}
         {filteredStations.length === 0 ? (
-          <div className="flex items-center justify-center min-h-[400px] bg-white">
+          <div className="flex items-center justify-center min-h-[400px]">
             <EmptyState
-              icon={<Building2 className="h-16 w-16 text-blue-600" />}
+              icon={<Building2 className="h-16 w-16 text-primary" />}
               title={searchQuery ? "No stations found" : "No stations yet"}
               description={
                 searchQuery 
@@ -121,7 +121,7 @@ export default function StationsPage() {
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-8 bg-white">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
             {filteredStations.map((station) => (
               <StationCard
                 key={station.id}

@@ -20,30 +20,30 @@ export function StationQuickStats({
   totalPumps 
 }: StationQuickStatsProps) {
   return (
-    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+    <div className="bg-muted/50 border rounded-lg p-3">
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="space-y-1">
           <div className="flex items-center justify-center gap-1">
             <DollarSign className="h-3 w-3 text-green-600" />
-            <span className="text-xs text-gray-600">Sales</span>
+            <span className="text-xs text-muted-foreground">Sales</span>
           </div>
-          <p className="text-sm font-semibold text-gray-900">₹{totalSales.toLocaleString()}</p>
+          <p className="text-sm font-semibold text-foreground">₹{totalSales.toLocaleString()}</p>
         </div>
         
         <div className="space-y-1">
           <div className="flex items-center justify-center gap-1">
-            <Activity className="h-3 w-3 text-blue-600" />
-            <span className="text-xs text-gray-600">Trans.</span>
+            <Activity className="h-3 w-3 text-primary" />
+            <span className="text-xs text-muted-foreground">Trans.</span>
           </div>
-          <p className="text-sm font-semibold text-gray-900">{transactions}</p>
+          <p className="text-sm font-semibold text-foreground">{transactions}</p>
         </div>
         
         <div className="space-y-1">
           <div className="flex items-center justify-center gap-1">
             <Fuel className="h-3 w-3 text-orange-600" />
-            <span className="text-xs text-gray-600">Pumps</span>
+            <span className="text-xs text-muted-foreground">Pumps</span>
           </div>
-          <p className="text-sm font-semibold text-gray-900">{activePumps}/{totalPumps}</p>
+          <p className="text-sm font-semibold text-foreground">{activePumps}/{totalPumps}</p>
         </div>
       </div>
     </div>
