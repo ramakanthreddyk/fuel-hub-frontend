@@ -1,14 +1,17 @@
 
 /**
  * @file components/stations/StationCard.tsx
- * @description Enhanced station card with improved animations and visual effects
+ * @description Enhanced station card with professional design and dashboard overlay
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
+import { usePumps } from '@/hooks/api/usePumps';
+import { useEnhancedSales } from '@/hooks/useEnhancedSales';
 import { StationHeader } from './StationHeader';
 import { StationVisual } from './StationVisual';
 import { StationStats } from './StationStats';
 import { StationActions } from './StationActions';
+import { StationDashboardOverlay } from './StationDashboardOverlay';
 
 interface StationCardProps {
   station: {
@@ -24,7 +27,10 @@ interface StationCardProps {
 }
 
 export function StationCard({ station, onView, onDelete }: StationCardProps) {
+  const [showDashboard, setShowDashboard] = useState(false);
   const { data: fuelPrices = [], isLoading: pricesLoading } = useFuelPrices(station.id);
+  const { data: pumps = [] } = usePumps(station.id);
+  const { data: sales = [] } = useEnhancedSales({ stationId: station.id });
 
   // Process fuel prices to get the latest price for each fuel type
   const processedPrices = React.useMemo(() => {
@@ -44,17 +50,47 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
     return pricesByType;
   }, [fuelPrices]);
 
+  // Calculate metrics for dashboard
+  const todaySales = sales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
+  const todayTransactions = sales.length;
+  const averageTransaction = todayTransactions > 0 ? todaySales / todayTransactions : 0;
+
+  // Transform pumps data for dashboard
+  const pumpData = pumps.map(pump => ({
+    id: pump.id,
+    name: pump.name,
+    nozzles: [], // Would be populated from nozzles API
+    todaySales: Math.random() * 50000, // Mock data
+    status: pump.status
+  }));
+
   return (
-    <div className="group relative bg-white rounded-3xl border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden transform hover:scale-[1.02] hover:-translate-y-2">
-      {/* Animated Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div 
+      className="group relative bg-card border border-border rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-[1.02] hover:-translate-y-1"
+      onMouseEnter={() => setShowDashboard(true)}
+      onMouseLeave={() => setShowDashboard(false)}
+    >
+      {/* Subtle Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       
-      {/* Status Glow Effect */}
-      <div className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-3xl ${
-        station.status === 'active' ? 'shadow-[inset_0_0_50px_rgba(34,197,94,0.3)]' :
-        station.status === 'maintenance' ? 'shadow-[inset_0_0_50px_rgba(251,191,36,0.3)]' :
-        'shadow-[inset_0_0_50px_rgba(239,68,68,0.3)]'
-      }`}></div>
+      {/* Status Indicator */}
+      <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${
+        station.status === 'active' ? 'bg-green-500 shadow-lg shadow-green-500/30' :
+        station.status === 'maintenance' ? 'bg-yellow-500 shadow-lg shadow-yellow-500/30' :
+        'bg-red-500 shadow-lg shadow-red-500/30'
+      } animate-pulse`}></div>
+
+      {/* Dashboard Overlay */}
+      <StationDashboardOverlay
+        stationId={station.id}
+        stationName={station.name}
+        pumps={pumpData}
+        totalSales={todaySales}
+        todayTransactions={todayTransactions}
+        averageTransaction={averageTransaction}
+        fuelPrices={processedPrices}
+        isVisible={showDashboard}
+      />
 
       {/* Header */}
       <div className="relative z-10 p-6 pb-4">
@@ -73,7 +109,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
         />
       </div>
 
-      {/* Stats Sections with Animation */}
+      {/* Stats Sections */}
       <div className="relative z-10 px-6 space-y-4 transform group-hover:translate-y-[-2px] transition-transform duration-300">
         <StationStats
           pumpCount={station.pumpCount}
@@ -82,7 +118,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
         />
       </div>
 
-      {/* Action Buttons with Enhanced Styling */}
+      {/* Action Buttons */}
       <div className="relative z-10 p-6 pt-4">
         <StationActions
           onView={() => onView(station.id)}
@@ -90,9 +126,10 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
         />
       </div>
 
-      {/* Decorative Corner Elements */}
-      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-blue-400/10 to-transparent rounded-bl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-      <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-orange-400/10 to-transparent rounded-tr-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      {/* Hover Hint */}
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+        Hover for details
+      </div>
     </div>
   );
 }

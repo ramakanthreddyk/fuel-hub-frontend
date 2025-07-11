@@ -1,11 +1,12 @@
 
 /**
  * @file components/stations/StationStats.tsx
- * @description Statistics sections for fuel dispensers and fuel prices
+ * @description Professional station statistics display with refined styling
  */
 import React from 'react';
-import { Fuel, Star, AlertTriangle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Fuel, TrendingUp, Activity } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface StationStatsProps {
   pumpCount: number;
@@ -14,63 +15,64 @@ interface StationStatsProps {
 }
 
 export function StationStats({ pumpCount, fuelPrices, pricesLoading }: StationStatsProps) {
-  const hasPrices = Object.keys(fuelPrices).length > 0;
-
-  const getFuelTypeColor = (fuelType: string) => {
-    switch (fuelType.toLowerCase()) {
-      case 'petrol': return { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500' };
-      case 'diesel': return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500' };
-      case 'premium': return { bg: 'bg-purple-100', text: 'text-purple-700', dot: 'bg-purple-500' };
-      default: return { bg: 'bg-gray-100', text: 'text-gray-700', dot: 'bg-gray-500' };
-    }
-  };
+  const priceEntries = Object.entries(fuelPrices);
 
   return (
     <div className="space-y-4">
-      {/* Fuel Dispensers */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="p-1 rounded-full bg-blue-500">
-            <Fuel className="h-3 w-3 text-white" />
+      {/* Pump Count Display */}
+      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-primary/10 rounded-md">
+            <Fuel className="h-3 w-3 text-primary" />
           </div>
-          <span className="text-sm font-semibold text-blue-800">Fuel Dispensers</span>
+          <span className="text-sm font-medium text-foreground">Fuel Pumps</span>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-blue-900">{pumpCount}</div>
-          <div className="text-xs text-blue-700 font-medium">Active dispensers</div>
-        </div>
+        <Badge variant="secondary" className="font-semibold">
+          {pumpCount}
+        </Badge>
       </div>
-      
-      {/* Fuel Prices */}
-      <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="p-1 rounded-full bg-orange-500">
-            <Star className="h-3 w-3 text-white" />
+
+      {/* Fuel Prices Section */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="p-1.5 bg-secondary/50 rounded-md">
+            <TrendingUp className="h-3 w-3 text-secondary-foreground" />
           </div>
-          <span className="text-sm font-semibold text-orange-800">Current Fuel Prices</span>
+          <h4 className="text-sm font-medium text-foreground">Current Prices</h4>
         </div>
-        
+
         {pricesLoading ? (
-          <div className="text-sm text-orange-600">Loading prices...</div>
-        ) : hasPrices ? (
           <div className="space-y-2">
-            {Object.entries(fuelPrices).map(([fuelType, price]) => {
-              const colors = getFuelTypeColor(fuelType);
-              return (
-                <div key={fuelType} className="flex items-center justify-between bg-white/60 rounded-lg p-2">
-                  <div className="flex items-center gap-2">
-                    <div className={cn("w-2 h-2 rounded-full", colors.dot)}></div>
-                    <span className="text-sm capitalize font-medium text-gray-800">{fuelType}</span>
-                  </div>
-                  <div className="font-bold text-gray-900">₹{parseFloat(price.price || 0).toFixed(2)}</div>
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-full" />
+            ))}
+          </div>
+        ) : priceEntries.length > 0 ? (
+          <div className="grid grid-cols-1 gap-2">
+            {priceEntries.slice(0, 3).map(([fuelType, price]) => (
+              <div key={fuelType} className="flex items-center justify-between p-2 bg-card border border-border/30 rounded-md">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${
+                    fuelType.toLowerCase().includes('petrol') ? 'bg-green-500' :
+                    fuelType.toLowerCase().includes('diesel') ? 'bg-orange-500' :
+                    'bg-blue-500'
+                  }`} />
+                  <span className="text-xs font-medium text-foreground capitalize">
+                    {fuelType}
+                  </span>
                 </div>
-              );
-            })}
+                <Badge variant="outline" className="text-xs font-semibold">
+                  ₹{price?.price?.toFixed(2) || '0.00'}
+                </Badge>
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-orange-600 bg-white/60 rounded-lg p-2">
-            <AlertTriangle className="h-4 w-4" />
-            <span className="text-sm font-medium">Prices not set</span>
+          <div className="flex items-center justify-center p-4 bg-muted/20 rounded-lg border border-border/30 border-dashed">
+            <div className="text-center">
+              <Activity className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">No prices available</p>
+            </div>
           </div>
         )}
       </div>
