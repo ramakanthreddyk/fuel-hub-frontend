@@ -1,7 +1,7 @@
 
 /**
  * @file components/stations/StationHeader.tsx
- * @description Header section of station card with name, address, and status
+ * @description Clean header section with white theme - no yellow colors
  */
 import React from 'react';
 import { Building2, MapPin, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
@@ -21,23 +21,23 @@ export function StationHeader({ name, address, status }: StationHeaderProps) {
           icon: CheckCircle,
           label: 'Active',
           iconColor: 'text-emerald-600',
-          bgColor: 'bg-emerald-100/80 border-emerald-300/60',
+          bgColor: 'bg-emerald-50 border-emerald-200',
           textColor: 'text-emerald-700'
         };
       case 'maintenance':
         return {
           icon: Clock,
           label: 'Maintenance',
-          iconColor: 'text-amber-600',
-          bgColor: 'bg-amber-100/80 border-amber-300/60',
-          textColor: 'text-amber-700'
+          iconColor: 'text-orange-600',
+          bgColor: 'bg-orange-50 border-orange-200',
+          textColor: 'text-orange-700'
         };
       case 'inactive':
         return {
           icon: AlertTriangle,
           label: 'Inactive',
           iconColor: 'text-red-600',
-          bgColor: 'bg-red-100/80 border-red-300/60',
+          bgColor: 'bg-red-50 border-red-200',
           textColor: 'text-red-700'
         };
       default:
@@ -45,7 +45,7 @@ export function StationHeader({ name, address, status }: StationHeaderProps) {
           icon: AlertTriangle,
           label: 'Unknown',
           iconColor: 'text-gray-600',
-          bgColor: 'bg-gray-100/80 border-gray-300/60',
+          bgColor: 'bg-gray-50 border-gray-200',
           textColor: 'text-gray-700'
         };
     }

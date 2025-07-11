@@ -1,7 +1,7 @@
 
 /**
  * @file components/stations/StationCard.tsx
- * @description Enhanced station card with professional design and dashboard overlay
+ * @description Clean station card with white theme - no yellow colors
  */
 import React, { useState } from 'react';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
@@ -66,7 +66,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
 
   return (
     <div 
-      className="group relative bg-white border border-border rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-[1.02] hover:-translate-y-1"
+      className="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-[1.02] hover:-translate-y-1"
       onMouseEnter={() => setShowDashboard(true)}
       onMouseLeave={() => setShowDashboard(false)}
     >
@@ -74,7 +74,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
       {/* Status Indicator */}
       <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${
         station.status === 'active' ? 'bg-green-500 shadow-lg shadow-green-500/30' :
-        station.status === 'maintenance' ? 'bg-yellow-500 shadow-lg shadow-yellow-500/30' :
+        station.status === 'maintenance' ? 'bg-orange-500 shadow-lg shadow-orange-500/30' :
         'bg-red-500 shadow-lg shadow-red-500/30'
       } animate-pulse`}></div>
 
@@ -99,7 +99,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
         />
       </div>
 
-      {/* Enhanced Station Visual */}
+      {/* Station Visual */}
       <div className="relative z-10 px-6 pb-4">
         <StationVisual
           stationName={station.name}
@@ -125,7 +125,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
       </div>
 
       {/* Hover Hint */}
-      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xs text-gray-500 bg-white/80 px-2 py-1 rounded">
         Hover for details
       </div>
     </div>
