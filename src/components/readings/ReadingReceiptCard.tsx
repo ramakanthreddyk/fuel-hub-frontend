@@ -133,7 +133,7 @@ export function ReadingReceiptCard({ reading, onView, onEdit }: ReadingReceiptCa
             <div className="flex justify-between items-center bg-green-50 px-3 py-2 rounded border border-green-200">
               <span className="text-green-700 font-semibold text-sm">SALE AMOUNT:</span>
               <span className="font-bold text-green-700">
-                ₹{((reading as any).amount).toLocaleString()}
+                ₹{(Number((reading as any).amount) || 0).toLocaleString()}
               </span>
             </div>
           )}
