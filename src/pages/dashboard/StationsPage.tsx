@@ -56,7 +56,7 @@ export default function StationsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="relative">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-primary/20"></div>
@@ -66,7 +66,7 @@ export default function StationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <div className="space-y-8 p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
