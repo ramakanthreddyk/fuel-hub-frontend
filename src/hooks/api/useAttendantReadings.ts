@@ -5,7 +5,6 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient, { extractData } from '@/api/core/apiClient';
-import { useToast } from '@/hooks/use-toast';
 
 // Types
 export interface CreateReadingRequest {
@@ -34,7 +33,6 @@ export interface NozzleReading {
 
 /**
  * Hook to check if a reading can be created for a nozzle
- * Uses the correct endpoint: /nozzle-readings/can-create/{nozzleId}
  */
 export const useCanCreateReading = (nozzleId?: string) => {
   return useQuery({
@@ -44,45 +42,35 @@ export const useCanCreateReading = (nozzleId?: string) => {
       return extractData<CanCreateReadingResponse>(response);
     },
     enabled: !!nozzleId,
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
   });
 };
 
 /**
  * Hook to create a new reading
- * Uses the correct endpoint: /nozzle-readings
  */
 export const useCreateAttendantReading = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   return useMutation({
     mutationFn: async (data: CreateReadingRequest) => {
       const response = await apiClient.post('nozzle-readings', data);
       return extractData<NozzleReading>(response);
     },
-    onSuccess: (newReading) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['can-create-reading'] });
       queryClient.invalidateQueries({ queryKey: ['latest-reading'] });
-      toast({
-        title: "Success",
-        description: `Reading recorded successfully`,
-      });
+      // Toast is handled in the component for better context
     },
     onError: (error: any) => {
       console.error('Failed to create reading:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to record reading. Please try again.",
-        variant: "destructive",
-      });
+      // Toast is handled in the component for better error context
     },
   });
 };
 
 /**
  * Hook to get the latest reading for a nozzle
- * Uses the nozzle-readings endpoint with nozzleId parameter
  */
 export const useLatestNozzleReading = (nozzleId?: string) => {
   return useQuery({
@@ -93,6 +81,6 @@ export const useLatestNozzleReading = (nozzleId?: string) => {
       return readings && readings.length > 0 ? readings[0] : null;
     },
     enabled: !!nozzleId,
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
   });
 };

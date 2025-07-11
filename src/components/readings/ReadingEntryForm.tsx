@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 // Import new API hooks
 import { useStations } from '@/hooks/api/useStations';
@@ -47,6 +48,7 @@ interface ReadingEntryFormProps {
 export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   
   // Get preselected values from navigation state if available
   const navigationPreselected = location.state?.preselected;
@@ -133,8 +135,13 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
     };
 
     createReading.mutate(readingData, {
-      onSuccess: () => {
+      onSuccess: (newReading) => {
         console.log('[READING-FORM] Reading created successfully');
+        toast({
+          title: "Reading Recorded",
+          description: `Successfully recorded reading ${data.reading}L for nozzle #${selectedNozzleData?.nozzleNumber}`,
+          variant: "success",
+        });
         
         // Navigate back to nozzles page if we came from there
         if (finalPreselected?.stationId && finalPreselected?.pumpId) {
@@ -144,8 +151,13 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
           navigate('/dashboard/readings');
         }
       },
-      onError: (error) => {
+      onError: (error: any) => {
         console.error('[READING-FORM] Error creating reading:', error);
+        toast({
+          title: "Failed to Record Reading",
+          description: error.message || "Please check your input and try again.",
+          variant: "destructive",
+        });
       }
     });
   };

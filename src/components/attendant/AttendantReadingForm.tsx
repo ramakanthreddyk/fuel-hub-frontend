@@ -12,13 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, AlertTriangle, CheckCircle } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AttendantReadingFormProps {
   onSuccess?: () => void;
 }
 
 export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
+  const { toast } = useToast();
   const [selectedStationId, setSelectedStationId] = useState<string>("");
   const [selectedPumpId, setSelectedPumpId] = useState<string>("");
   const [selectedNozzleId, setSelectedNozzleId] = useState<string>("");
@@ -73,7 +75,14 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
 
   // Handle reading submission
   const handleSubmitReading = () => {
-    if (!selectedNozzleId || !readingValue) return;
+    if (!selectedNozzleId || !readingValue) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a nozzle and enter a reading value.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     createReading.mutate({
       nozzleId: selectedNozzleId,
@@ -85,7 +94,19 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
       onSuccess: () => {
         // Reset form
         setReadingValue("");
+        toast({
+          title: "Reading Recorded",
+          description: `Successfully recorded reading ${readingValue}L`,
+          variant: "success",
+        });
         if (onSuccess) onSuccess();
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Failed to Record Reading",
+          description: error.message || "Please try again.",
+          variant: "destructive",
+        });
       }
     });
   };
@@ -230,16 +251,6 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
           ) : "Submit Reading"}
         </Button>
       </CardFooter>
-      
-      {createReading.isSuccess && (
-        <div className="px-6 pb-4">
-          <Alert variant="default" className="bg-green-50 border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <AlertTitle>Success</AlertTitle>
-            <AlertDescription>Reading recorded successfully</AlertDescription>
-          </Alert>
-        </div>
-      )}
     </Card>
   );
 }

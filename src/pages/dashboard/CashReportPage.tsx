@@ -11,15 +11,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useStations } from '@/hooks/api/useStations';
-import { useCreditors } from '@/hooks/api/useCreditors';
 import {
   useAttendantStations,
-  useAttendantCreditors,
   useCreateCashReport,
 } from '@/hooks/api/useAttendant';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
-import { ArrowLeft, Plus, Trash, DollarSign, CreditCard, Loader2 } from 'lucide-react';
+import { ArrowLeft, DollarSign, CreditCard, Loader2 } from 'lucide-react';
 
 export default function CashReportPage() {
   const navigate = useNavigate();
@@ -35,21 +33,12 @@ export default function CashReportPage() {
   const [upiAmount, setUpiAmount] = useState<number>(0);
   const [shift, setShift] = useState<'morning' | 'afternoon' | 'night'>('morning');
   const [notes, setNotes] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Fetch stations
   const {
     data: stations = [],
     isLoading: stationsLoading,
   } = isAttendant ? useAttendantStations() : useStations();
-
-  // Fetch creditors for selected station
-  const {
-    data: creditors = [],
-    isLoading: creditorsLoading,
-  } = isAttendant
-    ? useAttendantCreditors()
-    : useCreditors();
   
   // Submit cash report mutation
   const submitCashReport = useCreateCashReport();
@@ -65,14 +54,22 @@ export default function CashReportPage() {
     
     if (!selectedStationId) {
       toast({
-        title: 'Error',
+        title: 'Missing Station',
         description: 'Please select a station',
         variant: 'destructive'
       });
       return;
     }
     
-    setIsSubmitting(true);
+    const totalAmount = cashAmount + cardAmount + upiAmount;
+    if (totalAmount <= 0) {
+      toast({
+        title: 'Invalid Amount',
+        description: 'Please enter at least one payment amount greater than zero',
+        variant: 'destructive'
+      });
+      return;
+    }
     
     const reportData = {
       stationId: selectedStationId,
@@ -87,18 +84,17 @@ export default function CashReportPage() {
     try {
       await submitCashReport.mutateAsync(reportData);
       toast({
-        title: 'Success',
-        description: 'Cash report submitted successfully'
+        title: 'Cash Report Submitted',
+        description: `Successfully submitted ${shift} shift report for ₹${totalAmount.toFixed(2)}`,
+        variant: 'success'
       });
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: 'Error',
-        description: 'Failed to submit cash report',
+        title: 'Submission Failed',
+        description: error.message || 'Failed to submit cash report. Please try again.',
         variant: 'destructive'
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
   
@@ -259,9 +255,9 @@ export default function CashReportPage() {
           </Button>
           <Button 
             type="submit" 
-            disabled={isSubmitting || !selectedStationId}
+            disabled={submitCashReport.isPending || !selectedStationId}
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Cash Report'}
+            {submitCashReport.isPending ? 'Submitting...' : 'Submit Cash Report'}
           </Button>
         </div>
       </form>

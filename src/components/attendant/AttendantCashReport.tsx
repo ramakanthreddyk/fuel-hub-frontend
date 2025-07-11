@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAttendantStations, useSubmitCashReport } from "@/hooks/api/useAttendant";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, CheckCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AttendantCashReportProps {
   stationId?: string;
 }
 
 export function AttendantCashReport({ stationId: propStationId }: AttendantCashReportProps) {
+  const { toast } = useToast();
   const [selectedStationId, setSelectedStationId] = useState<string>(propStationId || "");
   const [cashAmount, setCashAmount] = useState<string>("");
   const [cardAmount, setCardAmount] = useState<string>("");
@@ -24,7 +26,14 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
 
   // Handle form submission
   const handleSubmit = () => {
-    if (!selectedStationId || !cashAmount) return;
+    if (!selectedStationId || !cashAmount) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a station and enter cash amount.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     submitCashReport.mutate({
       stationId: selectedStationId,
@@ -33,6 +42,25 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
       upiAmount: upiAmount ? parseFloat(upiAmount) : undefined,
       reportDate: new Date().toISOString(),
       shift
+    }, {
+      onSuccess: () => {
+        toast({
+          title: "Cash Report Submitted",
+          description: `Successfully submitted ${shift} shift report for ₹${(parseFloat(cashAmount) + parseFloat(cardAmount || '0') + parseFloat(upiAmount || '0')).toFixed(2)}`,
+          variant: "success",
+        });
+        // Reset form
+        setCashAmount("");
+        setCardAmount("");
+        setUpiAmount("");
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Failed to Submit Report",
+          description: error.message || "Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
 
@@ -129,16 +157,6 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
           ) : "Submit Cash Report"}
         </Button>
       </CardFooter>
-
-      {submitCashReport.isSuccess && (
-        <div className="px-6 pb-4">
-          <Alert variant="default" className="bg-green-50 border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <AlertTitle>Success</AlertTitle>
-            <AlertDescription>Cash report submitted successfully</AlertDescription>
-          </Alert>
-        </div>
-      )}
     </Card>
   );
 }

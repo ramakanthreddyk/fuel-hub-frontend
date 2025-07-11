@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { readingsService } from '@/api/services/readingsService';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export const useReadings = () => {
   return useQuery({
@@ -23,30 +23,26 @@ export const useReading = (id: string) => {
 
 export const useCreateReading = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
     mutationFn: (data: any) => readingsService.createReading(data),
     onSuccess: (newReading) => {
       queryClient.invalidateQueries({ queryKey: ['readings'] });
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
-      toast({
-        title: "Success",
-        description: `Reading for nozzle #${newReading.nozzleNumber || 'N/A'} saved successfully`,
-      });
+      queryClient.invalidateQueries({ queryKey: ['latest-reading'] });
+      // Toast is handled in the component for better context
     },
     onError: (error: any) => {
       console.error('Failed to create reading:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save reading. Please try again.",
-        variant: "destructive",
-      });
+      // Toast is handled in the component for better error context
     },
   });
 };
 
 export const useUpdateReading = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => readingsService.updateReading(id, data),
@@ -54,14 +50,15 @@ export const useUpdateReading = () => {
       queryClient.invalidateQueries({ queryKey: ['reading', id] });
       queryClient.invalidateQueries({ queryKey: ['readings'] });
       toast({
-        title: "Success",
-        description: `Reading for nozzle #${updatedReading.nozzleNumber || 'N/A'} updated successfully`,
+        title: "Reading Updated",
+        description: `Successfully updated reading for nozzle #${updatedReading.nozzleNumber || 'N/A'}`,
+        variant: "success",
       });
     },
     onError: (error: any) => {
       console.error('Failed to update reading:', error);
       toast({
-        title: "Error",
+        title: "Update Failed",
         description: error.message || "Failed to update reading. Please try again.",
         variant: "destructive",
       });
