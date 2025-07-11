@@ -5,41 +5,41 @@
 
 @layer base {
   :root {
-    /* Professional Blue-Gray Theme */
-    --background: 248 250 252;
+    /* Clean Professional Theme - Proper HSL Values */
+    --background: 255 255 255;
     --foreground: 15 23 42;
     --card: 255 255 255;
     --card-foreground: 15 23 42;
     --popover: 255 255 255;
     --popover-foreground: 15 23 42;
     --primary: 59 130 246;
-    --primary-foreground: 248 250 252;
+    --primary-foreground: 255 255 255;
     --secondary: 241 245 249;
     --secondary-foreground: 51 65 85;
-    --muted: 241 245 249;
+    --muted: 248 250 252;
     --muted-foreground: 100 116 139;
     --accent: 241 245 249;
     --accent-foreground: 51 65 85;
     --destructive: 239 68 68;
-    --destructive-foreground: 248 250 252;
+    --destructive-foreground: 255 255 255;
     --border: 226 232 240;
-    --input: 226 232 240;
+    --input: 255 255 255;
     --ring: 59 130 246;
     --radius: 0.75rem;
     
-    /* Sidebar specific colors */
+    /* Sidebar colors */
     --sidebar-background: 255 255 255;
     --sidebar-foreground: 51 65 85;
     --sidebar-primary: 59 130 246;
-    --sidebar-primary-foreground: 248 250 252;
-    --sidebar-accent: 241 245 249;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 248 250 252;
     --sidebar-accent-foreground: 51 65 85;
     --sidebar-border: 226 232 240;
     --sidebar-ring: 59 130 246;
   }
 
   .dark {
-    /* Professional Dark Theme */
+    /* Clean Dark Theme */
     --background: 2 6 23;
     --foreground: 248 250 252;
     --card: 15 23 42;
@@ -57,7 +57,7 @@
     --destructive: 248 113 113;
     --destructive-foreground: 2 6 23;
     --border: 51 65 85;
-    --input: 51 65 85;
+    --input: 30 41 59;
     --ring: 96 165 250;
     
     /* Dark sidebar colors */
@@ -83,7 +83,7 @@
 }
 
 @layer components {
-  /* Professional animation utilities */
+  /* Clean animation utilities */
   .animate-in {
     animation-name: animateIn;
     animation-duration: 0.3s;
@@ -125,18 +125,13 @@
     }
   }
   
-  /* Professional gradient backgrounds */
-  .bg-gradient-professional {
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, transparent 50%, hsl(var(--secondary) / 0.1) 100%);
-  }
-  
-  /* Smooth hover transitions */
+  /* Clean hover transitions */
   .hover-lift {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .hover-lift:hover {
-    transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 10px 25px -5px hsl(var(--foreground) / 0.1), 0 10px 10px -5px hsl(var(--foreground) / 0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px hsl(var(--foreground) / 0.1);
   }
 }

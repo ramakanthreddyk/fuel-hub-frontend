@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
@@ -9,7 +10,7 @@ export function DashboardLayout() {
 
   return (
     <RoleRedirect allowedRoles={['owner', 'manager', 'superadmin']} redirectPath="/attendant">
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-950 dark:to-slate-900 transition-colors">
+      <div className="min-h-screen bg-background">
         <Sidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
         <div className="lg:pl-72">
           <Header onMobileMenuClick={() => setSidebarOpen(true)} />

@@ -1,7 +1,7 @@
 
 /**
  * @file pages/dashboard/StationsPage.tsx
- * @description Redesigned stations page with white theme and consistent styling
+ * @description Clean stations page with white theme and professional styling
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -56,50 +56,49 @@ export default function StationsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="relative">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-blue-600/20"></div>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-primary/20"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      <div className="space-y-8">
+    <div className="min-h-screen bg-background">
+      <div className="space-y-8 p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              🏭 Station Management
+            <h1 className="text-4xl font-bold text-foreground">
+              Station Management
             </h1>
-            <p className="text-gray-600 text-lg">Manage your fuel station network with precision</p>
+            <p className="text-muted-foreground text-lg">Manage your fuel station network</p>
           </div>
           
           <Button 
             onClick={() => navigate('/dashboard/stations/new')} 
-            className="group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-            <Plus className="mr-2 h-5 w-5" />
+            <Plus className="mr-2 h-4 w-4" />
             Add Station
           </Button>
         </div>
 
         {/* Filters */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-gray-200 p-6 shadow-lg">
+        <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <Filter className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-800">Filter Stations</h3>
+            <Filter className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold text-card-foreground">Filter Stations</h3>
           </div>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search stations by name or address..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 rounded-xl"
+              className="pl-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
         </div>
@@ -108,7 +107,7 @@ export default function StationsPage() {
         {filteredStations.length === 0 ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <EmptyState
-              icon={<Building2 className="h-16 w-16 text-blue-600" />}
+              icon={<Building2 className="h-16 w-16 text-primary" />}
               title={searchQuery ? "No stations found" : "No stations yet"}
               description={
                 searchQuery 
@@ -122,7 +121,7 @@ export default function StationsPage() {
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 pb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
             {filteredStations.map((station) => (
               <StationCard
                 key={station.id}
@@ -132,7 +131,7 @@ export default function StationsPage() {
                   address: station.address,
                   status: (station.status as 'active' | 'maintenance' | 'inactive') || 'active',
                   pumpCount: station.pumpCount || 0,
-                  rating: 4.5 // Default rating for now
+                  rating: 4.5
                 }}
                 onView={(id) => navigate(`/dashboard/stations/${id}`)}
                 onDelete={handleDeleteStation}
