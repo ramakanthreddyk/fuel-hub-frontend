@@ -36,7 +36,7 @@ export function FuelBadge({ fuelType, size = 'md', className }: FuelBadgeProps) 
       case 'electric':
       case 'ev':
         return {
-          bg: 'bg-gradient-to-r from-yellow-500 to-orange-600',
+          bg: 'bg-gradient-to-r from-orange-500 to-red-600',
           text: 'text-white',
           icon: Zap,
           emoji: '⚡'

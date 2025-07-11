@@ -88,9 +88,10 @@
     background-color: white !important;
   }
   
-  /* Prevent any yellow or amber tints */
-  .bg-gradient-to-br, .bg-gradient-to-r, .bg-gradient-to-l, .bg-gradient-to-t, .bg-gradient-to-b {
-    background: white !important;
+  /* Override any potential yellow/amber colors */
+  * {
+    --tw-gradient-from: rgb(255 255 255) !important;
+    --tw-gradient-to: rgb(255 255 255) !important;
   }
 }
 

@@ -43,7 +43,7 @@ export function ReadingReceiptCard({ reading, onView, onEdit }: ReadingReceiptCa
         };
       case 'pending':
         return {
-          color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+          color: 'bg-orange-100 text-orange-800 border-orange-300',
           icon: Clock,
           label: 'Pending'
         };

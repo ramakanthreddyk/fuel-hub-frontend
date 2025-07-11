@@ -39,7 +39,7 @@ export function StationRanking({ period = 'month' }: StationRankingProps) {
   };
 
   return (
-    <Card className="bg-gradient-to-br from-white to-yellow-50 border-yellow-200">
+    <Card className="bg-white border-gray-200">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-yellow-600" />

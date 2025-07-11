@@ -27,7 +27,7 @@ export function PumpCard({ pump, onViewNozzles, onSettings }: PumpCardProps) {
       case 'active':
         return 'from-green-50 via-emerald-50 to-teal-50 border-green-200';
       case 'maintenance':
-        return 'from-yellow-50 via-orange-50 to-amber-50 border-yellow-200';
+        return 'from-orange-50 via-red-50 to-pink-50 border-orange-200';
       case 'inactive':
         return 'from-red-50 via-pink-50 to-rose-50 border-red-200';
       default:

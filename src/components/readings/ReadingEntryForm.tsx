@@ -350,7 +350,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                         </div>
                       </div>
                       {latestReading && (
-                        <div className="text-xs text-gray-600 bg-yellow-50 p-2 rounded border border-yellow-200">
+                        <div className="text-xs text-gray-600 bg-orange-50 p-2 rounded border border-orange-200">
                           ⚠️ New reading must be greater than {latestReading.reading} L
                         </div>
                       )}

@@ -88,7 +88,7 @@ export default function ReadingsPage() {
           Completed
         </Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+        return <Badge className="bg-orange-100 text-orange-800 border-orange-200">
           <Clock className="w-3 h-3 mr-1" />
           Pending
         </Badge>;
@@ -175,10 +175,10 @@ export default function ReadingsPage() {
       </div>
 
       {pendingAlertsCount > 0 && (
-        <Card className="border-yellow-200 bg-yellow-50">
+        <Card className="border-orange-200 bg-orange-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-yellow-700" />
+              <AlertTriangle className="h-4 w-4 text-orange-700" />
               Pending Readings
             </CardTitle>
             <CardDescription>Nozzles missing readings in the last 24h</CardDescription>

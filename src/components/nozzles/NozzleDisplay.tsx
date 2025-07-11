@@ -43,7 +43,7 @@ export function NozzleDisplay({ nozzle, onTakeReading, onSettings }: NozzleDispl
       case 'gasoline':
         return 'from-green-400 to-emerald-500';
       case 'diesel':
-        return 'from-yellow-400 to-orange-500';
+        return 'from-orange-400 to-red-500';
       case 'premium':
         return 'from-purple-400 to-violet-500';
       default:

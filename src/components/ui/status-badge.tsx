@@ -21,7 +21,7 @@ export function StatusBadge({ status, size = 'md', className }: StatusBadgeProps
         };
       case 'maintenance':
         return {
-          bg: 'bg-gradient-to-r from-yellow-500 to-amber-600',
+          bg: 'bg-gradient-to-r from-orange-500 to-red-600',
           text: 'text-white',
           icon: Settings,
           glow: 'shadow-lg shadow-yellow-500/30'

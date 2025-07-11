@@ -55,7 +55,7 @@ export function CreditorCard({ creditor, onViewDetails, onAddPayment }: Creditor
       };
     } else if (isNearLimit) {
       return {
-        gradient: 'from-yellow-50 via-orange-50 to-amber-50',
+        gradient: 'from-orange-50 via-red-50 to-pink-50',
         color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
         icon: AlertTriangle,
         label: 'Near Limit'
