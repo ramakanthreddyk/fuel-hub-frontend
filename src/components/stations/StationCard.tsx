@@ -66,12 +66,10 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
 
   return (
     <div 
-      className="group relative bg-card border border-border rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-[1.02] hover:-translate-y-1"
+      className="group relative bg-white border border-border rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-[1.02] hover:-translate-y-1"
       onMouseEnter={() => setShowDashboard(true)}
       onMouseLeave={() => setShowDashboard(false)}
     >
-      {/* Subtle Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       
       {/* Status Indicator */}
       <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${

@@ -61,7 +61,7 @@ export function StationDashboardOverlay({
   );
 
   return (
-    <div className="absolute inset-0 bg-card/95 backdrop-blur-sm border border-border rounded-3xl p-4 z-20 animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="absolute inset-0 bg-white/95 backdrop-blur-sm border border-border rounded-3xl p-4 z-20 animate-in fade-in slide-in-from-top-2 duration-300">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
