@@ -1,175 +1,30 @@
 
-import { format } from 'date-fns';
+/**
+ * @file utils/formatters.ts
+ * @description Utility functions for formatting data
+ */
 
-export const formatDate = (dateString: string | null | undefined): string => {
-  if (!dateString) return 'N/A';
+export const formatCurrency = (amount: number, currency: string = 'INR'): string => {
+  if (currency === 'INR') {
+    return `₹${amount.toLocaleString()}`;
+  }
   
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      return 'Invalid Date';
-    }
-    return format(date, 'MMM dd, yyyy');
-  } catch (error) {
-    return 'Invalid Date';
-  }
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+  }).format(amount);
 };
 
-export const formatDateTime = (dateString: string | null | undefined): string => {
-  if (!dateString) return 'N/A';
-  
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      return 'Invalid Date';
-    }
-    return format(date, 'MMM dd, yyyy HH:mm');
-  } catch (error) {
-    return 'Invalid Date';
-  }
+export const formatNumber = (num: number): string => {
+  return num.toLocaleString();
 };
 
-export const formatShortDateTime = (dateString: string | null | undefined): string => {
-  if (!dateString) return 'N/A';
-  
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      return 'Invalid Date';
-    }
-    return format(date, 'dd/MM/yy HH:mm');
-  } catch (error) {
-    return 'Invalid Date';
-  }
+export const formatDate = (date: string | Date): string => {
+  const d = new Date(date);
+  return d.toLocaleDateString();
 };
 
-// Safe date formatting with custom format pattern
-export const formatSafeDate = (dateString: string | null | undefined, formatPattern: string = 'MMM dd, yyyy'): string => {
-  if (!dateString) return 'N/A';
-  
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      return 'Invalid Date';
-    }
-    return format(date, formatPattern);
-  } catch (error) {
-    return 'Invalid Date';
-  }
-};
-
-export const formatCurrency = (amount: any, currency: string = '₹'): string => {
-  try {
-    const numAmount = Number(amount);
-    if (isNaN(numAmount) || !isFinite(numAmount)) {
-      return `${currency}0`;
-    }
-    
-    // Convert to crores (10 million)
-    if (numAmount >= 10000000) {
-      return `${currency}${(numAmount / 10000000).toFixed(1)}Cr`;
-    }
-    // Convert to lakhs (100 thousand)
-    if (numAmount >= 100000) {
-      return `${currency}${(numAmount / 100000).toFixed(1)}L`;
-    }
-    // Convert to thousands
-    if (numAmount >= 1000) {
-      return `${currency}${(numAmount / 1000).toFixed(1)}K`;
-    }
-    
-    return `${currency}${numAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
-  } catch (error) {
-    return `${currency}0`;
-  }
-};
-
-// Format exact currency amount without abbreviations
-export const formatExactCurrency = (amount: any, currency: string = '₹'): string => {
-  try {
-    const numAmount = Number(amount);
-    if (isNaN(numAmount) || !isFinite(numAmount)) {
-      return `${currency}0`;
-    }
-    return `${currency}${numAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
-  } catch (error) {
-    return `${currency}0`;
-  }
-};
-
-export const formatNumber = (num: number | string | null | undefined): string => {
-  try {
-    const numValue = typeof num === 'string' ? parseFloat(num) : num;
-    if (numValue === null || numValue === undefined || isNaN(numValue)) {
-      return '0';
-    }
-    return numValue.toLocaleString('en-IN');
-  } catch (error) {
-    return '0';
-  }
-};
-
-// Format reading values with proper decimal places
-export const formatReading = (reading: number | string | null | undefined, maxDecimals: number = 2): string => {
-  try {
-    const numReading = typeof reading === 'string' ? parseFloat(reading) : reading;
-    if (numReading === null || numReading === undefined || isNaN(numReading)) {
-      return '0';
-    }
-    
-    // Remove unnecessary trailing zeros
-    const formatted = numReading.toFixed(maxDecimals);
-    return parseFloat(formatted).toString();
-  } catch (error) {
-    return '0';
-  }
-};
-
-// Format volume with appropriate decimal places
-export const formatVolume = (volume: number | string | null | undefined, unit: string = 'L'): string => {
-  try {
-    const numVolume = typeof volume === 'string' ? parseFloat(volume) : volume;
-    if (numVolume === null || numVolume === undefined || isNaN(numVolume)) {
-      return `0 ${unit}`;
-    }
-    
-    // Use 3 decimal places for volumes, but remove trailing zeros
-    const formatted = numVolume.toFixed(3);
-    const clean = parseFloat(formatted).toString();
-    return `${clean} ${unit}`;
-  } catch (error) {
-    return `0 ${unit}`;
-  }
-};
-
-// Format price with consistent decimal places
-export const formatPrice = (price: number | string | null | undefined, currency: string = '₹'): string => {
-  try {
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    if (numPrice === null || numPrice === undefined || isNaN(numPrice)) {
-      return currency ? `${currency}0.00` : '0.00';
-    }
-    return currency ? `${currency}${numPrice.toFixed(2)}` : numPrice.toFixed(2);
-  } catch (error) {
-    return currency ? `${currency}0.00` : '0.00';
-  }
-};
-
-// Safe number formatting for any numeric value
-export const formatSafeNumber = (value: any, decimals: number = 2): string => {
-  try {
-    const num = typeof value === 'string' ? parseFloat(value) : value;
-    if (num === null || num === undefined || isNaN(num)) {
-      return '0';
-    }
-    
-    if (decimals === 0) {
-      return Math.round(num).toString();
-    }
-    
-    const formatted = num.toFixed(decimals);
-    return parseFloat(formatted).toString();
-  } catch (error) {
-    return '0';
-  }
+export const formatDateTime = (date: string | Date): string => {
+  const d = new Date(date);
+  return d.toLocaleString();
 };

@@ -13,8 +13,9 @@ import LoginPage from './pages/LoginPage';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import HomePage from './pages/HomePage';
 import StationsPage from './pages/dashboard/StationsPage';
-import PumpsPage from './pages/PumpsPage';
-import NozzlesPage from './pages/NozzlesPage';
+import PumpsPage from './pages/dashboard/PumpsPage';
+import NozzlesPage from './pages/dashboard/NozzlesPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
 import ReadingsPage from './pages/ReadingsPage';
 import SalesPage from './pages/SalesPage';
 import FuelPricesPage from './pages/FuelPricesPage';
@@ -34,10 +35,8 @@ const queryClient = new QueryClient();
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { user } = useAuth();
   if (!user) {
-    // Redirect to login page if not authenticated
     return <Navigate to="/login" />;
   }
-
   return <>{children}</>;
 }
 
@@ -52,7 +51,7 @@ function AppContent() {
 
         {/* Protected Dashboard Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="stations" />} />
+          <Route index element={<DashboardPage />} />
           <Route path="stations" element={<StationsPage />} />
           <Route path="pumps" element={<PumpsPage />} />
           <Route path="nozzles" element={<NozzlesPage />} />
