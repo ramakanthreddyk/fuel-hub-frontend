@@ -17,25 +17,7 @@ import { useReconciliationDiffs, useDiscrepancySummary } from '@/hooks/api/useRe
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
-
-interface Reconciliation {
-  id: string;
-  stationId: string;
-  stationName: string;
-  date: string;
-  totalSales: number;
-  cashTotal: number;
-  cardTotal: number;
-  upiTotal: number;
-  creditTotal: number;
-  openingReading: number;
-  closingReading: number;
-  totalVolume: number;
-  variance: number;
-  finalized: boolean;
-  approvedAt?: string;
-  createdAt: string;
-}
+import { ReconciliationRecord } from '@/api/api-contract';
 
 export default function ReconciliationPage() {
   const [selectedStation, setSelectedStation] = useState<string>('all');
@@ -53,21 +35,31 @@ export default function ReconciliationPage() {
 
   const createReconciliation = useCreateReconciliation();
 
-  const getStatusBadge = (reconciliation: Reconciliation) => {
-    if (!reconciliation.finalized) {
-      return <Badge className="bg-yellow-100 text-yellow-800"><AlertCircle className="w-3 h-3 mr-1" />Draft</Badge>;
-    }
+  const getStatusBadge = (reconciliation: ReconciliationRecord) => {
+    const status = reconciliation.status || 'pending';
     
-    const variance = Math.abs(reconciliation.variance);
-    if (variance < 1) {
+    if (status === 'matched') {
       return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Balanced</Badge>;
-    } else {
+    } else if (status === 'variance') {
       return <Badge className="bg-red-100 text-red-800"><AlertTriangle className="w-3 h-3 mr-1" />Variance</Badge>;
+    } else {
+      return <Badge className="bg-yellow-100 text-yellow-800"><AlertCircle className="w-3 h-3 mr-1" />Pending</Badge>;
     }
   };
 
-  const handleTriggerReconciliation = (stationId: string, date: string = selectedDate) => {
-    createReconciliation.mutate({ stationId, date });
+  const handleTriggerReconciliation = async (stationId: string, date: string = selectedDate) => {
+    try {
+      // For now, we'll pass minimal required data and let the backend calculate readings
+      await createReconciliation.mutateAsync({ 
+        stationId, 
+        date,
+        openingReading: 0, // Backend will calculate actual readings
+        closingReading: 0, // Backend will calculate actual readings
+        notes: `Reconciliation for ${date}`
+      });
+    } catch (error) {
+      console.error('Failed to create reconciliation:', error);
+    }
   };
 
   return (
@@ -175,21 +167,21 @@ export default function ReconciliationPage() {
                       <TableHead>Date</TableHead>
                       <TableHead>Station</TableHead>
                       <TableHead>Total Sales</TableHead>
-                      <TableHead>Volume (L)</TableHead>
+                      <TableHead>Expected Sales</TableHead>
                       <TableHead>Variance</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {reconciliations.map((recon: Reconciliation) => (
+                    {reconciliations.map((recon: ReconciliationRecord) => (
                       <TableRow key={recon.id}>
                         <TableCell>{formatDate(recon.date)}</TableCell>
                         <TableCell>{recon.stationName}</TableCell>
                         <TableCell>{formatCurrency(recon.totalSales)}</TableCell>
-                        <TableCell>{recon.totalVolume?.toFixed(2) || '0.00'}</TableCell>
+                        <TableCell>{formatCurrency(recon.expectedSales || 0)}</TableCell>
                         <TableCell className={recon.variance !== 0 ? 'text-red-600 font-medium' : 'text-green-600'}>
-                          {recon.variance > 0 ? '+' : ''}{recon.variance?.toFixed(2) || '0.00'}L
+                          {recon.variance > 0 ? '+' : ''}{formatCurrency(recon.variance || 0)}
                         </TableCell>
                         <TableCell>{getStatusBadge(recon)}</TableCell>
                         <TableCell>

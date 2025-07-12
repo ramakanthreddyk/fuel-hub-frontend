@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   BrowserRouter,
@@ -6,9 +7,9 @@ import {
   Navigate
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuth } from './context/AuthProvider';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
-import DashboardLayout from './layouts/DashboardLayout';
+import { DashboardLayout } from './components/layout/DashboardLayout';
 import HomePage from './pages/HomePage';
 import StationsPage from './pages/StationsPage';
 import PumpsPage from './pages/PumpsPage';

@@ -27,8 +27,8 @@ export default function ReconciliationDailySummaryPage() {
   const selectedStation = stations.find(s => s.id === stationId);
 
   const totals = dailySummary.reduce((acc, reading) => ({
-    volume: acc.volume + (reading.volume || 0),
-    revenue: acc.revenue + (reading.saleValue || 0),
+    volume: acc.volume + (reading.totalVolume || reading.deltaVolume || 0),
+    revenue: acc.revenue + (reading.saleValue || reading.revenue || 0),
     cashDeclared: acc.cashDeclared + (reading.cashDeclared || 0)
   }), { volume: 0, revenue: 0, cashDeclared: 0 });
 
@@ -167,18 +167,20 @@ export default function ReconciliationDailySummaryPage() {
             </TableHeader>
             <TableBody>
               {dailySummary.map((reading) => {
-                const nozzleVariance = (reading.saleValue || 0) - (reading.cashDeclared || 0);
+                const volume = reading.totalVolume || reading.deltaVolume || 0;
+                const revenue = reading.saleValue || reading.revenue || 0;
+                const nozzleVariance = revenue - (reading.cashDeclared || 0);
                 return (
                   <TableRow key={reading.nozzleId}>
                     <TableCell className="font-medium">
                       Nozzle {reading.nozzleNumber || 'N/A'}
                     </TableCell>
                     <TableCell>{reading.fuelType}</TableCell>
-                    <TableCell>{reading.openingReading?.toFixed(2) || '0.00'}</TableCell>
-                    <TableCell>{reading.closingReading?.toFixed(2) || '0.00'}</TableCell>
-                    <TableCell>{reading.volume?.toFixed(2) || '0.00'}</TableCell>
+                    <TableCell>{reading.openingReading?.toFixed(2) || reading.previousReading?.toFixed(2) || '0.00'}</TableCell>
+                    <TableCell>{reading.closingReading?.toFixed(2) || reading.currentReading?.toFixed(2) || '0.00'}</TableCell>
+                    <TableCell>{volume.toFixed(2)}</TableCell>
                     <TableCell>{formatCurrency(reading.pricePerLitre || 0)}</TableCell>
-                    <TableCell>{formatCurrency(reading.saleValue || 0)}</TableCell>
+                    <TableCell>{formatCurrency(revenue)}</TableCell>
                     <TableCell>{formatCurrency(reading.cashDeclared || 0)}</TableCell>
                     <TableCell className={nozzleVariance !== 0 ? (nozzleVariance > 0 ? 'text-red-600' : 'text-green-600') : ''}>
                       {nozzleVariance > 0 ? '+' : ''}{formatCurrency(nozzleVariance)}
