@@ -4,7 +4,18 @@
  * @description Utility functions for formatting data
  */
 
-export const formatCurrency = (amount: number, currency: string = 'INR'): string => {
+export const formatCurrency = (amount: number | undefined | null, currency: string = 'INR'): string => {
+  // Handle undefined, null, or NaN values
+  if (amount == null || isNaN(amount)) {
+    if (currency === 'INR') {
+      return '₹0';
+    }
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+    }).format(0);
+  }
+
   if (currency === 'INR') {
     return `₹${amount.toLocaleString()}`;
   }
