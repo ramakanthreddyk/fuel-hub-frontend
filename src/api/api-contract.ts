@@ -181,22 +181,17 @@ export interface UpdatePumpRequest {
 
 export interface Nozzle {
   id: string;
-  nozzleNumber: number;
-  fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
-  status: 'active' | 'inactive' | 'maintenance';
   pumpId: string;
-  pumpName?: string;
-  serialNumber?: string;
+  nozzleNumber: number;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  status: 'active' | 'inactive' | 'maintenance';
   createdAt: string;
-  updatedAt?: string;
 }
 
 export interface CreateNozzleRequest {
   pumpId: string;
   nozzleNumber: number;
-  fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
-  status?: 'active' | 'inactive' | 'maintenance';
-  serialNumber?: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
 }
 
 export interface UpdateNozzleRequest {
@@ -213,36 +208,19 @@ export interface UpdateNozzleRequest {
 export interface NozzleReading {
   id: string;
   nozzleId: string;
-  nozzleNumber?: number;
-  pumpName?: string;
-  stationName?: string;
   reading: number;
-  previousReading?: number;
-  volume?: number;
   recordedAt: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
   creditorId?: string;
-  creditorName?: string;
-  notes?: string;
   createdAt: string;
-  updatedAt?: string;
-  // Calculated fields
-  amount?: number;
-  pricePerLitre?: number;
-  fuelType?: string;
-  stationId?: string;
-  attendantId?: string;
-  attendantName?: string;
-  recordedBy?: string; // alias for attendantName
 }
 
 export interface CreateReadingRequest {
   nozzleId: string;
   reading: number;
   recordedAt: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
   creditorId?: string;
-  notes?: string;
 }
 
 export interface ReadingValidation {
@@ -294,23 +272,20 @@ export interface SalesFilters {
 export interface FuelPrice {
   id: string;
   stationId: string;
-  stationName?: string;
-  fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
+  fuelType: 'petrol' | 'diesel' | 'premium';
   price: number;
   validFrom: string;
-  effectiveTo?: string;
-  isActive: boolean;
   createdAt: string;
-  updatedAt?: string;
-  createdBy?: string;
+  station?: {
+    name?: string;
+  };
 }
 
 export interface CreateFuelPriceRequest {
   stationId: string;
-  fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
+  fuelType: 'petrol' | 'diesel' | 'premium';
   price: number;
   validFrom?: string;
-  effectiveTo?: string;
 }
 
 export interface UpdateFuelPriceRequest {
@@ -555,22 +530,16 @@ export interface CreateCashReportRequest {
 
 export interface Alert {
   id: string;
-  type: 'warning' | 'error' | 'info' | 'success';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  severity: 'low' | 'medium' | 'high' | 'critical'; // Alias for priority
+  type: 'inventory' | 'credit' | 'maintenance' | 'sales' | 'system';
+  severity: 'info' | 'warning' | 'critical';
   title: string;
   message: string;
   stationId?: string;
   stationName?: string;
-  pumpId?: string;
-  nozzleId?: string;
+  isRead?: boolean;
+  isActive?: boolean;
   createdAt: string;
-  acknowledged: boolean;
-  acknowledgedAt?: string;
-  acknowledgedBy?: string;
-  isActive: boolean;
-  read: boolean; // For UI state
-  expiresAt?: string;
+  metadata?: Record<string, never>;
 }
 
 export interface SystemAlert extends Alert {
@@ -848,13 +817,10 @@ export interface FuelInventory {
   id: string;
   stationId: string;
   stationName?: string;
-  fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
-  currentStock: number;
-  currentVolume: number; // Alias for currentStock
-  minimumLevel: number;
-  maximumLevel: number;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  capacity?: number;
+  currentVolume: number;
   lastUpdated: string;
-  status: 'normal' | 'low' | 'critical' | 'overstocked';
 }
 
 export interface FuelInventoryParams {
@@ -866,30 +832,19 @@ export interface FuelDelivery {
   id: string;
   stationId: string;
   stationName?: string;
-  fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
-  quantity: number;
-  volume: number; // Alias for quantity
-  pricePerLitre: number;
-  totalAmount: number;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  volume: number;
   deliveryDate: string;
-  supplierName?: string;
-  deliveredBy?: string; // Person who delivered
-  invoiceNumber?: string;
-  notes?: string;
+  supplier?: string;
   createdAt: string;
-  updatedAt?: string;
 }
 
 export interface CreateFuelDeliveryRequest {
   stationId: string;
-  fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
-  quantity: number;
-  pricePerLitre: number;
-  deliveryDate?: string;
-  supplierName?: string;
-  invoiceNumber?: string;
-  deliveredBy?: string;
-  notes?: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  volume: number;
+  deliveryDate: string;
+  supplier?: string;
 }
 
 // =============================================================================
@@ -899,27 +854,23 @@ export interface CreateFuelDeliveryRequest {
 export interface ReconciliationRecord {
   id: string;
   stationId: string;
-  stationName?: string;
   date: string;
   openingReading: number;
   closingReading: number;
-  totalSales: number;
-  expectedSales: number;
   variance: number;
-  status: 'matched' | 'variance' | 'pending';
-  notes?: string;
+  reconciliationNotes?: string;
+  managerConfirmation?: boolean;
   createdAt: string;
-  updatedAt?: string;
+  station?: {
+    name?: string;
+  };
 }
 
 export interface CreateReconciliationRequest {
   stationId: string;
   date: string;
-  reconciliationDate?: string; // Alias for date
-  openingReading: number;
-  closingReading: number;
-  declaredCash?: number;
-  notes?: string;
+  reconciliationNotes?: string;
+  managerConfirmation: boolean;
 }
 
 export interface DailyReadingSummary {
