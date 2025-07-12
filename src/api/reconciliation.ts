@@ -37,5 +37,23 @@ export const reconciliationApi = {
       console.error('Error fetching reconciliation history:', error);
       return [];
     }
+  },
+
+  // Get reconciliation by ID
+  getReconciliationById: async (id: string): Promise<ReconciliationRecord> => {
+    const response = await apiClient.get(`/reconciliation/${id}`);
+    return extractApiData<ReconciliationRecord>(response);
+  },
+
+  // Get reconciliation by station and date
+  getReconciliationByStationAndDate: async (stationId: string, date: string): Promise<ReconciliationRecord> => {
+    const response = await apiClient.get(`/reconciliation/${stationId}/${date}`);
+    return extractApiData<ReconciliationRecord>(response);
+  },
+
+  // Approve reconciliation
+  approveReconciliation: async (id: string): Promise<ReconciliationRecord> => {
+    const response = await apiClient.post(`/reconciliation/${id}/approve`);
+    return extractApiData<ReconciliationRecord>(response);
   }
 };
