@@ -11,7 +11,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import HomePage from './pages/HomePage';
-import StationsPage from './pages/StationsPage';
+import StationsPage from './pages/dashboard/StationsPage';
 import PumpsPage from './pages/PumpsPage';
 import NozzlesPage from './pages/NozzlesPage';
 import ReadingsPage from './pages/ReadingsPage';
@@ -40,43 +40,50 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   return <>{children}</>;
 }
 
+// App content that needs router context
+function AppContent() {
+  return (
+    <AuthProvider>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Protected Dashboard Routes */}
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="stations" />} />
+          <Route path="stations" element={<StationsPage />} />
+          <Route path="pumps" element={<PumpsPage />} />
+          <Route path="nozzles" element={<NozzlesPage />} />
+          <Route path="readings" element={<ReadingsPage />} />
+          <Route path="sales" element={<SalesPage />} />
+          <Route path="fuel-prices" element={<FuelPricesPage />} />
+          <Route path="creditors" element={<CreditorsPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="reconciliation" element={<ReconciliationPage />} />
+          <Route path="reconciliation/daily-summary" element={<ReconciliationDailySummaryPage />} />
+          <Route path="reconciliation/:id" element={<ReconciliationDetailPage />} />
+        </Route>
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="home" />} />
+          <Route path="home" element={<AdminHomePage />} />
+          <Route path="tenants" element={<AdminTenantsPage />} />
+          <Route path="plans" element={<AdminPlansPage />} />
+        </Route>
+      </Routes>
+    </AuthProvider>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-
-            {/* Protected Dashboard Routes */}
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-              <Route index element={<Navigate to="stations" />} />
-              <Route path="stations" element={<StationsPage />} />
-              <Route path="pumps" element={<PumpsPage />} />
-              <Route path="nozzles" element={<NozzlesPage />} />
-              <Route path="readings" element={<ReadingsPage />} />
-              <Route path="sales" element={<SalesPage />} />
-              <Route path="fuel-prices" element={<FuelPricesPage />} />
-              <Route path="creditors" element={<CreditorsPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="reconciliation" element={<ReconciliationPage />} />
-              <Route path="reconciliation/daily-summary" element={<ReconciliationDailySummaryPage />} />
-              <Route path="reconciliation/:id" element={<ReconciliationDetailPage />} />
-            </Route>
-
-            {/* Admin Routes */}
-            <Route path="/admin" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-              <Route index element={<Navigate to="home" />} />
-              <Route path="home" element={<AdminHomePage />} />
-              <Route path="tenants" element={<AdminTenantsPage />} />
-              <Route path="plans" element={<AdminPlansPage />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
