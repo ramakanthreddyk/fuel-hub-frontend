@@ -1,85 +1,100 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { readingsService } from '@/api/services/readingsService';
-import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { readingsService, CreateReadingRequest } from '@/api/services/readingsService';
+import { toast } from '@/hooks/use-toast';
 
-export const useReadings = () => {
+export const useReadings = (filters?: any) => {
   return useQuery({
-    queryKey: ['readings'],
-    queryFn: readingsService.getReadings,
-    staleTime: 30000,
-    retry: 2,
-  });
-};
-
-export const useReading = (id: string) => {
-  return useQuery({
-    queryKey: ['reading', id],
-    queryFn: () => readingsService.getReading(id),
-    enabled: !!id,
+    queryKey: ['readings', filters],
+    queryFn: () => readingsService.getReadings(filters),
+    retry: 1,
     staleTime: 30000,
   });
 };
 
 export const useCreateReading = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: (data: any) => readingsService.createReading(data),
-    onSuccess: (newReading) => {
+    mutationFn: (data: CreateReadingRequest) => readingsService.createReading(data),
+    onSuccess: (data) => {
+      // Invalidate and refetch related queries
       queryClient.invalidateQueries({ queryKey: ['readings'] });
-      queryClient.invalidateQueries({ queryKey: ['nozzles'] });
-      queryClient.invalidateQueries({ queryKey: ['latest-reading'] });
-      // Toast is handled in the component for better context
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['sales-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['station-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-method-breakdown'] });
+      queryClient.invalidateQueries({ queryKey: ['fuel-type-breakdown'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-sales-trend'] });
+      
+      toast({
+        title: 'Reading Recorded',
+        description: 'Fuel reading has been successfully recorded.',
+        variant: 'success',
+      });
     },
     onError: (error: any) => {
       console.error('Failed to create reading:', error);
-      // Toast is handled in the component for better error context
+      toast({
+        title: 'Error',
+        description: error?.response?.data?.message || 'Failed to record reading. Please try again.',
+        variant: 'destructive',
+      });
     },
   });
 };
 
 export const useUpdateReading = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => readingsService.updateReading(id, data),
-    onSuccess: (updatedReading, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['reading', id] });
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateReadingRequest> }) => 
+      readingsService.updateReading(id, data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['readings'] });
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['sales-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['station-metrics'] });
+      
       toast({
-        title: "Reading Updated",
-        description: `Successfully updated reading for nozzle #${updatedReading.nozzleNumber || 'N/A'}`,
-        variant: "success",
+        title: 'Reading Updated',
+        description: 'Fuel reading has been successfully updated.',
+        variant: 'success',
       });
     },
     onError: (error: any) => {
-      console.error('Failed to update reading:', error);
       toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update reading. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: error?.response?.data?.message || 'Failed to update reading.',
+        variant: 'destructive',
       });
     },
   });
 };
 
-export const useLatestReading = (nozzleId: string) => {
-  return useQuery({
-    queryKey: ['latest-reading', nozzleId],
-    queryFn: () => readingsService.getLatestReading(nozzleId),
-    enabled: !!nozzleId,
-    staleTime: 30000,
-  });
-};
-
-export const useCanCreateReading = (nozzleId: string) => {
-  return useQuery({
-    queryKey: ['can-create-reading', nozzleId],
-    queryFn: () => readingsService.canCreateReading(nozzleId),
-    enabled: !!nozzleId,
-    staleTime: 60000,
+export const useDeleteReading = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (id: string) => readingsService.deleteReading(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['readings'] });
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['sales-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['station-metrics'] });
+      
+      toast({
+        title: 'Reading Deleted',
+        description: 'Fuel reading has been successfully deleted.',
+        variant: 'success',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error?.response?.data?.message || 'Failed to delete reading.',
+        variant: 'destructive',
+      });
+    },
   });
 };

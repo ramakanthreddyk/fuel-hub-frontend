@@ -1,15 +1,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { usePaymentMethodBreakdown } from '@/hooks/useDashboard';
-
-const COLORS = {
-  cash: '#22c55e',
-  card: '#3b82f6',
-  upi: '#8b5cf6',
-  credit: '#f59e0b',
-};
+import { ErrorFallback } from '@/components/common/ErrorFallback';
+import { CreditCard } from 'lucide-react';
 
 interface DashboardFilters {
   stationId?: string;
@@ -22,72 +16,62 @@ interface PaymentMethodChartProps {
 }
 
 export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
-  const { data: breakdown = [], isLoading } = usePaymentMethodBreakdown(filters);
+  const { data: paymentData, isLoading, error, refetch } = usePaymentMethodBreakdown(filters);
+
+  if (error) {
+    return <ErrorFallback error={error} onRetry={() => refetch()} title="Payment Methods" />;
+  }
 
   if (isLoading) {
     return (
-      <Card className="w-full">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-sm sm:text-base">Payment Methods</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Payment Methods
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[300px] bg-muted animate-pulse rounded" />
+          <div className="h-64 flex items-center justify-center">
+            <div className="animate-pulse">Loading chart...</div>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
-  const chartData = breakdown.map(item => ({
-    name: item.paymentMethod,
-    value: item.amount,
-    percentage: item.percentage,
-  }));
-
-  const chartConfig = {
-    cash: { label: 'Cash', color: COLORS.cash },
-    card: { label: 'Card', color: COLORS.card },
-    upi: { label: 'UPI', color: COLORS.upi },
-    credit: { label: 'Credit', color: COLORS.credit },
-  };
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   return (
-    <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200 w-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm sm:text-base lg:text-lg text-blue-700">Payment Methods</CardTitle>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <CreditCard className="h-5 w-5" />
+          Payment Methods
+          {filters.stationId && <span className="text-sm text-muted-foreground">(Filtered)</span>}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="pt-2">
-        <div className="w-full overflow-hidden">
-          <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="60%"
-                  dataKey="value"
-                  label={({ name, percentage }) => `${name}: ${percentage}%`}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={COLORS[entry.name as keyof typeof COLORS] || '#gray'} 
-                    />
-                  ))}
-                </Pie>
-                <ChartTooltip 
-                  content={<ChartTooltipContent />}
-                  formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Amount']}
-                />
-                <Legend 
-                  verticalAlign="bottom" 
-                  height={36}
-                  wrapperStyle={{ fontSize: '12px' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </div>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={paymentData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              outerRadius={80}
+              fill="#8884d8"
+              dataKey="amount"
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            >
+              {paymentData?.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value) => [`₹${Number(value).toLocaleString()}`, 'Amount']} />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );

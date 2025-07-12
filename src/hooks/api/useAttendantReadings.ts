@@ -1,86 +1,84 @@
 
-/**
- * @file hooks/api/useAttendantReadings.ts
- * @description React Query hooks for attendant nozzle readings
- */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient, { extractData } from '@/api/core/apiClient';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { attendantReadingsService, CreateAttendantReadingRequest, CreateCashReportRequest } from '@/api/services/attendantReadingsService';
+import { toast } from '@/hooks/use-toast';
 
-// Types
-export interface CreateReadingRequest {
-  nozzleId: string;
-  reading: number;
-  recordedAt: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
-  creditorId?: string;
-}
-
-export interface CanCreateReadingResponse {
-  canCreate: boolean;
-  reason?: string;
-  previousReading?: number;
-}
-
-export interface NozzleReading {
-  id: string;
-  nozzleId: string;
-  reading: number;
-  recordedAt: string;
-  paymentMethod: string;
-  creditorId?: string;
-  createdAt: string;
-}
-
-/**
- * Hook to check if a reading can be created for a nozzle
- */
-export const useCanCreateReading = (nozzleId?: string) => {
+export const useAttendantReadings = (filters?: any) => {
   return useQuery({
-    queryKey: ['can-create-reading', nozzleId],
-    queryFn: async () => {
-      const response = await apiClient.get(`nozzle-readings/can-create/${nozzleId}`);
-      return extractData<CanCreateReadingResponse>(response);
-    },
-    enabled: !!nozzleId,
+    queryKey: ['attendant-readings', filters],
+    queryFn: () => attendantReadingsService.getReadings(filters),
+    retry: 1,
     staleTime: 30000,
   });
 };
 
-/**
- * Hook to create a new reading
- */
 export const useCreateAttendantReading = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (data: CreateReadingRequest) => {
-      const response = await apiClient.post('nozzle-readings', data);
-      return extractData<NozzleReading>(response);
-    },
+    mutationFn: (data: CreateAttendantReadingRequest) => attendantReadingsService.createReading(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['can-create-reading'] });
-      queryClient.invalidateQueries({ queryKey: ['latest-reading'] });
-      // Toast is handled in the component for better context
+      // Invalidate all related queries to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['attendant-readings'] });
+      queryClient.invalidateQueries({ queryKey: ['readings'] });
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      queryClient.invalidateQueries({ queryKey: ['sales-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['station-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-method-breakdown'] });
+      queryClient.invalidateQueries({ queryKey: ['fuel-type-breakdown'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-sales-trend'] });
+      
+      toast({
+        title: 'Reading Submitted',
+        description: 'Your fuel reading has been successfully submitted.',
+        variant: 'success',
+      });
     },
     onError: (error: any) => {
-      console.error('Failed to create reading:', error);
-      // Toast is handled in the component for better error context
+      console.error('Failed to submit reading:', error);
+      toast({
+        title: 'Submission Failed',
+        description: error?.response?.data?.message || 'Failed to submit reading. Please try again.',
+        variant: 'destructive',
+      });
     },
   });
 };
 
-/**
- * Hook to get the latest reading for a nozzle
- */
-export const useLatestNozzleReading = (nozzleId?: string) => {
-  return useQuery({
-    queryKey: ['latest-reading', nozzleId],
-    queryFn: async () => {
-      const response = await apiClient.get(`nozzle-readings?nozzleId=${nozzleId}&limit=1`);
-      const readings = extractData<NozzleReading[]>(response);
-      return readings && readings.length > 0 ? readings[0] : null;
+export const useSubmitCashReport = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: CreateCashReportRequest) => attendantReadingsService.submitCashReport(data),
+    onSuccess: () => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['cash-reports'] });
+      queryClient.invalidateQueries({ queryKey: ['sales-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['station-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['payment-method-breakdown'] });
+      
+      toast({
+        title: 'Cash Report Submitted',
+        description: 'Your cash report has been successfully submitted.',
+        variant: 'success',
+      });
     },
-    enabled: !!nozzleId,
+    onError: (error: any) => {
+      console.error('Failed to submit cash report:', error);
+      toast({
+        title: 'Submission Failed',
+        description: error?.response?.data?.message || 'Failed to submit cash report. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
+export const useCashReports = (filters?: any) => {
+  return useQuery({
+    queryKey: ['cash-reports', filters],
+    queryFn: () => attendantReadingsService.getCashReports(filters),
+    retry: 1,
     staleTime: 30000,
   });
 };
