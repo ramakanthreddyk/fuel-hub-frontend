@@ -2,11 +2,40 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { attendantReadingsService, CreateAttendantReadingRequest, CreateCashReportRequest } from '@/api/services/attendantReadingsService';
 import { toast } from '@/hooks/use-toast';
+import { invalidateReadingQueries } from '@/utils/queryInvalidation';
 
 export const useAttendantReadings = (filters?: any) => {
   return useQuery({
     queryKey: ['attendant-readings', filters],
     queryFn: () => attendantReadingsService.getReadings(filters),
+    retry: 1,
+    staleTime: 30000,
+  });
+};
+
+export const useLatestNozzleReading = (nozzleId: string) => {
+  return useQuery({
+    queryKey: ['attendant-readings', 'latest', nozzleId],
+    queryFn: async () => {
+      if (!nozzleId) return null;
+      const readings = await attendantReadingsService.getReadings({ nozzleId, limit: 1 });
+      return readings.length > 0 ? readings[0] : null;
+    },
+    enabled: !!nozzleId,
+    retry: 1,
+    staleTime: 30000,
+  });
+};
+
+export const useCanCreateReading = (nozzleId: string) => {
+  return useQuery({
+    queryKey: ['attendant-readings', 'can-create', nozzleId],
+    queryFn: async () => {
+      if (!nozzleId) return { canCreate: false, reason: 'No nozzle selected' };
+      // For attendants, we'll assume they can always create readings unless there's a specific restriction
+      return { canCreate: true };
+    },
+    enabled: !!nozzleId,
     retry: 1,
     staleTime: 30000,
   });
@@ -18,20 +47,12 @@ export const useCreateAttendantReading = () => {
   return useMutation({
     mutationFn: (data: CreateAttendantReadingRequest) => attendantReadingsService.createReading(data),
     onSuccess: () => {
-      // Invalidate all related queries to refresh the UI
-      queryClient.invalidateQueries({ queryKey: ['attendant-readings'] });
-      queryClient.invalidateQueries({ queryKey: ['readings'] });
-      queryClient.invalidateQueries({ queryKey: ['sales'] });
-      queryClient.invalidateQueries({ queryKey: ['sales-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['station-metrics'] });
-      queryClient.invalidateQueries({ queryKey: ['payment-method-breakdown'] });
-      queryClient.invalidateQueries({ queryKey: ['fuel-type-breakdown'] });
-      queryClient.invalidateQueries({ queryKey: ['daily-sales-trend'] });
+      invalidateReadingQueries(queryClient);
       
       toast({
         title: 'Reading Submitted',
         description: 'Your fuel reading has been successfully submitted.',
-        variant: 'success',
+        variant: 'default',
       });
     },
     onError: (error: any) => {
@@ -60,7 +81,7 @@ export const useSubmitCashReport = () => {
       toast({
         title: 'Cash Report Submitted',
         description: 'Your cash report has been successfully submitted.',
-        variant: 'success',
+        variant: 'default',
       });
     },
     onError: (error: any) => {
