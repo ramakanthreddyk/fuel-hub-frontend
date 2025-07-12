@@ -1,7 +1,7 @@
 
 /**
  * @file StationDetailPage.tsx
- * @description Station detail page component
+ * @description Station detail page component with enhanced design
  * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
  * @see docs/journeys/OWNER.md - Owner journey for station management
  */
@@ -9,6 +9,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
+import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
 import { 
   Building2, 
   MapPin, 
@@ -20,7 +22,12 @@ import {
   AlertTriangle,
   Plus,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  Activity,
+  Zap,
+  Users,
+  Eye,
+  Edit3
 } from 'lucide-react';
 import { useStation } from '@/hooks/api/useStations';
 import { usePumps } from '@/hooks/api/usePumps';
@@ -41,109 +48,120 @@ export default function StationDetailPage() {
 
   if (error || !station) {
     return (
-      <div className="text-center py-8">
-        <h2 className="text-xl font-semibold mb-2">Station not found</h2>
-        <Button onClick={() => navigate('/dashboard/stations')}>
-          Back to Stations
-        </Button>
+      <div className="space-y-6 p-4 sm:p-6">
+        <PageHeader 
+          title="Station Not Found"
+          description="The requested station could not be found"
+          actions={
+            <Button onClick={() => navigate('/dashboard/stations')} variant="outline">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Stations
+            </Button>
+          }
+        />
       </div>
     );
   }
 
+  const activePumps = pumps.filter(p => p.status === 'active').length;
+
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3 min-w-0">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => navigate('/dashboard/stations')}
-            className="flex-shrink-0"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Back to Stations</span>
-            <span className="sm:hidden">Back</span>
-          </Button>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold truncate">{station.name}</h1>
-            <p className="text-muted-foreground text-sm truncate">{station.address}</p>
+    <div className="space-y-6 p-4 sm:p-6 pb-20">
+      {/* Enhanced Header with Back Button */}
+      <PageHeader 
+        title={station.name}
+        description={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <MapPin className="h-4 w-4" />
+            {station.address}
           </div>
-        </div>
-        <div className="flex gap-2 flex-shrink-0">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate(`/dashboard/stations/${stationId}/settings`)}
-            className="flex-1 sm:flex-none"
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            <span className="sm:inline">Settings</span>
-          </Button>
-          <Button 
-            size="sm"
-            onClick={() => navigate(`/dashboard/pumps/new?stationId=${stationId}`)}
-            className="flex-1 sm:flex-none"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Add Pump</span>
-            <span className="sm:hidden">Add</span>
-          </Button>
-        </div>
+        }
+        actions={
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/dashboard/stations')}
+              className="flex-1 sm:flex-none"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Stations
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate(`/dashboard/stations/${stationId}/settings`)}
+              className="flex-1 sm:flex-none"
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </Button>
+            <Button 
+              size="sm"
+              onClick={() => navigate(`/dashboard/pumps/new?stationId=${stationId}`)}
+              className="flex-1 sm:flex-none"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Pump
+            </Button>
+          </div>
+        }
+      />
+
+      {/* Enhanced Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <EnhancedMetricsCard
+          title="Today's Sales"
+          value={`₹${((station as any).todaySales || 0).toLocaleString()}`}
+          icon={<DollarSign className="h-5 w-5" />}
+          description="Revenue generated today"
+          gradient="from-green-500 to-emerald-600"
+          trend={(station as any).salesGrowth ? {
+            value: (station as any).salesGrowth,
+            isPositive: (station as any).salesGrowth > 0
+          } : undefined}
+        />
+
+        <EnhancedMetricsCard
+          title="Monthly Sales"
+          value={`₹${((station as any).monthlySales || 0).toLocaleString()}`}
+          icon={<TrendingUp className="h-5 w-5" />}
+          description="Current month performance"
+          gradient="from-blue-500 to-indigo-600"
+        />
+
+        <EnhancedMetricsCard
+          title="Active Pumps"
+          value={`${activePumps}/${pumps.length}`}
+          icon={<Fuel className="h-5 w-5" />}
+          description="Operational fuel dispensers"
+          gradient="from-orange-500 to-red-600"
+        />
+
+        <EnhancedMetricsCard
+          title="Daily Transactions"
+          value={(station as any).dailyTransactions || 0}
+          icon={<Activity className="h-5 w-5" />}
+          description="Customer transactions today"
+          gradient="from-purple-500 to-pink-600"
+        />
       </div>
 
-      {/* Station Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="w-full">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">₹{(station as any).todaySales?.toLocaleString() || '0'}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {(station as any).salesGrowth ? 
-                `+${(station as any).salesGrowth}% from yesterday` : 
-                'No growth data available'
-              }
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="w-full">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Sales</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">₹{(station as any).monthlySales?.toLocaleString() || '0'}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Current month performance
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="w-full sm:col-span-2 lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Pumps</CardTitle>
-            <Fuel className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{pumps.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Total pumps configured
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Pumps Grid */}
-      <Card className="w-full">
-        <CardHeader>
+      {/* Enhanced Pumps Section */}
+      <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/30">
+        <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <CardTitle>Fuel Pumps</CardTitle>
-            <Button asChild size="sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+                <Fuel className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Fuel Pumps</CardTitle>
+                <CardDescription>Manage station fuel dispensers</CardDescription>
+              </div>
+            </div>
+            <Button asChild variant="default" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg">
               <Link to={`/dashboard/stations/${stationId}/pumps`}>
+                <Eye className="mr-2 h-4 w-4" />
                 View All Pumps
               </Link>
             </Button>
@@ -151,13 +169,18 @@ export default function StationDetailPage() {
         </CardHeader>
         <CardContent>
           {pumps.length === 0 ? (
-            <div className="text-center py-8">
-              <Fuel className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">No Pumps Added</h3>
-              <p className="text-muted-foreground mb-4 text-sm">
-                Add fuel pumps to start managing this station.
+            <div className="text-center py-12">
+              <div className="p-4 rounded-full bg-gradient-to-br from-orange-100 to-red-100 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                <Fuel className="h-10 w-10 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">No Pumps Added</h3>
+              <p className="text-muted-foreground mb-6 text-sm max-w-md mx-auto">
+                Add fuel pumps to start managing this station and tracking fuel dispensing operations.
               </p>
-              <Button onClick={() => navigate(`/dashboard/pumps/new?stationId=${stationId}`)}>
+              <Button 
+                onClick={() => navigate(`/dashboard/pumps/new?stationId=${stationId}`)}
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-lg"
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add First Pump
               </Button>
@@ -165,25 +188,113 @@ export default function StationDetailPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {pumps.slice(0, 6).map((pump) => (
-                <Card key={pump.id} className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold truncate">{pump.name}</h3>
-                    <Badge variant={pump.status === 'active' ? 'default' : 'secondary'} className="flex-shrink-0">
-                      {pump.status}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3 truncate">
-                    Serial: {pump.serialNumber || 'N/A'}
-                  </p>
-                  <Button asChild variant="outline" size="sm" className="w-full">
-                    <Link to={`/dashboard/stations/${stationId}/pumps/${pump.id}`}>
-                      View Details
-                    </Link>
-                  </Button>
+                <Card key={pump.id} className="group hover:shadow-lg transition-all duration-200 border-0 bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
+                  <div className={`h-1 bg-gradient-to-r ${
+                    pump.status === 'active' ? 'from-green-500 to-emerald-600' :
+                    pump.status === 'maintenance' ? 'from-orange-500 to-yellow-600' :
+                    'from-red-500 to-red-600'
+                  }`} />
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg shadow-md ${
+                          pump.status === 'active' ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+                          pump.status === 'maintenance' ? 'bg-gradient-to-br from-orange-500 to-yellow-600' :
+                          'bg-gradient-to-br from-red-500 to-red-600'
+                        } text-white`}>
+                          <Fuel className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-semibold text-gray-900 truncate">{pump.name}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            Serial: {pump.serialNumber || 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge 
+                        variant={pump.status === 'active' ? 'default' : 'secondary'}
+                        className={`${
+                          pump.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' :
+                          pump.status === 'maintenance' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                          'bg-red-100 text-red-800 border-red-200'
+                        } text-xs font-medium`}
+                      >
+                        {pump.status}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <Zap className="h-3 w-3" />
+                          Nozzles
+                        </span>
+                        <span className="font-medium">{pump.nozzleCount || 0}</span>
+                      </div>
+                    </div>
+
+                    <Button 
+                      asChild 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                    >
+                      <Link to={`/dashboard/stations/${stationId}/pumps/${pump.id}`}>
+                        <Settings className="mr-2 h-3 w-3" />
+                        Manage Pump
+                      </Link>
+                    </Button>
+                  </CardContent>
                 </Card>
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Enhanced Staff Information Card */}
+      <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-purple-50/30">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Staff Information</CardTitle>
+                <CardDescription>Manage station personnel</CardDescription>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" className="hover:bg-purple-50">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Staff
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-1.5 rounded-md bg-blue-100">
+                  <Users className="h-4 w-4 text-blue-600" />
+                </div>
+                <span className="text-sm font-medium text-blue-900">Total Attendants</span>
+              </div>
+              <div className="text-2xl font-bold text-blue-900">{(station as any).attendantCount || 0}</div>
+            </div>
+            
+            <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-1.5 rounded-md bg-green-100">
+                  <Building2 className="h-4 w-4 text-green-600" />
+                </div>
+                <span className="text-sm font-medium text-green-900">Station Manager</span>
+              </div>
+              <div className="text-lg font-medium text-green-900 truncate">
+                {(station as any).manager || 'Not Assigned'}
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

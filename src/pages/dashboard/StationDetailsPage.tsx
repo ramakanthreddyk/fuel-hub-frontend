@@ -7,7 +7,9 @@ import { pumpsApi } from '@/api/pumps';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, Trash2, Fuel, Settings, Plus } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
+import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
+import { ArrowLeft, Edit, Trash2, Fuel, Settings, Plus, Users, Building2, Activity, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorFallback } from '@/components/common/ErrorFallback';
@@ -27,7 +29,7 @@ export default function StationDetailsPage() {
     enabled: !!stationId,
   });
 
-  // Fetch pumps for this station - Fix: pass stationId string directly
+  // Fetch pumps for this station
   const { data: pumps = [] } = useQuery({
     queryKey: ['pumps', stationId],
     queryFn: () => pumpsApi.getPumps(stationId!),
@@ -64,13 +66,16 @@ export default function StationDetailsPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/stations')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Stations
-          </Button>
-        </div>
+      <div className="space-y-6 p-4 sm:p-6">
+        <PageHeader 
+          title="Error Loading Station"
+          actions={
+            <Button variant="outline" onClick={() => navigate('/dashboard/stations')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Stations
+            </Button>
+          }
+        />
         <ErrorFallback 
           error={error} 
           onRetry={() => refetch()} 
@@ -82,17 +87,17 @@ export default function StationDetailsPage() {
 
   if (!station) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/stations')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Stations
-          </Button>
-        </div>
-        <div className="text-center py-8">
-          <h2 className="text-lg font-semibold">Station not found</h2>
-          <p className="text-muted-foreground">The requested station could not be found.</p>
-        </div>
+      <div className="space-y-6 p-4 sm:p-6">
+        <PageHeader 
+          title="Station Not Found"
+          description="The requested station could not be found"
+          actions={
+            <Button variant="outline" onClick={() => navigate('/dashboard/stations')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Stations
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -109,115 +114,116 @@ export default function StationDetailsPage() {
     setDeleteDialogOpen(false);
   };
 
+  const activePumps = pumps.filter(p => p.status === 'active').length;
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/stations')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Stations
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{station.name}</h1>
-            <p className="text-muted-foreground">{station.address}</p>
+    <div className="space-y-6 p-4 sm:p-6 pb-20">
+      {/* Enhanced Header with Back Button */}
+      <PageHeader 
+        title={station.name}
+        description={station.address}
+        actions={
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => navigate('/dashboard/stations')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Stations
+            </Button>
+            <Badge 
+              variant={station.status === 'active' ? 'default' : 'secondary'}
+              className={`${
+                station.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' :
+                station.status === 'maintenance' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                'bg-red-100 text-red-800 border-red-200'
+              } px-3 py-1`}
+            >
+              {station.status}
+            </Badge>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge 
-            variant={station.status === 'active' ? 'default' : 'secondary'}
-            className={
-              station.status === 'active' ? 'bg-green-100 text-green-800' :
-              station.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-red-100 text-red-800'
-            }
-          >
-            {station.status}
-          </Badge>
-        </div>
-      </div>
+        }
+      />
 
-      {/* Station Info Cards */}
+      {/* Enhanced Metrics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Pumps</CardTitle>
-            <Fuel className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pumps.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Fuel dispensers
-            </p>
-          </CardContent>
-        </Card>
+        <EnhancedMetricsCard
+          title="Total Pumps"
+          value={pumps.length}
+          icon={<Fuel className="h-5 w-5" />}
+          description="Fuel dispensers"
+          gradient="from-blue-500 to-indigo-600"
+        />
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Pumps</CardTitle>
-            <Fuel className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {pumps.filter(p => p.status === 'active').length}
+        <EnhancedMetricsCard
+          title="Active Pumps"
+          value={activePumps}
+          icon={<Activity className="h-5 w-5" />}
+          description="Currently operational"
+          gradient="from-green-500 to-emerald-600"
+        />
+
+        <EnhancedMetricsCard
+          title="Attendants"
+          value={station.attendantCount || 0}
+          icon={<Users className="h-5 w-5" />}
+          description="Staff members"
+          gradient="from-purple-500 to-pink-600"
+        />
+
+        <EnhancedMetricsCard
+          title="Manager"
+          value={station.manager ? "Assigned" : "Not Assigned"}
+          icon={<Building2 className="h-5 w-5" />}
+          description={station.manager || "No manager assigned"}
+          gradient="from-orange-500 to-red-600"
+        />
+      </div>
+
+      {/* Enhanced Staff Information */}
+      <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-purple-50/30">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle>Staff Information</CardTitle>
+                <CardDescription>Manage station personnel</CardDescription>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Currently operational
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Attendants</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-medium">{station.attendantCount || 0}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Manager</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-medium">{station.manager || 'Not assigned'}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Staff Information */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold">Staff Information</h3>
-            <p className="text-muted-foreground">Manage station personnel</p>
+            <Button variant="outline" size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Staff
+            </Button>
           </div>
-          <Button variant="outline" size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Staff
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-4 border rounded-lg">
-            <div className="text-sm text-muted-foreground">Total Attendants</div>
-            <div className="text-2xl font-bold">{(station as any).attendantCount || 0}</div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+              <div className="text-sm text-blue-600 font-medium mb-1">Total Attendants</div>
+              <div className="text-2xl font-bold text-blue-900">{station.attendantCount || 0}</div>
+            </div>
+            <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
+              <div className="text-sm text-green-600 font-medium mb-1">Station Manager</div>
+              <div className="text-lg font-medium text-green-900">{station.manager || 'Not Assigned'}</div>
+            </div>
           </div>
-          <div className="p-4 border rounded-lg">
-            <div className="text-sm text-muted-foreground">Station Manager</div>
-            <div className="text-lg font-medium">{(station as any).manager || 'Not Assigned'}</div>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Actions */}
-      <div className="flex gap-4">
-        <Button onClick={() => navigate(`/dashboard/pumps?stationId=${stationId}`)}>
+      {/* Enhanced Action Buttons */}
+      <div className="flex flex-wrap gap-4">
+        <Button 
+          onClick={() => navigate(`/dashboard/pumps?stationId=${stationId}`)}
+          className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg"
+        >
           <Fuel className="mr-2 h-4 w-4" />
           Manage Pumps
         </Button>
-        <Button variant="outline" onClick={() => navigate(`/dashboard/stations/${stationId}/edit`)}>
+        <Button 
+          variant="outline" 
+          onClick={() => navigate(`/dashboard/stations/${stationId}/edit`)}
+          className="hover:bg-blue-50"
+        >
           <Edit className="mr-2 h-4 w-4" />
           Edit Station
         </Button>
@@ -225,56 +231,82 @@ export default function StationDetailsPage() {
           variant="outline" 
           onClick={handleDelete}
           disabled={deleteMutation.isPending}
-          className="text-red-600 hover:text-red-700"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50"
         >
           <Trash2 className="mr-2 h-4 w-4" />
           {deleteMutation.isPending ? 'Deleting...' : 'Delete Station'}
         </Button>
       </div>
 
-      {/* Pumps List */}
+      {/* Enhanced Pumps List */}
       {pumps.length > 0 && (
-        <Card>
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/30">
           <CardHeader>
-            <CardTitle>Pumps at this Station</CardTitle>
-            <CardDescription>
-              List of fuel pumps and their current status
-            </CardDescription>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg">
+                <Fuel className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle>Pumps at this Station</CardTitle>
+                <CardDescription>
+                  List of fuel pumps and their current status
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {pumps.map((pump) => (
-                <Card key={pump.id} className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">{pump.name}</h4>
-                    <Badge 
-                      variant={pump.status === 'active' ? 'default' : 'secondary'}
-                      className={
-                        pump.status === 'active' ? 'bg-green-100 text-green-800' :
-                        pump.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }
+                <Card key={pump.id} className="group hover:shadow-lg transition-all duration-200 border-0 bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
+                  <div className={`h-1 bg-gradient-to-r ${
+                    pump.status === 'active' ? 'from-green-500 to-emerald-600' :
+                    pump.status === 'maintenance' ? 'from-orange-500 to-yellow-600' :
+                    'from-red-500 to-red-600'
+                  }`} />
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg shadow-md ${
+                          pump.status === 'active' ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+                          pump.status === 'maintenance' ? 'bg-gradient-to-br from-orange-500 to-yellow-600' :
+                          'bg-gradient-to-br from-red-500 to-red-600'
+                        } text-white`}>
+                          <Fuel className="h-4 w-4" />
+                        </div>
+                        <h4 className="font-semibold">{pump.name}</h4>
+                      </div>
+                      <Badge 
+                        variant={pump.status === 'active' ? 'default' : 'secondary'}
+                        className={`${
+                          pump.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' :
+                          pump.status === 'maintenance' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                          'bg-red-100 text-red-800 border-red-200'
+                        } text-xs`}
+                      >
+                        {pump.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
+                      <Zap className="h-3 w-3" />
+                      Nozzles: {pump.nozzleCount || 0}
+                    </p>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => navigate(`/dashboard/nozzles?pumpId=${pump.id}`)}
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                     >
-                      {pump.status}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Nozzles: {pump.nozzleCount || 0}
-                  </p>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => navigate(`/dashboard/nozzles?pumpId=${pump.id}`)}
-                  >
-                    <Settings className="mr-2 h-3 w-3" />
-                    Manage
-                  </Button>
+                      <Settings className="mr-2 h-3 w-3" />
+                      Manage
+                    </Button>
+                  </CardContent>
                 </Card>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
+      
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
