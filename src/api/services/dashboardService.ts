@@ -15,7 +15,7 @@ export interface SalesSummary {
   cardSales?: number;
   upiSales?: number;
   growthPercentage: number;
-  totalSales?: number; // Alias for totalRevenue
+
   averageTicketSize?: number;
   totalProfit?: number;
   profitMargin?: number;
