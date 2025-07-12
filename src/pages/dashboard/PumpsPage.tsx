@@ -1,3 +1,4 @@
+
 /**
  * @file pages/dashboard/PumpsPage.tsx
  * @description Redesigned pumps page with white theme and improved cards
@@ -70,7 +71,7 @@ export default function PumpsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      <div className="space-y-8">
+      <div className="space-y-8 p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2">
