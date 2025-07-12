@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, TrendingUp, Users, Fuel, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { formatCurrency } from '@/utils/formatters';
 import { useSalesSummary, useStationMetrics } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -113,7 +114,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-blue-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-slate-900">₹{totalRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalRevenue)}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-blue-600" />
               </div>
