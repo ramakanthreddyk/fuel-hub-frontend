@@ -58,13 +58,40 @@ export const formatSafeDate = (dateString: string | null | undefined, formatPatt
   }
 };
 
-export const formatCurrency = (amount: number | string | null | undefined, currency: string = '₹'): string => {
+export const formatCurrency = (amount: any, currency: string = '₹'): string => {
   try {
-    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    if (numAmount === null || numAmount === undefined || isNaN(numAmount)) {
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || !isFinite(numAmount)) {
       return `${currency}0`;
     }
-    return `${currency}${numAmount.toLocaleString('en-IN')}`;
+    
+    // Convert to crores (10 million)
+    if (numAmount >= 10000000) {
+      return `${currency}${(numAmount / 10000000).toFixed(1)}Cr`;
+    }
+    // Convert to lakhs (100 thousand)
+    if (numAmount >= 100000) {
+      return `${currency}${(numAmount / 100000).toFixed(1)}L`;
+    }
+    // Convert to thousands
+    if (numAmount >= 1000) {
+      return `${currency}${(numAmount / 1000).toFixed(1)}K`;
+    }
+    
+    return `${currency}${numAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+  } catch (error) {
+    return `${currency}0`;
+  }
+};
+
+// Format exact currency amount without abbreviations
+export const formatExactCurrency = (amount: any, currency: string = '₹'): string => {
+  try {
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || !isFinite(numAmount)) {
+      return `${currency}0`;
+    }
+    return `${currency}${numAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
   } catch (error) {
     return `${currency}0`;
   }

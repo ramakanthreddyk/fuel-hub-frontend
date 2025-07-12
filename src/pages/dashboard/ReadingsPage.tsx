@@ -19,7 +19,7 @@ import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
 import { useStations } from '@/hooks/api/useStations';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { formatReading, formatDateTime } from '@/utils/formatters';
+import { formatReading, formatDateTime, formatCurrency } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { ReadingReceiptCard } from '@/components/readings/ReadingReceiptCard';
 
@@ -166,7 +166,7 @@ export default function ReadingsPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{Number(totalRevenue || 0).toFixed(0)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               From all readings
             </p>
