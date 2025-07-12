@@ -84,10 +84,10 @@ export function TopCreditorsTable({ filters = {} }: TopCreditorsTableProps) {
             {creditors.map((creditor) => (
               <TableRow key={creditor.id}>
                 <TableCell className="font-medium">
-                  {creditor.partyName || creditor.customerName || 'Unknown Customer'}
+                  {creditor.partyName || creditor.name || 'Unknown Customer'}
                 </TableCell>
                 <TableCell className="text-right font-mono">
-                  {formatCurrency(creditor.outstandingAmount || creditor.creditAmount || 0)}
+                  {formatCurrency(creditor.outstandingAmount || 0)}
                 </TableCell>
               </TableRow>
             ))}

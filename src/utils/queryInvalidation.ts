@@ -35,3 +35,13 @@ export const invalidateSalesQueries = (queryClient: QueryClient) => {
   queryClient.invalidateQueries({ queryKey: ['daily-sales-trend'] });
   queryClient.invalidateQueries({ queryKey: ['station-metrics'] });
 };
+
+export const invalidateReadingQueries = (queryClient: QueryClient) => {
+  queryClient.invalidateQueries({ queryKey: ['readings'] });
+  queryClient.invalidateQueries({ queryKey: ['attendant-readings'] });
+  queryClient.invalidateQueries({ queryKey: ['sales'] });
+  queryClient.invalidateQueries({ queryKey: ['sales-summary'] });
+  queryClient.invalidateQueries({ queryKey: ['station-metrics'] });
+  queryClient.invalidateQueries({ queryKey: ['nozzles'] });
+  queryClient.invalidateQueries({ queryKey: ['cash-reports'] });
+};
