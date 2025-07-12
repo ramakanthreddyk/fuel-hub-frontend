@@ -168,7 +168,7 @@ export interface Pump {
 export interface CreatePumpRequest {
   stationId: string;
   name: string;
-  serialNumber?: string;
+  serialNumber: string;
 }
 
 export interface UpdatePumpRequest {
@@ -239,7 +239,7 @@ export interface NozzleReading {
 export interface CreateReadingRequest {
   nozzleId: string;
   reading: number;
-  recordedAt?: string;
+  recordedAt: string;
   paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
   creditorId?: string;
   notes?: string;
