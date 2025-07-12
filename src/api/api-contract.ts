@@ -182,9 +182,11 @@ export interface UpdatePumpRequest {
 export interface Nozzle {
   id: string;
   pumpId: string;
+  pumpName?: string;
   nozzleNumber: number;
   fuelType: 'petrol' | 'diesel' | 'premium';
   status: 'active' | 'inactive' | 'maintenance';
+  lastReading?: number;
   createdAt: string;
 }
 
@@ -212,6 +214,14 @@ export interface NozzleReading {
   recordedAt: string;
   paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
   creditorId?: string;
+  nozzleNumber?: number;
+  previousReading?: number;
+  volume?: number;
+  amount?: number;
+  pricePerLitre?: number;
+  fuelType?: string;
+  stationName?: string;
+  attendantName?: string;
   createdAt: string;
 }
 
@@ -357,7 +367,7 @@ export interface CreditPayment {
   creditorName?: string;
   amount: number;
   paymentDate: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque';
+  paymentMethod: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque' | 'check';
   reference?: string;
   referenceNumber?: string;
   notes?: string;
@@ -370,7 +380,7 @@ export interface CreateCreditPaymentRequest {
   creditorId: string;
   amount: number;
   paymentDate?: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque';
+  paymentMethod: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque' | 'check';
   reference?: string;
   referenceNumber?: string;
   notes?: string;

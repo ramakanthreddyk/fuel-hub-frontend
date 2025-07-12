@@ -14,8 +14,10 @@ import {
   Fuel,
   Gauge,
   FileText,
-  MapPin
+  MapPin,
+  Loader2
 } from 'lucide-react';
+import { useLatestReading } from '@/hooks/api/useReadings';
 import { cn } from '@/lib/utils';
 
 interface FuelNozzleCardProps {
@@ -195,10 +197,7 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
               <Gauge className="h-4 w-4 text-blue-600" />
               <span className="text-xs font-medium text-blue-700">Last Reading</span>
             </div>
-            <div className="text-lg font-bold text-gray-900">
-              {/* Simplified to avoid dynamic data fetching */}
-              No readings yet
-            </div>
+            <LastReadingDisplay nozzleId={nozzle.id} />
           </div>
           
           <div className={cn("rounded-xl p-3 border", fuelConfig.lightBg, fuelConfig.border)}>
@@ -239,6 +238,33 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Component to display the latest reading for a nozzle
+function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
+  const { data: latestReading, isLoading } = useLatestReading(nozzleId);
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-6">
+        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+  
+  if (!latestReading) {
+    return (
+      <div className="text-lg font-bold text-gray-900">
+        No readings yet
+      </div>
+    );
+  }
+  
+  return (
+    <div className="text-lg font-bold text-gray-900">
+      {latestReading.reading?.toLocaleString() || 'N/A'}
     </div>
   );
 }

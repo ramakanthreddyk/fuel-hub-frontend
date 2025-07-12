@@ -10,7 +10,9 @@ import { Plus, Building2, Loader2, Filter, Search, MapPin, Fuel, Activity, Trend
 import { Input } from '@/components/ui/input';
 import { useStations, useDeleteStation } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
-import { StationCard } from '@/components/stations/StationCard';
+import { useFuelPrices } from '@/hooks/api/useFuelPrices';
+import { usePumps } from '@/hooks/api/usePumps';
+import { useEnhancedSales } from '@/hooks/useEnhancedSales';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
@@ -196,6 +198,16 @@ interface ModernStationCardProps {
 }
 
 function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps) {
+  const { data: fuelPrices = [], isLoading: pricesLoading } = useFuelPrices(station.id);
+  const { data: pumps = [] } = usePumps(station.id);
+  const { data: sales = [] } = useEnhancedSales({ stationId: station.id });
+  
+  // Calculate metrics from real data
+  const todaySales = sales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
+  const todayTransactions = sales.length;
+  const activePumps = pumps.filter(p => p.status === 'active').length;
+  const efficiency = activePumps > 0 && station.pumpCount > 0 ? Math.round((activePumps / station.pumpCount) * 100) : 0;
+  
   const getStatusConfig = () => {
     switch (station.status) {
       case 'active':
@@ -235,6 +247,9 @@ function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps
     <div className="group relative bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform hover:scale-[1.02] hover:-translate-y-2">
       {/* Status Indicator */}
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${statusConfig.gradient}`}></div>
+      <div className={`absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center ${statusConfig.gradient === 'from-emerald-500 to-green-600' ? 'bg-green-500' : statusConfig.gradient === 'from-orange-500 to-red-500' ? 'bg-orange-500' : 'bg-gray-500'} shadow-lg z-10`}>
+        <span className="text-white text-sm">{statusConfig.icon}</span>
+      </div>
       
       {/* Header */}
       <div className="p-6 pb-4">
@@ -253,13 +268,7 @@ function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps
           </div>
         </div>
 
-        {/* Status Badge */}
-        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${statusConfig.bgGradient} border border-white/50`}>
-          <span className="text-sm">{statusConfig.icon}</span>
-          <span className={`text-sm font-semibold bg-gradient-to-r ${statusConfig.gradient} bg-clip-text text-transparent`}>
-            {statusConfig.label}
-          </span>
-        </div>
+        {/* Status Badge removed */}
       </div>
 
       {/* Enhanced Station Visual */}
@@ -294,34 +303,41 @@ function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps
 
           {/* Modern Fuel Pumps */}
           <div className="flex justify-center gap-3">
-            {Array.from({ length: Math.min(station.pumpCount, 4) }, (_, i) => (
-              <div key={i} className="relative group/pump">
-                <div className="w-6 h-12 bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg shadow-lg relative transform hover:scale-105 transition-transform">
-                  {/* Digital Display */}
-                  <div className="absolute top-1 left-0.5 right-0.5 h-3 bg-green-400 rounded-sm animate-pulse">
-                    <div className="text-[6px] text-black font-mono text-center leading-3">
-                      ₹{(85 + Math.random() * 15).toFixed(1)}
+            {Array.from({ length: Math.min(station.pumpCount, 4) }, (_, i) => {
+              // Get fuel price for this pump if available
+              const fuelType = i % 3 === 0 ? 'petrol' : i % 3 === 1 ? 'diesel' : 'premium';
+              const fuelPrice = fuelPrices.find(p => p.fuelType?.toLowerCase() === fuelType);
+              const price = fuelPrice ? fuelPrice.price : (85 + Math.random() * 15);
+              
+              return (
+                <div key={i} className="relative group/pump">
+                  <div className="w-6 h-12 bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg shadow-lg relative transform hover:scale-105 transition-transform">
+                    {/* Digital Display */}
+                    <div className="absolute top-1 left-0.5 right-0.5 h-3 bg-green-400 rounded-sm animate-pulse">
+                      <div className="text-[6px] text-black font-mono text-center leading-3">
+                        ₹{price.toFixed(1)}
+                      </div>
+                    </div>
+                    
+                    {/* Fuel Indicators */}
+                    <div className="absolute top-5 left-1 right-1 flex justify-between">
+                      <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse"></div>
+                      <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse delay-300"></div>
+                    </div>
+                    
+                    {/* Nozzle */}
+                    <div className="absolute right-0 top-6 w-1 h-4 bg-gray-600 rounded-l-sm">
+                      <div className="absolute -right-1 top-1 w-1 h-2 bg-gray-500 rounded-full"></div>
                     </div>
                   </div>
                   
-                  {/* Fuel Indicators */}
-                  <div className="absolute top-5 left-1 right-1 flex justify-between">
-                    <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse"></div>
-                    <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse delay-300"></div>
-                  </div>
-                  
-                  {/* Nozzle */}
-                  <div className="absolute right-0 top-6 w-1 h-4 bg-gray-600 rounded-l-sm">
-                    <div className="absolute -right-1 top-1 w-1 h-2 bg-gray-500 rounded-full"></div>
+                  {/* Fuel Type */}
+                  <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-[6px] font-medium text-gray-600 text-center">
+                    {fuelType.charAt(0).toUpperCase() + fuelType.slice(1)}
                   </div>
                 </div>
-                
-                {/* Fuel Type */}
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-[6px] font-medium text-gray-600 text-center">
-                  {i % 3 === 0 ? 'Petrol' : i % 3 === 1 ? 'Diesel' : 'Premium'}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           
           {/* Pump Count Badge */}
@@ -335,15 +351,15 @@ function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps
       <div className="px-6 pb-4">
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-100">
-            <div className="text-lg font-bold text-green-700">₹45K</div>
+            <div className="text-lg font-bold text-green-700">₹{todaySales ? new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(todaySales) : '0'}</div>
             <div className="text-xs text-green-600">Today</div>
           </div>
           <div className="text-center p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
-            <div className="text-lg font-bold text-blue-700">128</div>
+            <div className="text-lg font-bold text-blue-700">{new Intl.NumberFormat('en-IN').format(todayTransactions)}</div>
             <div className="text-xs text-blue-600">Sales</div>
           </div>
           <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-100">
-            <div className="text-lg font-bold text-purple-700">98%</div>
+            <div className="text-lg font-bold text-purple-700">{efficiency}%</div>
             <div className="text-xs text-purple-600">Uptime</div>
           </div>
         </div>
