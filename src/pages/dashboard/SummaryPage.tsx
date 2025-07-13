@@ -184,17 +184,8 @@ export default function SummaryPage() {
       </div>
 
       {/* Station Metrics - Full Width */}
-      <div className="grid grid-cols-1 gap-6 w-full min-w-0">
-        <div className="min-w-0">
-          <StationMetricsList />
-        </div>
-      </div>
-
-      {/* Top Creditors - Full Width Below Station Metrics */}
-      <div className="grid grid-cols-1 gap-6 w-full min-w-0">
-        <div className="min-w-0">
-          <TopCreditorsTable />
-        </div>
+      <div className="w-full min-w-0">
+        <StationMetricsList />
       </div>
 
       {/* Recent Stations */}
@@ -228,6 +219,11 @@ export default function SummaryPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Top Creditors - Moved to Bottom */}
+      <div className="w-full min-w-0">
+        <TopCreditorsTable />
+      </div>
     </div>
   );
 }
