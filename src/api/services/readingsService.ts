@@ -10,25 +10,40 @@ import API_CONFIG from '../core/config';
 export interface Reading {
   id: string;
   nozzleId: string;
+  nozzle_id?: string; // For backward compatibility
   reading: number;
   previousReading?: number;
+  previous_reading?: number; // For backward compatibility
   recordedAt: string;
+  recorded_at?: string; // For backward compatibility
   paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
+  payment_method?: string; // For backward compatibility
   creditorId?: string;
+  creditor_id?: string; // For backward compatibility
   notes?: string;
   createdAt: string;
+  created_at?: string; // For backward compatibility
   updatedAt?: string;
+  updated_at?: string; // For backward compatibility
   // Enriched data
   nozzleNumber?: number;
+  nozzle_number?: number; // For backward compatibility
   fuelType?: string;
+  fuel_type?: string; // For backward compatibility
   pumpName?: string;
+  pump_name?: string; // For backward compatibility
   stationName?: string;
+  station_name?: string; // For backward compatibility
   pumpId?: string;
+  pump_id?: string; // For backward compatibility
   stationId?: string;
+  station_id?: string; // For backward compatibility
   attendantName?: string;
+  attendant_name?: string; // For backward compatibility
   recordedBy?: string;
   amount?: number;
   pricePerLitre?: number;
+  price_per_litre?: number; // For backward compatibility
   volume?: number;
 }
 

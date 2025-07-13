@@ -1,6 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fuelDeliveriesApi, CreateFuelDeliveryRequest } from '@/api/fuel-deliveries';
+import { fuelDeliveriesApi } from '@/api/fuel-deliveries';
+import { CreateFuelDeliveryRequest } from '@/api/fuel-delivery-types';
 import { useToast } from '@/hooks/use-toast';
 
 export const useFuelDeliveries = (stationId?: string) => {

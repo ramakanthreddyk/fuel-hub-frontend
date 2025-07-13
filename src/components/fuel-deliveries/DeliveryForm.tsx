@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStations } from '@/hooks/useStations';
 import { useCreateFuelDelivery } from '@/hooks/useFuelDeliveries';
-import { CreateFuelDeliveryRequest } from '@/api/api-contract';
+import { CreateFuelDeliveryRequest } from '@/api/fuel-delivery-types';
 
 export function DeliveryForm() {
   const [formData, setFormData] = useState<CreateFuelDeliveryRequest>({

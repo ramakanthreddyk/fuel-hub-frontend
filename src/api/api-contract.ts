@@ -441,13 +441,24 @@ export interface CreatePaymentRequest extends CreateCreditPaymentRequest {}
 // Analytics Types
 export interface StationComparison {
   id: string;
-  stationId: string; // Added for consistency
-  name?: string; // Added for consistency
+  stationId: string;
+  name?: string;
   stationName: string;
   sales: number;
   volume: number;
   transactions: number;
   growth: number;
+  // Required nested objects
+  currentPeriod: {
+    revenue: number;
+    volume: number;
+    salesCount: number;
+  };
+  previousPeriod: {
+    revenue: number;
+    volume: number;
+    salesCount: number;
+  };
   // Additional fields from backend
   period?: string;
   salesGrowth?: number;
@@ -464,34 +475,35 @@ export interface StationComparison {
 }
 
 export interface HourlySales {
-  hour: number; // Changed to number to match backend
-  date: string; // Added from backend
+  hour: number;
+  date: string;
   sales: number;
-  revenue: number; // Added alias for sales
+  revenue: number;
   volume: number;
-  transactions?: number;
-  salesCount?: number; // Added alias for transactions
+  transactions: number;
+  salesCount: number;
 }
 
 export interface PeakHour {
-  hour?: number; // Added from backend
+  hour: number;
   timeRange: string;
   avgSales: number;
-  averageRevenue?: number; // Added alias for avgSales
+  averageRevenue: number;
   avgVolume: number;
-  averageVolume?: number; // Added alias for avgVolume
-  averageSalesCount?: number; // Added from backend
+  averageVolume: number;
+  averageSalesCount: number;
+  dayOfWeek?: string;
 }
 
 export interface FuelPerformance {
   fuelType: string;
   volume: number;
   sales: number;
-  revenue?: number; // Added alias for sales
+  revenue: number;
   margin: number;
   growth: number;
-  salesCount?: number; // Added from backend
-  averagePrice?: number; // Added from backend
+  salesCount: number;
+  averagePrice: number;
   // Aliases for compatibility
   totalSalesVolume?: number;
   totalSalesAmount?: number;
@@ -652,6 +664,7 @@ export interface Alert {
   stationId?: string;
   stationName?: string;
   isRead: boolean;
+  read?: boolean; // Alias for isRead
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -670,6 +683,7 @@ export interface Alert {
 
 export interface SystemAlert extends Alert {
   // System alerts are the same as Alert
+  acknowledged?: boolean;
 }
 
 export interface AlertsParams {
@@ -946,11 +960,7 @@ export interface StationComparison {
     volume: number;
     salesCount: number;
   };
-  growth: {
-    revenue: number;
-    volume: number;
-    salesCount: number;
-  };
+  growth: number;
 }
 
 export interface StationComparisonParams {

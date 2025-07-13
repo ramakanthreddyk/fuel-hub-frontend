@@ -9,11 +9,22 @@ import API_CONFIG from '../core/config';
 export interface Nozzle {
   id: string;
   pumpId: string;
+  pump_id?: string; // For backward compatibility
+  pumpName?: string;
+  pump_name?: string; // For backward compatibility
   nozzleNumber: number;
+  nozzle_number?: number; // For backward compatibility
   fuelType: 'petrol' | 'diesel' | 'premium';
+  fuel_type?: string; // For backward compatibility
   status: 'active' | 'inactive' | 'maintenance';
   lastReading?: number;
+  last_reading?: number; // For backward compatibility
   createdAt: string;
+  created_at?: string; // For backward compatibility
+  stationId?: string;
+  station_id?: string; // For backward compatibility
+  stationName?: string;
+  station_name?: string; // For backward compatibility
 }
 
 export interface CreateNozzleRequest {

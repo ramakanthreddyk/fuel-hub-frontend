@@ -66,7 +66,21 @@ export const reportsApi = {
       }>(response);
     } catch (error) {
       console.error('[REPORTS-API] Error fetching sales report:', error);
-      return { data: [], summary: { totalVolume: 0, totalRevenue: 0, fuelTypeBreakdown: {}, paymentMethodBreakdown: {} } };
+      return { 
+        data: [], 
+        summary: { 
+          totalVolume: 0, 
+          totalRevenue: 0, 
+          salesCount: 0,
+          averageTicketSize: 0,
+          cashSales: 0,
+          creditSales: 0,
+          byFuelType: [],
+          byPaymentMethod: [],
+          fuelTypeBreakdown: [],
+          paymentMethodBreakdown: []
+        } 
+      };
     }
   },
 
