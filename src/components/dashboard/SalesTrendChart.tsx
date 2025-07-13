@@ -41,6 +41,18 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
     amount: { label: 'Sales (₹)', color: '#8b5cf6' },
   };
 
+  // Format Y-axis values to show in millions/lakhs
+  const formatYAxisValue = (value: number) => {
+    if (value >= 10000000) {
+      return `${(value / 10000000).toFixed(1)}Cr`;
+    } else if (value >= 100000) {
+      return `${(value / 100000).toFixed(1)}L`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}K`;
+    }
+    return value.toString();
+  };
+
   return (
     <Card className="bg-gradient-to-br from-white to-purple-50 border-purple-200 w-full">
       <CardHeader className="pb-2">
@@ -50,7 +62,7 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
         <div className="w-full overflow-hidden">
           <ChartContainer config={chartConfig} className="h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+              <LineChart data={chartData} margin={{ top: 5, right: 10, left: 50, bottom: 5 }}>
                 <XAxis 
                   dataKey="date" 
                   tick={{ fontSize: 10 }}
@@ -62,7 +74,8 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
                   tick={{ fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
-                  width={40}
+                  width={45}
+                  tickFormatter={formatYAxisValue}
                 />
                 <ChartTooltip 
                   content={<ChartTooltipContent />}
