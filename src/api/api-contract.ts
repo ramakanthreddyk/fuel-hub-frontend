@@ -441,32 +441,60 @@ export interface CreatePaymentRequest extends CreateCreditPaymentRequest {}
 // Analytics Types
 export interface StationComparison {
   id: string;
+  stationId: string; // Added for consistency
+  name?: string; // Added for consistency
   stationName: string;
   sales: number;
   volume: number;
   transactions: number;
   growth: number;
+  // Additional fields from backend
+  period?: string;
+  salesGrowth?: number;
+  volumeGrowth?: number;
+  transactionsGrowth?: number;
+  previousSales?: number;
+  previousVolume?: number;
+  previousTransactions?: number;
+  // Aliases for compatibility
+  totalSales?: number;
+  totalVolume?: number;
+  transactionCount?: number;
+  revenue?: number;
 }
 
 export interface HourlySales {
-  hour: string;
+  hour: number; // Changed to number to match backend
+  date: string; // Added from backend
   sales: number;
+  revenue: number; // Added alias for sales
   volume: number;
-  transactions: number;
+  transactions?: number;
+  salesCount?: number; // Added alias for transactions
 }
 
 export interface PeakHour {
+  hour?: number; // Added from backend
   timeRange: string;
   avgSales: number;
+  averageRevenue?: number; // Added alias for avgSales
   avgVolume: number;
+  averageVolume?: number; // Added alias for avgVolume
+  averageSalesCount?: number; // Added from backend
 }
 
 export interface FuelPerformance {
   fuelType: string;
   volume: number;
   sales: number;
+  revenue?: number; // Added alias for sales
   margin: number;
   growth: number;
+  salesCount?: number; // Added from backend
+  averagePrice?: number; // Added from backend
+  // Aliases for compatibility
+  totalSalesVolume?: number;
+  totalSalesAmount?: number;
 }
 
 export interface DashboardMetrics {
@@ -626,7 +654,18 @@ export interface Alert {
   isRead: boolean;
   isActive: boolean;
   createdAt: string;
+  updatedAt?: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
+  resolvedByName?: string;
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  status?: 'new' | 'acknowledged' | 'resolved' | 'dismissed';
+  category?: string;
+  source?: string;
   metadata?: Record<string, any>;
+  // Aliases for compatibility
+  alertType?: string; // Alias for type
+  alertSeverity?: string; // Alias for severity
 }
 
 export interface SystemAlert extends Alert {
@@ -654,6 +693,20 @@ export interface AlertSummary {
   medium: number;
   low: number;
   unacknowledged: number;
+  resolved?: number;
+  dismissed?: number;
+  new?: number;
+  acknowledged?: number;
+  // By type
+  inventory?: number;
+  credit?: number;
+  maintenance?: number;
+  sales?: number;
+  system?: number;
+  // By time period
+  today?: number;
+  thisWeek?: number;
+  thisMonth?: number;
 }
 
 // =============================================================================
@@ -943,9 +996,14 @@ export interface StationRanking {
   revenue: number;
   volume: number;
   efficiency: number;
-  score: number;
+  score?: number;
   sales: number; // Alias for revenue
   growth: number; // Growth percentage
+  // Additional fields from backend
+  totalSales?: number; // Alias for revenue/sales
+  totalVolume?: number; // Alias for volume
+  totalProfit?: number;
+  transactionCount?: number;
 }
 
 // =============================================================================
