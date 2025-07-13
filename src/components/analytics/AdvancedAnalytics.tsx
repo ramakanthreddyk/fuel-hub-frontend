@@ -5,6 +5,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useHourlySales, usePeakHours, useFuelPerformance } from '@/hooks/useAnalytics';
 import { Clock, TrendingUp, Fuel } from 'lucide-react';
+import { formatCurrency, formatVolume } from '@/utils/formatters';
 
 interface AdvancedAnalyticsProps {
   stationId?: string;
@@ -69,7 +70,7 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
                     <h4 className="font-semibold text-green-800">Peak {index + 1}</h4>
                     <p className="text-green-600">{peak.timeRange || `${peak.hour}:00`}</p>
                     <p className="text-sm text-muted-foreground">
-                      Avg Sales: ₹{(peak.avgSales || peak.averageRevenue || 0).toLocaleString()}
+                      Avg Sales: {formatCurrency(peak.avgSales || peak.averageRevenue || 0, { useLakhsCrores: true })}
                     </p>
                   </div>
                 ))}

@@ -3,7 +3,7 @@
  * @description Centralized API client for core layer
  */
 import axios from 'axios';
-import { convertKeysToCamelCase } from '@/utils/caseConversion';
+import { normalizePropertyNames, ensurePropertyAccess } from '@/utils/apiTransform';
 
 // Get the backend URL from environment variables or use the default API URL
 const API_BASE_URL =
@@ -88,9 +88,9 @@ apiClient.interceptors.request.use(
 // Response interceptor for error handling and case conversion
 apiClient.interceptors.response.use(
   (response) => {
-    // Convert snake_case keys to camelCase in the response data
+    // Normalize property names and ensure consistent property access
     if (response.data) {
-      response.data = convertKeysToCamelCase(response.data);
+      response.data = ensurePropertyAccess(normalizePropertyNames(response.data));
     }
     
     // Handle standard API response format: {success: true, data: {...}}

@@ -25,10 +25,33 @@ export interface CreateNozzleRequest {
 
 export const nozzlesService = {
   getNozzles: async (pumpId?: string): Promise<Nozzle[]> => {
-    const params = pumpId ? `?pumpId=${pumpId}` : '';
-    const response = await apiClient.get(`${API_CONFIG.endpoints.nozzles.base}${params}`);
-    const nozzles = extractArray<Nozzle>(response, 'nozzles');
-    return nozzles;
+    try {
+      console.log('[NOZZLES-API] Fetching nozzles', pumpId ? `for pump ${pumpId}` : 'for all pumps');
+      const params = pumpId ? `?pumpId=${pumpId}` : '';
+      const response = await apiClient.get(`${API_CONFIG.endpoints.nozzles.base}${params}`);
+      const nozzles = extractArray<Nozzle>(response, 'nozzles');
+      
+      // Transform response to ensure consistent property names
+      const normalizedNozzles = nozzles.map(nozzle => ({
+        ...nozzle,
+        id: nozzle.id,
+        pumpId: nozzle.pumpId || nozzle.pump_id,
+        pumpName: nozzle.pumpName || nozzle.pump_name,
+        lastReading: nozzle.lastReading || nozzle.last_reading,
+        nozzleNumber: nozzle.nozzleNumber || nozzle.nozzle_number,
+        fuelType: nozzle.fuelType || nozzle.fuel_type,
+        status: nozzle.status,
+        createdAt: nozzle.createdAt || nozzle.created_at,
+        stationId: nozzle.stationId || nozzle.station_id,
+        stationName: nozzle.stationName || nozzle.station_name
+      }));
+      
+      console.log(`[NOZZLES-API] Successfully fetched ${normalizedNozzles.length} nozzles`);
+      return normalizedNozzles;
+    } catch (error) {
+      console.error('[NOZZLES-API] Error fetching nozzles:', error);
+      throw error;
+    }
   },
 
   getNozzle: async (id: string): Promise<Nozzle> => {

@@ -35,18 +35,43 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
       return;
     }
 
+    // Validate numeric values
+    const cashValue = parseFloat(cashAmount);
+    const cardValue = cardAmount ? parseFloat(cardAmount) : 0;
+    const upiValue = upiAmount ? parseFloat(upiAmount) : 0;
+    
+    if (isNaN(cashValue) || cashValue < 0) {
+      toast({
+        title: "Invalid Cash Amount",
+        description: "Please enter a valid cash amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if ((cardAmount && (isNaN(cardValue) || cardValue < 0)) || 
+        (upiAmount && (isNaN(upiValue) || upiValue < 0))) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter valid card and UPI amounts.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     submitCashReport.mutate({
       stationId: selectedStationId,
-      cashAmount: parseFloat(cashAmount),
-      cardAmount: cardAmount ? parseFloat(cardAmount) : undefined,
-      upiAmount: upiAmount ? parseFloat(upiAmount) : undefined,
+      cashAmount: cashValue,
+      cardAmount: cardAmount ? cardValue : undefined,
+      upiAmount: upiAmount ? upiValue : undefined,
       reportDate: new Date().toISOString(),
       shift
     }, {
       onSuccess: () => {
+        const totalAmount = cashValue + cardValue + upiValue;
         toast({
           title: "Cash Report Submitted",
-          description: `Successfully submitted ${shift} shift report for ₹${(parseFloat(cashAmount) + parseFloat(cardAmount || '0') + parseFloat(upiAmount || '0')).toFixed(2)}`,
+          description: `Successfully submitted ${shift} shift report for ₹${totalAmount.toFixed(2)}`,
           variant: "success",
         });
         // Reset form
@@ -55,11 +80,15 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
         setUpiAmount("");
       },
       onError: (error: any) => {
+        const errorMessage = error.response?.data?.message || 
+                           error.message || 
+                           "Please try again.";
         toast({
           title: "Failed to Submit Report",
-          description: error.message || "Please try again.",
+          description: errorMessage,
           variant: "destructive",
         });
+        console.error("Cash report submission error:", error);
       }
     });
   };

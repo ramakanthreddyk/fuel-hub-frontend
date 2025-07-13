@@ -4,7 +4,7 @@
  * @description React Query hooks for reports API
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { reportsService, Report, GenerateReportRequest } from '@/api/services/reportsService';
+import { reportsApi, Report, GenerateReportRequest } from '@/api/unified-reports';
 
 /**
  * Hook to fetch all reports
@@ -13,7 +13,7 @@ import { reportsService, Report, GenerateReportRequest } from '@/api/services/re
 export const useReports = () => {
   return useQuery({
     queryKey: ['reports'],
-    queryFn: () => reportsService.getReports(),
+    queryFn: () => reportsApi.getReports(),
     staleTime: 60000, // 1 minute
     retry: 2
   });
@@ -27,7 +27,7 @@ export const useReports = () => {
 export const useReport = (id: string) => {
   return useQuery({
     queryKey: ['report', id],
-    queryFn: () => reportsService.getReport(id),
+    queryFn: () => reportsApi.getReport(id),
     enabled: !!id,
     staleTime: 60000, // 1 minute
     retry: 2
@@ -42,13 +42,26 @@ export const useGenerateReport = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: GenerateReportRequest) => reportsService.generateReport(data),
+    mutationFn: (data: GenerateReportRequest) => reportsApi.generateReport(data),
     onSuccess: (blob) => {
       console.log('[REPORTS-HOOK] Report generated successfully');
 
       if (blob) {
+        // Create a blob URL and trigger download
         const url = window.URL.createObjectURL(blob);
-        window.open(url, '_blank');
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Set filename based on report type and format
+        const timestamp = new Date().toISOString().split('T')[0];
+        const filename = `${data.name || data.type}-report-${timestamp}.${data.format === 'excel' ? 'xlsx' : data.format}`;
+        a.download = filename;
+        
+        // Trigger download and clean up
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
       }
 
       queryClient.invalidateQueries({ queryKey: ['reports'] });
@@ -65,12 +78,27 @@ export const useGenerateReport = () => {
  */
 export const useDownloadReport = () => {
   return useMutation({
-    mutationFn: (id: string) => reportsService.downloadReport(id),
-    onSuccess: (downloadUrl) => {
-      console.log('[REPORTS-HOOK] Report download URL retrieved:', downloadUrl);
-      // Open the download URL in a new tab
-      if (downloadUrl) {
-        window.open(downloadUrl, '_blank');
+    mutationFn: (id: string) => reportsApi.downloadReport(id),
+    onSuccess: (blob, id) => {
+      console.log('[REPORTS-HOOK] Report blob retrieved for report:', id);
+      
+      // Handle blob download
+      if (blob) {
+        // Create a blob URL and trigger download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Set filename based on report ID
+        const timestamp = new Date().toISOString().split('T')[0];
+        const filename = `report-${id}-${timestamp}.pdf`;
+        a.download = filename;
+        
+        // Trigger download and clean up
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
       }
     },
     onError: (error, id) => {

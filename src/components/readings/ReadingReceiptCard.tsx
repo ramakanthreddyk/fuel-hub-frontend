@@ -13,7 +13,7 @@ import {
   Droplets
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatReading, formatDateTime, formatCurrency } from '@/utils/formatters';
+import { formatNumber, formatDateTime, formatCurrency } from '@/utils/formatters';
 
 interface ReadingReceiptCardProps {
   reading: {
@@ -103,13 +103,13 @@ export function ReadingReceiptCard({ reading, onView, onEdit }: ReadingReceiptCa
             <span className="text-gray-600 text-sm">CURRENT READING:</span>
             <div className="flex items-center gap-2">
               <Droplets className="w-4 h-4 text-blue-500" />
-              <span className="font-bold text-lg text-gray-900">{formatReading(currentReading)}L</span>
+              <span className="font-bold text-lg text-gray-900">{formatNumber(currentReading)}L</span>
             </div>
           </div>
           
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">PREVIOUS:</span>
-            <span className="font-semibold text-gray-700">{formatReading(previousReading)}L</span>
+            <span className="font-semibold text-gray-700">{formatNumber(previousReading)}L</span>
           </div>
           
           <div className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded border">
@@ -124,7 +124,7 @@ export function ReadingReceiptCard({ reading, onView, onEdit }: ReadingReceiptCa
                 "font-bold",
                 isLargeJump ? "text-red-600" : "text-green-600"
               )}>
-                {formatReading(difference)}L
+                {formatNumber(difference)}L
               </span>
             </div>
           </div>

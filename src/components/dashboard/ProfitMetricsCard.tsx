@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Percent } from 'lucide-react';
 import { useSalesSummary } from '@/hooks/useDashboard';
 import { ErrorFallback } from '@/components/common/ErrorFallback';
+import { formatCurrency } from '@/utils/formatters';
 
 interface DashboardFilters {
   stationId?: string;
@@ -53,7 +54,7 @@ export function ProfitMetricsCard({ filters = {} }: ProfitMetricsCardProps) {
       <CardContent>
         <div className="space-y-2">
           <div>
-            <div className="text-2xl font-bold text-green-700">₹{estimatedProfit.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-700">{formatCurrency(estimatedProfit, { useLakhsCrores: true })}</div>
             <p className="text-xs text-muted-foreground">Estimated Profit</p>
           </div>
           <div className="flex items-center gap-2">

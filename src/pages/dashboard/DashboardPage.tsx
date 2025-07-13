@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, TrendingUp, Users, Fuel, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
 import { useSalesSummary, useStationMetrics } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -114,7 +114,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-blue-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalRevenue)}</p>
+                  <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalRevenue, { useLakhsCrores: true })}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-blue-600" />
               </div>
@@ -126,7 +126,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-green-600">Total Volume</p>
-                  <p className="text-2xl font-bold text-slate-900">{totalVolume.toLocaleString()}L</p>
+                  <p className="text-2xl font-bold text-slate-900">{formatVolume(totalVolume, 3, true)}</p>
                 </div>
                 <Fuel className="h-8 w-8 text-green-600" />
               </div>
@@ -193,8 +193,8 @@ export default function DashboardPage() {
                     <div>
                       <h3 className="font-medium text-slate-900">{station.name}</h3>
                       <p className="text-sm text-slate-600">
-                        Today: ₹{station.todaySales?.toLocaleString() || 0} | 
-                        Monthly: ₹{station.monthlySales?.toLocaleString() || 0}
+                        Today: {formatCurrency(station.todaySales || 0, { useLakhsCrores: true })} | 
+                        Monthly: {formatCurrency(station.monthlySales || 0, { useLakhsCrores: true })}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">

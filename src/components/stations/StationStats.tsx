@@ -7,6 +7,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Fuel, TrendingUp, Activity } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatCurrency } from '@/utils/formatters';
 
 interface StationStatsProps {
   pumpCount: number;
@@ -62,7 +63,7 @@ export function StationStats({ pumpCount, fuelPrices, pricesLoading }: StationSt
                   </span>
                 </div>
                 <Badge variant="outline" className="text-xs font-semibold bg-white border-gray-200">
-                  ₹{price?.price?.toFixed(2) || '0.00'}
+                  {price?.price ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(price.price) : '₹0.00'}
                 </Badge>
               </div>
             ))}

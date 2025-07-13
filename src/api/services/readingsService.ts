@@ -13,7 +13,7 @@ export interface Reading {
   reading: number;
   previousReading?: number;
   recordedAt: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
   creditorId?: string;
   notes?: string;
   createdAt: string;
@@ -29,13 +29,14 @@ export interface Reading {
   recordedBy?: string;
   amount?: number;
   pricePerLitre?: number;
+  volume?: number;
 }
 
 export interface CreateReadingRequest {
   nozzleId: string;
   reading: number;
   recordedAt?: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit';
+  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
   creditorId?: string;
   notes?: string;
 }
@@ -43,7 +44,7 @@ export interface CreateReadingRequest {
 export interface UpdateReadingRequest {
   reading?: number;
   recordedAt?: string;
-  paymentMethod?: 'cash' | 'card' | 'upi' | 'credit';
+  paymentMethod?: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
   creditorId?: string;
   notes?: string;
 }
@@ -120,7 +121,38 @@ export const readingsService = {
       // Use limit=1 to get only the most recent reading as per OpenAPI spec
       const response = await apiClient.get(`${API_CONFIG.endpoints.readings.base}?nozzleId=${nozzleId}&limit=1`);
       const readings = extractArray<Reading>(response, 'readings');
-      return readings.length > 0 ? readings[0] : null;
+      
+      if (readings.length === 0) {
+        console.log(`[READINGS-API] No readings found for nozzle ${nozzleId}`);
+        return null;
+      }
+      
+      // Normalize property names to handle both camelCase and snake_case
+      const reading = readings[0];
+      const normalizedReading = {
+        ...reading,
+        id: reading.id,
+        nozzleId: reading.nozzleId || reading.nozzle_id,
+        reading: typeof reading.reading === 'number' ? reading.reading : parseFloat(reading.reading),
+        nozzleNumber: reading.nozzleNumber || reading.nozzle_number,
+        previousReading: reading.previousReading || reading.previous_reading,
+        recordedAt: reading.recordedAt || reading.recorded_at,
+        paymentMethod: reading.paymentMethod || reading.payment_method,
+        creditorId: reading.creditorId || reading.creditor_id,
+        createdAt: reading.createdAt || reading.created_at,
+        updatedAt: reading.updatedAt || reading.updated_at,
+        fuelType: reading.fuelType || reading.fuel_type,
+        pumpName: reading.pumpName || reading.pump_name,
+        stationName: reading.stationName || reading.station_name,
+        pumpId: reading.pumpId || reading.pump_id,
+        stationId: reading.stationId || reading.station_id,
+        attendantName: reading.attendantName || reading.attendant_name,
+        pricePerLitre: reading.pricePerLitre || reading.price_per_litre,
+        volume: reading.volume !== undefined ? reading.volume : (reading.reading - (reading.previousReading || 0))
+      };
+      
+      console.log(`[READINGS-API] Successfully fetched latest reading for nozzle ${nozzleId}:`, normalizedReading.reading);
+      return normalizedReading;
     } catch (error) {
       console.error(`[READINGS-API] Error fetching latest reading for nozzle ${nozzleId}:`, error);
       // Return null instead of throwing to handle missing readings gracefully

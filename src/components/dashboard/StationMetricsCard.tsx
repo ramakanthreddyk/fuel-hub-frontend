@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, TrendingUp, Gauge } from 'lucide-react';
+import { formatCurrency, formatVolume } from '@/utils/formatters';
 
 interface StationMetrics {
   id: string;
@@ -16,26 +17,7 @@ interface StationMetricsCardProps {
   station: StationMetrics;
 }
 
-// Enhanced number formatting for better display
-const formatNumber = (num: number): string => {
-  if (num >= 10000000) { // 1 crore
-    return `₹${(num / 10000000).toFixed(1)}Cr`;
-  } else if (num >= 100000) { // 1 lakh
-    return `₹${(num / 100000).toFixed(1)}L`;
-  } else if (num >= 1000) { // 1 thousand
-    return `₹${(num / 1000).toFixed(1)}K`;
-  }
-  return `₹${num.toLocaleString()}`;
-};
-
-const formatVolume = (liters: number): string => {
-  if (liters >= 1000000) {
-    return `${(liters / 1000000).toFixed(1)}M L`;
-  } else if (liters >= 1000) {
-    return `${(liters / 1000).toFixed(1)}K L`;
-  }
-  return `${liters.toFixed(0)} L`;
-};
+// Using imported formatters instead of local functions
 
 export function StationMetricsCard({ station }: StationMetricsCardProps) {
   const getStatusColor = (status: string) => {
@@ -85,7 +67,7 @@ export function StationMetricsCard({ station }: StationMetricsCardProps) {
               <div>
                 <div className="text-xs font-medium text-blue-600 mb-1">Today's Sales</div>
                 <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  {formatNumber(station.totalSales)}
+                  {formatCurrency(station.totalSales, { useLakhsCrores: true })}
                 </div>
               </div>
               <TrendingUp className="h-5 w-5 text-blue-500 flex-shrink-0" />
@@ -97,7 +79,7 @@ export function StationMetricsCard({ station }: StationMetricsCardProps) {
             <div className="bg-green-50 rounded-lg p-2.5 border border-green-100">
               <div className="text-xs font-medium text-green-600 mb-1">Monthly Est.</div>
               <div className="text-sm font-bold text-green-700">
-                {formatNumber(station.totalSales * 30)}
+                {formatCurrency(station.totalSales * 30, { useLakhsCrores: true })}
               </div>
             </div>
             <div className="bg-orange-50 rounded-lg p-2.5 border border-orange-100">

@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Plus, Building2, Loader2, Filter, Search, MapPin, Fuel, Activity, TrendingUp } from 'lucide-react';
+import { formatCurrency, formatNumber } from '@/utils/formatters';
 import { Input } from '@/components/ui/input';
 import { useStations, useDeleteStation } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
@@ -206,7 +207,6 @@ function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps
   const todaySales = sales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
   const todayTransactions = sales.length;
   const activePumps = pumps.filter(p => p.status === 'active').length;
-  const efficiency = activePumps > 0 && station.pumpCount > 0 ? Math.round((activePumps / station.pumpCount) * 100) : 0;
   
   const getStatusConfig = () => {
     switch (station.status) {
@@ -351,16 +351,16 @@ function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps
       <div className="px-6 pb-4">
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-100">
-            <div className="text-lg font-bold text-green-700">₹{todaySales ? new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(todaySales) : '0'}</div>
+            <div className="text-lg font-bold text-green-700">{formatCurrency(todaySales, { maximumFractionDigits: 0 })}</div>
             <div className="text-xs text-green-600">Today</div>
           </div>
           <div className="text-center p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
-            <div className="text-lg font-bold text-blue-700">{new Intl.NumberFormat('en-IN').format(todayTransactions)}</div>
+            <div className="text-lg font-bold text-blue-700">{formatNumber(todayTransactions)}</div>
             <div className="text-xs text-blue-600">Sales</div>
           </div>
           <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-100">
-            <div className="text-lg font-bold text-purple-700">{efficiency}%</div>
-            <div className="text-xs text-purple-600">Uptime</div>
+            <div className="text-lg font-bold text-purple-700">{activePumps}/{station.pumpCount}</div>
+            <div className="text-xs text-purple-600">Active Pumps</div>
           </div>
         </div>
       </div>

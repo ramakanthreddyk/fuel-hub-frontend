@@ -244,7 +244,7 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
 
 // Component to display the latest reading for a nozzle
 function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
-  const { data: latestReading, isLoading } = useLatestReading(nozzleId);
+  const { data: latestReading, isLoading, error } = useLatestReading(nozzleId);
   
   if (isLoading) {
     return (
@@ -254,7 +254,17 @@ function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
     );
   }
   
-  if (!latestReading) {
+  if (error) {
+    console.error('Error fetching reading:', error);
+    return (
+      <div className="text-lg font-bold text-gray-900">
+        Error loading
+      </div>
+    );
+  }
+  
+  // Check if we have a reading from the API
+  if (!latestReading || latestReading.reading === undefined || latestReading.reading === null) {
     return (
       <div className="text-lg font-bold text-gray-900">
         No readings yet
@@ -262,9 +272,24 @@ function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
     );
   }
   
+  // Ensure reading is a number
+  const readingValue = typeof latestReading.reading === 'number' 
+    ? latestReading.reading 
+    : parseFloat(latestReading.reading);
+  
+  // Handle NaN case
+  if (isNaN(readingValue)) {
+    return (
+      <div className="text-lg font-bold text-gray-900">
+        Invalid reading
+      </div>
+    );
+  }
+  
+  // Format the reading with proper number formatting
   return (
     <div className="text-lg font-bold text-gray-900">
-      {latestReading.reading?.toLocaleString() || 'N/A'}
+      {new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(readingValue)}
     </div>
   );
 }

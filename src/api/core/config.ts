@@ -36,6 +36,17 @@ const API_CONFIG = {
       changePassword: (userId: string) => `/users/${userId}/change-password`,
       resetPassword: (userId: string) => `/users/${userId}/reset-password`,
     },
+    reports: {
+      base: '/reports',
+      sales: '/reports/sales',
+      inventory: '/reports/inventory',
+      financial: '/reports/financial',
+      attendance: '/reports/attendance',
+      export: '/reports/export',
+      schedule: '/reports/schedule',
+      history: '/reports/history',
+      download: (id: string) => `/reports/download/${id}`,
+    },
     auth: {
       login: '/auth/login',
       logout: '/auth/logout',

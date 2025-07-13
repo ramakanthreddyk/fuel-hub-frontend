@@ -28,13 +28,33 @@ export const useCreateReading = () => {
   return useMutation({
     mutationFn: (data: any) => readingsService.createReading(data),
     onSuccess: (newReading) => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['readings'] });
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['latest-reading'] });
+      
+      // Also invalidate specific nozzle's latest reading
+      if (newReading?.nozzleId) {
+        queryClient.invalidateQueries({ queryKey: ['latest-reading', newReading.nozzleId] });
+      }
+      
       // Toast is handled in the component for better context
     },
     onError: (error: any) => {
       console.error('Failed to create reading:', error);
+      
+      // Extract error message
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          'Failed to create reading. Please try again.';
+      
+      // Log detailed error for debugging
+      console.error('Reading creation error details:', {
+        message: errorMessage,
+        status: error?.response?.status,
+        data: error?.response?.data
+      });
+      
       // Toast is handled in the component for better error context
     },
   });
@@ -72,6 +92,12 @@ export const useLatestReading = (nozzleId: string) => {
     queryFn: () => readingsService.getLatestReading(nozzleId),
     enabled: !!nozzleId,
     staleTime: 30000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    onError: (error) => {
+      console.error(`Error fetching latest reading for nozzle ${nozzleId}:`, error);
+    }
   });
 };
 
@@ -81,5 +107,18 @@ export const useCanCreateReading = (nozzleId: string) => {
     queryFn: () => readingsService.canCreateReading(nozzleId),
     enabled: !!nozzleId,
     staleTime: 60000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    onError: (error) => {
+      console.error(`Error checking if reading can be created for nozzle ${nozzleId}:`, error);
+    },
+    select: (data) => {
+      // Ensure consistent property access
+      return {
+        canCreate: data?.canCreate ?? false,
+        reason: data?.reason || 'Unknown error',
+        missingPrice: data?.missingPrice ?? false
+      };
+    }
   });
 };

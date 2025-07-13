@@ -108,7 +108,7 @@ export default function ReconciliationPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(discrepancySummary.totalOverReported)}
+                {formatCurrency(discrepancySummary.totalOverReported, { useLakhsCrores: true })}
               </div>
               <p className="text-xs text-muted-foreground">Excess cash</p>
             </CardContent>
@@ -120,7 +120,7 @@ export default function ReconciliationPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {formatCurrency(discrepancySummary.totalUnderReported)}
+                {formatCurrency(discrepancySummary.totalUnderReported, { useLakhsCrores: true })}
               </div>
               <p className="text-xs text-muted-foreground">Missing cash</p>
             </CardContent>
@@ -132,7 +132,7 @@ export default function ReconciliationPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(discrepancySummary.largestDiscrepancy)}
+                {formatCurrency(discrepancySummary.largestDiscrepancy, { useLakhsCrores: true })}
               </div>
               <p className="text-xs text-muted-foreground">Single discrepancy</p>
             </CardContent>
@@ -178,10 +178,10 @@ export default function ReconciliationPage() {
                       <TableRow key={recon.id}>
                         <TableCell>{formatDate(recon.date)}</TableCell>
                         <TableCell>{recon.stationName}</TableCell>
-                        <TableCell>{formatCurrency(recon.totalSales)}</TableCell>
-                        <TableCell>{formatCurrency(recon.expectedSales || 0)}</TableCell>
+                        <TableCell>{formatCurrency(recon.totalSales, { useLakhsCrores: true })}</TableCell>
+                        <TableCell>{formatCurrency(recon.expectedSales || 0, { useLakhsCrores: true })}</TableCell>
                         <TableCell className={recon.variance !== 0 ? 'text-red-600 font-medium' : 'text-green-600'}>
-                          {recon.variance > 0 ? '+' : ''}{formatCurrency(recon.variance || 0)}
+                          {recon.variance > 0 ? '+' : ''}{formatCurrency(recon.variance || 0, { useLakhsCrores: true })}
                         </TableCell>
                         <TableCell>{getStatusBadge(recon)}</TableCell>
                         <TableCell>
@@ -232,10 +232,10 @@ export default function ReconciliationPage() {
                     <TableRow key={diff.id}>
                       <TableCell>{formatDate(diff.date)}</TableCell>
                       <TableCell>{diff.stationName}</TableCell>
-                      <TableCell>{formatCurrency(diff.reportedCash)}</TableCell>
-                      <TableCell>{formatCurrency(diff.actualCash)}</TableCell>
+                      <TableCell>{formatCurrency(diff.reportedCash, { useLakhsCrores: true })}</TableCell>
+                      <TableCell>{formatCurrency(diff.actualCash, { useLakhsCrores: true })}</TableCell>
                       <TableCell className={diff.difference !== 0 ? (diff.difference > 0 ? 'text-green-600' : 'text-red-600') : ''}>
-                        {diff.difference > 0 ? '+' : ''}{formatCurrency(diff.difference)}
+                        {diff.difference > 0 ? '+' : ''}{formatCurrency(diff.difference, { useLakhsCrores: true })}
                       </TableCell>
                       <TableCell>
                         <Badge className={

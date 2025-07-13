@@ -72,7 +72,7 @@ export function SalesReportTable({ data, isLoading }: SalesReportTableProps) {
               {record.stationName}
             </TableCell>
             <TableCell>
-              Nozzle {record.nozzleNumber}
+              Nozzle {record.nozzleNumber || record.nozzleName || 'N/A'}
             </TableCell>
             <TableCell>
               <Badge className={getFuelTypeColor(record.fuelType)}>
@@ -80,20 +80,20 @@ export function SalesReportTable({ data, isLoading }: SalesReportTableProps) {
               </Badge>
             </TableCell>
             <TableCell className="text-right font-mono">
-              {record.volume.toLocaleString()}
+              {typeof record.volume === 'number' ? record.volume.toLocaleString() : 'N/A'}
             </TableCell>
             <TableCell className="text-right font-mono">
-              ₹{Number(record.pricePerLitre).toFixed(2)}
+              {record.pricePerLitre ? `₹${Number(record.pricePerLitre).toFixed(2)}` : 'N/A'}
             </TableCell>
             <TableCell className="text-right font-mono font-medium">
-              ₹{record.amount.toLocaleString()}
+              {typeof record.amount === 'number' ? `₹${record.amount.toLocaleString()}` : 'N/A'}
             </TableCell>
             <TableCell>
               <Badge className={getPaymentMethodColor(record.paymentMethod)}>
                 {record.paymentMethod}
               </Badge>
             </TableCell>
-            <TableCell>{record.attendant}</TableCell>
+            <TableCell>{record.attendant || record.attendantName || 'N/A'}</TableCell>
           </TableRow>
         ))}
       </TableBody>

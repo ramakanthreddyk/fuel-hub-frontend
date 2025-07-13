@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, BadgeIndianRupee, Percent } from 'lucide-react';
 import { useSalesSummary } from '@/hooks/useDashboard';
 import { ErrorFallback } from '@/components/common/ErrorFallback';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
 
 interface DashboardFilters {
   stationId?: string;
@@ -48,10 +48,10 @@ export function SalesSummaryCard({ filters = {} }: SalesSummaryCardProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-700">{formatCurrency(summary?.totalRevenue)}</div>
+          <div className="text-2xl font-bold text-green-700">{formatCurrency(summary?.totalRevenue, { useLakhsCrores: true })}</div>
           <div className="flex items-center text-xs text-green-600 mt-1">
             <TrendingUp className="h-3 w-3 mr-1" />
-            {summary?.salesCount || 0} transactions • {summary?.totalVolume?.toLocaleString() || 0}L sold
+            {formatSafeNumber(summary?.salesCount || 0, 0, true)} transactions • {formatVolume(summary?.totalVolume || 0, 3, true)} sold
           </div>
         </CardContent>
       </Card>

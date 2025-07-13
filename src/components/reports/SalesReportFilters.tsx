@@ -36,7 +36,7 @@ export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFilt
             <Input
               id="startDate"
               type="date"
-              value={filters.startDate || ''}
+              value={filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
               onChange={(e) => handleFilterChange('startDate', e.target.value)}
               className="bg-input border border-border text-foreground"
             />
@@ -47,7 +47,7 @@ export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFilt
             <Input
               id="endDate"
               type="date"
-              value={filters.endDate || ''}
+              value={filters.endDate || new Date().toISOString().split('T')[0]}
               onChange={(e) => handleFilterChange('endDate', e.target.value)}
               className="bg-input border border-border text-foreground"
             />

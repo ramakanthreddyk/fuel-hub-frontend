@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import { DollarSign, Activity, Fuel } from 'lucide-react';
+import { formatCurrency, formatNumber } from '@/utils/formatters';
 
 interface StationQuickStatsProps {
   totalSales: number;
@@ -27,7 +28,7 @@ export function StationQuickStats({
             <DollarSign className="h-3 w-3 text-green-600" />
             <span className="text-xs text-muted-foreground">Sales</span>
           </div>
-          <p className="text-sm font-semibold text-foreground">₹{totalSales.toLocaleString()}</p>
+          <p className="text-sm font-semibold text-foreground">{formatCurrency(totalSales, { maximumFractionDigits: 0 })}</p>
         </div>
         
         <div className="space-y-1">
@@ -35,7 +36,7 @@ export function StationQuickStats({
             <Activity className="h-3 w-3 text-primary" />
             <span className="text-xs text-muted-foreground">Trans.</span>
           </div>
-          <p className="text-sm font-semibold text-foreground">{transactions}</p>
+          <p className="text-sm font-semibold text-foreground">{formatNumber(transactions)}</p>
         </div>
         
         <div className="space-y-1">

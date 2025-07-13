@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Fuel, Eye, Trash2, MapPin } from 'lucide-react';
+import { formatVolume } from '@/utils/formatters';
 
 interface Nozzle {
   id: string;
@@ -90,7 +91,7 @@ export function ModernNozzleCard({ nozzle, onView, onDelete, onRecord }: ModernN
           <div className="text-center">
             <div className="text-sm text-blue-600 font-medium mb-1">Last Reading</div>
             <div className="text-lg font-bold text-gray-900">
-              {nozzle.lastReading ? nozzle.lastReading.toFixed(3) : 'N/A'}
+              {nozzle.lastReading ? formatVolume(nozzle.lastReading) : 'N/A'}
             </div>
           </div>
           <div className="text-center">

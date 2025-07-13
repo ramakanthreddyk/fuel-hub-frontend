@@ -80,19 +80,32 @@ export const reportsService = {
     try {
       console.log('[REPORTS-API] Generating report with data:', data);
 
-      // Use the sales report endpoint with export
-      const params = new URLSearchParams();
-      if (data.filters?.stationId && data.filters.stationId !== 'all') {
-        params.append('stationId', data.filters.stationId);
-      }
-      if (data.dateRange.start) {
-        params.append('startDate', data.dateRange.start.split('T')[0]);
-      }
-      if (data.dateRange.end) {
-        params.append('endDate', data.dateRange.end.split('T')[0]);
+      // Map report type to endpoint
+      let endpoint = '';
+      switch (data.type) {
+        case 'sales':
+          endpoint = 'sales';
+          break;
+        case 'inventory':
+          endpoint = 'inventory';
+          break;
+        case 'readings':
+          endpoint = 'readings';
+          break;
+        default:
+          endpoint = 'sales';
       }
 
-      const response = await apiClient.get(`reports/sales/export?${params.toString()}`, {
+      // Prepare request body
+      const requestBody = {
+        format: data.format,
+        dateFrom: data.dateRange.start.split('T')[0],
+        dateTo: data.dateRange.end.split('T')[0],
+        stationId: data.filters?.stationId !== 'all' ? data.filters?.stationId : undefined
+      };
+
+      // Make POST request instead of GET
+      const response = await apiClient.post(`${API_CONFIG.endpoints.reports.base}/${endpoint}`, requestBody, {
         responseType: 'blob',
       });
 

@@ -62,27 +62,29 @@ export function ReconciliationTable({ readings, isLoading }: ReconciliationTable
               <Badge variant="outline">{reading.fuelType}</Badge>
             </TableCell>
             <TableCell className="font-mono">
-              {reading.previousReading.toLocaleString()}
+              {typeof reading.previousReading === 'number' ? reading.previousReading.toLocaleString() : (reading.openingReading ? reading.openingReading.toLocaleString() : 'N/A')}
             </TableCell>
             <TableCell className="font-mono">
-              {reading.currentReading.toLocaleString()}
+              {typeof reading.currentReading === 'number' ? reading.currentReading.toLocaleString() : (reading.closingReading ? reading.closingReading.toLocaleString() : 'N/A')}
             </TableCell>
             <TableCell className="font-mono font-medium">
-              {reading.deltaVolume.toLocaleString()}
+              {typeof reading.deltaVolume === 'number' ? reading.deltaVolume.toLocaleString() : (reading.totalVolume ? reading.totalVolume.toLocaleString() : 'N/A')}
             </TableCell>
             <TableCell className="font-mono">
-              ₹{Number(reading.pricePerLitre).toFixed(2)}
+              {reading.pricePerLitre ? `₹${Number(reading.pricePerLitre).toFixed(2)}` : 'N/A'}
             </TableCell>
             <TableCell className="font-mono font-medium">
-              ₹{reading.saleValue.toLocaleString()}
+              {reading.saleValue ? `₹${reading.saleValue.toLocaleString()}` : (reading.revenue ? `₹${reading.revenue.toLocaleString()}` : 'N/A')}
             </TableCell>
             <TableCell>
-              <Badge className={getPaymentMethodColor(reading.paymentMethod)}>
-                {reading.paymentMethod}
-              </Badge>
+              {reading.paymentMethod ? (
+                <Badge className={getPaymentMethodColor(reading.paymentMethod)}>
+                  {reading.paymentMethod}
+                </Badge>
+              ) : 'N/A'}
             </TableCell>
             <TableCell className="font-mono">
-              ₹{reading.cashDeclared.toLocaleString()}
+              {reading.cashDeclared ? `₹${reading.cashDeclared.toLocaleString()}` : 'N/A'}
             </TableCell>
           </TableRow>
         ))}

@@ -20,7 +20,18 @@ export const analyticsApi = {
       if (period) params.append('period', period);
       
       const response = await apiClient.get(`/analytics/station-comparison?${params}`);
-      return extractApiArray<StationComparison>(response);
+      const data = extractApiArray<any>(response);
+      
+      // Normalize the data to ensure it has all required fields
+      return data.map(item => ({
+        id: item.id || item.stationId || '',
+        stationId: item.id || item.stationId || '',
+        stationName: item.name || item.stationName || 'Unknown Station',
+        sales: typeof item.sales === 'number' ? item.sales : (item.totalSales || 0),
+        volume: typeof item.volume === 'number' ? item.volume : (item.totalVolume || 0),
+        transactions: typeof item.transactions === 'number' ? item.transactions : (item.transactionCount || 0),
+        growth: typeof item.growth === 'number' ? item.growth : 0
+      }));
     } catch (error) {
       console.error('Error fetching station comparison:', error);
       return [];
@@ -45,7 +56,17 @@ export const analyticsApi = {
       params.append('dateTo', (dateRange?.to || endOfDay).toISOString());
       
       const response = await apiClient.get(`/analytics/hourly-sales?${params}`);
-      return extractApiArray<HourlySales>(response);
+      const data = extractApiArray<HourlySales>(response);
+      
+      // Normalize the data to ensure it has all required fields
+      return data.map(item => ({
+        ...item,
+        hour: typeof item.hour === 'string' ? parseInt(item.hour, 10) : item.hour,
+        sales: item.sales || item.revenue || 0,
+        volume: item.volume || 0,
+        transactions: item.transactions || 0,
+        date: item.date || new Date().toISOString().split('T')[0]
+      }));
     } catch (error) {
       console.error('Error fetching hourly sales:', error);
       return [];
@@ -58,7 +79,18 @@ export const analyticsApi = {
       if (stationId) params.append('stationId', stationId);
       
       const response = await apiClient.get(`/analytics/peak-hours?${params}`);
-      return extractApiArray<PeakHour>(response);
+      const data = extractApiArray<PeakHour>(response);
+      
+      // Normalize the data to ensure it has all required fields
+      return data.map(item => ({
+        ...item,
+        hour: typeof item.hour === 'string' ? parseInt(item.hour, 10) : (item.hour || 0),
+        averageRevenue: item.averageRevenue || item.avgSales || 0,
+        averageVolume: item.averageVolume || item.avgVolume || 0,
+        averageSalesCount: item.averageSalesCount || 0,
+        timeRange: item.timeRange || 'Unknown',
+        avgSales: item.avgSales || item.averageRevenue || 0
+      }));
     } catch (error) {
       console.error('Error fetching peak hours:', error);
       return [];
@@ -73,7 +105,20 @@ export const analyticsApi = {
       if (dateRange?.to) params.append('dateTo', dateRange.to.toISOString());
       
       const response = await apiClient.get(`/analytics/fuel-performance?${params}`);
-      return extractApiArray<FuelPerformance>(response);
+      const data = extractApiArray<FuelPerformance>(response);
+      
+      // Normalize the data to ensure it has all required fields
+      return data.map(item => ({
+        ...item,
+        fuelType: item.fuelType || 'Unknown',
+        revenue: item.revenue || item.sales || 0,
+        volume: item.volume || 0,
+        salesCount: item.salesCount || 0,
+        averagePrice: item.averagePrice || 0,
+        growth: item.growth || 0,
+        margin: item.margin || 0,
+        sales: item.sales || item.revenue || 0
+      }));
     } catch (error) {
       console.error('Error fetching fuel performance:', error);
       return [];
@@ -83,7 +128,22 @@ export const analyticsApi = {
   getStationRanking: async (period: string): Promise<StationRanking[]> => {
     try {
       const response = await apiClient.get(`/analytics/station-ranking?period=${period}`);
-      return extractApiArray<StationRanking>(response);
+      const data = extractApiArray<any>(response);
+      
+      // Normalize the data to ensure it has all required fields
+      return data.map(item => ({
+        id: item.id || '',
+        stationId: item.id || '',
+        stationName: item.name || 'Unknown Station',
+        name: item.name || 'Unknown Station',
+        rank: item.rank || 0,
+        revenue: typeof item.totalSales === 'number' ? item.totalSales : 0,
+        sales: typeof item.totalSales === 'number' ? item.totalSales : 0,
+        volume: typeof item.totalVolume === 'number' ? item.totalVolume : 0,
+        efficiency: typeof item.efficiency === 'number' ? item.efficiency : 0,
+        score: 0,
+        growth: 0
+      }));
     } catch (error) {
       console.error('Error fetching station ranking:', error);
       return [];

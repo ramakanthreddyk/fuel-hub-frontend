@@ -11,6 +11,9 @@
 // CORE API TYPES
 // =============================================================================
 
+// Standard payment method type for consistency across interfaces
+export type PaymentMethod = 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check' | 'cheque';
+
 export interface ApiResponse<T> {
   success: boolean;
   message?: string;
@@ -188,6 +191,8 @@ export interface Nozzle {
   status: 'active' | 'inactive' | 'maintenance';
   lastReading?: number;
   createdAt: string;
+  stationId?: string;
+  stationName?: string;
 }
 
 export interface CreateNozzleRequest {
@@ -198,9 +203,8 @@ export interface CreateNozzleRequest {
 
 export interface UpdateNozzleRequest {
   nozzleNumber?: number;
-  fuelType?: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
+  fuelType?: 'petrol' | 'diesel' | 'premium';
   status?: 'active' | 'inactive' | 'maintenance';
-  serialNumber?: string;
 }
 
 // =============================================================================
@@ -212,7 +216,7 @@ export interface NozzleReading {
   nozzleId: string;
   reading: number;
   recordedAt: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
+  paymentMethod: PaymentMethod;
   creditorId?: string;
   nozzleNumber?: number;
   previousReading?: number;
@@ -221,15 +225,19 @@ export interface NozzleReading {
   pricePerLitre?: number;
   fuelType?: string;
   stationName?: string;
+  stationId?: string;
+  pumpId?: string;
+  pumpName?: string;
   attendantName?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateReadingRequest {
   nozzleId: string;
   reading: number;
   recordedAt: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
+  paymentMethod: PaymentMethod;
   creditorId?: string;
 }
 
@@ -239,6 +247,7 @@ export interface ReadingValidation {
   previousReading?: number;
   minimumReading?: number;
   maximumReading?: number;
+  missingPrice?: boolean;
 }
 
 export interface Sale {
@@ -263,6 +272,7 @@ export interface Sale {
   attendantId?: string;
   attendantName?: string;
   notes?: string;
+  readingId?: string;
 }
 
 export interface SalesFilters {
@@ -313,6 +323,41 @@ export interface FuelPriceValidation {
   }>;
   hasValidPrices: boolean;
   lastUpdated?: string;
+}
+
+// =============================================================================
+// INVENTORY & DELIVERY TYPES
+// =============================================================================
+
+export interface FuelInventory {
+  id: string;
+  stationId: string;
+  stationName?: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  capacity?: number;
+  minimumLevel?: number;
+  status?: 'normal' | 'low' | 'critical';
+  currentVolume: number;
+  lastUpdated: string;
+}
+
+export interface FuelDelivery {
+  id: string;
+  stationId: string;
+  stationName?: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  volume: number;
+  deliveryDate: string;
+  supplier?: string;
+  createdAt: string;
+}
+
+export interface CreateFuelDeliveryRequest {
+  stationId: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  volume: number;
+  deliveryDate: string;
+  supplier?: string;
 }
 
 // =============================================================================
@@ -367,7 +412,7 @@ export interface CreditPayment {
   creditorName?: string;
   amount: number;
   paymentDate: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque' | 'check';
+  paymentMethod: PaymentMethod;
   reference?: string;
   referenceNumber?: string;
   notes?: string;
@@ -380,7 +425,7 @@ export interface CreateCreditPaymentRequest {
   creditorId: string;
   amount: number;
   paymentDate?: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque' | 'check';
+  paymentMethod: PaymentMethod;
   reference?: string;
   referenceNumber?: string;
   notes?: string;
@@ -392,6 +437,37 @@ export interface CreatePaymentRequest extends CreateCreditPaymentRequest {}
 // =============================================================================
 // DASHBOARD & ANALYTICS TYPES
 // =============================================================================
+
+// Analytics Types
+export interface StationComparison {
+  id: string;
+  stationName: string;
+  sales: number;
+  volume: number;
+  transactions: number;
+  growth: number;
+}
+
+export interface HourlySales {
+  hour: string;
+  sales: number;
+  volume: number;
+  transactions: number;
+}
+
+export interface PeakHour {
+  timeRange: string;
+  avgSales: number;
+  avgVolume: number;
+}
+
+export interface FuelPerformance {
+  fuelType: string;
+  volume: number;
+  sales: number;
+  margin: number;
+  growth: number;
+}
 
 export interface DashboardMetrics {
   totalRevenue: number;
@@ -507,10 +583,11 @@ export interface AttendantPump {
 export interface AttendantNozzle {
   id: string;
   nozzleNumber: number;
-  fuelType: 'petrol' | 'diesel' | 'premium' | 'cng' | 'lpg';
+  fuelType: 'petrol' | 'diesel' | 'premium';
   status: 'active' | 'inactive' | 'maintenance';
   pumpId: string;
   pumpName?: string;
+  lastReading?: number;
 }
 
 export interface CashReport {
@@ -546,10 +623,10 @@ export interface Alert {
   message: string;
   stationId?: string;
   stationName?: string;
-  isRead?: boolean;
-  isActive?: boolean;
+  isRead: boolean;
+  isActive: boolean;
   createdAt: string;
-  metadata?: Record<string, never>;
+  metadata?: Record<string, any>;
 }
 
 export interface SystemAlert extends Alert {
@@ -563,6 +640,13 @@ export interface AlertsParams {
   priority?: string;
 }
 
+export interface CreateAlertRequest {
+  stationId?: string;
+  alertType: string;
+  message: string;
+  severity?: 'info' | 'warning' | 'critical';
+}
+
 export interface AlertSummary {
   total: number;
   critical: number;
@@ -570,6 +654,51 @@ export interface AlertSummary {
   medium: number;
   low: number;
   unacknowledged: number;
+}
+
+// =============================================================================
+// RECONCILIATION TYPES
+// =============================================================================
+
+export interface ReconciliationRecord {
+  id: string;
+  stationId: string;
+  date: string;
+  openingReading: number;
+  closingReading: number;
+  variance: number;
+  reconciliationNotes?: string;
+  managerConfirmation: boolean;
+  createdAt: string;
+  station?: {
+    name?: string;
+  };
+}
+
+export interface CreateReconciliationRequest {
+  stationId: string;
+  date: string;
+  reconciliationNotes?: string;
+  managerConfirmation: boolean;
+}
+
+export interface DailyReadingSummary {
+  nozzleId: string;
+  nozzleNumber: number;
+  previousReading: number;
+  currentReading: number;
+  deltaVolume: number;
+  pricePerLitre: number;
+  saleValue: number;
+  paymentMethod?: string;
+  cashDeclared?: number;
+  fuelType: string;
+  nozzleName?: string;
+  openingReading?: number; // Alias for previousReading
+  closingReading?: number; // Alias for currentReading
+  totalVolume?: number; // Alias for deltaVolume
+  revenue?: number; // Alias for saleValue
+  salesCount?: number;
 }
 
 // =============================================================================
@@ -858,49 +987,8 @@ export interface CreateFuelDeliveryRequest {
 }
 
 // =============================================================================
-// RECONCILIATION TYPES
+// REPORTS TYPES
 // =============================================================================
-
-export interface ReconciliationRecord {
-  id: string;
-  stationId: string;
-  date: string;
-  openingReading: number;
-  closingReading: number;
-  variance: number;
-  reconciliationNotes?: string;
-  managerConfirmation?: boolean;
-  createdAt: string;
-  station?: {
-    name?: string;
-  };
-}
-
-export interface CreateReconciliationRequest {
-  stationId: string;
-  date: string;
-  reconciliationNotes?: string;
-  managerConfirmation: boolean;
-}
-
-export interface DailyReadingSummary {
-  nozzleId: string;
-  nozzleName?: string;
-  nozzleNumber?: number; // Alias for display
-  fuelType: string;
-  openingReading: number;
-  closingReading: number;
-  previousReading: number; // Alias for openingReading
-  currentReading: number; // Alias for closingReading
-  totalVolume: number;
-  deltaVolume: number; // Alias for totalVolume
-  salesCount: number;
-  revenue: number;
-  pricePerLitre: number;
-  saleValue: number; // Alias for revenue
-  paymentMethod?: string;
-  cashDeclared?: number;
-}
 
 // =============================================================================
 // REPORTS TYPES
@@ -919,15 +1007,15 @@ export interface SalesReportData {
   id: string;
   date: string;
   stationName: string;
-  nozzleName: string;
-  nozzleNumber?: string; // Alias for nozzleName
+  nozzleName?: string;
+  nozzleNumber: number;
   fuelType: string;
   volume: number;
   amount: number;
   paymentMethod: string;
   attendantName?: string;
   attendant?: string; // Alias for attendantName
-  pricePerLitre?: number;
+  pricePerLitre: number;
 }
 
 export interface SalesReportSummary {
@@ -935,10 +1023,21 @@ export interface SalesReportSummary {
   totalVolume: number;
   salesCount: number;
   averageTicketSize: number;
-  byPaymentMethod: PaymentMethodBreakdown[];
-  byFuelType: FuelTypeBreakdown[];
-  paymentMethodBreakdown: PaymentMethodBreakdown[]; // Alias
-  fuelTypeBreakdown: FuelTypeBreakdown[]; // Alias
+  byPaymentMethod?: PaymentMethodBreakdown[];
+  byFuelType?: FuelTypeBreakdown[];
+  paymentMethodBreakdown?: PaymentMethodBreakdown[]; // Alias
+  fuelTypeBreakdown?: FuelTypeBreakdown[]; // Alias
+  fuelTypeBreakdown2?: {
+    petrol?: { volume: number; revenue: number };
+    diesel?: { volume: number; revenue: number };
+    premium?: { volume: number; revenue: number };
+  };
+  paymentMethodBreakdown2?: {
+    cash?: number;
+    card?: number;
+    upi?: number;
+    credit?: number;
+  };
 }
 
 export interface SalesReportExportFilters extends SalesReportFilters {

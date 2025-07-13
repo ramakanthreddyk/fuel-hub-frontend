@@ -45,19 +45,24 @@ export const useCreateCashReport = () => {
   return useMutation({
     mutationFn: (data: CreateCashReportRequest) => attendantApi.createCashReport(data),
     onSuccess: () => {
+      // Invalidate multiple related queries
       queryClient.invalidateQueries({ queryKey: ['attendant', 'cash-reports'] });
-      toast({
-        title: "Success",
-        description: "Cash report submitted successfully",
-      });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] }); // Refresh dashboard data
+      queryClient.invalidateQueries({ queryKey: ['reports'] }); // Refresh reports data
+      
+      // Toast is handled in the component for better context
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to submit cash report",
-        variant: "destructive",
+      // Log detailed error for debugging
+      console.error('Cash report submission error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
       });
+      
+      // Toast is handled in the component for better context
     },
+    retry: 1, // Retry once on failure
   });
 };
 

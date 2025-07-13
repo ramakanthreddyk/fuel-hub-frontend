@@ -97,10 +97,10 @@ export default function SalesPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-700">{formatCurrency(totalAmount)}</div>
+            <div className="text-3xl font-bold text-green-700">{formatCurrency(totalAmount, { useLakhsCrores: true })}</div>
             <div className="flex items-center text-sm text-green-600 mt-2">
               <TrendingUp className="h-4 w-4 mr-1" />
-              {formatSafeNumber(sales.length, 0)} transactions
+              {formatSafeNumber(sales.length, 0, true)} transactions
             </div>
           </CardContent>
         </Card>
@@ -113,7 +113,7 @@ export default function SalesPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-700">{formatVolume(totalVolume)}</div>
+            <div className="text-3xl font-bold text-blue-700">{formatVolume(totalVolume, 3, true)}</div>
             <div className="flex items-center text-sm text-blue-600 mt-2">
               <BarChart3 className="h-4 w-4 mr-1" />
               Fuel dispensed
@@ -129,7 +129,7 @@ export default function SalesPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-700">{formatCurrency(creditAmount)}</div>
+            <div className="text-3xl font-bold text-orange-700">{formatCurrency(creditAmount, { useLakhsCrores: true })}</div>
             <div className="flex items-center text-sm text-orange-600 mt-2">
               <CreditCard className="h-4 w-4 mr-1" />
               {formatSafeNumber(creditSales.length, 0)} credit transactions
@@ -145,7 +145,7 @@ export default function SalesPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-700">{formatSafeNumber(postedSales.length, 0)}</div>
+            <div className="text-3xl font-bold text-purple-700">{formatSafeNumber(postedSales.length, 0, true)}</div>
             <div className="flex items-center text-sm text-purple-600 mt-2">
               <Users className="h-4 w-4 mr-1" />
               of {formatSafeNumber(sales.length, 0)} total sales

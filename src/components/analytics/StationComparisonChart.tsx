@@ -4,6 +4,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 import { useStationComparison } from '@/hooks/useAnalytics';
 import { Building2 } from 'lucide-react';
+import { formatCurrency, formatVolume } from '@/utils/formatters';
 
 interface StationComparisonChartProps {
   stationIds: string[];
@@ -32,6 +33,14 @@ export function StationComparisonChart({ stationIds, period = 'month' }: Station
     );
   }
 
+  // Process data to ensure it's in the right format for the chart
+  const chartData = comparisonData.map(station => ({
+    stationName: station.stationName,
+    sales: typeof station.sales === 'number' ? station.sales : 0,
+    volume: typeof station.volume === 'number' ? station.volume : 0,
+    transactions: typeof station.transactions === 'number' ? station.transactions : 0
+  }));
+  
   const chartConfig = {
     sales: { label: 'Sales (₹)', color: '#3b82f6' },
     volume: { label: 'Volume (L)', color: '#22c55e' },
@@ -49,13 +58,14 @@ export function StationComparisonChart({ stationIds, period = 'month' }: Station
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={comparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <XAxis dataKey="stationName" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Legend />
               <Bar dataKey="sales" fill={chartConfig.sales.color} name="Sales (₹)" />
               <Bar dataKey="volume" fill={chartConfig.volume.color} name="Volume (L)" />
+              <Bar dataKey="transactions" fill={chartConfig.transactions.color} name="Transactions" />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/ui/page-header';
 import { EnhancedMetricsCard } from '@/components/ui/enhanced-metrics-card';
+import { formatCurrency, formatNumber } from '@/utils/formatters';
 import { 
   Building2, 
   MapPin, 
@@ -111,7 +112,7 @@ export default function StationDetailPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <EnhancedMetricsCard
           title="Today's Sales"
-          value={`₹${((station as any).todaySales || 0).toLocaleString()}`}
+          value={formatCurrency((station as any).todaySales || 0, { maximumFractionDigits: 0, useLakhsCrores: true })}
           icon={<DollarSign className="h-5 w-5" />}
           description="Revenue generated today"
           gradient="from-green-500 to-emerald-600"
@@ -123,7 +124,7 @@ export default function StationDetailPage() {
 
         <EnhancedMetricsCard
           title="Monthly Sales"
-          value={`₹${((station as any).monthlySales || 0).toLocaleString()}`}
+          value={formatCurrency((station as any).monthlySales || 0, { maximumFractionDigits: 0, useLakhsCrores: true })}
           icon={<TrendingUp className="h-5 w-5" />}
           description="Current month performance"
           gradient="from-blue-500 to-indigo-600"

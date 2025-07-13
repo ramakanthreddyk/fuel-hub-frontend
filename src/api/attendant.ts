@@ -73,8 +73,38 @@ export const attendantApi = {
   // Submit cash report
   createCashReport: async (data: CreateCashReportRequest): Promise<CashReport> => {
     devLog('Creating cash report', data);
-    const response = await apiClient.post('/attendant/cash-report', data);
-    return extractApiData<CashReport>(response);
+    try {
+      // Validate data before sending
+      if (!data.stationId) throw new Error('Station ID is required');
+      if (typeof data.cashAmount !== 'number' || isNaN(data.cashAmount)) {
+        throw new Error('Valid cash amount is required');
+      }
+      if (data.cardAmount !== undefined && (typeof data.cardAmount !== 'number' || isNaN(data.cardAmount))) {
+        throw new Error('Card amount must be a valid number');
+      }
+      if (data.upiAmount !== undefined && (typeof data.upiAmount !== 'number' || isNaN(data.upiAmount))) {
+        throw new Error('UPI amount must be a valid number');
+      }
+      if (!data.shift) throw new Error('Shift is required');
+      
+      const response = await apiClient.post('/attendant/cash-report', data);
+      return extractApiData<CashReport>(response);
+    } catch (error: any) {
+      devLog('Error creating cash report:', error);
+      // Enhance error message
+      if (error.response?.status === 400) {
+        throw new Error(error.response.data?.message || 'Invalid cash report data');
+      } else if (error.response?.status === 401) {
+        throw new Error('Authentication required. Please log in again.');
+      } else if (error.response?.status === 403) {
+        throw new Error('You do not have permission to submit cash reports.');
+      } else if (error.response?.status === 404) {
+        throw new Error('Cash report endpoint not found. Please contact support.');
+      } else if (error.response?.status === 500) {
+        throw new Error('Server error. Please try again later.');
+      }
+      throw error;
+    }
   },
 
   // Get cash reports for attendant

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useStationRanking } from '@/hooks/useAnalytics';
 import { Trophy, TrendingUp, TrendingDown } from 'lucide-react';
+import { formatCurrency, formatVolume } from '@/utils/formatters';
 
 interface StationRankingProps {
   period?: 'today' | 'week' | 'month';
@@ -61,7 +62,7 @@ export function StationRanking({ period = 'month' }: StationRankingProps) {
                   <div>
                     <h4 className="font-semibold">{station.stationName || station.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      ₹{(station.revenue || station.sales || 0).toLocaleString()} • {station.volume.toLocaleString()}L
+                      {formatCurrency(station.revenue || station.sales || 0, { useLakhsCrores: true })} • {formatVolume(station.volume, 3, true)}
                     </p>
                   </div>
                 </div>
