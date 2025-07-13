@@ -1,3 +1,4 @@
+
 import { formatCurrency, formatNumber } from '@/utils/formatters';
 
 interface StationQuickStatsProps {
@@ -15,11 +16,11 @@ export function StationQuickStats({
 }: StationQuickStatsProps) {
   return (
     <div className="space-y-3">
-      {/* Today's Sales - Full Width Row */}
+      {/* Today's Sales - Full Width Row with Better Overflow Handling */}
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-100">
         <div className="text-center">
-          <div className="text-xs font-medium text-green-600 mb-1">Today's Sales</div>
-          <div className="text-lg font-bold text-green-700 break-all">
+          <div className="text-xs font-medium text-green-600 mb-1">Today</div>
+          <div className="text-sm font-bold text-green-700 truncate px-1">
             {formatCurrency(totalSales, { maximumFractionDigits: 0 })}
           </div>
         </div>
