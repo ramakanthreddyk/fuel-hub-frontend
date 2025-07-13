@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Gauge, Clock, AlertTriangle, CheckCircle, Plus, FileText, Eye, Edit, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, Link } from 'react-router-dom';
@@ -19,9 +20,9 @@ import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
 import { useStations } from '@/hooks/api/useStations';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { formatReading, formatDateTime, formatCurrency } from '@/utils/formatters';
+import { formatDateTime, formatCurrency } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
-import { ReadingReceiptCard } from '@/components/readings/ReadingReceiptCard';
+import { ReadingCard } from '@/components/readings/ReadingCard';
 
 export default function ReadingsPage() {
   const navigate = useNavigate();
@@ -72,6 +73,27 @@ export default function ReadingsPage() {
     const pumpMatch = selectedPumpId === 'all' || reading.pumpId === selectedPumpId;
     return dateMatch && pumpMatch;
   });
+
+  // Get last reading for each nozzle for card display
+  const nozzleLastReadings = new Map();
+  const otherReadings = [];
+  
+  filteredReadings.forEach(reading => {
+    const nozzleKey = reading.nozzleId;
+    if (!nozzleLastReadings.has(nozzleKey)) {
+      nozzleLastReadings.set(nozzleKey, reading);
+    } else {
+      const existing = nozzleLastReadings.get(nozzleKey);
+      if (new Date(reading.recordedAt) > new Date(existing.recordedAt)) {
+        otherReadings.push(existing);
+        nozzleLastReadings.set(nozzleKey, reading);
+      } else {
+        otherReadings.push(reading);
+      }
+    }
+  });
+
+  const lastReadings = Array.from(nozzleLastReadings.values());
 
   // Calculate stats
   const totalReadings = enrichedReadings.length;
@@ -188,7 +210,7 @@ export default function ReadingsPage() {
               {pendingAlerts.map((alert) => (
                 <li key={alert.id} className="flex items-center justify-between">
                   <span className="list-disc pl-1">
-                    {alert.stationName || 'Station'} – Nozzle {alert.nozzleId}
+                    {alert.stationName || 'Station'} – Nozzle {alert.id}
                   </span>
                   <div className="flex gap-1">
                     <Button
@@ -250,15 +272,15 @@ export default function ReadingsPage() {
         </div>
       </div>
 
-      {/* Readings List with Receipt Cards */}
+      {/* Latest Readings Cards */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Daily Reading Log
+            Latest Nozzle Readings
           </CardTitle>
           <CardDescription>
-            Latest pump readings from all stations - organized like receipt records
+            Most recent reading from each nozzle
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -270,24 +292,13 @@ export default function ReadingsPage() {
             <div className="text-center p-8 text-red-500">
               <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
               <p>Error loading readings: {error.message}</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-4"
-                onClick={() => navigate('/dashboard/readings/new')}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add New Reading
-              </Button>
             </div>
-          ) : filteredReadings.length === 0 ? (
+          ) : lastReadings.length === 0 ? (
             <div className="text-center p-8">
               <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">No readings found</h3>
               <p className="text-muted-foreground mb-4">
-                {filter === 'all' 
-                  ? 'Get started by recording your first reading' 
-                  : `No ${filter} readings found`}
+                Get started by recording your first reading
               </p>
               <Button onClick={() => navigate('/dashboard/readings/new')}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -295,9 +306,9 @@ export default function ReadingsPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredReadings.map((reading) => (
-                <ReadingReceiptCard
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {lastReadings.map((reading) => (
+                <ReadingCard
                   key={reading.id}
                   reading={reading}
                   onView={(id) => navigate(`/dashboard/readings/${id}`)}
@@ -308,6 +319,69 @@ export default function ReadingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* All Other Readings Table */}
+      {otherReadings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>All Readings History</CardTitle>
+            <CardDescription>
+              Complete history of all readings
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Station</TableHead>
+                  <TableHead>Pump</TableHead>
+                  <TableHead>Nozzle</TableHead>
+                  <TableHead>Fuel Type</TableHead>
+                  <TableHead>Reading</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {otherReadings.map((reading) => (
+                  <TableRow key={reading.id}>
+                    <TableCell className="font-medium">{reading.stationName || 'N/A'}</TableCell>
+                    <TableCell>{reading.pumpName || 'N/A'}</TableCell>
+                    <TableCell>#{reading.nozzleNumber || 'N/A'}</TableCell>
+                    <TableCell>
+                      {reading.fuelType ? (
+                        <Badge variant="outline">{reading.fuelType}</Badge>
+                      ) : 'N/A'}
+                    </TableCell>
+                    <TableCell className="font-mono">{reading.reading.toLocaleString()}</TableCell>
+                    <TableCell className="font-mono">{reading.amount ? formatCurrency(reading.amount) : 'N/A'}</TableCell>
+                    <TableCell>{formatDateTime(reading.recordedAt)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => navigate(`/dashboard/readings/${reading.id}`)}
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => navigate(`/dashboard/readings/${reading.id}/edit`)}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
