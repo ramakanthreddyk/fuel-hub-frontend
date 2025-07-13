@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -182,14 +183,9 @@ export default function SummaryPage() {
         </div>
       </div>
 
-      {/* Station Metrics and Top Creditors */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full min-w-0">
-        <div className="min-w-0">
-          <StationMetricsList />
-        </div>
-        <div className="min-w-0">
-          <TopCreditorsTable />
-        </div>
+      {/* Station Metrics - Full Width */}
+      <div className="w-full min-w-0">
+        <StationMetricsList />
       </div>
 
       {/* Recent Stations */}
@@ -223,6 +219,11 @@ export default function SummaryPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Top Creditors - Moved to Bottom */}
+      <div className="w-full min-w-0">
+        <TopCreditorsTable />
+      </div>
     </div>
   );
 }

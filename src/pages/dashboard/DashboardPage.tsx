@@ -174,10 +174,9 @@ export default function DashboardPage() {
           <SalesTrendChart filters={filters} />
         </div>
 
-        {/* Station Metrics and Top Creditors */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Station Metrics - Full Width */}
+        <div className="w-full">
           <StationMetricsList />
-          <TopCreditorsTable />
         </div>
 
         {/* Recent Stations */}
@@ -211,6 +210,11 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Top Creditors - Moved to Bottom */}
+        <div className="w-full">
+          <TopCreditorsTable />
+        </div>
       </div>
     </div>
   );
