@@ -179,24 +179,28 @@ export default function DashboardPage() {
           <StationMetricsList />
         </div>
 
-        {/* Recent Stations */}
+        {/* Recent Stations - Two Cards Per Row */}
         {recentStations.length > 0 && (
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-slate-900">Recent Stations</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {recentStations.map((station) => (
                   <div key={station.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg bg-white">
-                    <div>
-                      <h3 className="font-medium text-slate-900">{station.name}</h3>
-                      <p className="text-sm text-slate-600">
-                        Today: {formatCurrency(station.todaySales || 0, { useLakhsCrores: true })} | 
-                        Monthly: {formatCurrency(station.monthlySales || 0, { useLakhsCrores: true })}
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-medium text-slate-900 truncate">{station.name}</h3>
+                      <div className="space-y-1 mt-2">
+                        <div className="text-sm text-slate-600">
+                          <span className="font-medium">Today:</span> {formatCurrency(station.todaySales || 0, { useLakhsCrores: true })}
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          <span className="font-medium">Monthly:</span> {formatCurrency(station.monthlySales || 0, { useLakhsCrores: true })}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col items-end gap-2 flex-shrink-0 ml-4">
                       <Badge variant={station.status === 'active' ? 'default' : 'secondary'}>
                         {station.status}
                       </Badge>

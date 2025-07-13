@@ -188,24 +188,28 @@ export default function SummaryPage() {
         <StationMetricsList />
       </div>
 
-      {/* Recent Stations */}
+      {/* Recent Stations - Two Cards Per Row */}
       {recentStations.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Recent Stations</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {recentStations.map((station) => (
                 <div key={station.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-medium">{station.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      Today: ₹{station.todaySales?.toLocaleString() || 0} | 
-                      Monthly: ₹{station.monthlySales?.toLocaleString() || 0}
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium truncate">{station.name}</h3>
+                    <div className="space-y-1 mt-2">
+                      <div className="text-sm text-gray-600">
+                        <span className="font-medium">Today:</span> ₹{station.todaySales?.toLocaleString() || 0}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        <span className="font-medium">Monthly:</span> ₹{station.monthlySales?.toLocaleString() || 0}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0 ml-4">
                     <Badge variant={station.status === 'active' ? 'default' : 'secondary'}>
                       {station.status}
                     </Badge>

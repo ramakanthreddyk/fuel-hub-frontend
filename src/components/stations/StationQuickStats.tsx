@@ -1,10 +1,3 @@
-
-/**
- * @file components/stations/StationQuickStats.tsx
- * @description Quick stats that appear on hover - clean and minimal
- */
-import React from 'react';
-import { DollarSign, Activity, Fuel } from 'lucide-react';
 import { formatCurrency, formatNumber } from '@/utils/formatters';
 
 interface StationQuickStatsProps {
@@ -21,30 +14,26 @@ export function StationQuickStats({
   totalPumps 
 }: StationQuickStatsProps) {
   return (
-    <div className="bg-muted/50 border rounded-lg p-3">
-      <div className="grid grid-cols-3 gap-3 text-center">
-        <div className="space-y-1">
-          <div className="flex items-center justify-center gap-1">
-            <DollarSign className="h-3 w-3 text-green-600" />
-            <span className="text-xs text-muted-foreground">Sales</span>
+    <div className="space-y-3">
+      {/* Today's Sales - Full Width Row */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-100">
+        <div className="text-center">
+          <div className="text-xs font-medium text-green-600 mb-1">Today's Sales</div>
+          <div className="text-lg font-bold text-green-700 break-all">
+            {formatCurrency(totalSales, { maximumFractionDigits: 0 })}
           </div>
-          <p className="text-sm font-semibold text-foreground">{formatCurrency(totalSales, { maximumFractionDigits: 0 })}</p>
         </div>
-        
-        <div className="space-y-1">
-          <div className="flex items-center justify-center gap-1">
-            <Activity className="h-3 w-3 text-primary" />
-            <span className="text-xs text-muted-foreground">Trans.</span>
-          </div>
-          <p className="text-sm font-semibold text-foreground">{formatNumber(transactions)}</p>
+      </div>
+
+      {/* Other Stats in Grid */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="text-center p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+          <div className="text-sm font-bold text-blue-700">{formatNumber(transactions)}</div>
+          <div className="text-xs text-blue-600">Sales</div>
         </div>
-        
-        <div className="space-y-1">
-          <div className="flex items-center justify-center gap-1">
-            <Fuel className="h-3 w-3 text-orange-600" />
-            <span className="text-xs text-muted-foreground">Pumps</span>
-          </div>
-          <p className="text-sm font-semibold text-foreground">{activePumps}/{totalPumps}</p>
+        <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-100">
+          <div className="text-sm font-bold text-purple-700">{activePumps}/{totalPumps}</div>
+          <div className="text-xs text-purple-600">Pumps</div>
         </div>
       </div>
     </div>
