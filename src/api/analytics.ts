@@ -56,11 +56,12 @@ export const analyticsApi = {
       params.append('dateTo', (dateRange?.to || endOfDay).toISOString());
       
       const response = await apiClient.get(`/analytics/hourly-sales?${params}`);
-      const data = extractApiArray<any>(response);
+      const data = extractApiArray<HourlySales>(response);
       
       // Normalize the data to ensure it has all required fields
       return data.map(item => ({
-        hour: typeof item.hour === 'number' ? item.hour.toString() : (item.hour || '0'),
+        ...item,
+        hour: typeof item.hour === 'string' ? parseInt(item.hour, 10) : item.hour,
         sales: item.sales || item.revenue || 0,
         volume: item.volume || 0,
         transactions: item.transactions || 0,
@@ -104,10 +105,11 @@ export const analyticsApi = {
       if (dateRange?.to) params.append('dateTo', dateRange.to.toISOString());
       
       const response = await apiClient.get(`/analytics/fuel-performance?${params}`);
-      const data = extractApiArray<any>(response);
+      const data = extractApiArray<FuelPerformance>(response);
       
       // Normalize the data to ensure it has all required fields
       return data.map(item => ({
+        ...item,
         fuelType: item.fuelType || 'Unknown',
         revenue: item.revenue || item.sales || 0,
         volume: item.volume || 0,

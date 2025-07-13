@@ -250,31 +250,6 @@ export interface ReadingValidation {
   missingPrice?: boolean;
 }
 
-export interface Reading {
-  id: string;
-  nozzleId: string;
-  reading: number;
-  previousReading?: number;
-  recordedAt: string;
-  paymentMethod: PaymentMethod;
-  creditorId?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt?: string;
-  // Enriched data
-  nozzleNumber?: number;
-  fuelType?: string;
-  pumpName?: string;
-  stationName?: string;
-  pumpId?: string;
-  stationId?: string;
-  attendantName?: string;
-  recordedBy?: string;
-  amount?: number;
-  pricePerLitre?: number;
-  volume?: number;
-}
-
 export interface Sale {
   id: string;
   nozzleId: string;
@@ -463,6 +438,37 @@ export interface CreatePaymentRequest extends CreateCreditPaymentRequest {}
 // DASHBOARD & ANALYTICS TYPES
 // =============================================================================
 
+// Analytics Types
+export interface StationComparison {
+  id: string;
+  stationName: string;
+  sales: number;
+  volume: number;
+  transactions: number;
+  growth: number;
+}
+
+export interface HourlySales {
+  hour: string;
+  sales: number;
+  volume: number;
+  transactions: number;
+}
+
+export interface PeakHour {
+  timeRange: string;
+  avgSales: number;
+  avgVolume: number;
+}
+
+export interface FuelPerformance {
+  fuelType: string;
+  volume: number;
+  sales: number;
+  margin: number;
+  growth: number;
+}
+
 export interface DashboardMetrics {
   totalRevenue: number;
   totalVolume: number;
@@ -613,15 +619,12 @@ export interface Alert {
   id: string;
   type: 'inventory' | 'credit' | 'maintenance' | 'sales' | 'system';
   severity: 'info' | 'warning' | 'critical';
-  priority?: 'info' | 'warning' | 'critical'; // Alias for severity
   title: string;
   message: string;
   stationId?: string;
   stationName?: string;
   isRead: boolean;
-  read?: boolean; // Alias for isRead
   isActive: boolean;
-  acknowledged?: boolean;
   createdAt: string;
   metadata?: Record<string, any>;
 }
@@ -660,17 +663,12 @@ export interface AlertSummary {
 export interface ReconciliationRecord {
   id: string;
   stationId: string;
-  stationName?: string;
   date: string;
   openingReading: number;
   closingReading: number;
-  totalSales: number;
-  expectedSales?: number;
   variance: number;
   reconciliationNotes?: string;
-  notes?: string;
   managerConfirmation: boolean;
-  status?: 'pending' | 'matched' | 'variance';
   createdAt: string;
   station?: {
     name?: string;
@@ -680,11 +678,8 @@ export interface ReconciliationRecord {
 export interface CreateReconciliationRequest {
   stationId: string;
   date: string;
-  openingReading: number;
-  closingReading: number;
   reconciliationNotes?: string;
-  notes?: string;
-  managerConfirmation?: boolean;
+  managerConfirmation: boolean;
 }
 
 export interface DailyReadingSummary {
@@ -704,70 +699,6 @@ export interface DailyReadingSummary {
   totalVolume?: number; // Alias for deltaVolume
   revenue?: number; // Alias for saleValue
   salesCount?: number;
-}
-
-// =============================================================================
-// ANALYTICS TYPES
-// =============================================================================
-
-export interface StationComparison {
-  id: string;
-  stationId: string;
-  stationName: string;
-  sales: number;
-  volume: number;
-  transactions: number;
-  growth: number;
-}
-
-export interface StationComparisonParams {
-  stationIds: string[];
-  period?: string;
-  dateFrom?: string;
-  dateTo?: string;
-}
-
-export interface HourlySales {
-  hour: string;
-  sales: number;
-  volume: number;
-  transactions: number;
-  date: string;
-}
-
-export interface PeakHour {
-  hour: number;
-  averageRevenue: number;
-  averageVolume: number;
-  averageSalesCount: number;
-  dayOfWeek?: string;
-  timeRange: string; // e.g., "9:00 AM - 10:00 AM"
-  avgSales: number; // Alias for averageRevenue
-}
-
-export interface FuelPerformance {
-  fuelType: string;
-  revenue: number;
-  volume: number;
-  salesCount: number;
-  averagePrice: number;
-  growth: number;
-  margin: number; // Profit margin percentage
-  sales: number; // Alias for revenue
-}
-
-export interface StationRanking {
-  rank: number;
-  stationId: string;
-  stationName: string;
-  id: string; // Alias for stationId
-  name: string; // Alias for stationName
-  revenue: number;
-  volume: number;
-  efficiency: number;
-  score: number;
-  sales: number; // Alias for revenue
-  growth: number; // Growth percentage
 }
 
 // =============================================================================
@@ -946,14 +877,118 @@ export interface SuperAdminSummary {
 }
 
 // =============================================================================
+// ANALYTICS TYPES
+// =============================================================================
+
+export interface StationComparison {
+  stationId: string;
+  stationName: string;
+  currentPeriod: {
+    revenue: number;
+    volume: number;
+    salesCount: number;
+  };
+  previousPeriod: {
+    revenue: number;
+    volume: number;
+    salesCount: number;
+  };
+  growth: {
+    revenue: number;
+    volume: number;
+    salesCount: number;
+  };
+}
+
+export interface StationComparisonParams {
+  stationIds: string[];
+  period?: string;
+}
+
+export interface HourlySales {
+  hour: number;
+  revenue: number;
+  volume: number;
+  salesCount: number;
+  sales: number; // Alias for revenue
+  date: string;
+}
+
+export interface PeakHour {
+  hour: number;
+  averageRevenue: number;
+  averageVolume: number;
+  averageSalesCount: number;
+  dayOfWeek?: string;
+  timeRange: string; // e.g., "9:00 AM - 10:00 AM"
+  avgSales: number; // Alias for averageRevenue
+}
+
+export interface FuelPerformance {
+  fuelType: string;
+  revenue: number;
+  volume: number;
+  salesCount: number;
+  averagePrice: number;
+  growth: number;
+  margin: number; // Profit margin percentage
+}
+
+export interface StationRanking {
+  rank: number;
+  stationId: string;
+  stationName: string;
+  id: string; // Alias for stationId
+  name: string; // Alias for stationName
+  revenue: number;
+  volume: number;
+  efficiency: number;
+  score: number;
+  sales: number; // Alias for revenue
+  growth: number; // Growth percentage
+}
+
+// =============================================================================
 // INVENTORY & DELIVERY TYPES
 // =============================================================================
+
+export interface FuelInventory {
+  id: string;
+  stationId: string;
+  stationName?: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  capacity?: number;
+  currentVolume: number;
+  lastUpdated: string;
+}
 
 export interface FuelInventoryParams {
   stationId?: string;
   fuelType?: string;
-  status?: string;
 }
+
+export interface FuelDelivery {
+  id: string;
+  stationId: string;
+  stationName?: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  volume: number;
+  deliveryDate: string;
+  supplier?: string;
+  createdAt: string;
+}
+
+export interface CreateFuelDeliveryRequest {
+  stationId: string;
+  fuelType: 'petrol' | 'diesel' | 'premium';
+  volume: number;
+  deliveryDate: string;
+  supplier?: string;
+}
+
+// =============================================================================
+// REPORTS TYPES
+// =============================================================================
 
 // =============================================================================
 // REPORTS TYPES
@@ -966,7 +1001,6 @@ export interface SalesReportFilters {
   paymentMethod?: string;
   fuelType?: string;
   attendantId?: string;
-  groupBy?: string;
 }
 
 export interface SalesReportData {

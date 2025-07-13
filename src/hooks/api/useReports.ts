@@ -4,38 +4,46 @@
  * @description React Query hooks for reports API
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { unifiedReportsApi } from '@/api/unified-reports';
-import type { SalesReportFilters } from '@/api/api-contract';
+import { reportsApi, Report, GenerateReportRequest } from '@/api/unified-reports';
 
 /**
- * Hook to fetch sales report
- * @param filters Report filters
- * @returns Query result with sales report data
+ * Hook to fetch all reports
+ * @returns Query result with reports data
  */
-export const useSalesReport = (filters: SalesReportFilters) => {
+export const useReports = () => {
   return useQuery({
-    queryKey: ['sales-report', filters],
-    queryFn: () => unifiedReportsApi.getSalesReport(filters),
-    enabled: !!(filters.startDate && filters.endDate),
+    queryKey: ['reports'],
+    queryFn: () => reportsApi.getReports(),
     staleTime: 60000, // 1 minute
     retry: 2
   });
 };
 
 /**
- * Hook to generate a report (placeholder for now)
+ * Hook to fetch a report by ID
+ * @param id Report ID
+ * @returns Query result with report data
+ */
+export const useReport = (id: string) => {
+  return useQuery({
+    queryKey: ['report', id],
+    queryFn: () => reportsApi.getReport(id),
+    enabled: !!id,
+    staleTime: 60000, // 1 minute
+    retry: 2
+  });
+};
+
+/**
+ * Hook to generate a report
  * @returns Mutation result for generating a report
  */
 export const useGenerateReport = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: any) => {
-      console.log('[REPORTS-HOOK] Generate report requested:', data);
-      // For now, return a mock response
-      return new Blob(['Mock report content'], { type: 'application/pdf' });
-    },
-    onSuccess: (blob, data) => {
+    mutationFn: (data: GenerateReportRequest) => reportsApi.generateReport(data),
+    onSuccess: (blob) => {
       console.log('[REPORTS-HOOK] Report generated successfully');
 
       if (blob) {
@@ -56,7 +64,7 @@ export const useGenerateReport = () => {
         document.body.removeChild(a);
       }
 
-      queryClient.invalidateQueries({ queryKey: ['sales-report'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
     },
     onError: (error) => {
       console.error('[REPORTS-HOOK] Error generating report:', error);
@@ -65,16 +73,12 @@ export const useGenerateReport = () => {
 };
 
 /**
- * Hook to download a report (placeholder for now)
+ * Hook to download a report
  * @returns Mutation result for downloading a report
  */
 export const useDownloadReport = () => {
   return useMutation({
-    mutationFn: async (id: string) => {
-      console.log('[REPORTS-HOOK] Download report requested for ID:', id);
-      // For now, return a mock response
-      return new Blob(['Mock report content'], { type: 'application/pdf' });
-    },
+    mutationFn: (id: string) => reportsApi.downloadReport(id),
     onSuccess: (blob, id) => {
       console.log('[REPORTS-HOOK] Report blob retrieved for report:', id);
       
@@ -100,22 +104,5 @@ export const useDownloadReport = () => {
     onError: (error, id) => {
       console.error(`[REPORTS-HOOK] Error downloading report ${id}:`, error);
     }
-  });
-};
-
-/**
- * Hook to fetch all reports (placeholder for now)
- * @returns Query result with reports data
- */
-export const useReports = () => {
-  return useQuery({
-    queryKey: ['reports'],
-    queryFn: async () => {
-      console.log('[REPORTS-HOOK] Fetching reports list');
-      // For now, return mock data
-      return [];
-    },
-    staleTime: 60000, // 1 minute
-    retry: 2
   });
 };
