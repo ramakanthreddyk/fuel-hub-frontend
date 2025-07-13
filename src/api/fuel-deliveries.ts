@@ -27,4 +27,4 @@ export const fuelDeliveriesApi = {
 
 // Export types for backward compatibility
 export type { FuelDelivery };
-export { CreateFuelDeliveryRequest } from './fuel-delivery-types';
+export type { CreateFuelDeliveryRequest } from './fuel-delivery-types';

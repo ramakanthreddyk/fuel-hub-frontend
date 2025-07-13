@@ -17,13 +17,13 @@ export default function EditReadingPage() {
   const updateReading = useUpdateReading();
 
   const [readingValue, setReadingValue] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | 'credit'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check'>('cash');
   const [recordedAt, setRecordedAt] = useState('');
 
   useEffect(() => {
     if (reading) {
       setReadingValue(String(reading.reading));
-      setPaymentMethod(reading.paymentMethod);
+      setPaymentMethod(reading.paymentMethod as 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check');
       setRecordedAt(reading.recordedAt.slice(0, 16));
     }
   }, [reading]);
@@ -83,13 +83,15 @@ export default function EditReadingPage() {
               <label className="block text-sm mb-1">Payment Method</label>
               <select 
                 value={paymentMethod} 
-                onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card' | 'upi' | 'credit')}
+                onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="cash">Cash</option>
                 <option value="card">Card</option>
                 <option value="upi">UPI</option>
                 <option value="credit">Credit</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="check">Check</option>
               </select>
             </div>
             <div className="flex justify-end gap-2">

@@ -42,7 +42,7 @@ export const nozzlesService = {
       const response = await apiClient.get(`${API_CONFIG.endpoints.nozzles.base}${params}`);
       const nozzles = extractArray<Nozzle>(response, 'nozzles');
       
-      // Transform response to ensure consistent property names
+      // Transform response to ensure consistent property names and proper typing
       const normalizedNozzles = nozzles.map(nozzle => ({
         ...nozzle,
         id: nozzle.id,
@@ -50,7 +50,7 @@ export const nozzlesService = {
         pumpName: nozzle.pumpName || nozzle.pump_name,
         lastReading: nozzle.lastReading || nozzle.last_reading,
         nozzleNumber: nozzle.nozzleNumber || nozzle.nozzle_number,
-        fuelType: nozzle.fuelType || nozzle.fuel_type,
+        fuelType: (nozzle.fuelType || nozzle.fuel_type) as 'petrol' | 'diesel' | 'premium',
         status: nozzle.status,
         createdAt: nozzle.createdAt || nozzle.created_at,
         stationId: nozzle.stationId || nozzle.station_id,

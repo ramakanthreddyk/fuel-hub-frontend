@@ -142,7 +142,7 @@ export const readingsService = {
         return null;
       }
       
-      // Normalize property names to handle both camelCase and snake_case
+      // Normalize property names to handle both camelCase and snake_case with proper typing
       const reading = readings[0];
       const normalizedReading = {
         ...reading,
@@ -152,7 +152,7 @@ export const readingsService = {
         nozzleNumber: reading.nozzleNumber || reading.nozzle_number,
         previousReading: reading.previousReading || reading.previous_reading,
         recordedAt: reading.recordedAt || reading.recorded_at,
-        paymentMethod: reading.paymentMethod || reading.payment_method,
+        paymentMethod: (reading.paymentMethod || reading.payment_method) as 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check',
         creditorId: reading.creditorId || reading.creditor_id,
         createdAt: reading.createdAt || reading.created_at,
         updatedAt: reading.updatedAt || reading.updated_at,
