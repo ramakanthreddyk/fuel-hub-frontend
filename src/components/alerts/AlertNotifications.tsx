@@ -43,6 +43,8 @@ export function AlertNotifications() {
     }
   };
 
+  const unreadCount = alerts.filter(a => !(a.read || a.isRead)).length;
+
   return (
     <Card className="bg-gradient-to-br from-white to-red-50 border-red-200">
       <CardHeader>
@@ -51,7 +53,7 @@ export function AlertNotifications() {
             <Bell className="h-5 w-5 text-red-600" />
             System Alerts
           </div>
-          <Badge variant="secondary">{alerts.filter(a => !a.read).length} unread</Badge>
+          <Badge variant="secondary">{unreadCount} unread</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -65,7 +67,7 @@ export function AlertNotifications() {
             alerts.map((alert) => (
               <div 
                 key={alert.id} 
-                className={`p-3 rounded-lg border-2 ${getAlertColor(alert.type, alert.severity || alert.priority)} ${!alert.read ? 'ring-2 ring-offset-1 ring-red-200' : ''}`}
+                className={`p-3 rounded-lg border-2 ${getAlertColor(alert.type, alert.severity || alert.priority || 'info')} ${!(alert.read || alert.isRead) ? 'ring-2 ring-offset-1 ring-red-200' : ''}`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-2">
@@ -84,7 +86,7 @@ export function AlertNotifications() {
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    {!alert.read && (
+                    {!(alert.read || alert.isRead) && (
                       <Button 
                         size="sm" 
                         variant="ghost" 

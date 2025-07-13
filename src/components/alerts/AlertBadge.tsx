@@ -13,8 +13,10 @@ export function AlertBadge() {
   const [open, setOpen] = useState(false);
   const { data: alerts = [], markAsRead, dismissAlert } = useAlerts();
   
-  const unreadAlerts = alerts.filter(alert => !alert.read && (alert.isActive ?? true));
-  const criticalAlerts = unreadAlerts.filter(alert => alert.severity === 'critical' || alert.priority === 'critical');
+  const unreadAlerts = alerts.filter(alert => !(alert.read || alert.isRead) && (alert.isActive ?? true));
+  const criticalAlerts = unreadAlerts.filter(alert => 
+    (alert.severity === 'critical' || alert.priority === 'critical') || alert.severity === 'critical'
+  );
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -67,7 +69,7 @@ export function AlertBadge() {
         <ScrollArea className="max-h-96">
           <div className="space-y-3">
             {unreadAlerts.map((alert) => (
-              <div key={alert.id} className={`p-3 rounded-lg border ${getSeverityColor(alert.severity || alert.priority)}`}>
+              <div key={alert.id} className={`p-3 rounded-lg border ${getSeverityColor(alert.severity || alert.priority || 'info')}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <h4 className="font-medium text-sm">{alert.title}</h4>

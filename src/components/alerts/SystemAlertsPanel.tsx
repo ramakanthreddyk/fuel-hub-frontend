@@ -35,7 +35,9 @@ export function SystemAlertsPanel() {
   };
 
   const unacknowledgedAlerts = alerts.filter(alert => !alert.acknowledged);
-  const hasCriticalAlerts = unacknowledgedAlerts.some(alert => alert.priority === 'critical');
+  const hasCriticalAlerts = unacknowledgedAlerts.some(alert => 
+    (alert.priority || alert.severity) === 'critical'
+  );
 
   if (isLoading) {
     return (
@@ -100,8 +102,8 @@ export function SystemAlertsPanel() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-medium">{alert.title}</h4>
-                      <Badge className={getPriorityColor(alert.priority)}>
-                        {alert.priority}
+                      <Badge className={getPriorityColor(alert.priority || alert.severity || 'info')}>
+                        {alert.priority || alert.severity || 'info'}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">
