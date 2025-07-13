@@ -13,8 +13,10 @@ export function DeliveryForm() {
   const [formData, setFormData] = useState<CreateFuelDeliveryRequest>({
     stationId: '',
     fuelType: 'petrol',
+    volume: 0,
     quantity: 0,
     deliveryDate: new Date().toISOString().split('T')[0],
+    supplier: '',
     supplierName: '',
     invoiceNumber: '',
     pricePerLitre: 0,
@@ -27,14 +29,23 @@ export function DeliveryForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.stationId || !formData.quantity || !formData.supplierName || !formData.invoiceNumber) return;
+    
+    // Ensure volume is set from quantity
+    const submitData = {
+      ...formData,
+      volume: formData.quantity,
+      supplier: formData.supplierName
+    };
 
-    createDelivery.mutate(formData, {
+    createDelivery.mutate(submitData, {
       onSuccess: () => {
         setFormData({
           stationId: '',
           fuelType: 'petrol',
+          volume: 0,
           quantity: 0,
           deliveryDate: new Date().toISOString().split('T')[0],
+          supplier: '',
           supplierName: '',
           invoiceNumber: '',
           pricePerLitre: 0,
@@ -95,7 +106,10 @@ export function DeliveryForm() {
                 id="quantity"
                 type="number"
                 value={formData.quantity || ''}
-                onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setFormData({ ...formData, quantity: value, volume: value });
+                }}
                 placeholder="Enter quantity"
                 min="1"
                 required
@@ -121,7 +135,7 @@ export function DeliveryForm() {
               <Input
                 id="supplierName"
                 value={formData.supplierName}
-                onChange={(e) => setFormData({ ...formData, supplierName: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, supplierName: e.target.value, supplier: e.target.value })}
                 placeholder="Enter supplier name"
                 required
               />

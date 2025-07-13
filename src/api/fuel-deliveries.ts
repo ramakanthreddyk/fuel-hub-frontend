@@ -1,7 +1,7 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
-import type { FuelDelivery, ApiResponse } from './api-contract';
-import type { CreateFuelDeliveryRequest } from './fuel-delivery-types';
+import type { ApiResponse } from './api-contract';
+import type { FuelDelivery, CreateFuelDeliveryRequest } from './fuel-delivery-types';
 
 export const fuelDeliveriesApi = {
   // Get all fuel deliveries
@@ -26,5 +26,4 @@ export const fuelDeliveriesApi = {
 };
 
 // Export types for backward compatibility
-export type { FuelDelivery };
-export { CreateFuelDeliveryRequest } from './fuel-delivery-types';
+export type { FuelDelivery, CreateFuelDeliveryRequest } from './fuel-delivery-types';

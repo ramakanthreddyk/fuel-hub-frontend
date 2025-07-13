@@ -23,29 +23,50 @@ export const analyticsApi = {
       const data = extractApiArray<any>(response);
       
       // Normalize the data to ensure it has all required fields
-      return data.map(item => ({
-        id: item.id || item.stationId || '',
-        stationId: item.id || item.stationId || '',
-        name: item.name || '',
-        stationName: item.name || item.stationName || 'Unknown Station',
-        sales: typeof item.sales === 'number' ? item.sales : (item.totalSales || 0),
-        volume: typeof item.volume === 'number' ? item.volume : (item.totalVolume || 0),
-        transactions: typeof item.transactions === 'number' ? item.transactions : (item.transactionCount || 0),
-        growth: typeof item.growth === 'number' ? item.growth : 0,
-        // Include additional fields from backend
-        period: item.period || period || 'monthly',
-        salesGrowth: item.salesGrowth || item.growth || 0,
-        volumeGrowth: item.volumeGrowth || 0,
-        transactionsGrowth: item.transactionsGrowth || 0,
-        previousSales: item.previousSales || 0,
-        previousVolume: item.previousVolume || 0,
-        previousTransactions: item.previousTransactions || 0,
-        // Aliases for compatibility
-        totalSales: typeof item.totalSales === 'number' ? item.totalSales : (item.sales || 0),
-        totalVolume: typeof item.totalVolume === 'number' ? item.totalVolume : (item.volume || 0),
-        transactionCount: typeof item.transactionCount === 'number' ? item.transactionCount : (item.transactions || 0),
-        revenue: typeof item.revenue === 'number' ? item.revenue : (item.sales || item.totalSales || 0)
-      }));
+      return data.map(item => {
+        const sales = typeof item.sales === 'number' ? item.sales : (item.totalSales || 0);
+        const volume = typeof item.volume === 'number' ? item.volume : (item.totalVolume || 0);
+        const transactions = typeof item.transactions === 'number' ? item.transactions : (item.transactionCount || 0);
+        const previousSales = item.previousSales || 0;
+        const previousVolume = item.previousVolume || 0;
+        const previousTransactions = item.previousTransactions || 0;
+        const growth = typeof item.growth === 'number' ? item.growth : 0;
+        
+        return {
+          id: item.id || item.stationId || '',
+          stationId: item.id || item.stationId || '',
+          name: item.name || '',
+          stationName: item.name || item.stationName || 'Unknown Station',
+          sales,
+          volume,
+          transactions,
+          growth,
+          // Required nested objects
+          currentPeriod: {
+            revenue: sales,
+            volume,
+            salesCount: transactions
+          },
+          previousPeriod: {
+            revenue: previousSales,
+            volume: previousVolume,
+            salesCount: previousTransactions
+          },
+          // Include additional fields from backend
+          period: item.period || period || 'monthly',
+          salesGrowth: item.salesGrowth || growth || 0,
+          volumeGrowth: item.volumeGrowth || 0,
+          transactionsGrowth: item.transactionsGrowth || 0,
+          previousSales,
+          previousVolume,
+          previousTransactions,
+          // Aliases for compatibility
+          totalSales: typeof item.totalSales === 'number' ? item.totalSales : sales,
+          totalVolume: typeof item.totalVolume === 'number' ? item.totalVolume : volume,
+          transactionCount: typeof item.transactionCount === 'number' ? item.transactionCount : transactions,
+          revenue: typeof item.revenue === 'number' ? item.revenue : (sales || item.totalSales || 0)
+        };
+      });
     } catch (error) {
       console.error('Error fetching station comparison:', error);
       return [];

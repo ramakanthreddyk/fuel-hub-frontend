@@ -10,13 +10,13 @@ import API_CONFIG from './core/config';
 import type { 
   SalesReportFilters, 
   SalesReportData, 
-  SalesReportSummary, 
   ExportRequest,
   ScheduleReportRequest,
   SalesReportExportFilters,
   ExportResponse,
   ApiResponse 
 } from './api-contract';
+import type { SalesReportSummary } from './sales-report-types';
 
 // Report types
 export interface Report {
@@ -75,6 +75,9 @@ export const reportsApi = {
           averageTicketSize: 0,
           cashSales: 0,
           creditSales: 0,
+          cardSales: 0,
+          upiSales: 0,
+          growthPercentage: 0,
           byFuelType: [],
           byPaymentMethod: [],
           fuelTypeBreakdown: [],

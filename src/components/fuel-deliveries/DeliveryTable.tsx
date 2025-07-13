@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FuelDelivery } from '@/api/fuel-deliveries';
+import { FuelDelivery } from '@/api/fuel-delivery-types';
 import { format } from 'date-fns';
 
 interface DeliveryTableProps {

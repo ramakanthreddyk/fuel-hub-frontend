@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useFuelInventory } from '@/hooks/useFuelInventory';
+import { FuelInventory } from '@/api/inventory-types';
 import { ErrorFallback } from '@/components/common/ErrorFallback';
 import { Fuel, AlertTriangle, CheckCircle } from 'lucide-react';
 
