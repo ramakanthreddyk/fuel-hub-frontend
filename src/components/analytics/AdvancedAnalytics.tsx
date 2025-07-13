@@ -40,10 +40,31 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
               <ChartContainer config={{ sales: { label: 'Sales', color: '#8b5cf6' } }} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={hourlySales}>
-                    <XAxis dataKey="hour" />
+                    <XAxis 
+                      dataKey="hour" 
+                      tickFormatter={(hour) => `${hour}:00`}
+                      label={{ value: 'Hour of Day', position: 'insideBottom', offset: -5 }}
+                    />
                     <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2} />
+                    <ChartTooltip 
+                      content={(props) => {
+                        if (!props.active || !props.payload) return null;
+                        const data = props.payload[0]?.payload;
+                        if (!data) return null;
+                        
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-md">
+                            <div className="font-medium">Hour: {data.hour}:00</div>
+                            <div className="text-sm text-muted-foreground">
+                              <div>Sales: {formatCurrency(data.revenue, { useLakhsCrores: true })}</div>
+                              <div>Volume: {formatVolume(data.volume)}</div>
+                              <div>Transactions: {data.salesCount || 0}</div>
+                            </div>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Line type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2} name="Sales" />
                   </LineChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -66,12 +87,23 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {peakHours.map((peak, index) => (
-                  <div key={index} className="p-4 bg-green-50 rounded-lg">
+                  <div key={index} className="p-4 bg-green-50 rounded-lg border border-green-200">
                     <h4 className="font-semibold text-green-800">Peak {index + 1}</h4>
-                    <p className="text-green-600">{peak.timeRange || `${peak.hour}:00`}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Avg Sales: {formatCurrency(peak.avgSales || peak.averageRevenue || 0, { useLakhsCrores: true })}
-                    </p>
+                    <p className="text-green-600 font-medium">{peak.timeRange || `${peak.hour}:00`}</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-sm flex justify-between">
+                        <span className="text-muted-foreground">Avg Sales:</span>
+                        <span className="font-medium">{formatCurrency(peak.avgSales || peak.averageRevenue || 0, { useLakhsCrores: true })}</span>
+                      </p>
+                      <p className="text-sm flex justify-between">
+                        <span className="text-muted-foreground">Avg Volume:</span>
+                        <span className="font-medium">{formatVolume(peak.avgVolume || peak.averageVolume || 0)}</span>
+                      </p>
+                      <p className="text-sm flex justify-between">
+                        <span className="text-muted-foreground">Avg Transactions:</span>
+                        <span className="font-medium">{peak.averageSalesCount || 0}</span>
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -93,14 +125,39 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
               <div className="h-[300px] bg-muted animate-pulse rounded" />
             ) : (
               <ChartContainer config={{ 
+                sales: { label: 'Sales', color: '#3b82f6' },
+                volume: { label: 'Volume', color: '#22c55e' },
                 margin: { label: 'Margin %', color: '#f97316' },
-                volume: { label: 'Volume', color: '#3b82f6' }
+                growth: { label: 'Growth %', color: '#ef4444' }
               }} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={fuelPerformance}>
                     <XAxis dataKey="fuelType" />
                     <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip
+                      content={(props) => {
+                        if (!props.active || !props.payload) return null;
+                        const data = props.payload[0]?.payload;
+                        if (!data) return null;
+                        
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-md">
+                            <div className="font-medium">{data.fuelType}</div>
+                            <div className="text-sm text-muted-foreground space-y-1">
+                              <div>Sales: {formatCurrency(data.sales || data.revenue || 0, { useLakhsCrores: true })}</div>
+                              <div>Volume: {formatVolume(data.volume || 0)}</div>
+                              <div>Avg Price: {formatCurrency(data.averagePrice || 0)}/L</div>
+                              <div className={`${data.growth >= 0 ? 'text-green-600' : 'text-red-600'} font-medium`}>
+                                Growth: {data.growth >= 0 ? '+' : ''}{data.growth}%
+                              </div>
+                              <div>Margin: {data.margin}%</div>
+                            </div>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Bar dataKey="sales" fill="#3b82f6" name="Sales" />
+                    <Bar dataKey="volume" fill="#22c55e" name="Volume" />
                     <Bar dataKey="margin" fill="#f97316" name="Margin %" />
                   </BarChart>
                 </ResponsiveContainer>
