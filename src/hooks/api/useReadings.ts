@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { readingsService } from '@/api/services/readingsService';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useReadings = () => {
   return useQuery({
@@ -63,9 +64,16 @@ export const useCreateReading = () => {
 export const useUpdateReading = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => readingsService.updateReading(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) => {
+      // Only allow managers and owners to update readings
+      if (user?.role !== 'manager' && user?.role !== 'owner') {
+        throw new Error('Only managers and owners can update readings');
+      }
+      return readingsService.updateReading(id, data);
+    },
     onSuccess: (updatedReading, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['reading', id] });
       queryClient.invalidateQueries({ queryKey: ['readings'] });
@@ -80,6 +88,32 @@ export const useUpdateReading = () => {
       toast({
         title: "Update Failed",
         description: error.message || "Failed to update reading. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useVoidReading = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => readingsService.voidReading(id, reason),
+    onSuccess: (result, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['reading', id] });
+      queryClient.invalidateQueries({ queryKey: ['readings'] });
+      toast({
+        title: "Reading Voided",
+        description: "The reading has been marked as void and will require manager approval.",
+        variant: "success",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Failed to void reading:', error);
+      toast({
+        title: "Void Failed",
+        description: error.message || "Failed to void reading. Please try again.",
         variant: "destructive",
       });
     },

@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Droplets, Clock, Eye, Edit } from 'lucide-react';
+import { Droplets, Clock, Eye } from 'lucide-react';
 import { formatDateTime, formatCurrency } from '@/utils/formatters';
 
 interface ReadingCardProps {
@@ -18,10 +18,9 @@ interface ReadingCardProps {
     pumpName?: string;
   };
   onView?: (id: string) => void;
-  onEdit?: (id: string) => void;
 }
 
-export function ReadingCard({ reading, onView, onEdit }: ReadingCardProps) {
+export function ReadingCard({ reading, onView }: ReadingCardProps) {
   const getFuelTypeColor = (fuelType: string) => {
     switch (fuelType?.toLowerCase()) {
       case 'petrol':
@@ -76,22 +75,11 @@ export function ReadingCard({ reading, onView, onEdit }: ReadingCardProps) {
             <Button 
               size="sm" 
               variant="outline" 
-              className="flex-1 h-7 text-xs"
+              className="w-full h-7 text-xs"
               onClick={() => onView(reading.id)}
             >
               <Eye className="h-3 w-3 mr-1" />
-              View
-            </Button>
-          )}
-          {onEdit && (
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="flex-1 h-7 text-xs"
-              onClick={() => onEdit(reading.id)}
-            >
-              <Edit className="h-3 w-3 mr-1" />
-              Edit
+              View Details
             </Button>
           )}
         </div>

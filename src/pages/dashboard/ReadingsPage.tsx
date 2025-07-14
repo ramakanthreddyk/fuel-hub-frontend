@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Gauge, Clock, AlertTriangle, CheckCircle, Plus, FileText, Eye, Edit, Loader2 } from 'lucide-react';
+import { Gauge, Clock, AlertTriangle, CheckCircle, Plus, FileText, Eye, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, Link } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
@@ -316,7 +316,6 @@ export default function ReadingsPage() {
                   key={reading.id}
                   reading={reading}
                   onView={(id) => navigate(`/dashboard/readings/${id}`)}
-                  onEdit={(id) => navigate(`/dashboard/readings/${id}/edit`)}
                 />
               ))}
             </div>
@@ -362,22 +361,14 @@ export default function ReadingsPage() {
                     <TableCell className="font-mono">{reading.amount ? formatCurrency(reading.amount) : 'N/A'}</TableCell>
                     <TableCell>{formatDateTime(reading.recordedAt)}</TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={() => navigate(`/dashboard/readings/${reading.id}`)}
-                        >
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={() => navigate(`/dashboard/readings/${reading.id}/edit`)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={() => navigate(`/dashboard/readings/${reading.id}`)}
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

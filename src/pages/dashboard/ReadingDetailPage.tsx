@@ -2,17 +2,22 @@
  * @file ReadingDetailPage.tsx
  * @description Page for viewing reading details
  */
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Fuel, Building2, DollarSign, Calendar } from 'lucide-react';
+import { ArrowLeft, Fuel, Building2, DollarSign, Calendar, AlertTriangle } from 'lucide-react';
 import { useReading } from '@/hooks/api/useReadings';
+import { VoidReadingDialog } from '@/components/readings/VoidReadingDialog';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency, formatVolume, formatDateTime } from '@/utils/formatters';
 
 export default function ReadingDetailPage() {
   const { readingId } = useParams<{ readingId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [voidDialogOpen, setVoidDialogOpen] = useState(false);
   
   const { data: reading, isLoading, error } = useReading(readingId || '');
 
@@ -148,13 +153,29 @@ export default function ReadingDetailPage() {
       </div>
 
       <div className="flex gap-2">
-        <Button onClick={() => navigate(`/dashboard/readings/${readingId}/edit`)}>
-          Edit Reading
-        </Button>
+        {/* Only show void button for managers and owners */}
+        {(user?.role === 'manager' || user?.role === 'owner') && (
+          <Button 
+            variant="destructive" 
+            onClick={() => setVoidDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <AlertTriangle className="h-4 w-4" />
+            Void Reading
+          </Button>
+        )}
         <Button variant="outline" onClick={() => navigate('/dashboard/readings')}>
           Back to List
         </Button>
       </div>
+      
+      {/* Void Reading Dialog */}
+      <VoidReadingDialog 
+        readingId={readingId || ''}
+        open={voidDialogOpen}
+        onOpenChange={setVoidDialogOpen}
+        onSuccess={() => navigate('/dashboard/readings')}
+      />
     </div>
   );
 }

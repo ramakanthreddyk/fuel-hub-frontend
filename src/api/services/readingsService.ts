@@ -64,6 +64,11 @@ export interface UpdateReadingRequest {
   notes?: string;
 }
 
+export interface VoidReadingRequest {
+  reason: string;
+  status?: 'voided';
+}
+
 /**
  * Service for readings API
  */
@@ -185,6 +190,20 @@ export const readingsService = {
       return extractData<{ canCreate: boolean; reason?: string; missingPrice?: boolean }>(response);
     } catch (error) {
       console.error(`[READINGS-API] Error checking reading creation for nozzle ${nozzleId}:`, error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Void a reading (mark as invalid)
+   */
+  voidReading: async (id: string, reason: string): Promise<any> => {
+    try {
+      console.log(`[READINGS-API] Voiding reading ${id} with reason: ${reason}`);
+      const response = await apiClient.post(API_CONFIG.endpoints.readings.void(id), { reason, status: 'voided' });
+      return extractData<any>(response);
+    } catch (error) {
+      console.error(`[READINGS-API] Error voiding reading ${id}:`, error);
       throw error;
     }
   }

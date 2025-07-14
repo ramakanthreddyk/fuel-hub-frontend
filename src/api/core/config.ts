@@ -23,6 +23,7 @@ const API_CONFIG = {
       base: '/nozzle-readings',
       byId: (id: string) => `/nozzle-readings/${id}`,
       canCreate: (nozzleId: string) => `/nozzle-readings/can-create/${nozzleId}`,
+      void: (id: string) => `/nozzle-readings/${id}/void`,
     },
     fuelPrices: {
       base: '/fuel-prices',
