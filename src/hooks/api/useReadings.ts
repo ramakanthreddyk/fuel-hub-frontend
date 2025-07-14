@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { readingsService } from '@/api/services/readingsService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useReadingsStore } from '@/store/readingsStore';
 
 export const useReadings = () => {
   return useQuery({
@@ -25,6 +26,7 @@ export const useReading = (id: string) => {
 export const useCreateReading = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { setLastCreatedReading } = useReadingsStore();
   
   return useMutation({
     mutationFn: (data: any) => readingsService.createReading(data),
@@ -39,7 +41,22 @@ export const useCreateReading = () => {
         queryClient.invalidateQueries({ queryKey: ['latest-reading', newReading.nozzleId] });
       }
       
-      // Toast is handled in the component for better context
+      // Store the reading in the readings store
+      setLastCreatedReading({
+        id: newReading.id,
+        nozzleId: newReading.nozzleId,
+        nozzleNumber: newReading.nozzleNumber,
+        reading: newReading.reading,
+        fuelType: newReading.fuelType,
+        timestamp: newReading.recordedAt || newReading.createdAt
+      });
+      
+      // Show success toast
+      toast({
+        title: "Reading Recorded",
+        description: `Successfully recorded reading ${newReading.reading}L${newReading.nozzleNumber ? ` for nozzle #${newReading.nozzleNumber}` : ''}`,
+        variant: "success",
+      });
     },
     onError: (error: any) => {
       console.error('Failed to create reading:', error);
@@ -56,7 +73,12 @@ export const useCreateReading = () => {
         data: error?.response?.data
       });
       
-      // Toast is handled in the component for better error context
+      // Show error toast
+      toast({
+        title: "Failed to Record Reading",
+        description: errorMessage,
+        variant: "destructive",
+      });
     },
   });
 };

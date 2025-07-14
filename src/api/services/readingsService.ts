@@ -95,8 +95,27 @@ export const readingsService = {
   getReading: async (id: string): Promise<Reading> => {
     try {
       console.log(`[READINGS-API] Fetching reading details for ID: ${id}`);
-      const response = await apiClient.get(API_CONFIG.endpoints.readings.byId(id));
-      return extractData<Reading>(response);
+      try {
+        const response = await apiClient.get(API_CONFIG.endpoints.readings.byId(id));
+        const reading = extractData<Reading>(response);
+        return reading;
+      } catch (error: any) {
+        // Check if the error is related to creditor_id column
+        if (error?.response?.data?.message?.includes('creditor_id does not exist')) {
+          console.warn(`[READINGS-API] Creditor_id column error, trying alternative endpoint`);
+          // Try an alternative approach - get all readings and filter by ID
+          const allReadingsResponse = await apiClient.get(API_CONFIG.endpoints.readings.base);
+          const allReadings = extractArray<Reading>(allReadingsResponse, 'readings');
+          const reading = allReadings.find(r => r.id === id);
+          
+          if (!reading) {
+            throw new Error(`Reading with ID ${id} not found`);
+          }
+          
+          return reading;
+        }
+        throw error;
+      }
     } catch (error) {
       console.error(`[READINGS-API] Error fetching reading ${id}:`, error);
       throw error;

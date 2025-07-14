@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useFuelStore } from '@/store/fuelStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -50,9 +51,16 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const location = useLocation();
   const { toast } = useToast();
   
+  // Get state from Zustand store
+  const { selectedStationId, selectedPumpId, selectedNozzleId } = useFuelStore();
+  
   // Get preselected values from navigation state if available
   const navigationPreselected = location.state?.preselected;
-  const finalPreselected = navigationPreselected || preselected;
+  const finalPreselected = navigationPreselected || preselected || {
+    stationId: selectedStationId || '',
+    pumpId: selectedPumpId || '',
+    nozzleId: selectedNozzleId || ''
+  };
   
   const [selectedStation, setSelectedStation] = useState(finalPreselected?.stationId || '');
   const [selectedPump, setSelectedPump] = useState(finalPreselected?.pumpId || '');
@@ -134,30 +142,21 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
       creditorId: data.paymentMethod === 'credit' ? data.creditorId : undefined,
     };
 
+    // Store the nozzle number for better user feedback
+    const nozzleNumber = selectedNozzleData?.nozzleNumber;
+    const fuelType = selectedNozzleData?.fuelType;
+    
     createReading.mutate(readingData, {
       onSuccess: (newReading) => {
         console.log('[READING-FORM] Reading created successfully');
-        toast({
-          title: "Reading Recorded",
-          description: `Successfully recorded reading ${data.reading}L for nozzle #${selectedNozzleData?.nozzleNumber}`,
-          variant: "success",
-        });
         
         // Navigate back to nozzles page if we came from there
         if (finalPreselected?.stationId && finalPreselected?.pumpId) {
-          navigate('/dashboard/nozzles');
+          navigate('/dashboard/pumps/' + finalPreselected.pumpId + '/nozzles');
         } else {
           // Otherwise go to readings page
           navigate('/dashboard/readings');
         }
-      },
-      onError: (error: any) => {
-        console.error('[READING-FORM] Error creating reading:', error);
-        toast({
-          title: "Failed to Record Reading",
-          description: error.message || "Please check your input and try again.",
-          variant: "destructive",
-        });
       }
     });
   };

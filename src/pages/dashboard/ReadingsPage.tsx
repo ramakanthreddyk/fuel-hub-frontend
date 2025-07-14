@@ -5,7 +5,7 @@
  * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
  * @see docs/journeys/MANAGER.md - Manager journey for recording readings
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,8 @@ import { usePendingReadings } from '@/hooks/api/usePendingReadings';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
 import { useStations } from '@/hooks/api/useStations';
+import { useReadingsStore } from '@/store/readingsStore';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDateTime, formatCurrency } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
@@ -28,6 +30,10 @@ export default function ReadingsPage() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<'all' | 'today' | 'week'>('all');
   const [selectedPumpId, setSelectedPumpId] = useState<string>('all');
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  
+  // Get last created reading from store
+  const { lastCreatedReading, resetLastCreatedReading } = useReadingsStore();
 
   // Fetch readings using the API hook
   const { data: readings, isLoading, error } = useReadings();
@@ -40,6 +46,18 @@ export default function ReadingsPage() {
     dismiss: dismissAlert,
   } = usePendingReadings();
 
+  // Show success alert if we have a last created reading
+  useEffect(() => {
+    if (lastCreatedReading.id) {
+      setShowSuccessAlert(true);
+      const timer = setTimeout(() => {
+        setShowSuccessAlert(false);
+        resetLastCreatedReading();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [lastCreatedReading, resetLastCreatedReading]);
+  
   // Ensure readings is always an array and enrich with related data
   const readingsArray = Array.isArray(readings) ? readings : [];
   
@@ -147,6 +165,16 @@ export default function ReadingsPage() {
           </div>
         }
       />
+      
+      {/* Success Alert */}
+      {showSuccessAlert && lastCreatedReading.id && (
+        <Alert className="bg-green-50 border-green-200 mb-6">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            <strong>Reading recorded successfully!</strong> {lastCreatedReading.nozzleNumber && `Nozzle #${lastCreatedReading.nozzleNumber}`} reading of {lastCreatedReading.reading}L was recorded.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Stats Cards - Dashboard Style */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
