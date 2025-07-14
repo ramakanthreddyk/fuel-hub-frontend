@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Gauge, Clock, AlertTriangle, CheckCircle, Plus, FileText, Eye, Loader2 } from 'lucide-react';
+import { Gauge, Clock, AlertTriangle, CheckCircle, Plus, FileText, Eye, Loader2, TrendingUp, Activity, Zap, DollarSign } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, Link } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
@@ -129,7 +129,7 @@ export default function ReadingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <PageHeader
         title="Pump Readings"
@@ -140,7 +140,7 @@ export default function ReadingsPage() {
               <Plus className="mr-2 h-4 w-4" />
               Quick Record
             </Button>
-            <Button onClick={() => navigate('/dashboard/nozzles')}>
+            <Button onClick={() => navigate('/dashboard/nozzles')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
               <Plus className="mr-2 h-4 w-4" />
               Record Reading
             </Button>
@@ -148,86 +148,114 @@ export default function ReadingsPage() {
         }
       />
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-white border-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Readings</CardTitle>
-            <Gauge className="h-4 w-4 text-muted-foreground" />
+      {/* Stats Cards - Dashboard Style */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {/* Total Readings Card */}
+        <Card className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-200 hover:shadow-lg transition-all duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-blue-700">Total Readings</CardTitle>
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+              <Gauge className="h-5 w-5" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalReadings}</div>
-            <p className="text-xs text-muted-foreground">
-              {isLoading ? 'Loading...' : `All time`}
+            <div className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+              {totalReadings.toLocaleString()}
+            </div>
+            <p className="text-xs text-blue-600 mt-1">
+              {isLoading ? 'Loading...' : `All time records`}
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-white border-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+
+        {/* Today's Readings */}
+        <Card className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-green-200 hover:shadow-lg transition-all duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-green-700">Today's Readings</CardTitle>
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white shadow-lg">
+              <Activity className="h-5 w-5" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayReadings}</div>
-            <p className="text-xs text-muted-foreground">
-              Today's readings
+            <div className="text-3xl font-bold bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent">
+              {todayReadings.toLocaleString()}
+            </div>
+            <p className="text-xs text-green-600 mt-1">
+              Recorded today
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-white border-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Week</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+
+        {/* Weekly Activity */}
+        <Card className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 border-orange-200 hover:shadow-lg transition-all duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-orange-700">This Week</CardTitle>
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white shadow-lg">
+              <TrendingUp className="h-5 w-5" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{weekReadings}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold bg-gradient-to-r from-orange-700 to-amber-700 bg-clip-text text-transparent">
+              {weekReadings.toLocaleString()}
+            </div>
+            <p className="text-xs text-orange-600 mt-1">
               Last 7 days
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-white border-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+
+        {/* Revenue Card */}
+        <Card className="bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 border-purple-200 hover:shadow-lg transition-all duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-medium text-purple-700">Total Revenue</CardTitle>
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white shadow-lg">
+              <DollarSign className="h-5 w-5" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-700 to-pink-700 bg-clip-text text-transparent">
+              {formatCurrency(totalRevenue, { maximumFractionDigits: 0 })}
+            </div>
+            <p className="text-xs text-purple-600 mt-1">
               From all readings
             </p>
           </CardContent>
         </Card>
       </div>
 
+      {/* Pending Alerts */}
       {pendingAlertsCount > 0 && (
-        <Card className="border-orange-200 bg-orange-50">
+        <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-700" />
+            <CardTitle className="flex items-center gap-2 text-orange-800">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white">
+                <AlertTriangle className="h-4 w-4" />
+              </div>
               Pending Readings
             </CardTitle>
-            <CardDescription>Nozzles missing readings in the last 24h</CardDescription>
+            <CardDescription className="text-orange-700">Nozzles missing readings in the last 24h</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
               {pendingAlerts.map((alert) => (
-                <li key={alert.id} className="flex items-center justify-between">
-                  <span className="list-disc pl-1">
+                <li key={alert.id} className="flex items-center justify-between bg-white/70 rounded-lg p-3 border border-orange-100">
+                  <span className="font-medium text-orange-800">
                     {alert.stationName || 'Station'} – Nozzle {alert.id}
                   </span>
-                  <div className="flex gap-1">
+                  <div className="flex gap-2">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => acknowledgeAlert(alert.id)}
+                      className="text-orange-700 border-orange-300 hover:bg-orange-100"
                     >
-                      Ack
+                      Acknowledge
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => dismissAlert(alert.id)}
+                      className="text-orange-600 hover:text-orange-800"
                     >
                       Dismiss
                     </Button>
@@ -239,72 +267,83 @@ export default function ReadingsPage() {
         </Card>
       )}
 
-      {/* Enhanced Filter Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex flex-wrap gap-2">
-          {(['all', 'today', 'week'] as const).map((timeFilter) => (
-            <Button
-              key={timeFilter}
-              variant={filter === timeFilter ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilter(timeFilter)}
-              className={cn(
-                "capitalize transition-all duration-200",
-                filter === timeFilter && "shadow-lg scale-105"
-              )}
-            >
-              {timeFilter === 'all' ? 'All Readings' : timeFilter === 'today' ? 'Today' : 'This Week'}
-            </Button>
-          ))}
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Pump:</span>
-          <Select value={selectedPumpId} onValueChange={setSelectedPumpId}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select pump" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Pumps</SelectItem>
-              {pumps.map((pump) => (
-                <SelectItem key={pump.id} value={pump.id}>
-                  {pump.name}
-                </SelectItem>
+      {/* Filters */}
+      <Card className="bg-white shadow-sm border">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-wrap gap-2">
+              {(['all', 'today', 'week'] as const).map((timeFilter) => (
+                <Button
+                  key={timeFilter}
+                  variant={filter === timeFilter ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilter(timeFilter)}
+                  className={cn(
+                    "capitalize transition-all duration-200",
+                    filter === timeFilter && "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-105"
+                  )}
+                >
+                  {timeFilter === 'all' ? 'All Readings' : timeFilter === 'today' ? 'Today' : 'This Week'}
+                </Button>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Pump:</span>
+              <Select value={selectedPumpId} onValueChange={setSelectedPumpId}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select pump" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Pumps</SelectItem>
+                  {pumps.map((pump) => (
+                    <SelectItem key={pump.id} value={pump.id}>
+                      {pump.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Latest Readings Cards */}
-      <Card>
+      <Card className="bg-white shadow-sm border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-gray-900">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white">
+              <Zap className="h-4 w-4" />
+            </div>
             Latest Nozzle Readings
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-600">
             Most recent reading from each nozzle
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="flex items-center justify-center p-12">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-gray-600">Loading readings...</span>
             </div>
           ) : error ? (
-            <div className="text-center p-8 text-red-500">
-              <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
-              <p>Error loading readings: {error.message}</p>
+            <div className="text-center p-12 bg-red-50 rounded-lg border border-red-200">
+              <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+              <h3 className="text-lg font-semibold text-red-800 mb-2">Error loading readings</h3>
+              <p className="text-red-600">{error.message}</p>
             </div>
           ) : lastReadings.length === 0 ? (
-            <div className="text-center p-8">
-              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">No readings found</h3>
-              <p className="text-muted-foreground mb-4">
+            <div className="text-center p-12 bg-gray-50 rounded-lg border border-gray-200">
+              <FileText className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">No readings found</h3>
+              <p className="text-gray-600 mb-6">
                 Get started by recording your first reading
               </p>
-              <Button onClick={() => navigate('/dashboard/readings/new')}>
+              <Button 
+                onClick={() => navigate('/dashboard/readings/new')}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Record Reading
               </Button>
@@ -323,57 +362,69 @@ export default function ReadingsPage() {
         </CardContent>
       </Card>
 
-      {/* All Other Readings Table */}
+      {/* Historical Readings Table */}
       {otherReadings.length > 0 && (
-        <Card>
+        <Card className="bg-white shadow-sm border">
           <CardHeader>
-            <CardTitle>All Readings History</CardTitle>
-            <CardDescription>
+            <CardTitle className="flex items-center gap-2 text-gray-900">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-gray-500 to-slate-600 flex items-center justify-center text-white">
+                <FileText className="h-4 w-4" />
+              </div>
+              Historical Readings
+            </CardTitle>
+            <CardDescription className="text-gray-600">
               Complete history of all readings
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Station</TableHead>
-                  <TableHead>Pump</TableHead>
-                  <TableHead>Nozzle</TableHead>
-                  <TableHead>Fuel Type</TableHead>
-                  <TableHead>Reading</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {otherReadings.map((reading) => (
-                  <TableRow key={reading.id}>
-                    <TableCell className="font-medium">{reading.stationName || 'N/A'}</TableCell>
-                    <TableCell>{reading.pumpName || 'N/A'}</TableCell>
-                    <TableCell>#{reading.nozzleNumber || 'N/A'}</TableCell>
-                    <TableCell>
-                      {reading.fuelType ? (
-                        <Badge variant="outline">{reading.fuelType}</Badge>
-                      ) : 'N/A'}
-                    </TableCell>
-                    <TableCell className="font-mono">{reading.reading.toLocaleString()}</TableCell>
-                    <TableCell className="font-mono">{reading.amount ? formatCurrency(reading.amount) : 'N/A'}</TableCell>
-                    <TableCell>{formatDateTime(reading.recordedAt)}</TableCell>
-                    <TableCell>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={() => navigate(`/dashboard/readings/${reading.id}`)}
-                      >
-                        <Eye className="h-3 w-3 mr-1" />
-                        View
-                      </Button>
-                    </TableCell>
+            <div className="rounded-lg border border-gray-200 overflow-hidden">
+              <Table>
+                <TableHeader className="bg-gray-50">
+                  <TableRow>
+                    <TableHead className="font-semibold text-gray-700">Station</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Pump</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Nozzle</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Fuel Type</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Reading</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Amount</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Date</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {otherReadings.map((reading) => (
+                    <TableRow key={reading.id} className="hover:bg-gray-50 transition-colors">
+                      <TableCell className="font-medium text-gray-900">{reading.stationName || 'N/A'}</TableCell>
+                      <TableCell className="text-gray-700">{reading.pumpName || 'N/A'}</TableCell>
+                      <TableCell className="text-gray-700">#{reading.nozzleNumber || 'N/A'}</TableCell>
+                      <TableCell>
+                        {reading.fuelType ? (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            {reading.fuelType}
+                          </Badge>
+                        ) : 'N/A'}
+                      </TableCell>
+                      <TableCell className="font-mono text-gray-900">{reading.reading.toLocaleString()}</TableCell>
+                      <TableCell className="font-mono text-green-700 font-semibold">
+                        {reading.amount ? formatCurrency(reading.amount) : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-gray-600">{formatDateTime(reading.recordedAt)}</TableCell>
+                      <TableCell>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => navigate(`/dashboard/readings/${reading.id}`)}
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}
