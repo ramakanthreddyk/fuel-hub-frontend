@@ -25,7 +25,6 @@ export const useReading = (id: string) => {
 
 export const useCreateReading = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { setLastCreatedReading } = useReadingsStore();
   
   return useMutation({
@@ -51,12 +50,7 @@ export const useCreateReading = () => {
         timestamp: newReading.recordedAt || newReading.createdAt
       });
       
-      // Show success toast
-      toast({
-        title: "Reading Recorded",
-        description: `Successfully recorded reading ${newReading.reading}L${newReading.nozzleNumber ? ` for nozzle #${newReading.nozzleNumber}` : ''}`,
-        variant: "success",
-      });
+      // Toast is now handled in the component for better user experience
     },
     onError: (error: any) => {
       console.error('Failed to create reading:', error);
@@ -73,12 +67,7 @@ export const useCreateReading = () => {
         data: error?.response?.data
       });
       
-      // Show error toast
-      toast({
-        title: "Failed to Record Reading",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      // Toast is now handled in the component for better user experience
     },
   });
 };

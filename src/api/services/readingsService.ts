@@ -129,7 +129,9 @@ export const readingsService = {
     try {
       console.log('[READINGS-API] Creating reading with data:', data);
       const response = await apiClient.post(API_CONFIG.endpoints.readings.base, data);
-      return extractData<Reading>(response);
+      const result = extractData<Reading>(response);
+      console.log('[READINGS-API] Reading created successfully:', result);
+      return result;
     } catch (error) {
       console.error('[READINGS-API] Error creating reading:', error);
       throw error;

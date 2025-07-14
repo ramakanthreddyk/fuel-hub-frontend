@@ -33,10 +33,24 @@ export default function NewReadingPage() {
         const pump = pumps.find(p => p.id === nozzle.pumpId);
         if (pump?.stationId) {
           selectStation(pump.stationId);
+          console.log('[NEW-READING-PAGE] Setting station ID:', pump.stationId);
         }
       }
     }
   }, [nozzle, pumps, selectNozzle, selectPump, selectStation]);
+  
+  // Also update store from preselected values in location state
+  useEffect(() => {
+    if (location.state?.preselected) {
+      const { stationId, pumpId, nozzleId } = location.state.preselected;
+      if (stationId) {
+        selectStation(stationId);
+        console.log('[NEW-READING-PAGE] Setting station ID from state:', stationId);
+      }
+      if (pumpId) selectPump(pumpId);
+      if (nozzleId) selectNozzle(nozzleId);
+    }
+  }, [location.state, selectStation, selectPump, selectNozzle]);
   
   // If we have nozzle data but no preselected values, derive them
   let finalPreselected = preselected;

@@ -322,12 +322,19 @@ export default function NozzlesPage() {
                   onRecordReading={(nozzleId) => {
                     // Find the nozzle data
                     const nozzleData = filteredNozzles.find(n => n.id === nozzleId);
+                    const pump = pumps.find(p => p.id === nozzleData?.pumpId);
+                    const stationId = pump?.stationId;
+                    
+                    // Update the store with all three values
+                    if (stationId) selectStation(stationId);
+                    if (nozzleData?.pumpId) selectPump(nozzleData.pumpId);
+                    selectNozzle(nozzleId);
                     
                     // Navigate to the new reading page with the nozzle ID
                     navigate(`/dashboard/nozzles/${nozzleId}/readings/new`, {
                       state: {
                         preselected: {
-                          stationId: nozzleData?.stationId,
+                          stationId: stationId,
                           pumpId: nozzleData?.pumpId,
                           nozzleId: nozzleId
                         }

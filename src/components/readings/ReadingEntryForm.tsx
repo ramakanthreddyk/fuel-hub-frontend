@@ -62,6 +62,16 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
     nozzleId: selectedNozzleId || ''
   };
   
+  // Log preselected values for debugging
+  console.log('[READING-FORM] Preselected values:', {
+    navigationPreselected,
+    preselected,
+    selectedStationId,
+    selectedPumpId,
+    selectedNozzleId,
+    finalPreselected
+  });
+  
   const [selectedStation, setSelectedStation] = useState(finalPreselected?.stationId || '');
   const [selectedPump, setSelectedPump] = useState(finalPreselected?.pumpId || '');
   const [selectedNozzle, setSelectedNozzle] = useState(finalPreselected?.nozzleId || '');
@@ -148,15 +158,35 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
     
     createReading.mutate(readingData, {
       onSuccess: (newReading) => {
-        console.log('[READING-FORM] Reading created successfully');
+        console.log('[READING-FORM] Reading created successfully', newReading);
         
-        // Navigate back to nozzles page if we came from there
-        if (finalPreselected?.stationId && finalPreselected?.pumpId) {
-          navigate('/dashboard/pumps/' + finalPreselected.pumpId + '/nozzles');
-        } else {
-          // Otherwise go to readings page
-          navigate('/dashboard/readings');
-        }
+        // Show success toast
+        toast({
+          title: "Reading Recorded",
+          description: `Successfully recorded reading ${newReading.reading}L${nozzleNumber ? ` for nozzle #${nozzleNumber}` : ''}`,
+          variant: "success",
+        });
+        
+        // Short delay to ensure toast is visible before navigation
+        setTimeout(() => {
+          // Navigate back to nozzles page if we came from there
+          if (finalPreselected?.stationId && finalPreselected?.pumpId) {
+            navigate('/dashboard/pumps/' + finalPreselected.pumpId + '/nozzles');
+          } else {
+            // Otherwise go to readings page
+            navigate('/dashboard/readings');
+          }
+        }, 500);
+      },
+      onError: (error: any) => {
+        console.error('[READING-FORM] Error creating reading:', error);
+        
+        // Show error toast
+        toast({
+          title: "Failed to Record Reading",
+          description: error.message || "Please check your input and try again.",
+          variant: "destructive",
+        });
       }
     });
   };
