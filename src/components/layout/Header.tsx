@@ -27,8 +27,8 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get page title from navigation store
-  const { pageTitle } = useNavigationStore();
+  // Get state and actions from navigation store
+  const { pageTitle, setPageTitle, setActiveSection } = useNavigationStore();
   
   // Update page title when location changes
   useEffect(() => {
@@ -39,7 +39,6 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
   const updatePageTitle = () => {
     const path = location.pathname;
     const searchParams = new URLSearchParams(location.search);
-    const { setPageTitle, setActiveSection } = useNavigationStore.getState();
     
     // Set active section based on path
     const section = getSectionFromPath(path);

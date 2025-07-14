@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useNavigationStore } from '@/store/navigationStore';
+import { useFuelStore } from '@/store/fuelStore';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -157,8 +158,11 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
     return user?.role && item.roles.includes(user.role);
   };
 
+  // Get state from navigation store
+  const { activeSection } = useNavigationStore();
+  const { resetSelections } = useFuelStore();
+  
   const isActive = (href: string) => {
-    const { activeSection } = useNavigationStore();
     const searchParams = new URLSearchParams(location.search);
     const pumpId = searchParams.get('pumpId');
     const pathParts = location.pathname.split('/');
@@ -183,8 +187,18 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
       '/superadmin': 'superadmin'
     };
     
+    // For dashboard, only highlight if we're exactly on the dashboard page
+    if (href === '/dashboard') {
+      return location.pathname === '/dashboard' || location.pathname === '/dashboard/';
+    }
+    
+    // Special case for All Nozzles menu item
+    if (href === '/dashboard/nozzles' && location.pathname === '/dashboard/nozzles' && !pumpId) {
+      return true;
+    }
+    
     // Check if the current section matches the href's section
-    if (hrefToSection[href] === activeSection) {
+    if (hrefToSection[href] === activeSection && href !== '/dashboard') {
       return true;
     }
     
@@ -199,14 +213,18 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
       if (href === '/dashboard/pumps') {
         return true;
       }
-      // For All Nozzles menu item
+      // For All Nozzles menu item - don't highlight when viewing pump nozzles
       if (href === '/dashboard/nozzles') {
-        return true;
+        return false;
       }
     }
     
-    // Fallback to path-based check
-    return location.pathname.startsWith(href);
+    // Fallback to path-based check, but exclude dashboard
+    if (href !== '/dashboard') {
+      return location.pathname.startsWith(href);
+    }
+    
+    return false;
   };
 
   const renderNavItem = (item: NavItem, level = 0) => {
@@ -258,7 +276,13 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
           ) : (
             <Link
               to={item.href}
-              onClick={onItemClick}
+              onClick={() => {
+                // Reset selections when clicking on All Nozzles
+                if (item.href === '/dashboard/nozzles') {
+                  resetSelections();
+                }
+                if (onItemClick) onItemClick();
+              }}
               className={cn(
                 'flex items-center gap-3 px-3 py-3 text-sm rounded-xl transition-all duration-200',
                 'hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100',

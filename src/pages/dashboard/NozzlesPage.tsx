@@ -30,12 +30,20 @@ export default function NozzlesPage() {
     selectedPumpId,
     selectStation,
     selectPump,
-    selectNozzle
+    selectNozzle,
+    resetSelections
   } = useFuelStore();
+  
+  // Reset selections if we're on the main nozzles page
+  useEffect(() => {
+    if (location.pathname === '/dashboard/nozzles' && !pumpId && !searchParams.get('pumpId')) {
+      resetSelections();
+    }
+  }, [location.pathname, pumpId, searchParams, resetSelections]);
   
   // Local state with fallbacks
   const [selectedStation, setSelectedStation] = useState<string>(selectedStationId || 'all');
-  const [selectedPump, setSelectedPump] = useState<string>(pumpId || selectedPumpId || searchParams.get('pumpId') || 'all');
+  const [selectedPump, setSelectedPump] = useState<string>(pumpId || searchParams.get('pumpId') || 'all');
   
   // Get data first to avoid reference errors
   const { data: stations = [] } = useStations();
