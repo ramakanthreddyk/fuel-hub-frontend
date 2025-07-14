@@ -51,7 +51,7 @@ export function SalesSummaryCard({ filters = {} }: SalesSummaryCardProps) {
           <div className="text-2xl font-bold text-green-700">{formatCurrency(summary?.totalRevenue, { useLakhsCrores: true })}</div>
           <div className="flex items-center text-xs text-green-600 mt-1">
             <TrendingUp className="h-3 w-3 mr-1" />
-            {formatSafeNumber(summary?.salesCount || 0, 0, true)} transactions • {formatVolume(summary?.totalVolume || 0, 3, true)} sold
+            {formatSafeNumber(summary?.salesCount || 0, 0, true)} transactions • {formatVolume(summary?.totalVolume || 0, 3, true)}
           </div>
         </CardContent>
       </Card>

@@ -6,6 +6,7 @@
  * @see docs/journeys/MANAGER.md - Manager journey for setting fuel prices
  */
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Plus, X, RefreshCw } from 'lucide-react';
 import { FuelPriceCards } from '@/components/fuel-prices/FuelPriceCards';
@@ -24,7 +25,8 @@ import { useFuelPrices } from '@/hooks/api/useFuelPrices';
  * - Clear user feedback and navigation
  */
 export default function FuelPricesPage() {
-  const [showForm, setShowForm] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [showForm, setShowForm] = useState(searchParams.get('showForm') === 'true');
   const { refetch, isLoading } = useFuelPrices();
 
   const handleToggleForm = () => {
@@ -40,6 +42,10 @@ export default function FuelPricesPage() {
       <PageHeader
         title="Fuel Prices"
         description="Manage and monitor fuel pricing across all stations"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Fuel Prices', href: '/dashboard/fuel-prices' }
+        ]}
         actions={
           <div className="flex items-center gap-2">
             <TooltipWrapper content="Refresh fuel prices">

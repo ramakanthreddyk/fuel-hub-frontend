@@ -12,9 +12,13 @@ import { fuelPricesService } from '@/api/services/fuelPricesService';
 import { AlertCircle, Building2, Fuel, Calendar } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-export function FuelPriceForm() {
+interface FuelPriceFormProps {
+  initialStationId?: string;
+}
+
+export function FuelPriceForm({ initialStationId }: FuelPriceFormProps = {}) {
   const [searchParams] = useSearchParams();
-  const [stationId, setStationId] = useState(searchParams.get('stationId') || '');
+  const [stationId, setStationId] = useState(initialStationId || searchParams.get('stationId') || '');
   const [fuelType, setFuelType] = useState<'petrol' | 'diesel' | 'premium'>(
     (searchParams.get('fuelType') as 'petrol' | 'diesel' | 'premium') || 'petrol'
   );

@@ -99,7 +99,11 @@ export default function ReadingsPage() {
   const totalReadings = enrichedReadings.length;
   const todayReadings = enrichedReadings.filter(r => new Date(r.recordedAt).toDateString() === new Date().toDateString()).length;
   const weekReadings = enrichedReadings.filter(r => new Date(r.recordedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
-  const totalRevenue = enrichedReadings.reduce((sum, r) => sum + (r.amount || 0), 0);
+  const totalRevenue = enrichedReadings.reduce((sum, r) => {
+    // Handle NaN by ensuring amount is a valid number
+    const amount = r.amount && !isNaN(r.amount) ? r.amount : 0;
+    return sum + amount;
+  }, 0);
   const pendingAlertsCount = pendingAlerts.length;
 
   const getStatusBadge = (status: string) => {

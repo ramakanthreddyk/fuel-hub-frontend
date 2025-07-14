@@ -65,13 +65,13 @@ export function formatVolume(value: number | undefined | null, decimals = 3, use
   if (useLakhsCrores && volume >= 1000) {
     if (volume >= 10000000) { // 1 crore = 10,000,000
       const crores = volume / 10000000;
-      return `${crores.toFixed(2)} Cr L`;
+      return `${crores.toFixed(2)} Cr Liters`;
     } else if (volume >= 100000) { // 1 lakh = 100,000
       const lakhs = volume / 100000;
-      return `${lakhs.toFixed(2)} L L`; // L L = Lakh Liters
+      return `${lakhs.toFixed(2)} Lakh Liters`;
     } else if (volume >= 1000) { // 1 thousand = 1,000
       const thousands = volume / 1000;
-      return `${thousands.toFixed(2)} K L`; // K L = Thousand Liters
+      return `${thousands.toFixed(2)}K Liters`;
     }
   }
   
@@ -79,7 +79,7 @@ export function formatVolume(value: number | undefined | null, decimals = 3, use
   return `${new Intl.NumberFormat('en-IN', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
-  }).format(volume)}L`;
+  }).format(volume)} Liters`;
 }
 
 /**

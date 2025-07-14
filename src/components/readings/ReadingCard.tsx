@@ -54,7 +54,7 @@ export function ReadingCard({ reading, onView, onEdit }: ReadingCardProps) {
           <div className="text-2xl font-bold text-blue-600">
             {reading.reading.toLocaleString()}
           </div>
-          <div className="text-xs text-gray-500">Liters</div>
+          <div className="text-xs text-gray-500">Meter Reading</div>
         </div>
         
         {reading.amount && (

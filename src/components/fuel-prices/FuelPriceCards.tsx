@@ -192,7 +192,10 @@ export function FuelPriceCards() {
                 variant="outline" 
                 size="sm" 
                 className="w-full"
-                onClick={() => navigate(`/dashboard/fuel-prices?stationId=${station.id}`)}
+                onClick={() => {
+                  // Navigate to the fuel prices page with this station pre-selected and form open
+                  navigate(`/dashboard/fuel-prices?stationId=${station.id}&showForm=true`);
+                }}
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Update Prices
