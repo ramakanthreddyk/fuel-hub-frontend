@@ -5,7 +5,7 @@
  * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
  * @see docs/journeys/MANAGER.md - Manager journey for setting fuel prices
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Plus, X, RefreshCw } from 'lucide-react';
@@ -28,6 +28,11 @@ export default function FuelPricesPage() {
   const [searchParams] = useSearchParams();
   const [showForm, setShowForm] = useState(searchParams.get('showForm') === 'true');
   const { refetch, isLoading } = useFuelPrices();
+  
+  // Update showForm state when URL parameters change
+  useEffect(() => {
+    setShowForm(searchParams.get('showForm') === 'true');
+  }, [searchParams]);
 
   const handleToggleForm = () => {
     setShowForm(!showForm);
@@ -100,7 +105,7 @@ export default function FuelPricesPage() {
               Set new prices that will apply to the selected station
             </p>
           </div>
-          <FuelPriceForm />
+          <FuelPriceForm initialStationId={searchParams.get('stationId') || undefined} />
         </div>
       )}
 

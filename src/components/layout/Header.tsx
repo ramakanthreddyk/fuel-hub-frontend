@@ -61,6 +61,10 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
       return 'Cash Report';
     }
     
+    if (path.startsWith('/dashboard/fuel-prices')) {
+      return 'Fuel Prices';
+    }
+    
     if (path.startsWith('/superadmin')) {
       return 'Platform Management';
     }

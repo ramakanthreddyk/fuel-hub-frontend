@@ -22,6 +22,13 @@ export function FuelPriceForm({ initialStationId }: FuelPriceFormProps = {}) {
   const [fuelType, setFuelType] = useState<'petrol' | 'diesel' | 'premium'>(
     (searchParams.get('fuelType') as 'petrol' | 'diesel' | 'premium') || 'petrol'
   );
+  
+  // Update stationId when initialStationId changes
+  useEffect(() => {
+    if (initialStationId) {
+      setStationId(initialStationId);
+    }
+  }, [initialStationId]);
   const [price, setPrice] = useState('');
   const [validFrom, setValidFrom] = useState(new Date().toISOString().slice(0, 16));
   

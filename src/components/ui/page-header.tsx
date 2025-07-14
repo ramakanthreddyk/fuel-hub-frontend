@@ -1,6 +1,12 @@
 
 import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+
+interface BreadcrumbItem {
+  label: string;
+  href: string;
+}
 
 interface PageHeaderProps {
   /** Main page title */
@@ -13,6 +19,8 @@ interface PageHeaderProps {
   className?: string;
   /** Whether the header should be sticky */
   sticky?: boolean;
+  /** Breadcrumb navigation items */
+  breadcrumbs?: BreadcrumbItem[];
 }
 
 /**
@@ -30,7 +38,8 @@ export function PageHeader({
   description, 
   actions, 
   className,
-  sticky = false
+  sticky = false,
+  breadcrumbs
 }: PageHeaderProps) {
   return (
     <div className={cn(
@@ -39,6 +48,21 @@ export function PageHeader({
       className
     )}>
       <div className="space-y-2 min-w-0 flex-1">
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
+            {breadcrumbs.map((item, index) => (
+              <div key={index} className="flex items-center">
+                {index > 0 && <span className="mx-1">/</span>}
+                <Link 
+                  to={item.href} 
+                  className={`hover:text-foreground ${index === breadcrumbs.length - 1 ? 'font-medium text-foreground' : ''}`}
+                >
+                  {item.label}
+                </Link>
+              </div>
+            ))}
+          </nav>
+        )}
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
           {title}
         </h1>
