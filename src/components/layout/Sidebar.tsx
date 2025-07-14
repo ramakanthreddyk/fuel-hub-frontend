@@ -90,13 +90,12 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    name: 'Staff',
-    href: '/dashboard/attendance',
+    name: 'Users',
+    href: '/dashboard/users',
     icon: Users,
     roles: ['owner', 'manager'],
     children: [
-      { name: 'Attendance', href: '/dashboard/attendance', icon: Calendar },
-      { name: 'Users', href: '/dashboard/users', icon: Users },
+      { name: 'User Management', href: '/dashboard/users', icon: Users },
       { name: 'Reset Passwords', href: '/dashboard/users/reset-password', icon: Settings, roles: ['owner', 'superadmin'] },
     ],
   },

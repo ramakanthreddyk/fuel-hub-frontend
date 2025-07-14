@@ -17,26 +17,7 @@ const devLog = (message: string, ...args: any[]) => {
   }
 };
 
-// Define attendance and shift types locally to avoid conflicts
-interface AttendanceRecord {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  position: string;
-  status: 'present' | 'absent' | 'late';
-  checkIn?: string;
-  checkOut?: string;
-  date: string;
-}
-
-interface Shift {
-  id: string;
-  shiftName: string;
-  startTime: string;
-  endTime: string;
-  assignedCount?: number;
-  date: string;
-}
+// API types
 
 export const attendantApi = {
   // Get assigned stations for current attendant
@@ -133,29 +114,7 @@ export const attendantApi = {
     await apiClient.put(`/attendant/alerts/${alertId}/acknowledge`);
   },
 
-  // Get attendance records
-  getAttendance: async (date: string): Promise<AttendanceRecord[]> => {
-    devLog('Fetching attendance records', { date });
-    try {
-      const response = await apiClient.get(`/attendance?date=${date}`);
-      return extractApiArray<AttendanceRecord>(response, 'attendance');
-    } catch (error) {
-      console.warn('Attendance API not available, returning empty array');
-      return [];
-    }
-  },
-
-  // Get shifts
-  getShifts: async (date: string): Promise<Shift[]> => {
-    devLog('Fetching shifts', { date });
-    try {
-      const response = await apiClient.get(`/shifts?date=${date}`);
-      return extractApiArray<Shift>(response, 'shifts');
-    } catch (error) {
-      console.warn('Shifts API not available, returning empty array');
-      return [];
-    }
-  }
+  // End of API methods
 };
 
 // Export types for backward compatibility - removing conflicting exports
@@ -169,5 +128,4 @@ export type {
   AlertSummary
 };
 
-// Export the local types
-export type { AttendanceRecord, Shift };
+// End of exports

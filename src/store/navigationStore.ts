@@ -43,10 +43,7 @@ export const getSectionFromPath = (path: string): string => {
     return 'sales';
   }
   
-  if (path.startsWith('/dashboard/attendance')) {
-    return 'attendance';
-  }
-  
+  // Users section
   if (path.startsWith('/dashboard/users')) {
     return 'users';
   }

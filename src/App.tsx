@@ -51,7 +51,7 @@ import UsersPage from './pages/dashboard/UsersPage';
 import SettingsPage from './pages/dashboard/SettingsPage';
 import CashReportPage from './pages/dashboard/CashReportPage';
 import CashReportsListPage from './pages/dashboard/CashReportsListPage';
-import AttendancePage from './pages/dashboard/AttendancePage';
+
 import SalesOverviewPage from './pages/dashboard/SalesOverviewPage';
 import SalesPage from './pages/dashboard/SalesPage';
 import DailySalesPage from './pages/dashboard/DailySalesPage';
@@ -143,10 +143,9 @@ function App() {
                 <Route path="sales/overview" element={<SalesOverviewPage />} />
                 <Route path="sales/daily" element={<DailySalesPage />} />
                 
-                {/* Attendance Routes */}
-                <Route path="attendance" element={<AttendancePage />} />
-                <Route path="attendance/shifts" element={<AttendancePage />} />
-                <Route path="attendance/mark" element={<AttendancePage />} />
+                {/* User Routes */}
+                <Route path="users" element={<UsersPage />} />
+                <Route path="users/reset-password" element={<ResetPasswordPage />} />
                 
                 {/* Other Routes */}
                 <Route path="fuel-prices" element={<FuelPricesPage />} />
@@ -157,8 +156,6 @@ function App() {
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="stations/comparison" element={<StationComparisonPage />} />
                 <Route path="stations/ranking" element={<StationRankingPage />} />
-                <Route path="users" element={<UsersPage />} />
-                <Route path="users/reset-password" element={<ResetPasswordPage />} />
                 <Route path="reconciliation" element={<ReconciliationPage />} />
                 <Route path="reconciliation/:reconciliationId" element={<ReconciliationDetailPage />} />
                 <Route path="settings" element={<SettingsPage />} />
