@@ -347,13 +347,16 @@ function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps
         </div>
       </div>
 
-      {/* Quick Stats */}
+      {/* Quick Stats - Reorganized to prevent overflow */}
       <div className="px-6 pb-4">
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-100">
-            <div className="text-lg font-bold text-green-700">{formatCurrency(todaySales, { maximumFractionDigits: 0 })}</div>
-            <div className="text-xs text-green-600">Today</div>
-          </div>
+        {/* Today's Sales - Full Width Row */}
+        <div className="mb-3 text-center p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-100">
+          <div className="text-xs text-green-600 mb-1">Today's Sales</div>
+          <div className="text-lg font-bold text-green-700 truncate">{formatCurrency(todaySales, { maximumFractionDigits: 0 })}</div>
+        </div>
+        
+        {/* Other Stats in 2-column Grid */}
+        <div className="grid grid-cols-2 gap-3">
           <div className="text-center p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
             <div className="text-lg font-bold text-blue-700">{formatNumber(todayTransactions)}</div>
             <div className="text-xs text-blue-600">Sales</div>
