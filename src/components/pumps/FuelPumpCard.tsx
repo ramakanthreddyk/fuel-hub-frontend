@@ -20,6 +20,7 @@ import {
   Gauge
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFuelStore } from '@/store/fuelStore';
 
 interface FuelPumpCardProps {
   pump: {
@@ -36,6 +37,8 @@ interface FuelPumpCardProps {
 }
 
 export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: FuelPumpCardProps) {
+  // Get selectPump function from store
+  const { selectPump } = useFuelStore();
   // Get card variant based on pump ID for visual variety
   const getCardVariant = (id: string) => {
     const variants = [
@@ -274,7 +277,11 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
         {/* Enhanced Action Buttons */}
         <div className="flex gap-3 pt-2">
           <Button 
-            onClick={() => onViewNozzles(pump.id)}
+            onClick={() => {
+              // Store the selected pump in Zustand
+              selectPump(pump.id);
+              onViewNozzles(pump.id);
+            }}
             className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 ring-2 ring-blue-400/20 hover:ring-blue-300/40"
           >
             <Eye className="w-4 h-4 mr-2" />

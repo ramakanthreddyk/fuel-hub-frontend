@@ -3,8 +3,9 @@
  * @file pages/dashboard/PumpsPage.tsx
  * @description Redesigned pumps page with white theme and improved cards
  */
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useFuelStore } from '@/store/fuelStore';
 import { Button } from '@/components/ui/button';
 import { Plus, Fuel, Loader2, Filter, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -18,11 +19,32 @@ import { StationSelector } from '@/components/filters/StationSelector';
 
 export default function PumpsPage() {
   const navigate = useNavigate();
+  const { stationId } = useParams<{ stationId: string }>();
   const { toast } = useToast();
-  const [selectedStation, setSelectedStation] = useState<string | undefined>();
+  
+  // Get state from Zustand store
+  const { 
+    selectedStationId, 
+    selectStation,
+    selectPump,
+    resetSelections
+  } = useFuelStore();
+  
+  // Local state
+  const [selectedStation, setSelectedStation] = useState<string | undefined>(selectedStationId || undefined);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pumpToDelete, setPumpToDelete] = useState<string | null>(null);
+  
+  // Update store when station selection changes
+  useEffect(() => {
+    if (stationId) {
+      setSelectedStation(stationId);
+      selectStation(stationId);
+    } else if (selectedStation) {
+      selectStation(selectedStation);
+    }
+  }, [stationId, selectedStation, selectStation]);
 
   const { data: pumps = [], isLoading } = usePumps(selectedStation);
   const { data: stations = [] } = useStations();
@@ -152,7 +174,11 @@ export default function PumpsPage() {
                     nozzleCount: pump.nozzleCount || 0,
                     stationName
                   }}
-                  onViewNozzles={(id) => navigate(`/dashboard/pumps/${id}/nozzles`)}
+                  onViewNozzles={(id) => {
+                    // Store the selected pump in Zustand
+                    selectPump(id);
+                    navigate(`/dashboard/pumps/${id}/nozzles`);
+                  }}
                   onDelete={handleDeletePump}
                   needsAttention={needsAttention}
                 />

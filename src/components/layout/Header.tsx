@@ -15,6 +15,8 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigationStore, getSectionFromPath } from '@/store/navigationStore';
 
 export interface HeaderProps {
   onMobileMenuClick?: () => void;
@@ -25,51 +27,142 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get current page title based on route
-  const getPageTitle = () => {
+  // Get page title from navigation store
+  const { pageTitle } = useNavigationStore();
+  
+  // Update page title when location changes
+  useEffect(() => {
+    updatePageTitle();
+  }, [location.pathname, location.search]);
+  
+  // Update page title based on route
+  const updatePageTitle = () => {
     const path = location.pathname;
+    const searchParams = new URLSearchParams(location.search);
+    const { setPageTitle, setActiveSection } = useNavigationStore.getState();
     
+    // Set active section based on path
+    const section = getSectionFromPath(path);
+    setActiveSection(section);
+    
+    // Set page title based on path and query parameters
     if (path === '/dashboard' || path === '/dashboard/') {
-      return 'Dashboard';
+      setPageTitle('Dashboard');
+      return;
     }
     
     if (path.startsWith('/dashboard/stations')) {
-      if (path.includes('/new')) return 'New Station';
-      if (path.includes('/edit')) return 'Edit Station';
-      return 'Stations';
+      if (path.includes('/new')) {
+        setPageTitle('New Station');
+      } else if (path.includes('/edit')) {
+        setPageTitle('Edit Station');
+      } else {
+        setPageTitle('Stations');
+      }
+      return;
     }
     
     if (path.startsWith('/dashboard/pumps')) {
-      if (path.includes('/new')) return 'New Pump';
-      if (path.includes('/edit')) return 'Edit Pump';
-      return 'Pumps';
+      // Check if we're viewing nozzles for a specific pump
+      const pathParts = path.split('/');
+      if (pathParts.length >= 5 && pathParts[4] === 'nozzles') {
+        setPageTitle('Pump Nozzles');
+      } else if (path.includes('/new')) {
+        setPageTitle('New Pump');
+      } else if (path.includes('/edit')) {
+        setPageTitle('Edit Pump');
+      } else {
+        setPageTitle('Pumps');
+      }
+      return;
     }
     
     if (path.startsWith('/dashboard/nozzles')) {
-      if (path.includes('/new')) return 'New Nozzle';
-      if (path.includes('/edit')) return 'Edit Nozzle';
-      return 'Nozzles';
+      if (path.includes('/new')) {
+        setPageTitle('New Nozzle');
+      } else if (path.includes('/edit')) {
+        setPageTitle('Edit Nozzle');
+      } else {
+        const pumpId = searchParams.get('pumpId');
+        if (pumpId) {
+          setPageTitle('Pump Nozzles');
+        } else {
+          setPageTitle('Nozzles');
+        }
+      }
+      return;
     }
     
     if (path.startsWith('/dashboard/readings')) {
-      if (path.includes('/new')) return 'New Reading';
-      if (path.includes('/edit')) return 'Edit Reading';
-      return 'Readings';
+      if (path.includes('/new')) {
+        setPageTitle('New Reading');
+      } else if (path.includes('/edit')) {
+        setPageTitle('Edit Reading');
+      } else {
+        setPageTitle('Readings');
+      }
+      return;
     }
     
     if (path.startsWith('/dashboard/cash-report')) {
-      return 'Cash Report';
+      setPageTitle('Cash Report');
+      return;
+    }
+    
+    if (path.startsWith('/dashboard/cash-reports')) {
+      setPageTitle('Cash Reports');
+      return;
     }
     
     if (path.startsWith('/dashboard/fuel-prices')) {
-      return 'Fuel Prices';
+      setPageTitle('Fuel Prices');
+      return;
+    }
+    
+    if (path.startsWith('/dashboard/fuel-inventory')) {
+      setPageTitle('Fuel Inventory');
+      return;
+    }
+    
+    if (path.startsWith('/dashboard/sales')) {
+      setPageTitle('Sales');
+      return;
+    }
+    
+    if (path.startsWith('/dashboard/attendance')) {
+      setPageTitle('Attendance');
+      return;
+    }
+    
+    if (path.startsWith('/dashboard/users')) {
+      setPageTitle('Users');
+      return;
+    }
+    
+    if (path.startsWith('/dashboard/reconciliation')) {
+      setPageTitle('Reconciliation');
+      return;
+    }
+    
+    if (path.startsWith('/dashboard/reports')) {
+      setPageTitle('Reports');
+      return;
+    }
+    
+    if (path.startsWith('/dashboard/analytics')) {
+      setPageTitle('Analytics');
+      return;
+    }
+    
+    if (path.startsWith('/dashboard/settings')) {
+      setPageTitle('Settings');
+      return;
     }
     
     if (path.startsWith('/superadmin')) {
-      return 'Platform Management';
+      setPageTitle('Platform Management');
+      return;
     }
-    
-    return 'Dashboard';
   };
 
   const getRoleDetails = (role: string) => {
@@ -146,7 +239,7 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
           <div className="flex items-center gap-2">
             <div className="hidden sm:block h-6 w-px bg-border" />
             <span className="text-sm md:text-base font-medium text-muted-foreground truncate">
-              {getPageTitle()}
+              {pageTitle}
             </span>
           </div>
         </div>

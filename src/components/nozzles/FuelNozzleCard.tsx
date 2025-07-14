@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useLatestReading } from '@/hooks/api/useReadings';
 import { cn } from '@/lib/utils';
+import { useFuelStore } from '@/store/fuelStore';
 
 interface FuelNozzleCardProps {
   nozzle: {
@@ -38,6 +39,8 @@ interface FuelNozzleCardProps {
 }
 
 export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: FuelNozzleCardProps) {
+  // Get selectNozzle function from store
+  const { selectNozzle } = useFuelStore();
   // Get card variant based on fuel type
   const getFuelTypeConfig = () => {
     switch (nozzle.fuelType) {
@@ -214,14 +217,22 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
         {/* Action Buttons - Improved layout for better visibility */}
         <div className="flex gap-2 pt-2">
           <Button 
-            onClick={() => onRecordReading(nozzle.id)}
+            onClick={() => {
+              // Store the selected nozzle in Zustand
+              selectNozzle(nozzle.id);
+              onRecordReading(nozzle.id);
+            }}
             className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-xl shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all duration-300 text-sm px-3 py-2"
           >
             <FileText className="w-4 h-4 mr-1" />
             Record
           </Button>
           <Button 
-            onClick={() => onEdit(nozzle.id)}
+            onClick={() => {
+              // Store the selected nozzle in Zustand
+              selectNozzle(nozzle.id);
+              onEdit(nozzle.id);
+            }}
             variant="outline"
             size="sm"
             className="bg-blue-50 border-blue-300 text-blue-600 hover:bg-blue-100 hover:border-blue-400 rounded-xl px-3"

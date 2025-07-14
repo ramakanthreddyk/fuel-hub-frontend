@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useNavigationStore } from '@/store/navigationStore';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -157,9 +158,54 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
   };
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return location.pathname === '/dashboard';
+    const { activeSection } = useNavigationStore();
+    const searchParams = new URLSearchParams(location.search);
+    const pumpId = searchParams.get('pumpId');
+    const pathParts = location.pathname.split('/');
+    
+    // Map href to section
+    const hrefToSection: Record<string, string> = {
+      '/dashboard': 'dashboard',
+      '/dashboard/stations': 'stations',
+      '/dashboard/pumps': 'pumps',
+      '/dashboard/nozzles': 'nozzles',
+      '/dashboard/readings': 'readings',
+      '/dashboard/cash-reports': 'cash-reports',
+      '/dashboard/fuel-prices': 'fuel-prices',
+      '/dashboard/fuel-inventory': 'fuel-inventory',
+      '/dashboard/sales': 'sales',
+      '/dashboard/attendance': 'attendance',
+      '/dashboard/users': 'users',
+      '/dashboard/reconciliation': 'reconciliation',
+      '/dashboard/reports': 'reports',
+      '/dashboard/analytics': 'analytics',
+      '/dashboard/settings': 'settings',
+      '/superadmin': 'superadmin'
+    };
+    
+    // Check if the current section matches the href's section
+    if (hrefToSection[href] === activeSection) {
+      return true;
     }
+    
+    // Special case for nozzles page with pumpId parameter
+    if (location.pathname === '/dashboard/nozzles' && pumpId && href === '/dashboard/pumps') {
+      return true;
+    }
+    
+    // Special case for pump nozzles path (/dashboard/pumps/:pumpId/nozzles)
+    if (pathParts.length >= 5 && pathParts[2] === 'pumps' && pathParts[4] === 'nozzles') {
+      // For All Pumps menu item
+      if (href === '/dashboard/pumps') {
+        return true;
+      }
+      // For All Nozzles menu item
+      if (href === '/dashboard/nozzles') {
+        return true;
+      }
+    }
+    
+    // Fallback to path-based check
     return location.pathname.startsWith(href);
   };
 
