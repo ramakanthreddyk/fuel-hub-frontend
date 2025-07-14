@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Building2, Fuel, AlertCircle, Loader2, Plus, Edit } from 'lucide-react';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { useStations } from '@/hooks/api/useStations';
-import { formatPrice } from '@/utils/formatters';
+import { formatCurrency } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 
 export function FuelPriceCards() {

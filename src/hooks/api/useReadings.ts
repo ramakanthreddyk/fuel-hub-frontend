@@ -128,10 +128,7 @@ export const useLatestReading = (nozzleId: string) => {
     staleTime: 30000,
     retry: 1,
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    onError: (error) => {
-      console.error(`Error fetching latest reading for nozzle ${nozzleId}:`, error);
-    }
+    refetchOnMount: true
   });
 };
 
@@ -143,9 +140,6 @@ export const useCanCreateReading = (nozzleId: string) => {
     staleTime: 60000,
     retry: 1,
     refetchOnWindowFocus: false,
-    onError: (error) => {
-      console.error(`Error checking if reading can be created for nozzle ${nozzleId}:`, error);
-    },
     select: (data) => {
       // Ensure consistent property access
       return {

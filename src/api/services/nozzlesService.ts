@@ -43,19 +43,26 @@ export const nozzlesService = {
       const nozzles = extractArray<Nozzle>(response, 'nozzles');
       
       // Transform response to ensure consistent property names
-      const normalizedNozzles = nozzles.map(nozzle => ({
-        ...nozzle,
-        id: nozzle.id,
-        pumpId: nozzle.pumpId || nozzle.pump_id,
-        pumpName: nozzle.pumpName || nozzle.pump_name,
-        lastReading: nozzle.lastReading || nozzle.last_reading,
-        nozzleNumber: nozzle.nozzleNumber || nozzle.nozzle_number,
-        fuelType: nozzle.fuelType || nozzle.fuel_type,
-        status: nozzle.status,
-        createdAt: nozzle.createdAt || nozzle.created_at,
-        stationId: nozzle.stationId || nozzle.station_id,
-        stationName: nozzle.stationName || nozzle.station_name
-      }));
+      const normalizedNozzles = nozzles.map(nozzle => {
+        // Ensure fuelType is one of the allowed values
+        const fuelType = (nozzle.fuelType || nozzle.fuel_type || 'petrol') as 'petrol' | 'diesel' | 'premium';
+        // Ensure status is one of the allowed values
+        const status = (nozzle.status || 'active') as 'active' | 'inactive' | 'maintenance';
+        
+        return {
+          ...nozzle,
+          id: nozzle.id,
+          pumpId: nozzle.pumpId || nozzle.pump_id,
+          pumpName: nozzle.pumpName || nozzle.pump_name,
+          lastReading: nozzle.lastReading || nozzle.last_reading,
+          nozzleNumber: nozzle.nozzleNumber || nozzle.nozzle_number,
+          fuelType: fuelType,
+          status: status,
+          createdAt: nozzle.createdAt || nozzle.created_at,
+          stationId: nozzle.stationId || nozzle.station_id,
+          stationName: nozzle.stationName || nozzle.station_name
+        };
+      });
       
       console.log(`[NOZZLES-API] Successfully fetched ${normalizedNozzles.length} nozzles`);
       return normalizedNozzles;

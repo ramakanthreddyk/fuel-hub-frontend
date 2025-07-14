@@ -17,7 +17,7 @@ export default function EditReadingPage() {
   const updateReading = useUpdateReading();
 
   const [readingValue, setReadingValue] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | 'credit'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check'>('cash');
   const [recordedAt, setRecordedAt] = useState('');
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function EditReadingPage() {
               <label className="block text-sm mb-1">Payment Method</label>
               <select 
                 value={paymentMethod} 
-                onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card' | 'upi' | 'credit')}
+                onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="cash">Cash</option>
