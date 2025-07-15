@@ -330,8 +330,8 @@ export default function NozzlesPage() {
                     if (nozzleData?.pumpId) selectPump(nozzleData.pumpId);
                     selectNozzle(nozzleId);
                     
-                    // Navigate to the new reading page with the nozzle ID
-                    navigate(`/dashboard/nozzles/${nozzleId}/readings/new`, {
+                    // Navigate to the new reading page with proper path parameters
+                    navigate(`/dashboard/stations/${stationId}/pumps/${nozzleData?.pumpId}/nozzles/${nozzleId}/readings/new`, {
                       state: {
                         preselected: {
                           stationId: stationId,

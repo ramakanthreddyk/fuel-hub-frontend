@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useFuelStore } from '@/store/fuelStore';
+import { useDataStore } from '@/store/dataStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -56,10 +57,10 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   
   // Get preselected values from navigation state if available
   const navigationPreselected = location.state?.preselected;
-  const finalPreselected = navigationPreselected || preselected || {
-    stationId: selectedStationId || '',
-    pumpId: selectedPumpId || '',
-    nozzleId: selectedNozzleId || ''
+  const finalPreselected = {
+    stationId: navigationPreselected?.stationId || preselected?.stationId || selectedStationId || '',
+    pumpId: navigationPreselected?.pumpId || preselected?.pumpId || selectedPumpId || '',
+    nozzleId: navigationPreselected?.nozzleId || preselected?.nozzleId || selectedNozzleId || ''
   };
   
   // Log preselected values for debugging
@@ -105,7 +106,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
 
   const paymentMethod = form.watch('paymentMethod');
 
-  // Update form when preselected values change
+  // Update form when preselected values change - only run once on mount
   useEffect(() => {
     if (finalPreselected?.stationId) {
       setSelectedStation(finalPreselected.stationId);
@@ -118,24 +119,8 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
     if (finalPreselected?.nozzleId) {
       setSelectedNozzle(finalPreselected.nozzleId);
       form.setValue('nozzleId', finalPreselected.nozzleId);
-      
-      // If we have a nozzle ID but no station ID, try to find the station from the nozzle
-      if (!finalPreselected.stationId && selectedNozzleId) {
-        // Find the nozzle in the nozzles array
-        const nozzle = nozzles.find(n => n.id === selectedNozzleId);
-        if (nozzle?.pumpId) {
-          // Find the pump for this nozzle
-          const pump = pumps.find(p => p.id === nozzle.pumpId);
-          if (pump?.stationId) {
-            // Set the station
-            setSelectedStation(pump.stationId);
-            form.setValue('stationId', pump.stationId);
-            console.log('[READING-FORM] Found station ID from nozzle:', pump.stationId);
-          }
-        }
-      }
     }
-  }, [finalPreselected, form, nozzles, pumps, selectedNozzleId]);
+  }, []);  // Empty dependency array to run only once
 
   useEffect(() => {
     if (selectedStation) {
@@ -185,13 +170,8 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
         
         // Short delay to ensure toast is visible before navigation
         setTimeout(() => {
-          // Navigate back to nozzles page if we came from there
-          if (finalPreselected?.stationId && finalPreselected?.pumpId) {
-            navigate('/dashboard/pumps/' + finalPreselected.pumpId + '/nozzles');
-          } else {
-            // Otherwise go to readings page
-            navigate('/dashboard/readings');
-          }
+          // Navigate back to readings page
+          navigate('/dashboard/readings');
         }, 500);
       },
       onError: (error: any) => {
@@ -214,12 +194,9 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const canSubmit = loadingCanCreate ? true : canCreateReading?.canCreate !== false;
   const hasMissingPrices = !loadingCanCreate && !canCreateReading?.canCreate && canCreateReading?.missingPrice;
   
-  // Check if station has fuel prices
+  // Check if station has fuel prices - disable warnings for now
   const hasFuelPrices = fuelPrices && fuelPrices.length > 0;
-  const showMissingPricesWarning = selectedStation && 
-    stationPriceValidation && 
-    !stationPriceValidation.hasValidPrices && 
-    !hasFuelPrices;
+  const showMissingPricesWarning = false; // Disable the warning
 
   return (
     <div className="min-h-screen bg-white">

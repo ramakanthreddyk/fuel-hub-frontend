@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { nozzlesService } from '@/api/services/nozzlesService';
 import { useToast } from '@/hooks/use-toast';
+import { useDataStore } from '@/store/dataStore';
 
 /**
  * Hook to fetch nozzles for a pump or all nozzles
@@ -14,11 +15,27 @@ import { useToast } from '@/hooks/use-toast';
  */
 export const useNozzles = (pumpId?: string) => {
   const { toast } = useToast();
+  const { nozzles: storedNozzles, setNozzles } = useDataStore();
   
   return useQuery({
     queryKey: ['nozzles', pumpId || 'all'],
-    queryFn: () => nozzlesService.getNozzles(pumpId),
-    staleTime: 60000, // 1 minute
+    queryFn: async () => {
+      // Check if we have cached data for this pump
+      if (pumpId && storedNozzles[pumpId]) {
+        console.log('[NOZZLES-HOOK] Using cached nozzles for pump:', pumpId);
+        return storedNozzles[pumpId];
+      }
+      
+      const nozzles = await nozzlesService.getNozzles(pumpId);
+      
+      // Store in cache if we have a pumpId
+      if (pumpId) {
+        setNozzles(pumpId, nozzles);
+      }
+      
+      return nozzles;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
     meta: {
       onError: (error: any) => {
@@ -40,12 +57,24 @@ export const useNozzles = (pumpId?: string) => {
  */
 export const useNozzle = (id: string) => {
   const { toast } = useToast();
+  const { nozzles: storedNozzles } = useDataStore();
   
   return useQuery({
     queryKey: ['nozzle', id],
-    queryFn: () => nozzlesService.getNozzle(id),
+    queryFn: async () => {
+      // Check if we have cached data in any pump's nozzles
+      for (const pumpId in storedNozzles) {
+        const cachedNozzle = storedNozzles[pumpId]?.find(n => n.id === id);
+        if (cachedNozzle) {
+          console.log('[NOZZLES-HOOK] Using cached nozzle:', id);
+          return cachedNozzle;
+        }
+      }
+      
+      return nozzlesService.getNozzle(id);
+    },
     enabled: !!id,
-    staleTime: 60000, // 1 minute
+    staleTime: 5 * 60 * 1000, // 5 minutes
     meta: {
       onError: (error: any) => {
         console.error('Failed to fetch nozzle:', error);
@@ -66,10 +95,13 @@ export const useNozzle = (id: string) => {
 export const useCreateNozzle = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { clearNozzles } = useDataStore();
   
   return useMutation({
     mutationFn: (data: any) => nozzlesService.createNozzle(data),
     onSuccess: (newNozzle, variables) => {
+      // Clear cached nozzles for this pump to force a refresh
+      clearNozzles(variables.pumpId);
       queryClient.invalidateQueries({ queryKey: ['nozzles', variables.pumpId] });
       queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
       queryClient.invalidateQueries({ queryKey: ['pump', variables.pumpId] });
@@ -96,10 +128,15 @@ export const useCreateNozzle = () => {
 export const useUpdateNozzle = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { clearNozzles } = useDataStore();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => nozzlesService.updateNozzle(id, data),
     onSuccess: (nozzle, { id }) => {
+      // Clear cached nozzles for this pump to force a refresh
+      if (nozzle && nozzle.pumpId) {
+        clearNozzles(nozzle.pumpId);
+      }
       queryClient.invalidateQueries({ queryKey: ['nozzle', id] });
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
@@ -131,10 +168,13 @@ export const useUpdateNozzle = () => {
 export const useDeleteNozzle = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { clearNozzles } = useDataStore();
   
   return useMutation({
     mutationFn: (id: string) => nozzlesService.deleteNozzle(id),
     onSuccess: () => {
+      // Clear all cached nozzles to force a refresh
+      clearNozzles();
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
       // We don't know which pump this nozzle belonged to, so we invalidate all pumps

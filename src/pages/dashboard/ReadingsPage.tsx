@@ -40,6 +40,23 @@ export default function ReadingsPage() {
   const { data: pumps = [] } = usePumps();
   const { data: nozzles = [] } = useNozzles();
   const { data: stations = [] } = useStations();
+  
+  // Debug log to check readings data
+  useEffect(() => {
+    if (readings && readings.length > 0) {
+      console.log('[READINGS-PAGE] Readings with missing amounts:', 
+        readings.filter(r => r.amount === undefined || r.amount === null)
+          .map(r => ({
+            id: r.id,
+            nozzleId: r.nozzleId,
+            reading: r.reading,
+            previousReading: r.previousReading,
+            pricePerLitre: r.pricePerLitre,
+            fuelType: r.fuelType
+          }))
+      );
+    }
+  }, [readings]);
   const {
     data: pendingAlerts = [],
     acknowledge: acknowledgeAlert,
@@ -118,8 +135,13 @@ export default function ReadingsPage() {
   const todayReadings = enrichedReadings.filter(r => new Date(r.recordedAt).toDateString() === new Date().toDateString()).length;
   const weekReadings = enrichedReadings.filter(r => new Date(r.recordedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
   const totalRevenue = enrichedReadings.reduce((sum, r) => {
-    // Handle NaN by ensuring amount is a valid number
-    const amount = r.amount && !isNaN(r.amount) ? r.amount : 0;
+    // Calculate amount if it's missing but we have price and reading
+    let amount = 0;
+    if (r.amount && !isNaN(r.amount)) {
+      amount = r.amount;
+    } else if (r.pricePerLitre && r.reading) {
+      amount = (Number(r.reading) - Number(r.previousReading || 0)) * Number(r.pricePerLitre);
+    }
     return sum + amount;
   }, 0);
   const pendingAlertsCount = pendingAlerts.length;
@@ -154,13 +176,9 @@ export default function ReadingsPage() {
         description="Record and monitor fuel pump readings across all stations"
         actions={
           <div className="flex gap-2">
-            <Button onClick={() => navigate('/dashboard/readings/new')} variant="outline">
+            <Button onClick={() => navigate('/dashboard/stations')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
               <Plus className="mr-2 h-4 w-4" />
-              Quick Record
-            </Button>
-            <Button onClick={() => navigate('/dashboard/nozzles')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
-              <Plus className="mr-2 h-4 w-4" />
-              Record Reading
+              View Stations
             </Button>
           </div>
         }
@@ -366,14 +384,14 @@ export default function ReadingsPage() {
               <FileText className="h-16 w-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-xl font-semibold text-gray-800 mb-2">No readings found</h3>
               <p className="text-gray-600 mb-6">
-                Get started by recording your first reading
+                Navigate through Stations → Pumps → Nozzles to record readings
               </p>
               <Button 
-                onClick={() => navigate('/dashboard/readings/new')}
+                onClick={() => navigate('/dashboard/stations')}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Record Reading
+                Go to Stations
               </Button>
             </div>
           ) : (

@@ -20,6 +20,9 @@ export default function ReadingDetailPage() {
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
   
   const { data: reading, isLoading, error } = useReading(readingId || '');
+  
+  // Debug log to see what's coming from the API
+  console.log('[READING-DETAIL] Reading data from API:', reading);
 
   if (isLoading) {
     return (
@@ -92,16 +95,16 @@ export default function ReadingDetailPage() {
           <CardContent className="space-y-3">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Current Reading</label>
-              <p className="text-2xl font-bold">{reading.reading?.toFixed(3)}L</p>
+              <p className="text-2xl font-bold">{typeof reading.reading === 'number' ? reading.reading : Number(reading.reading)}L</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Previous Reading</label>
-              <p className="font-medium">{reading.previousReading?.toFixed(3) || '0.000'}L</p>
+              <p className="font-medium">{reading.previousReading ? (typeof reading.previousReading === 'number' ? reading.previousReading : Number(reading.previousReading)) : '0'}L</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Volume Sold</label>
               <p className="text-xl font-bold text-green-600">
-                {formatVolume((reading.reading || 0) - (reading.previousReading || 0))}
+                {Number(reading.reading || 0) - Number(reading.previousReading || 0)} Liters
               </p>
             </div>
           </CardContent>
@@ -122,7 +125,14 @@ export default function ReadingDetailPage() {
             <div>
               <label className="text-sm font-medium text-muted-foreground">Total Amount</label>
               <p className="text-2xl font-bold text-green-600">
-                {formatCurrency(reading.amount || 0)}
+                {formatCurrency(
+                  // Calculate amount from reading and price if amount is missing
+                  reading.amount !== undefined && reading.amount !== null ? reading.amount : 
+                  ((Number(reading.reading || 0) - Number(reading.previousReading || 0)) * Number(reading.pricePerLitre || 0))
+                )}
+                {reading.amount === null && 
+                  <span className="text-xs text-gray-500 ml-2">(calculated)</span>
+                }
               </p>
             </div>
             <div>

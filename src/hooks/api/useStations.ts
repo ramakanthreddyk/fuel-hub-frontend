@@ -2,31 +2,61 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stationsService } from '@/api/services/stationsService';
 import { toast } from '@/hooks/use-toast';
+import { useDataStore } from '@/store/dataStore';
 
 export const useStations = () => {
+  const { stations: storedStations, setStations } = useDataStore();
+  
   return useQuery({
     queryKey: ['stations'],
-    queryFn: stationsService.getStations,
-    staleTime: 60000,
+    queryFn: async () => {
+      // Check if we have cached data
+      if (storedStations.length > 0) {
+        console.log('[STATIONS-HOOK] Using cached stations');
+        return storedStations;
+      }
+      
+      const stations = await stationsService.getStations();
+      
+      // Store in cache
+      setStations(stations);
+      
+      return stations;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
   });
 };
 
 export const useStation = (id: string) => {
+  const { stations: storedStations } = useDataStore();
+  
   return useQuery({
     queryKey: ['station', id],
-    queryFn: () => stationsService.getStation(id),
+    queryFn: async () => {
+      // Check if we have cached data
+      const cachedStation = storedStations.find(s => s.id === id);
+      if (cachedStation) {
+        console.log('[STATIONS-HOOK] Using cached station:', id);
+        return cachedStation;
+      }
+      
+      return stationsService.getStation(id);
+    },
     enabled: !!id,
-    staleTime: 60000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
 export const useCreateStation = () => {
   const queryClient = useQueryClient();
+  const { clearStations } = useDataStore();
   
   return useMutation({
     mutationFn: (data: any) => stationsService.createStation(data),
     onSuccess: (newStation) => {
+      // Clear cached stations to force a refresh
+      clearStations();
       queryClient.invalidateQueries({ queryKey: ['stations'] });
       toast({
         title: "Success",
@@ -46,10 +76,13 @@ export const useCreateStation = () => {
 
 export const useUpdateStation = () => {
   const queryClient = useQueryClient();
+  const { clearStations } = useDataStore();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => stationsService.updateStation(id, data),
     onSuccess: (updatedStation, { id }) => {
+      // Clear cached stations to force a refresh
+      clearStations();
       queryClient.invalidateQueries({ queryKey: ['station', id] });
       queryClient.invalidateQueries({ queryKey: ['stations'] });
       toast({
@@ -70,10 +103,13 @@ export const useUpdateStation = () => {
 
 export const useDeleteStation = () => {
   const queryClient = useQueryClient();
+  const { clearStations } = useDataStore();
   
   return useMutation({
     mutationFn: (id: string) => stationsService.deleteStation(id),
     onSuccess: () => {
+      // Clear cached stations to force a refresh
+      clearStations();
       queryClient.invalidateQueries({ queryKey: ['stations'] });
       toast({
         title: "Success",

@@ -108,42 +108,14 @@ export default function StationDetailPage() {
         }
       />
 
-      {/* Enhanced Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <EnhancedMetricsCard
-          title="Today's Sales"
-          value={formatCurrency((station as any).todaySales || 0, { maximumFractionDigits: 0, useLakhsCrores: true })}
-          icon={<DollarSign className="h-5 w-5" />}
-          description="Revenue generated today"
-          gradient="from-green-500 to-emerald-600"
-          trend={(station as any).salesGrowth ? {
-            value: (station as any).salesGrowth,
-            isPositive: (station as any).salesGrowth > 0
-          } : undefined}
-        />
-
-        <EnhancedMetricsCard
-          title="Monthly Sales"
-          value={formatCurrency((station as any).monthlySales || 0, { maximumFractionDigits: 0, useLakhsCrores: true })}
-          icon={<TrendingUp className="h-5 w-5" />}
-          description="Current month performance"
-          gradient="from-blue-500 to-indigo-600"
-        />
-
+      {/* Station Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
         <EnhancedMetricsCard
           title="Active Pumps"
           value={`${activePumps}/${pumps.length}`}
           icon={<Fuel className="h-5 w-5" />}
           description="Operational fuel dispensers"
           gradient="from-orange-500 to-red-600"
-        />
-
-        <EnhancedMetricsCard
-          title="Daily Transactions"
-          value={(station as any).dailyTransactions || 0}
-          icon={<Activity className="h-5 w-5" />}
-          description="Customer transactions today"
-          gradient="from-purple-500 to-pink-600"
         />
       </div>
 
@@ -253,51 +225,7 @@ export default function StationDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Enhanced Staff Information Card */}
-      <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-purple-50/30">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg">
-                <Users className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Staff Information</CardTitle>
-                <CardDescription>Manage station personnel</CardDescription>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" className="hover:bg-purple-50">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Staff
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-1.5 rounded-md bg-blue-100">
-                  <Users className="h-4 w-4 text-blue-600" />
-                </div>
-                <span className="text-sm font-medium text-blue-900">Total Attendants</span>
-              </div>
-              <div className="text-2xl font-bold text-blue-900">{(station as any).attendantCount || 0}</div>
-            </div>
-            
-            <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-1.5 rounded-md bg-green-100">
-                  <Building2 className="h-4 w-4 text-green-600" />
-                </div>
-                <span className="text-sm font-medium text-green-900">Station Manager</span>
-              </div>
-              <div className="text-lg font-medium text-green-900 truncate">
-                {(station as any).manager || 'Not Assigned'}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* No Station Manager Card - Staff management is handled in Users section */}
     </div>
   );
 }

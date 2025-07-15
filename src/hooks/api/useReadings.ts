@@ -4,6 +4,7 @@ import { readingsService } from '@/api/services/readingsService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReadingsStore } from '@/store/readingsStore';
+import { useDataStore } from '@/store/dataStore';
 
 export const useReadings = () => {
   return useQuery({
@@ -132,11 +133,28 @@ export const useVoidReading = () => {
 };
 
 export const useLatestReading = (nozzleId: string) => {
+  const { latestReadings, setLatestReading } = useDataStore();
+  
   return useQuery({
     queryKey: ['latest-reading', nozzleId],
-    queryFn: () => readingsService.getLatestReading(nozzleId),
+    queryFn: async () => {
+      // Check if we have cached data for this nozzle
+      if (nozzleId && latestReadings[nozzleId]) {
+        console.log('[READINGS-HOOK] Using cached latest reading for nozzle:', nozzleId);
+        return latestReadings[nozzleId];
+      }
+      
+      const reading = await readingsService.getLatestReading(nozzleId);
+      
+      // Store in cache if we have a reading
+      if (reading && nozzleId) {
+        setLatestReading(nozzleId, reading);
+      }
+      
+      return reading;
+    },
     enabled: !!nozzleId,
-    staleTime: 30000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
     refetchOnWindowFocus: false,
     refetchOnMount: true

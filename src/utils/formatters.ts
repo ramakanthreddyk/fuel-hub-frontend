@@ -8,11 +8,16 @@
  * @param options Formatting options
  * @returns Formatted currency string
  */
-export function formatCurrency(value: number | undefined | null, options?: {
+export function formatCurrency(value: number | string | undefined | null, options?: {
   maximumFractionDigits?: number;
   minimumFractionDigits?: number;
   useLakhsCrores?: boolean;
 }): string {
+  // Handle 'N/A' or other string values
+  if (typeof value === 'string') {
+    return value;
+  }
+  
   const amount = value ?? 0;
   
   // Use lakhs and crores format if specified
@@ -163,6 +168,13 @@ export function formatDateTime(date: Date | string | number | undefined | null, 
   
   try {
     const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
+    
+    // Check if date is in the future (likely a timezone issue)
+    const now = new Date();
+    if (dateObj > now && dateObj.getFullYear() > now.getFullYear()) {
+      // Adjust the year to current year if it's in the future
+      dateObj.setFullYear(now.getFullYear());
+    }
     
     return new Intl.DateTimeFormat('en-IN', {
       dateStyle: options?.dateStyle || 'medium',

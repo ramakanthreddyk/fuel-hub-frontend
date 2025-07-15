@@ -7,13 +7,15 @@ import { useNozzle } from './useNozzles';
 import { usePumps } from './usePumps';
 import { useStations } from './useStations';
 import { useFuelStore } from '@/store/fuelStore';
+import { useDataStore } from '@/store/dataStore';
 
 /**
  * Hook to fetch nozzle details including pump and station
  * @param nozzleId Nozzle ID
+ * @param updateStore Whether to update the store with the fetched details (default: true)
  * @returns Object with nozzle, pump, and station details
  */
-export const useNozzleDetails = (nozzleId?: string) => {
+export const useNozzleDetails = (nozzleId?: string, updateStore: boolean = true) => {
   const [details, setDetails] = useState<{
     nozzle: any;
     pump: any;
@@ -28,7 +30,8 @@ export const useNozzleDetails = (nozzleId?: string) => {
     error: null
   });
 
-  const { selectNozzle, selectPump, selectStation } = useFuelStore();
+  const { updateSelections } = useFuelStore();
+  const { nozzles: storedNozzles, pumps: storedPumps, stations: storedStations } = useDataStore();
   
   // Fetch nozzle data
   const { data: nozzle, isLoading: isLoadingNozzle, error: nozzleError } = useNozzle(nozzleId || '');
@@ -47,10 +50,14 @@ export const useNozzleDetails = (nozzleId?: string) => {
       // Find the station for this pump
       const station = pump ? stations.find(s => s.id === pump.stationId) : null;
       
-      // Update the store
-      if (nozzle) selectNozzle(nozzle.id);
-      if (pump) selectPump(pump.id);
-      if (station) selectStation(station.id);
+      // Update the store with all values at once (if enabled)
+      if (updateStore) {
+        updateSelections({
+          nozzleId: nozzle?.id,
+          pumpId: pump?.id,
+          stationId: station?.id
+        });
+      }
       
       // Update the details
       setDetails({
@@ -69,7 +76,7 @@ export const useNozzleDetails = (nozzleId?: string) => {
         error: nozzleError
       }));
     }
-  }, [nozzle, pumps, stations, isLoadingNozzle, isLoadingPumps, isLoadingStations, nozzleError, selectNozzle, selectPump, selectStation]);
+  }, [nozzle, pumps, stations, isLoadingNozzle, isLoadingPumps, isLoadingStations, nozzleError, updateSelections]);
 
   return details;
 };

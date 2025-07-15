@@ -51,19 +51,23 @@ export function ReadingCard({ reading, onView }: ReadingCardProps) {
       <CardContent className="space-y-3">
         <div className="text-center">
           <div className="text-2xl font-bold text-blue-600">
-            {reading.reading.toLocaleString()}
+            {typeof reading.reading === 'number' ? reading.reading.toLocaleString() : Number(reading.reading).toLocaleString()}
           </div>
           <div className="text-xs text-gray-500">Meter Reading</div>
         </div>
         
-        {reading.amount && (
-          <div className="text-center">
-            <div className="text-lg font-semibold text-green-600">
-              {formatCurrency(reading.amount)}
-            </div>
-            <div className="text-xs text-gray-500">Amount</div>
+        <div className="text-center">
+          <div className="text-lg font-semibold text-green-600">
+            {formatCurrency(
+              // Calculate amount if we have price and reading
+              reading.amount !== undefined && reading.amount !== null ? reading.amount :
+              reading.pricePerLitre && reading.reading ? 
+                (Number(reading.reading) - Number(reading.previousReading || 0)) * Number(reading.pricePerLitre) :
+                'N/A'
+            )}
           </div>
-        )}
+          <div className="text-xs text-gray-500">Amount</div>
+        </div>
 
         <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
           <Clock className="h-3 w-3" />

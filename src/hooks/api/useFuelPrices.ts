@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/api/core/apiClient';
 import { useToast } from '@/hooks/use-toast';
+import { useDataStore } from '@/store/dataStore';
 
 export interface FuelPrice {
   id: string;
@@ -30,9 +31,17 @@ export interface FuelPriceValidation {
 }
 
 export const useFuelPrices = (stationId?: string) => {
+  const { fuelPrices: storedFuelPrices, setFuelPrices } = useDataStore();
+  
   return useQuery({
     queryKey: ['fuel-prices', stationId],
     queryFn: async (): Promise<FuelPrice[]> => {
+      // Check if we have cached data
+      if (stationId && storedFuelPrices[stationId]) {
+        console.log('[FUEL-PRICES-HOOK] Using cached fuel prices for station:', stationId);
+        return storedFuelPrices[stationId];
+      }
+      
       const params = stationId ? `?stationId=${stationId}` : '';
       const response = await apiClient.get(`/fuel-prices${params}`);
       
@@ -56,7 +65,7 @@ export const useFuelPrices = (stationId?: string) => {
       console.log('[FUEL-PRICES-HOOK] Processed prices:', prices);
       
       // Convert to proper format with type safety
-      return prices.map((price: any) => ({
+      const formattedPrices = prices.map((price: any) => ({
         id: price.id || '',
         stationId: price.stationId || price.station_id || '',
         stationName: price.stationName || price.station_name || '',
@@ -67,8 +76,16 @@ export const useFuelPrices = (stationId?: string) => {
         isActive: price.isActive !== false,
         createdAt: price.createdAt || price.created_at || new Date().toISOString()
       }));
+      
+      // Store in cache if we have a stationId
+      if (stationId) {
+        setFuelPrices(stationId, formattedPrices);
+      }
+      
+      return formattedPrices;
     },
     enabled: true,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 

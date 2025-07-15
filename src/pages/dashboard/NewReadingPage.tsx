@@ -6,41 +6,46 @@ import { useParams, useLocation } from 'react-router-dom';
 import { ReadingEntryForm } from '@/components/readings/ReadingEntryForm';
 import { useNozzleDetails } from '@/hooks/api/useNozzleDetails';
 import { useFuelStore } from '@/store/fuelStore';
+import { useDataStore } from '@/store/dataStore';
 import { useEffect } from 'react';
 
 export default function NewReadingPage() {
-  const { nozzleId } = useParams<{ nozzleId: string }>();
+  const { nozzleId, pumpId, stationId } = useParams<{ nozzleId: string; pumpId: string; stationId: string }>();
   const location = useLocation();
   
-  // Get state from Zustand store
-  const { selectNozzle, selectPump, selectStation } = useFuelStore();
+  // Get preselected values from navigation state or URL params
+  const navigationPreselected = location.state?.preselected;
+  const urlPreselected = {
+    stationId: stationId || undefined,
+    pumpId: pumpId || undefined,
+    nozzleId: nozzleId || undefined
+  };
   
-  // Get preselected values from navigation state
-  const preselected = location.state?.preselected;
+  const preselected = navigationPreselected || urlPreselected;
   
-  // Use the new hook to fetch nozzle details including pump and station
-  const { nozzle, pump, station, isLoading } = useNozzleDetails(nozzleId);
+  // Log the preselected values for debugging
+  console.log('[NEW-READING-PAGE] URL params:', { stationId, pumpId, nozzleId });
+  console.log('[NEW-READING-PAGE] Preselected values:', preselected);
   
-  // Update store from preselected values in location state
+  // Use the hook to fetch nozzle details - but disable store updates
+  const { nozzle, pump, station, isLoading, error } = useNozzleDetails(nozzleId, false);
+  
+  // Log any errors
   useEffect(() => {
-    if (location.state?.preselected) {
-      const { stationId, pumpId, nozzleId } = location.state.preselected;
-      if (stationId) {
-        selectStation(stationId);
-        console.log('[NEW-READING-PAGE] Setting station ID from state:', stationId);
-      }
-      if (pumpId) selectPump(pumpId);
-      if (nozzleId) selectNozzle(nozzleId);
+    if (error) {
+      console.error('[NEW-READING-PAGE] Error loading nozzle details:', error);
     }
-  }, [location.state, selectStation, selectPump, selectNozzle]);
+  }, [error]);
   
-  // Derive preselected values from nozzle details
+  // Derive final preselected values
   let finalPreselected = preselected;
-  if (nozzle && pump && !preselected) {
+  
+  // If we have nozzle data but no preselected values, derive them
+  if (nozzle && pump && (!preselected.stationId || !preselected.pumpId)) {
     finalPreselected = {
-      stationId: station?.id,
-      pumpId: pump?.id,
-      nozzleId: nozzle.id
+      stationId: station?.id || preselected.stationId,
+      pumpId: pump?.id || preselected.pumpId,
+      nozzleId: nozzle.id || preselected.nozzleId
     };
     
     console.log('[NEW-READING-PAGE] Derived preselected values:', finalPreselected);

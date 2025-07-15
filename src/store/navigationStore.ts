@@ -7,6 +7,22 @@ export const getSectionFromPath = (path: string): string => {
     return 'dashboard';
   }
   
+  // Check for nested routes - station/pump/nozzle hierarchy
+  const pathParts = path.split('/');
+  
+  // Handle nested routes like /dashboard/stations/{id}/pumps/{id}/nozzles
+  if (pathParts.length >= 5 && pathParts[2] === 'stations' && pathParts[4] === 'pumps') {
+    if (pathParts.length >= 7 && pathParts[6] === 'nozzles') {
+      // Check if this is a readings page
+      if (pathParts.length >= 9 && pathParts[8] === 'readings') {
+        return 'readings'; // For /dashboard/stations/{id}/pumps/{id}/nozzles/{id}/readings/new
+      }
+      return 'nozzles'; // For /dashboard/stations/{id}/pumps/{id}/nozzles
+    }
+    return 'pumps'; // For /dashboard/stations/{id}/pumps
+  }
+  
+  // Standard routes
   if (path.startsWith('/dashboard/stations')) {
     return 'stations';
   }

@@ -50,6 +50,29 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
       return;
     }
     
+    // Handle nested routes first
+    const pathParts = path.split('/');
+    
+    // Handle /dashboard/stations/{id}/pumps/{id}/nozzles/{id}/readings/new
+    if (pathParts.length >= 9 && pathParts[2] === 'stations' && pathParts[4] === 'pumps' && 
+        pathParts[6] === 'nozzles' && pathParts[8] === 'readings') {
+      setPageTitle('Record Reading');
+      return;
+    }
+    
+    // Handle /dashboard/stations/{id}/pumps/{id}/nozzles
+    if (pathParts.length >= 7 && pathParts[2] === 'stations' && pathParts[4] === 'pumps' && pathParts[6] === 'nozzles') {
+      setPageTitle('Pump Nozzles');
+      return;
+    }
+    
+    // Handle /dashboard/stations/{id}/pumps
+    if (pathParts.length >= 5 && pathParts[2] === 'stations' && pathParts[4] === 'pumps') {
+      setPageTitle('Station Pumps');
+      return;
+    }
+    
+    // Standard routes
     if (path.startsWith('/dashboard/stations')) {
       if (path.includes('/new')) {
         setPageTitle('New Station');

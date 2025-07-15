@@ -30,6 +30,13 @@ interface FuelStore {
   selectPump: (pumpId: string | null) => void;
   selectNozzle: (nozzleId: string | null) => void;
   
+  // Update all selections at once
+  updateSelections: (selections: {
+    stationId?: string | null;
+    pumpId?: string | null;
+    nozzleId?: string | null;
+  }) => void;
+  
   // Reset selections
   resetSelections: () => void;
 }
@@ -45,18 +52,24 @@ export const useFuelStore = create<FuelStore>()(
       // Actions
       selectStation: (stationId) => set({ 
         selectedStationId: stationId,
-        // Clear pump and nozzle when changing station
-        selectedPumpId: null,
-        selectedNozzleId: null
+        // Don't clear pump and nozzle when changing station
+        // This allows for proper navigation in nested routes
       }),
       
       selectPump: (pumpId) => set({ 
         selectedPumpId: pumpId,
-        // Clear nozzle when changing pump
-        selectedNozzleId: null
+        // Don't clear nozzle when changing pump
+        // This allows for proper navigation in nested routes
       }),
       
       selectNozzle: (nozzleId) => set({ selectedNozzleId: nozzleId }),
+      
+      // Update all selections at once
+      updateSelections: ({ stationId, pumpId, nozzleId }) => set({
+        ...(stationId !== undefined && { selectedStationId: stationId }),
+        ...(pumpId !== undefined && { selectedPumpId: pumpId }),
+        ...(nozzleId !== undefined && { selectedNozzleId: nozzleId })
+      }),
       
       // Reset all selections
       resetSelections: () => set({
