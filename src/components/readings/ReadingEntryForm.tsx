@@ -118,8 +118,24 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
     if (finalPreselected?.nozzleId) {
       setSelectedNozzle(finalPreselected.nozzleId);
       form.setValue('nozzleId', finalPreselected.nozzleId);
+      
+      // If we have a nozzle ID but no station ID, try to find the station from the nozzle
+      if (!finalPreselected.stationId && selectedNozzleId) {
+        // Find the nozzle in the nozzles array
+        const nozzle = nozzles.find(n => n.id === selectedNozzleId);
+        if (nozzle?.pumpId) {
+          // Find the pump for this nozzle
+          const pump = pumps.find(p => p.id === nozzle.pumpId);
+          if (pump?.stationId) {
+            // Set the station
+            setSelectedStation(pump.stationId);
+            form.setValue('stationId', pump.stationId);
+            console.log('[READING-FORM] Found station ID from nozzle:', pump.stationId);
+          }
+        }
+      }
     }
-  }, [finalPreselected, form]);
+  }, [finalPreselected, form, nozzles, pumps, selectedNozzleId]);
 
   useEffect(() => {
     if (selectedStation) {

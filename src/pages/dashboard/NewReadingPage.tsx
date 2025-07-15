@@ -4,9 +4,7 @@
  */
 import { useParams, useLocation } from 'react-router-dom';
 import { ReadingEntryForm } from '@/components/readings/ReadingEntryForm';
-import { useNozzle } from '@/hooks/api/useNozzles';
-import { usePumps } from '@/hooks/api/usePumps';
-import { useStations } from '@/hooks/api/useStations';
+import { useNozzleDetails } from '@/hooks/api/useNozzleDetails';
 import { useFuelStore } from '@/store/fuelStore';
 import { useEffect } from 'react';
 
@@ -17,29 +15,13 @@ export default function NewReadingPage() {
   // Get state from Zustand store
   const { selectNozzle, selectPump, selectStation } = useFuelStore();
   
-  // Get preselected values from navigation state or derive from nozzle data
+  // Get preselected values from navigation state
   const preselected = location.state?.preselected;
   
-  const { data: nozzle } = useNozzle(nozzleId);
-  const { data: pumps = [] } = usePumps();
-  const { data: stations = [] } = useStations();
+  // Use the new hook to fetch nozzle details including pump and station
+  const { nozzle, pump, station, isLoading } = useNozzleDetails(nozzleId);
   
-  // Update store when nozzle data is available
-  useEffect(() => {
-    if (nozzle) {
-      selectNozzle(nozzle.id);
-      if (nozzle.pumpId) {
-        selectPump(nozzle.pumpId);
-        const pump = pumps.find(p => p.id === nozzle.pumpId);
-        if (pump?.stationId) {
-          selectStation(pump.stationId);
-          console.log('[NEW-READING-PAGE] Setting station ID:', pump.stationId);
-        }
-      }
-    }
-  }, [nozzle, pumps, selectNozzle, selectPump, selectStation]);
-  
-  // Also update store from preselected values in location state
+  // Update store from preselected values in location state
   useEffect(() => {
     if (location.state?.preselected) {
       const { stationId, pumpId, nozzleId } = location.state.preselected;
@@ -52,17 +34,16 @@ export default function NewReadingPage() {
     }
   }, [location.state, selectStation, selectPump, selectNozzle]);
   
-  // If we have nozzle data but no preselected values, derive them
+  // Derive preselected values from nozzle details
   let finalPreselected = preselected;
-  if (nozzle && !preselected) {
-    const pump = pumps.find(p => p.id === nozzle.pumpId);
-    const station = stations.find(s => s.id === pump?.stationId);
-    
+  if (nozzle && pump && !preselected) {
     finalPreselected = {
       stationId: station?.id,
       pumpId: pump?.id,
       nozzleId: nozzle.id
     };
+    
+    console.log('[NEW-READING-PAGE] Derived preselected values:', finalPreselected);
   }
   
   return <ReadingEntryForm preselected={finalPreselected} />;
