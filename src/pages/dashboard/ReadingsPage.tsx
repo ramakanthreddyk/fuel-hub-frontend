@@ -134,15 +134,28 @@ export default function ReadingsPage() {
   const totalReadings = enrichedReadings.length;
   const todayReadings = enrichedReadings.filter(r => new Date(r.recordedAt).toDateString() === new Date().toDateString()).length;
   const weekReadings = enrichedReadings.filter(r => new Date(r.recordedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
+  
+  // Debug the revenue calculation
+  console.log('[READINGS-PAGE] Revenue calculation debug:');
+  
   const totalRevenue = enrichedReadings.reduce((sum, r) => {
     // Calculate amount if it's missing but we have price and reading
     let amount = 0;
-    if (r.amount && !isNaN(r.amount)) {
-      amount = r.amount;
+    if (r.amount && !isNaN(parseFloat(r.amount))) {
+      amount = parseFloat(r.amount);
     } else if (r.pricePerLitre && r.reading) {
-      amount = (Number(r.reading) - Number(r.previousReading || 0)) * Number(r.pricePerLitre);
+      amount = (parseFloat(r.reading) - parseFloat(r.previousReading || 0)) * parseFloat(r.pricePerLitre);
     }
-    return sum + amount;
+    
+    // Ensure we're adding a number, not concatenating strings
+    const numericSum = sum + amount;
+    
+    // Debug log for large amounts
+    if (amount > 100000) {
+      console.log(`[READINGS-PAGE] Large amount detected: ${amount} for reading ID: ${r.id}`);
+    }
+    
+    return numericSum;
   }, 0);
   const pendingAlertsCount = pendingAlerts.length;
 
@@ -260,7 +273,10 @@ export default function ReadingsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold bg-gradient-to-r from-purple-700 to-pink-700 bg-clip-text text-transparent">
-              {formatCurrency(totalRevenue, { maximumFractionDigits: 0 })}
+              {(() => {
+                console.log('[READINGS-PAGE] Total revenue before formatting:', totalRevenue);
+                return formatCurrency(totalRevenue, { maximumFractionDigits: 0 });
+              })()}
             </div>
             <p className="text-xs text-purple-600 mt-1">
               From all readings

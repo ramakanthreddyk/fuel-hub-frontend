@@ -63,20 +63,20 @@ export function formatPercent(value: number | undefined | null, decimals = 1): s
  * @param useLakhsCrores Whether to use lakhs and crores format for large volumes
  * @returns Formatted volume string with units
  */
-export function formatVolume(value: number | undefined | null, decimals = 3, useLakhsCrores = true): string {
+export function formatVolume(value: number | undefined | null, decimals = 0, useLakhsCrores = true): string {
   const volume = value ?? 0;
   
   // Use lakhs and crores format for large volumes
   if (useLakhsCrores && volume >= 1000) {
     if (volume >= 10000000) { // 1 crore = 10,000,000
       const crores = volume / 10000000;
-      return `${crores.toFixed(2)} Cr Liters`;
+      return `${crores.toFixed(0)} Cr Liters`;
     } else if (volume >= 100000) { // 1 lakh = 100,000
       const lakhs = volume / 100000;
-      return `${lakhs.toFixed(2)} Lakh Liters`;
+      return `${lakhs.toFixed(0)} Lakh Liters`;
     } else if (volume >= 1000) { // 1 thousand = 1,000
       const thousands = volume / 1000;
-      return `${thousands.toFixed(2)}K Liters`;
+      return `${thousands.toFixed(0)}K Liters`;
     }
   }
   
@@ -142,15 +142,15 @@ export function formatIndianLakhsCrores(value: number): string {
   // 1 lakh = 100,000
   else if (num >= 100000) {
     const lakhs = num / 100000;
-    return sign + lakhs.toFixed(2) + ' L';
+    return sign + lakhs.toFixed(0) + ' Lakh';
   } 
   // 1 thousand = 1,000
   else if (num >= 1000) {
     const thousands = num / 1000;
-    return sign + thousands.toFixed(2) + ' K';
+    return sign + thousands.toFixed(0) + 'K';
   } 
   else {
-    return sign + num.toFixed(2);
+    return sign + num.toFixed(0);
   }
 }
 

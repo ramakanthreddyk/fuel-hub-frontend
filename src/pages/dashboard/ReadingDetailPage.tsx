@@ -120,19 +120,41 @@ export default function ReadingDetailPage() {
           <CardContent className="space-y-3">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Fuel Price</label>
-              <p className="font-medium">{formatCurrency(reading.pricePerLitre || 0)}/L</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium">{formatCurrency(reading.pricePerLitre || 0)}/L</p>
+                {(reading.pricePerLitre === 0 || reading.pricePerLitre === '0') && (
+                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Backdated Reading
+                  </Badge>
+                )}
+              </div>
+              {(reading.pricePerLitre === 0 || reading.pricePerLitre === '0') && (
+                <p className="text-xs text-amber-600 mt-1">
+                  This reading was likely recorded before a fuel price was set, or the price was not found for this date.
+                </p>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Total Amount</label>
               <p className="text-2xl font-bold text-green-600">
-                {formatCurrency(
-                  // Calculate amount from reading and price if amount is missing
-                  reading.amount !== undefined && reading.amount !== null ? reading.amount : 
-                  ((Number(reading.reading || 0) - Number(reading.previousReading || 0)) * Number(reading.pricePerLitre || 0))
+                {(reading.pricePerLitre === 0 || reading.pricePerLitre === '0') ? (
+                  <span className="text-amber-600">
+                    {formatCurrency((Number(reading.reading || 0) - Number(reading.previousReading || 0)) * 100)}
+                    <span className="text-xs text-amber-500 ml-2">(estimated at ₹100/L)</span>
+                  </span>
+                ) : (
+                  <>
+                    {formatCurrency(
+                      // Calculate amount from reading and price if amount is missing
+                      reading.amount !== undefined && reading.amount !== null ? reading.amount : 
+                      ((Number(reading.reading || 0) - Number(reading.previousReading || 0)) * Number(reading.pricePerLitre || 0))
+                    )}
+                    {reading.amount === null && 
+                      <span className="text-xs text-gray-500 ml-2">(calculated)</span>
+                    }
+                  </>
                 )}
-                {reading.amount === null && 
-                  <span className="text-xs text-gray-500 ml-2">(calculated)</span>
-                }
               </p>
             </div>
             <div>
