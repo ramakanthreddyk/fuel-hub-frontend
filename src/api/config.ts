@@ -1,0 +1,12 @@
+// This file contains the API URL configuration
+// It's used to ensure all API calls use the correct URL
+
+// The API base URL from environment variables
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
+
+// The API version
+export const API_VERSION = 'v1';
+
+// The full API URL
+export const API_URL = `${API_BASE_URL}/api/${API_VERSION}`;

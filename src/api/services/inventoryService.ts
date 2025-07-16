@@ -42,6 +42,9 @@ export const inventoryService = {
       const params = stationId ? { stationId } : {};
       const response = await apiClient.get('fuel-inventory', { params });
       
+      // Log the raw response for debugging
+      console.log('[INVENTORY-API] Raw response:', JSON.stringify(response.data, null, 2));
+      
       // Extract inventory from response
       let inventoryArray: FuelInventory[] = [];
       
@@ -55,6 +58,11 @@ export const inventoryService = {
         inventoryArray = response.data.data;
       } else {
         inventoryArray = extractArray<FuelInventory>(response, 'inventory');
+      }
+      
+      // Log the first item for structure analysis
+      if (inventoryArray.length > 0) {
+        console.log('[INVENTORY-API] First inventory item structure:', JSON.stringify(inventoryArray[0], null, 2));
       }
       
       console.log(`[INVENTORY-API] Successfully fetched ${inventoryArray.length} inventory items`);
@@ -120,12 +128,24 @@ export const inventoryService = {
     stationId: string;
     fuelType: string;
     newStock: number;
+    capacity?: number;
+    minimumLevel?: number;
   }): Promise<boolean> => {
     try {
-      console.log('[INVENTORY-API] Updating inventory', data);
-      await apiClient.post('/inventory/update', data);
-      return true;
-    } catch (error) {
+      // Send all data to the backend - it now supports capacity and minimumLevel
+      const payload = {
+        stationId: data.stationId,
+        fuelType: data.fuelType,
+        newStock: data.newStock,
+        ...(data.capacity !== undefined ? { capacity: data.capacity } : {}),
+        ...(data.minimumLevel !== undefined ? { minimumLevel: data.minimumLevel } : {})
+      };
+      
+      const response = await apiClient.post('/inventory/update', payload);
+      return response.data?.success === true || response.status === 200;
+        console.log('[INVENTORY-API] Legacy update response:', response.data);
+        return true;
+      } catch (error) {
       console.error('[INVENTORY-API] Error updating inventory:', error);
       return false;
     }

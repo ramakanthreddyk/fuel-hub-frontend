@@ -71,7 +71,7 @@ export function StationMetricsList() {
               id: stationMetric.id,
               name: stationMetric.name,
               totalSales: stationMetric.todaySales || 0,
-              totalVolume: stationMetric.monthlySales || 0,
+              monthlySales: stationMetric.monthlySales || 0,
               activePumps: stationMetric.activePumps,
               totalPumps: stationMetric.totalPumps,
               status: stationMetric.status,

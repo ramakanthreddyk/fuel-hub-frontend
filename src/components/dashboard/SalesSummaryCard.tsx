@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, BadgeIndianRupee, Percent } from 'lucide-react';
+import { TrendingUp, BadgeIndianRupee } from 'lucide-react';
 import { useSalesSummary } from '@/hooks/useDashboard';
 import { ErrorFallback } from '@/components/common/ErrorFallback';
 import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
@@ -58,16 +58,15 @@ export function SalesSummaryCard({ filters = {} }: SalesSummaryCardProps) {
 
       <Card className="bg-gradient-to-br from-blue-50 via-cyan-50 to-sky-50 border-2 border-blue-200/50 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-blue-700">Growth Metrics</CardTitle>
+          <CardTitle className="text-sm font-medium text-blue-700">Transaction Details</CardTitle>
           <div className="p-2 bg-blue-500 rounded-lg">
             <TrendingUp className="h-4 w-4 text-white" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-blue-700">{summary?.growthPercentage?.toFixed(1) || 0}%</div>
+          <div className="text-2xl font-bold text-blue-700">{formatSafeNumber(summary?.salesCount || 0, 0, true)}</div>
           <div className="flex items-center text-xs text-blue-600 mt-1">
-            <Percent className="h-3 w-3 mr-1" />
-            Growth vs previous period
+            Total transactions this period
           </div>
         </CardContent>
       </Card>

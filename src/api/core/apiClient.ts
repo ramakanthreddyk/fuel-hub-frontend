@@ -4,17 +4,15 @@
  */
 import axios from 'axios';
 import { normalizePropertyNames, ensurePropertyAccess } from '@/utils/apiTransform';
+import { API_URL } from '../config';
 
-// Get the backend URL from environment variables or use the default API URL
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
+// API base URL is configured from the centralized config
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1`,
+  baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   },
   timeout: 30000, // 30 seconds
 });

@@ -4,6 +4,7 @@
  * @description Service for dashboard API endpoints
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
+import { API_URL } from '../config';
 
 export interface SalesSummary {
   totalRevenue: number;
@@ -78,8 +79,16 @@ export const dashboardService = {
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
       if (filters.dateTo) params.append('dateTo', filters.dateTo);
 
-      const response = await apiClient.get(`/dashboard/sales-summary?${params.toString()}`);
-      return extractData<SalesSummary>(response);
+      // Try using the apiClient first
+      try {
+        const response = await apiClient.get(`/dashboard/sales-summary?${params.toString()}`);
+        return extractData<SalesSummary>(response);
+      } catch (innerError) {
+        // If that fails, try a direct axios call with the full URL
+        const axios = (await import('axios')).default;
+        const directResponse = await axios.get(`${API_URL}/dashboard/sales-summary?${params.toString()}`);
+        return directResponse.data;
+      }
     } catch (error) {
       console.error('[DASHBOARD-API] Error fetching sales summary:', error);
       throw error;
@@ -157,15 +166,24 @@ export const dashboardService = {
    */
   getStationMetrics: async (): Promise<StationMetric[]> => {
     try {
-      const response = await apiClient.get('/dashboard/station-metrics');
-      // Handle direct array response from API without a wrapper object
-      if (Array.isArray(response.data)) {
-        return response.data;
+      // Try using the apiClient first
+      try {
+        const response = await apiClient.get('/dashboard/station-metrics');
+        // Handle direct array response from API without a wrapper object
+        if (Array.isArray(response.data)) {
+          return response.data;
+        }
+        return extractArray<StationMetric>(response);
+      } catch (innerError) {
+        // If that fails, try a direct axios call with the full URL
+        const axios = (await import('axios')).default;
+        const directResponse = await axios.get(`${API_URL}/dashboard/station-metrics`);
+        return Array.isArray(directResponse.data) ? directResponse.data : [];
       }
-      return extractArray<StationMetric>(response);
     } catch (error) {
       console.error('[DASHBOARD-API] Error fetching station metrics:', error);
-      throw error;
+      // Return empty array instead of throwing to prevent dashboard from breaking
+      return [];
     }
   }
 };

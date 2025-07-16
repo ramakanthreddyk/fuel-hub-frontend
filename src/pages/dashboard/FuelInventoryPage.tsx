@@ -102,6 +102,14 @@ export default function FuelInventoryPage() {
         </div>
         <div className="flex gap-2">
           <Button 
+            onClick={() => navigate('/dashboard/fuel-inventory/update')} 
+            variant="default" 
+            size="sm"
+          >
+            <Fuel className="mr-2 h-4 w-4" />
+            Update Inventory
+          </Button>
+          <Button 
             onClick={handleGenerateReport} 
             variant="outline" 
             size="sm"

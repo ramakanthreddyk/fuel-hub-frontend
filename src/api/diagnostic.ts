@@ -1,110 +1,109 @@
-
-import { apiClient } from './client';
-
-interface DiagnosticResult {
-  status: 'unknown' | 'ok' | 'error';
-  error: string | null;
-}
-
-interface DiagnosticResults {
-  auth: DiagnosticResult;
-  tenants: DiagnosticResult;
-  users: DiagnosticResult;
-  plans: DiagnosticResult;
-  dashboard: DiagnosticResult;
-  schemaIssues: string[];
-}
-
 /**
- * Diagnostic tool to check backend API health and schema compatibility
+ * @file api/diagnostic.ts
+ * @description Diagnostic utilities for API troubleshooting
  */
+
+import axios from 'axios';
+
+// Get the backend URL from environment variables or use the default API URL
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
+
 export const diagnosticApi = {
   /**
-   * Check the backend API health and schema compatibility
-   * This function makes various API calls to check if the backend is working correctly
-   * and if the schema is compatible with the frontend
+   * Check API connectivity
    */
-  checkBackendHealth: async (): Promise<DiagnosticResults> => {
-    const results: DiagnosticResults = {
-      auth: { status: 'unknown' as const, error: null },
-      tenants: { status: 'unknown' as const, error: null },
-      users: { status: 'unknown' as const, error: null },
-      plans: { status: 'unknown' as const, error: null },
-      dashboard: { status: 'unknown' as const, error: null },
-      schemaIssues: []
+  checkConnectivity: async (): Promise<{ status: string; baseUrl: string; timestamp: string }> => {
+    try {
+      console.log('[DIAGNOSTIC] Checking API connectivity to:', API_BASE_URL);
+      
+      // Create a timestamp to prevent caching
+      const timestamp = new Date().toISOString();
+      
+      // Make a simple HEAD request to check connectivity
+      await axios.head(`${API_BASE_URL}/api/v1/health?t=${timestamp}`, {
+        timeout: 5000,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+      
+      return {
+        status: 'connected',
+        baseUrl: API_BASE_URL,
+        timestamp
+      };
+    } catch (error) {
+      console.error('[DIAGNOSTIC] API connectivity check failed:', error);
+      
+      return {
+        status: 'disconnected',
+        baseUrl: API_BASE_URL,
+        timestamp: new Date().toISOString()
+      };
+    }
+  },
+  
+  /**
+   * Get browser network information
+   */
+  getBrowserNetworkInfo: (): { 
+    userAgent: string;
+    language: string;
+    cookiesEnabled: boolean;
+    doNotTrack: string | null;
+    onLine: boolean;
+  } => {
+    return {
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      cookiesEnabled: navigator.cookieEnabled,
+      doNotTrack: navigator.doNotTrack,
+      onLine: navigator.onLine
     };
-
-    // Check auth endpoint
+  },
+  
+  /**
+   * Check for redirects
+   */
+  checkRedirects: async (url: string): Promise<{
+    originalUrl: string;
+    finalUrl: string;
+    redirected: boolean;
+    redirectCount: number;
+  }> => {
     try {
-      console.log('Checking auth endpoint...');
-      // Just check if the endpoint exists, don't actually try to login
-      await apiClient.options('/auth/login');
-      results.auth.status = 'ok' as const;
-    } catch (error: any) {
-      results.auth.status = 'error' as const;
-      results.auth.error = error.message;
-      if (error.response?.data?.message) {
-        if (error.response.data.message.includes('schema_name')) {
-          results.schemaIssues.push('Auth endpoint has schema_name issues');
+      console.log('[DIAGNOSTIC] Checking redirects for:', url);
+      
+      // Make a request and track redirects
+      const response = await axios.get(url, {
+        maxRedirects: 5,
+        validateStatus: (status) => status < 400,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
-      }
+      });
+      
+      return {
+        originalUrl: url,
+        finalUrl: response.request?.responseURL || url,
+        redirected: response.request?.responseURL !== url,
+        redirectCount: response.request?.res?.responseUrl ? 1 : 0 // Basic count, may not be accurate
+      };
+    } catch (error) {
+      console.error('[DIAGNOSTIC] Redirect check failed:', error);
+      
+      return {
+        originalUrl: url,
+        finalUrl: url,
+        redirected: false,
+        redirectCount: 0
+      };
     }
-
-    // Check tenants endpoint
-    try {
-      console.log('Checking tenants endpoint...');
-      await apiClient.options('/admin/tenants');
-      results.tenants.status = 'ok' as const;
-    } catch (error: any) {
-      results.tenants.status = 'error' as const;
-      results.tenants.error = error.message;
-      if (error.response?.data?.message) {
-        if (error.response.data.message.includes('schema_name')) {
-          results.schemaIssues.push('Tenants endpoint has schema_name issues');
-        }
-      }
-    }
-
-    // Check users endpoint
-    try {
-      console.log('Checking users endpoint...');
-      await apiClient.options('/admin/users');
-      results.users.status = 'ok' as const;
-    } catch (error: any) {
-      results.users.status = 'error' as const;
-      results.users.error = error.message;
-      if (error.response?.data?.message) {
-        if (error.response.data.message.includes('schema_name')) {
-          results.schemaIssues.push('Users endpoint has schema_name issues');
-        }
-      }
-    }
-
-    // Check plans endpoint
-    try {
-      console.log('Checking plans endpoint...');
-      await apiClient.options('/admin/plans');
-      results.plans.status = 'ok' as const;
-    } catch (error: any) {
-      results.plans.status = 'error' as const;
-      results.plans.error = error.message;
-    }
-
-    // Check dashboard endpoint
-    try {
-      console.log('Checking dashboard endpoint...');
-      await apiClient.options('/admin/dashboard');
-      results.dashboard.status = 'ok' as const;
-    } catch (error: any) {
-      results.dashboard.status = 'error' as const;
-      results.dashboard.error = error.message;
-      if (error.response?.data?.message) {
-        if (error.response.data.message.includes('schema_name')) {
-          results.schemaIssues.push('Dashboard endpoint has schema_name issues');
-        }
-      }
-    }
-
-    return results;
   }
 };

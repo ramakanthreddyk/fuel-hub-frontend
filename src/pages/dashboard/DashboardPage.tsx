@@ -3,20 +3,21 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, TrendingUp, Users, Fuel, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { RefreshCw, TrendingUp, Users, Fuel, AlertTriangle, CheckCircle, XCircle, Plus } from 'lucide-react';
 import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
 import { useSalesSummary, useStationMetrics } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Dashboard Components
 import { SalesSummaryCard } from '@/components/dashboard/SalesSummaryCard';
 import { PaymentMethodChart } from '@/components/dashboard/PaymentMethodChart';
 import { FuelBreakdownChart } from '@/components/dashboard/FuelBreakdownChart';
 import { SalesTrendChart } from '@/components/dashboard/SalesTrendChart';
-import { ProfitMetricsCard } from '@/components/dashboard/ProfitMetricsCard';
 import { TopCreditorsTable } from '@/components/dashboard/TopCreditorsTable';
 import { StationMetricsCard } from '@/components/dashboard/StationMetricsCard';
 import { StationMetricsList } from '@/components/dashboard/StationMetricsList';
+import { ApiDiagnosticPanel } from '@/components/dashboard/ApiDiagnosticPanel';
 
 // Filters
 import { SearchableStationSelector } from '@/components/filters/SearchableStationSelector';
@@ -29,6 +30,7 @@ interface DashboardFilters {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<DashboardFilters>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -107,6 +109,18 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-2 mb-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/dashboard/fuel-inventory/update')}
+          >
+            <Fuel className="mr-2 h-4 w-4" />
+            Update Inventory
+          </Button>
+        </div>
+        
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="bg-white border-slate-200 shadow-sm">
@@ -159,9 +173,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Dashboard Components */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <SalesSummaryCard filters={filters} />
-          <ProfitMetricsCard filters={filters} />
         </div>
 
         {/* Charts */}
@@ -219,6 +232,8 @@ export default function DashboardPage() {
         <div className="w-full">
           <TopCreditorsTable />
         </div>
+        
+        {/* API Diagnostics Panel - Temporarily disabled */}
       </div>
     </div>
   );

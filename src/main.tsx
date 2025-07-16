@@ -9,6 +9,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
 
+// Check if we're on the wrong domain and redirect if needed
+if (window.location.hostname === 'aspirereach.com') {
+  const currentPath = window.location.pathname;
+  const targetUrl = import.meta.env.VITE_REDIRECT_URL || 'https://fuelsync-app.azurewebsites.net';
+  window.location.href = `${targetUrl}${currentPath}`;
+}
+
 // Create a simple query client
 const queryClient = new QueryClient({
   defaultOptions: {
