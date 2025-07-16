@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, TrendingUp, Gauge } from 'lucide-react';
+import { Building2, TrendingUp, Gauge, TrendingDown, ArrowRight } from 'lucide-react';
 import { formatCurrency, formatVolume } from '@/utils/formatters';
 
 interface StationMetrics {
@@ -11,6 +11,9 @@ interface StationMetrics {
   activePumps: number;
   totalPumps: number;
   status: 'active' | 'inactive' | 'maintenance';
+  lastActivity?: string;
+  efficiency?: number;
+  salesGrowth?: number;
 }
 
 interface StationMetricsCardProps {
@@ -69,17 +72,33 @@ export function StationMetricsCard({ station }: StationMetricsCardProps) {
                 <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   {formatCurrency(station.totalSales, { useLakhsCrores: true })}
                 </div>
+                {station.salesGrowth !== null && (
+                  <div className={`flex items-center text-xs mt-1 ${station.salesGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {station.salesGrowth >= 0 ? (
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3 mr-1" />
+                    )}
+                    {Math.abs(station.salesGrowth || 0).toFixed(1)}%
+                  </div>
+                )}
               </div>
-              <TrendingUp className="h-5 w-5 text-blue-500 flex-shrink-0" />
+              {station.salesGrowth === null ? (
+                <ArrowRight className="h-5 w-5 text-blue-500 flex-shrink-0" />
+              ) : station.salesGrowth >= 0 ? (
+                <TrendingUp className="h-5 w-5 text-green-500 flex-shrink-0" />
+              ) : (
+                <TrendingDown className="h-5 w-5 text-red-500 flex-shrink-0" />
+              )}
             </div>
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-green-50 rounded-lg p-2.5 border border-green-100">
-              <div className="text-xs font-medium text-green-600 mb-1">Monthly Est.</div>
+              <div className="text-xs font-medium text-green-600 mb-1">Monthly Sales</div>
               <div className="text-sm font-bold text-green-700">
-                {formatCurrency(station.totalSales * 30, { useLakhsCrores: true })}
+                {formatCurrency(station.totalVolume, { useLakhsCrores: true })}
               </div>
             </div>
             <div className="bg-orange-50 rounded-lg p-2.5 border border-orange-100">
@@ -100,6 +119,26 @@ export function StationMetricsCard({ station }: StationMetricsCardProps) {
               {station.activePumps}/{station.totalPumps}
             </div>
           </div>
+          
+          {/* Efficiency */}
+          {station.efficiency !== undefined && (
+            <div className="flex items-center justify-between bg-blue-50 rounded-lg p-2.5 border border-blue-100">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <span className="text-sm font-medium text-blue-700">Efficiency</span>
+              </div>
+              <div className="text-sm font-bold text-blue-900">
+                {(station.efficiency / 1000000).toFixed(2)}M
+              </div>
+            </div>
+          )}
+          
+          {/* Last Activity */}
+          {station.lastActivity && (
+            <div className="text-xs text-gray-500 mt-2 text-right">
+              Last activity: {new Date(station.lastActivity).toLocaleDateString()}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -28,7 +28,7 @@ export function StationMetricsList() {
     );
   }
 
-  if (error || !Array.isArray(stationMetrics) || stationMetrics.length === 0) {
+  if (error || !stationMetrics || !Array.isArray(stationMetrics) || stationMetrics.length === 0) {
     return (
       <Card className="bg-white border border-gray-200 rounded-xl w-full">
         <CardHeader className="pb-4">
@@ -75,6 +75,9 @@ export function StationMetricsList() {
               activePumps: stationMetric.activePumps,
               totalPumps: stationMetric.totalPumps,
               status: stationMetric.status,
+              lastActivity: stationMetric.lastActivity,
+              efficiency: stationMetric.efficiency,
+              salesGrowth: stationMetric.salesGrowth
             };
 
             return (

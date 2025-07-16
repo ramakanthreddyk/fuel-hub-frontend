@@ -53,6 +53,10 @@ export const dashboardApi = {
 
   getStationMetrics: async (): Promise<StationMetric[]> => {
     const response = await apiClient.get('/dashboard/station-metrics');
+    // Handle direct array response from API
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
     return extractApiArray<StationMetric>(response, 'stations');
   },
 };

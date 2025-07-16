@@ -158,6 +158,10 @@ export const dashboardService = {
   getStationMetrics: async (): Promise<StationMetric[]> => {
     try {
       const response = await apiClient.get('/dashboard/station-metrics');
+      // Handle direct array response from API without a wrapper object
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
       return extractArray<StationMetric>(response);
     } catch (error) {
       console.error('[DASHBOARD-API] Error fetching station metrics:', error);
