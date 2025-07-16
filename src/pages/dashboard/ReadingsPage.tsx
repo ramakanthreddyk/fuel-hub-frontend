@@ -19,6 +19,7 @@ import { usePendingReadings } from '@/hooks/api/usePendingReadings';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
 import { useStations } from '@/hooks/api/useStations';
+import { useSalesSummary } from '@/hooks/useDashboard';
 import { useReadingsStore } from '@/store/readingsStore';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -138,25 +139,9 @@ export default function ReadingsPage() {
   // Debug the revenue calculation
   console.log('[READINGS-PAGE] Revenue calculation debug:');
   
-  const totalRevenue = enrichedReadings.reduce((sum, r) => {
-    // Calculate amount if it's missing but we have price and reading
-    let amount = 0;
-    if (r.amount && !isNaN(parseFloat(r.amount))) {
-      amount = parseFloat(r.amount);
-    } else if (r.pricePerLitre && r.reading) {
-      amount = (parseFloat(r.reading) - parseFloat(r.previousReading || 0)) * parseFloat(r.pricePerLitre);
-    }
-    
-    // Ensure we're adding a number, not concatenating strings
-    const numericSum = sum + amount;
-    
-    // Debug log for large amounts
-    if (amount > 100000) {
-      console.log(`[READINGS-PAGE] Large amount detected: ${amount} for reading ID: ${r.id}`);
-    }
-    
-    return numericSum;
-  }, 0);
+  // Use sales summary API instead of calculating from readings
+  const { data: salesSummary } = useSalesSummary('all');
+  const totalRevenue = salesSummary?.totalRevenue || 0;
   const pendingAlertsCount = pendingAlerts.length;
 
   const getStatusBadge = (status: string) => {
