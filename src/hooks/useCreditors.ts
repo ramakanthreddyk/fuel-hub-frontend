@@ -2,9 +2,10 @@
  * @file hooks/useCreditors.ts
  * @description React Query hooks for creditor operations
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { creditorService } from '@/api/services/creditorService';
 import { CreateCreditorRequest, CreateCreditPaymentRequest } from '@/api/api-contract';
+import { dashboardService } from '@/api/services/dashboardService';
 
 /**
  * Hook to create a new creditor
@@ -37,5 +38,18 @@ export const useCreateCreditorPayment = () => {
       // Invalidate creditors query to refetch the list with updated balances
       queryClient.invalidateQueries({ queryKey: ['creditors'] });
     }
+  });
+};
+
+/**
+ * Hook to get top creditors by outstanding amount
+ * @param limit Number of creditors to return (default: 5)
+ * @returns Query result with top creditors
+ */
+export const useTopCreditors = (limit: number = 5) => {
+  return useQuery({
+    queryKey: ['top-creditors', limit],
+    queryFn: () => dashboardService.getTopCreditors(limit),
+    staleTime: 60000 // 1 minute
   });
 };
