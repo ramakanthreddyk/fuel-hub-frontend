@@ -160,13 +160,30 @@ apiClient.interceptors.response.use(
       }
     }
     
-    console.error(`[API-CLIENT] Request failed:`, {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message,
-      tenantId: error.config?.headers?.['x-tenant-id'] || 'Not provided'
-    });
+    // Check if this is a network error (server not reachable)
+    if (error.code === 'ERR_NETWORK' || !error.response) {
+      console.error('[API-CLIENT] Network error - server not reachable:', error);
+      
+      // Store the error state in localStorage so we can show a proper error page
+      localStorage.setItem('fuelsync_api_error', JSON.stringify({
+        type: 'network',
+        message: 'Unable to connect to the backend server',
+        timestamp: new Date().toISOString()
+      }));
+      
+      // If we're not already on the error page, redirect to it
+      if (!window.location.pathname.includes('/error')) {
+        window.location.href = '/error';
+      }
+    } else {
+      console.error(`[API-CLIENT] Request failed:`, {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        message: error.response?.data?.message || error.message,
+        tenantId: error.config?.headers?.['x-tenant-id'] || 'Not provided'
+      });
+    }
     
     return Promise.reject(error);
   }
