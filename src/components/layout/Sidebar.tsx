@@ -87,6 +87,7 @@ const navigation: NavItem[] = [
     children: [
       { name: 'Sales Overview', href: '/dashboard/sales/overview', icon: BarChart3, roles: ['owner', 'manager', 'superadmin'] },
       { name: 'Cash Reports', href: '/dashboard/cash-reports', icon: FileText, roles: ['owner', 'manager', 'superadmin'] },
+      { name: 'Creditors', href: '/dashboard/creditors', icon: Users, roles: ['owner', 'manager'] },
     ],
   },
   {
@@ -174,6 +175,7 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
       '/dashboard/nozzles': 'nozzles',
       '/dashboard/readings': 'readings',
       '/dashboard/cash-reports': 'cash-reports',
+      '/dashboard/creditors': 'creditors',
       '/dashboard/fuel-prices': 'fuel-prices',
       '/dashboard/fuel-inventory': 'fuel-inventory',
       '/dashboard/sales': 'sales',

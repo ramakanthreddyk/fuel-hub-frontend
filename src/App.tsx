@@ -51,6 +51,10 @@ import UsersPage from './pages/dashboard/UsersPage';
 import SettingsPage from './pages/dashboard/SettingsPage';
 import CashReportPage from './pages/dashboard/CashReportPage';
 import CashReportsListPage from './pages/dashboard/CashReportsListPage';
+import CreditorsPage from './pages/dashboard/CreditorsPage';
+import NewCreditorPage from './pages/dashboard/NewCreditorPage';
+import CreditorDetailPage from './pages/dashboard/CreditorDetailPage';
+import NewCreditorPaymentPage from './pages/dashboard/NewCreditorPaymentPage';
 
 import SalesOverviewPage from './pages/dashboard/SalesOverviewPage';
 import SalesPage from './pages/dashboard/SalesPage';
@@ -146,6 +150,12 @@ function App() {
                 {/* User Routes */}
                 <Route path="users" element={<UsersPage />} />
                 <Route path="users/reset-password" element={<ResetPasswordPage />} />
+                
+                {/* Creditor Routes */}
+                <Route path="creditors" element={<CreditorsPage />} />
+                <Route path="creditors/new" element={<NewCreditorPage />} />
+                <Route path="creditors/:creditorId" element={<CreditorDetailPage />} />
+                <Route path="creditors/:creditorId/payments/new" element={<NewCreditorPaymentPage />} />
                 
                 {/* Other Routes */}
                 <Route path="fuel-prices" element={<FuelPricesPage />} />
