@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateCreditor } from '@/hooks/useCreditors';
+import { useToast } from '@/hooks/use-toast';
 import type { CreateCreditorRequest } from '@/api/api-contract';
 
 interface CreditorFormProps {
@@ -16,14 +17,25 @@ interface CreditorFormProps {
 export function CreditorForm({ onSuccess }: CreditorFormProps) {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateCreditorRequest>();
   const createCreditor = useCreateCreditor();
+  const { toast } = useToast();
 
   const onSubmit = async (data: CreateCreditorRequest) => {
     try {
       await createCreditor.mutateAsync(data);
+      toast({
+        title: 'Creditor Added',
+        description: `${data.partyName} has been successfully added.`,
+        variant: 'success',
+      });
       reset();
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create creditor:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create creditor. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 

@@ -66,6 +66,12 @@ export const attendantApi = {
       if (data.upiAmount !== undefined && (typeof data.upiAmount !== 'number' || isNaN(data.upiAmount))) {
         throw new Error('UPI amount must be a valid number');
       }
+      if (data.creditAmount !== undefined && (typeof data.creditAmount !== 'number' || isNaN(data.creditAmount))) {
+        throw new Error('Credit amount must be a valid number');
+      }
+      if (data.creditAmount && data.creditAmount > 0 && !data.creditorId) {
+        throw new Error('Creditor must be selected when credit amount is provided');
+      }
       if (!data.shift) throw new Error('Shift is required');
       
       const response = await apiClient.post('/attendant/cash-report', data);

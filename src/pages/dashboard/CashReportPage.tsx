@@ -14,10 +14,11 @@ import { useStations } from '@/hooks/api/useStations';
 import {
   useAttendantStations,
   useCreateCashReport,
+  useAttendantCreditors,
 } from '@/hooks/api/useAttendant';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
-import { ArrowLeft, DollarSign, CreditCard, Loader2 } from 'lucide-react';
+import { ArrowLeft, DollarSign, CreditCard, Loader2, Users } from 'lucide-react';
 
 export default function CashReportPage() {
   const navigate = useNavigate();
@@ -31,6 +32,8 @@ export default function CashReportPage() {
   const [cashAmount, setCashAmount] = useState<number>(0);
   const [cardAmount, setCardAmount] = useState<number>(0);
   const [upiAmount, setUpiAmount] = useState<number>(0);
+  const [creditAmount, setCreditAmount] = useState<number>(0);
+  const [selectedCreditorId, setSelectedCreditorId] = useState<string>('');
   const [shift, setShift] = useState<'morning' | 'afternoon' | 'night'>('morning');
   const [notes, setNotes] = useState<string>('');
   
@@ -39,6 +42,12 @@ export default function CashReportPage() {
     data: stations = [],
     isLoading: stationsLoading,
   } = isAttendant ? useAttendantStations() : useStations();
+  
+  // Fetch creditors for the selected station
+  const {
+    data: creditors = [],
+    isLoading: creditorsLoading,
+  } = useAttendantCreditors(selectedStationId);
   
   // Submit cash report mutation
   const submitCashReport = useCreateCashReport();
@@ -61,11 +70,21 @@ export default function CashReportPage() {
       return;
     }
     
-    const totalAmount = cashAmount + cardAmount + upiAmount;
+    const totalAmount = cashAmount + cardAmount + upiAmount + creditAmount;
     if (totalAmount <= 0) {
       toast({
         title: 'Invalid Amount',
         description: 'Please enter at least one payment amount greater than zero',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    // Validate creditor selection if credit amount is provided
+    if (creditAmount > 0 && !selectedCreditorId) {
+      toast({
+        title: 'Missing Creditor',
+        description: 'Please select a creditor for the credit amount',
         variant: 'destructive'
       });
       return;
@@ -76,6 +95,8 @@ export default function CashReportPage() {
       cashAmount,
       cardAmount,
       upiAmount,
+      creditAmount,
+      creditorId: creditAmount > 0 ? selectedCreditorId : undefined,
       reportDate: today,
       shift,
       notes: notes.trim() || undefined
@@ -98,7 +119,7 @@ export default function CashReportPage() {
     }
   };
   
-  if (stationsLoading) {
+  if (stationsLoading || creditorsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -174,7 +195,7 @@ export default function CashReportPage() {
             </div>
             
             {/* Payment Method Breakdown */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cashAmount">Cash Amount</Label>
                 <div className="relative">
@@ -222,13 +243,59 @@ export default function CashReportPage() {
                   />
                 </div>
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="creditAmount">Credit Amount</Label>
+                <div className="relative">
+                  <Users className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="creditAmount" 
+                    type="number" 
+                    min="0" 
+                    step="0.01" 
+                    className="pl-8" 
+                    value={creditAmount || ''} 
+                    onChange={(e) => setCreditAmount(parseFloat(e.target.value) || 0)} 
+                  />
+                </div>
+              </div>
             </div>
+            
+            {/* Creditor Selection - Only shown when credit amount > 0 */}
+            {creditAmount > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="creditor">Select Creditor</Label>
+                <Select 
+                  value={selectedCreditorId} 
+                  onValueChange={setSelectedCreditorId}
+                >
+                  <SelectTrigger id="creditor">
+                    <SelectValue placeholder="Select creditor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {creditors.map((creditor) => (
+                      <SelectItem key={creditor.id} value={creditor.id}>
+                        {creditor.partyName || creditor.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             
             {/* Total Amount Display */}
             <div className="p-4 bg-gray-50 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Total Amount:</span>
-                <span className="text-xl font-bold">₹{(cashAmount + cardAmount + upiAmount).toFixed(2)}</span>
+                <span className="text-xl font-bold">₹{(cashAmount + cardAmount + upiAmount + creditAmount).toFixed(2)}</span>
+              </div>
+              <div className="mt-2 text-sm text-gray-500">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>Cash: ₹{cashAmount.toFixed(2)}</div>
+                  <div>Card: ₹{cardAmount.toFixed(2)}</div>
+                  <div>UPI: ₹{upiAmount.toFixed(2)}</div>
+                  <div>Credit: ₹{creditAmount.toFixed(2)}</div>
+                </div>
               </div>
             </div>
             

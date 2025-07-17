@@ -151,6 +151,21 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
       return;
     }
     
+    if (path.startsWith('/dashboard/creditors')) {
+      if (path.includes('/new')) {
+        setPageTitle('New Creditor');
+      } else if (path.includes('/payments/new')) {
+        setPageTitle('Add Payment');
+      } else if (path.includes('/edit')) {
+        setPageTitle('Edit Creditor');
+      } else if (path.match(/\/creditors\/[\w-]+$/)) {
+        setPageTitle('Creditor Details');
+      } else {
+        setPageTitle('Creditors');
+      }
+      return;
+    }
+    
     if (path.startsWith('/dashboard/attendance')) {
       setPageTitle('Attendance');
       return;

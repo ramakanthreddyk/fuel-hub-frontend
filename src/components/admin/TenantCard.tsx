@@ -73,11 +73,9 @@ export function TenantCard({ tenant, onUpdateStatus, onDelete, onView }: TenantC
             {tenant.planName}
           </Badge>
         </div>
-        <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-2">
-          <div className="flex items-center gap-1 text-gray-500">
-            <Calendar className="h-3 w-3" />
-            <span>Created {formatDate(tenant.createdAt)}</span>
-          </div>
+        <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-2 flex items-center gap-1 text-gray-500">
+          <Calendar className="h-3 w-3" />
+          <span>Created {formatDate(tenant.createdAt)}</span>
         </CardDescription>
       </CardHeader>
       

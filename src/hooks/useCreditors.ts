@@ -49,7 +49,17 @@ export const useCreateCreditorPayment = () => {
 export const useTopCreditors = (limit: number = 5) => {
   return useQuery({
     queryKey: ['top-creditors', limit],
-    queryFn: () => dashboardService.getTopCreditors(limit),
-    staleTime: 60000 // 1 minute
+    queryFn: async () => {
+      try {
+        const result = await dashboardService.getTopCreditors(limit);
+        console.log('[useTopCreditors] API result:', result);
+        return result;
+      } catch (error) {
+        console.error('[useTopCreditors] Error fetching top creditors:', error);
+        return [];
+      }
+    },
+    staleTime: 60000, // 1 minute
+    retry: 1
   });
 };

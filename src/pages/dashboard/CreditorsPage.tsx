@@ -14,13 +14,24 @@ import { EmptyState } from '@/components/common/EmptyState';
 
 export default function CreditorsPage() {
   const navigate = useNavigate();
-  const { data: creditors = [], isLoading } = useCreditors();
+  const { data: creditors = [], isLoading, isError } = useCreditors();
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Debug log to check the creditors data
+  console.log('[CREDITORS-PAGE] Creditors data:', creditors, 'Loading:', isLoading, 'Error:', isError);
 
-  const filteredCreditors = creditors.filter(creditor =>
-    creditor.partyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    creditor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    creditor.phoneNumber?.includes(searchTerm)
+  // Make sure creditors is an array and has the expected properties
+  const normalizedCreditors = Array.isArray(creditors) ? creditors : [];
+  
+  // Debug the first creditor to see its structure
+  if (normalizedCreditors.length > 0) {
+    console.log('[CREDITORS-PAGE] First creditor:', normalizedCreditors[0]);
+  }
+  
+  const filteredCreditors = normalizedCreditors.filter(creditor =>
+    (creditor.partyName || creditor.party_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (creditor.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (creditor.phoneNumber || creditor.contact_number || '').includes(searchTerm)
   );
 
   if (isLoading) {
@@ -81,13 +92,13 @@ export default function CreditorsPage() {
                 key={creditor.id}
                 creditor={{
                   id: creditor.id,
-                  name: creditor.partyName,
+                  name: creditor.partyName || creditor.party_name,
                   email: creditor.email,
-                  phone: creditor.phoneNumber,
-                  creditLimit: creditor.creditLimit || 0,
-                  currentBalance: creditor.outstandingAmount,
-                  lastPaymentDate: creditor.lastPaymentDate,
-                  status: creditor.isActive ? 'active' : 'inactive'
+                  phone: creditor.phoneNumber || creditor.contact_number,
+                  creditLimit: creditor.creditLimit || creditor.credit_limit || 0,
+                  currentBalance: creditor.outstandingAmount || creditor.balance || 0,
+                  lastPaymentDate: creditor.lastPaymentDate || creditor.last_payment_date,
+                  status: (creditor.isActive || creditor.status === 'active') ? 'active' : 'inactive'
                 }}
                 onViewDetails={(id) => navigate(`/dashboard/creditors/${id}`)}
                 onAddPayment={(id) => navigate(`/dashboard/creditors/${id}/payments/new`)}

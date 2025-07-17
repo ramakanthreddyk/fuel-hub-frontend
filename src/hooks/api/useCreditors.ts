@@ -7,14 +7,13 @@ import { creditorService } from '@/api/services/creditorService';
 
 /**
  * Hook to fetch creditors for a station
- * @param stationId Station ID
+ * @param stationId Station ID (optional)
  * @returns Query result with creditors
  */
 export const useCreditors = (stationId?: string) => {
   return useQuery({
     queryKey: ['creditors', stationId],
-    queryFn: () => creditorService.getCreditors(stationId || ''),
-    enabled: !!stationId,
+    queryFn: () => creditorService.getCreditors(stationId),
     staleTime: 60000 // 1 minute
   });
 };

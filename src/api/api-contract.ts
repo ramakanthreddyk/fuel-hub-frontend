@@ -650,6 +650,8 @@ export interface CreateCashReportRequest {
   cashAmount: number;
   cardAmount?: number;
   upiAmount?: number;
+  creditAmount?: number;
+  creditorId?: string;
   reportDate?: string;
   shift: 'morning' | 'afternoon' | 'night';
   notes?: string;

@@ -25,7 +25,18 @@ export const creditorService = {
       console.log('[CREDITOR-API] Fetching creditors for station:', stationId);
       const params = stationId ? { stationId } : {};
       const response = await apiClient.get(`creditors`, { params });
-      return extractArray<Creditor>(response);
+      
+      // Log the raw response to debug
+      console.log('[CREDITOR-API] Raw response:', response.data);
+      
+      // Handle nested response format: {success: true, data: {creditors: [...]}}
+      if (response.data?.success && response.data?.data?.creditors) {
+        console.log('[CREDITOR-API] Found nested creditors array:', response.data.data.creditors);
+        return response.data.data.creditors;
+      }
+      
+      // Try standard extraction
+      return extractArray<Creditor>(response, 'creditors');
     } catch (error) {
       console.error('[CREDITOR-API] Error fetching creditors:', error);
       return [];

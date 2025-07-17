@@ -11,8 +11,10 @@ import { format } from 'date-fns';
 import { TopCreditor } from '@/api/api-contract';
 
 export function TopCreditorsTable() {
-  const { data: creditors = [], isLoading } = useTopCreditors();
+  const { data: creditors = [], isLoading, isError } = useTopCreditors();
   const [selectedCreditor, setSelectedCreditor] = useState<TopCreditor | null>(null);
+  
+  console.log('[TOP-CREDITORS] Data:', creditors, 'Loading:', isLoading, 'Error:', isError);
 
   if (isLoading) {
     return (
