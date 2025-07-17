@@ -164,17 +164,8 @@ apiClient.interceptors.response.use(
     if (error.code === 'ERR_NETWORK' || !error.response) {
       console.error('[API-CLIENT] Network error - server not reachable:', error);
       
-      // Store the error state in localStorage so we can show a proper error page
-      localStorage.setItem('fuelsync_api_error', JSON.stringify({
-        type: 'network',
-        message: 'Unable to connect to the backend server',
-        timestamp: new Date().toISOString()
-      }));
-      
-      // If we're not already on the error page, redirect to it
-      if (!window.location.pathname.includes('/error')) {
-        window.location.href = '/error';
-      }
+      // Just log the error, don't redirect or store in localStorage
+      // This prevents infinite redirect loops
     } else {
       console.error(`[API-CLIENT] Request failed:`, {
         url: error.config?.url,
