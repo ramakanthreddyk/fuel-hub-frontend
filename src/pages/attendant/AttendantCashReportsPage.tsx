@@ -86,6 +86,20 @@ export default function AttendantCashReportsPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label htmlFor="paymentMethod">Payment Method</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="card">Card</SelectItem>
+                    <SelectItem value="upi">UPI</SelectItem>
+                    <SelectItem value="credit">Credit</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="md:col-span-2 flex gap-2">
                 <Button type="submit">Submit Report</Button>
                 <Button type="button" variant="outline" onClick={() => setShowNewReport(false)}>
