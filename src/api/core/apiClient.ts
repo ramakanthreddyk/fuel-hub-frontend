@@ -166,13 +166,24 @@ apiClient.interceptors.response.use(
       
       // Just log the error, don't redirect or store in localStorage
       // This prevents infinite redirect loops
+      error.message = 'Network error: Unable to connect to server. Please check your internet connection.';
     } else {
+      // Extract the error message from the response
+      const errorMessage = error.response?.data?.message || 
+                          (error.response?.data?.status === 'error' && error.response?.data?.data) || 
+                          error.message || 
+                          'An unexpected error occurred';
+      
+      // Enhance the error object with the extracted message
+      error.message = errorMessage;
+      
       console.error(`[API-CLIENT] Request failed:`, {
         url: error.config?.url,
         method: error.config?.method,
         status: error.response?.status,
-        message: error.response?.data?.message || error.message,
-        tenantId: error.config?.headers?.['x-tenant-id'] || 'Not provided'
+        message: errorMessage,
+        tenantId: error.config?.headers?.['x-tenant-id'] || 'Not provided',
+        responseData: error.response?.data
       });
     }
     

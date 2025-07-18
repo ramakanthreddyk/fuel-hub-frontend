@@ -112,11 +112,24 @@ export const useCreateNozzle = () => {
     },
     onError: (error: any) => {
       console.error('Failed to create nozzle:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create nozzle. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Check for specific error messages
+      const errorMessage = error.response?.data?.message || error.message || "Failed to create nozzle. Please try again.";
+      
+      // Handle plan limit exceeded error
+      if (errorMessage.includes('Plan limit exceeded') || errorMessage.includes('nozzles per pump')) {
+        toast({
+          title: "Plan Limit Exceeded",
+          description: "You have reached the maximum number of nozzles allowed per pump in your current plan. Please upgrade your plan or contact support.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     },
   });
 };
