@@ -61,5 +61,34 @@ export const fuelPricesService = {
   bulkUpdatePrices: async (prices: Array<{ stationId: string; fuelType: string; price: number }>): Promise<FuelPrice[]> => {
     const response = await apiClient.post<ApiResponse<{ prices: FuelPrice[] }>>('/fuel-prices/bulk', { prices });
     return response.data.data.prices;
-  }
+  },
+
+  // Create a new fuel price
+  createFuelPrice: async (data: CreateFuelPriceRequest): Promise<FuelPrice> => {
+    const response = await apiClient.post<ApiResponse<FuelPrice>>('/fuel-prices', data);
+    return response.data.data;
+  },
+
+  // Update a fuel price
+  updateFuelPrice: async (id: string, data: UpdateFuelPriceRequest): Promise<FuelPrice> => {
+    const response = await apiClient.put<ApiResponse<FuelPrice>>(`/fuel-prices/${id}`, data);
+    return response.data.data;
+  },
+
+  // Delete a fuel price
+  deleteFuelPrice: async (id: string): Promise<void> => {
+    await apiClient.delete(`/fuel-prices/${id}`);
+  },
+
+  // Validate fuel prices for a station
+  validateFuelPrices: async (stationId: string): Promise<FuelPriceValidation> => {
+    const response = await apiClient.get<ApiResponse<FuelPriceValidation>>(`/fuel-prices/validate/${stationId}`);
+    return response.data.data;
+  },
+
+  // Get stations missing active prices
+  getMissingPrices: async (): Promise<any[]> => {
+    const response = await apiClient.get<ApiResponse<any[]>>('/fuel-prices/missing');
+    return response.data.data;
+  },
 };

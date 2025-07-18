@@ -61,5 +61,19 @@ export const creditorsService = {
   getOutstandingBalance: async (creditorId: string): Promise<{ balance: number; lastUpdated: string }> => {
     const response = await apiClient.get<ApiResponse<{ balance: number; lastUpdated: string }>>(`/creditors/${creditorId}/balance`);
     return response.data.data;
-  }
+  },
+
+  // Create credit payment
+  createPayment: async (data: CreateCreditPaymentRequest): Promise<CreditPayment> => {
+    const response = await apiClient.post<ApiResponse<CreditPayment>>('/credit-payments', data);
+    return response.data.data;
+  },
+
+  // Get credit payments for a creditor
+  getPayments: async (creditorId: string): Promise<CreditPayment[]> => {
+    const response = await apiClient.get<ApiResponse<{ payments: CreditPayment[] }>>(`/credit-payments`, {
+      params: { creditorId },
+    });
+    return response.data.data.payments;
+  },
 };

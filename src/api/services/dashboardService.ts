@@ -185,5 +185,35 @@ export const dashboardService = {
       // Return empty array instead of throwing to prevent dashboard from breaking
       return [];
     }
+  },
+
+  getTopStations: async (limit: number = 10): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/dashboard/top-stations?limit=${limit}`);
+      return extractArray<any>(response, 'stations');
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching top stations:', error);
+      throw error;
+    }
+  },
+
+  getRecentActivities: async (limit: number = 20): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/dashboard/recent-activities?limit=${limit}`);
+      return extractArray<any>(response, 'activities');
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching recent activities:', error);
+      throw error;
+    }
+  },
+
+  getAlertsSummary: async (): Promise<{ total: number; critical: number; unread: number }> => {
+    try {
+      const response = await apiClient.get('/dashboard/alerts-summary');
+      return extractData<{ total: number; critical: number; unread: number }>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching alerts summary:', error);
+      throw error;
+    }
   }
 };
