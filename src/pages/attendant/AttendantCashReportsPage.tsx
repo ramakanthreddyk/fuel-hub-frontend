@@ -18,7 +18,15 @@ export default function AttendantCashReportsPage() {
 
   const handleSubmitReport = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
+    const form = e.target as HTMLFormElement;
+    const data = {
+      stationId: selectedStationId!,
+      date: new Date().toISOString(),
+      cashAmount: parseFloat((form.elements.namedItem('cash') as HTMLInputElement).value),
+      creditEntries: [],
+      paymentMethod: (form.elements.namedItem('paymentMethod') as HTMLInputElement).value,
+    };
+    createReport.mutate(data);
     setShowNewReport(false);
   };
 
@@ -75,7 +83,7 @@ export default function AttendantCashReportsPage() {
               </div>
               <div>
                 <Label htmlFor="shift">Shift</Label>
-                <Select>
+                <Select name="shift">
                   <SelectTrigger>
                     <SelectValue placeholder="Select shift" />
                   </SelectTrigger>
@@ -88,7 +96,7 @@ export default function AttendantCashReportsPage() {
               </div>
               <div>
                 <Label htmlFor="paymentMethod">Payment Method</Label>
-                <Select>
+                <Select name="paymentMethod">
                   <SelectTrigger>
                     <SelectValue placeholder="Select payment method" />
                   </SelectTrigger>

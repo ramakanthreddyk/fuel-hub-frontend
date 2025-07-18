@@ -28,6 +28,7 @@ import { format } from 'date-fns';
 import { SalesHierarchy } from '@/components/analytics/SalesHierarchy';
 import { ScheduleReportForm } from '@/components/reports/ScheduleReportForm';
 import { ReconciliationDifferences } from '@/components/reconciliation/ReconciliationDifferences';
+import { ExportReportForm } from '@/components/reports/ExportReportForm';
 
 export default function ReportsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -160,6 +161,7 @@ export default function ReportsPage() {
         </div>
         <div className="flex gap-2">
           <ScheduleReportForm />
+          <ExportReportForm />
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm">

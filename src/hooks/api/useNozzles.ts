@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { nozzlesService } from '@/api/services/nozzlesService';
 import { useToast } from '@/hooks/use-toast';
 import { useDataStore } from '@/store/dataStore';
+import { useErrorHandler } from '../useErrorHandler';
 
 /**
  * Hook to fetch nozzles for a pump or all nozzles
@@ -16,6 +17,7 @@ import { useDataStore } from '@/store/dataStore';
 export const useNozzles = (pumpId?: string) => {
   const { toast } = useToast();
   const { nozzles: storedNozzles, setNozzles } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useQuery({
     queryKey: ['nozzles', pumpId || 'all'],
@@ -37,16 +39,9 @@ export const useNozzles = (pumpId?: string) => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
-    meta: {
-      onError: (error: any) => {
-        console.error('Failed to fetch nozzles:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load nozzles. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
+    onError: (error) => {
+      handleError(error, 'Failed to fetch nozzles.');
+    },
   });
 };
 
@@ -96,6 +91,7 @@ export const useCreateNozzle = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { clearNozzles } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (data: any) => nozzlesService.createNozzle(data),
@@ -111,25 +107,7 @@ export const useCreateNozzle = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to create nozzle:', error);
-      
-      // Check for specific error messages
-      const errorMessage = error.response?.data?.message || error.message || "Failed to create nozzle. Please try again.";
-      
-      // Handle plan limit exceeded error
-      if (errorMessage.includes('Plan limit exceeded') || errorMessage.includes('nozzles per pump')) {
-        toast({
-          title: "Plan Limit Exceeded",
-          description: "You have reached the maximum number of nozzles allowed per pump in your current plan. Please upgrade your plan or contact support.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
+      handleError(error, 'Failed to create nozzle.');
     },
   });
 };
@@ -142,6 +120,7 @@ export const useUpdateNozzle = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { clearNozzles } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => nozzlesService.updateNozzle(id, data),
@@ -164,12 +143,7 @@ export const useUpdateNozzle = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to update nozzle:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update nozzle. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to update nozzle.');
     },
   });
 };
@@ -182,6 +156,7 @@ export const useDeleteNozzle = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { clearNozzles } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (id: string) => nozzlesService.deleteNozzle(id),
@@ -198,12 +173,7 @@ export const useDeleteNozzle = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to delete nozzle:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete nozzle. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to delete nozzle.');
     },
   });
 };
@@ -215,22 +185,16 @@ export const useDeleteNozzle = () => {
  */
 export const useNozzleSettings = (id: string) => {
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
   
   return useQuery({
     queryKey: ['nozzle-settings', id],
     queryFn: () => nozzlesService.getNozzleSettings(id),
     enabled: !!id,
     staleTime: 60000, // 1 minute
-    meta: {
-      onError: (error: any) => {
-        console.error('Failed to fetch nozzle settings:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load nozzle settings. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
+    onError: (error) => {
+      handleError(error, 'Failed to fetch nozzle settings.');
+    },
   });
 };
 
@@ -241,6 +205,7 @@ export const useNozzleSettings = (id: string) => {
 export const useUpdateNozzleSettings = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => nozzlesService.updateNozzleSettings(id, data),
@@ -252,12 +217,7 @@ export const useUpdateNozzleSettings = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to update nozzle settings:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update nozzle settings. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to update nozzle settings.');
     },
   });
 };

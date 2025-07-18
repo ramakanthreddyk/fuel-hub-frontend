@@ -5,13 +5,18 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReadingsStore } from '@/store/readingsStore';
 import { useDataStore } from '@/store/dataStore';
+import { useErrorHandler } from '../useErrorHandler';
 
 export const useReadings = () => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['readings'],
     queryFn: readingsService.getReadings,
     staleTime: 30000,
     retry: 2,
+    onError: (error) => {
+      handleError(error, 'Failed to fetch readings.');
+    },
   });
 };
 
@@ -27,6 +32,7 @@ export const useReading = (id: string) => {
 export const useCreateReading = () => {
   const queryClient = useQueryClient();
   const { setLastCreatedReading } = useReadingsStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (data: any) => readingsService.createReading(data),
@@ -54,21 +60,7 @@ export const useCreateReading = () => {
       // Toast is now handled in the component for better user experience
     },
     onError: (error: any) => {
-      console.error('Failed to create reading:', error);
-      
-      // Extract error message
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to create reading. Please try again.';
-      
-      // Log detailed error for debugging
-      console.error('Reading creation error details:', {
-        message: errorMessage,
-        status: error?.response?.status,
-        data: error?.response?.data
-      });
-      
-      // Toast is now handled in the component for better user experience
+      handleError(error, 'Failed to create reading.');
     },
   });
 };
@@ -77,6 +69,7 @@ export const useUpdateReading = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => {
@@ -96,12 +89,7 @@ export const useUpdateReading = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to update reading:', error);
-      toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update reading. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to update reading.');
     },
   });
 };
@@ -109,6 +97,7 @@ export const useUpdateReading = () => {
 export const useVoidReading = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) => readingsService.voidReading(id, reason),
@@ -122,12 +111,7 @@ export const useVoidReading = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to void reading:', error);
-      toast({
-        title: "Void Failed",
-        description: error.message || "Failed to void reading. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to void reading.');
     },
   });
 };
