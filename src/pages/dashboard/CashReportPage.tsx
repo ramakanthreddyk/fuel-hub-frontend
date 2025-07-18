@@ -47,7 +47,13 @@ export default function CashReportPage() {
   const {
     data: creditors = [],
     isLoading: creditorsLoading,
+    isError: creditorsError,
   } = useAttendantCreditors(selectedStationId);
+  
+  // Log error for debugging
+  if (creditorsError) {
+    console.error('[CASH-REPORT] Error fetching creditors:', creditorsError);
+  }
   
   // Submit cash report mutation
   const submitCashReport = useCreateCashReport();
@@ -84,7 +90,7 @@ export default function CashReportPage() {
     if (creditAmount > 0 && !selectedCreditorId) {
       toast({
         title: 'Missing Creditor',
-        description: 'Please select a creditor for the credit amount',
+        description: creditorsError ? 'Please enter a creditor name for the credit amount' : 'Please select a creditor for the credit amount',
         variant: 'destructive'
       });
       return;
@@ -119,7 +125,8 @@ export default function CashReportPage() {
     }
   };
   
-  if (stationsLoading || creditorsLoading) {
+  // Only block UI for station loading, not for creditors loading
+  if (stationsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -265,21 +272,40 @@ export default function CashReportPage() {
             {creditAmount > 0 && (
               <div className="space-y-2">
                 <Label htmlFor="creditor">Select Creditor</Label>
-                <Select 
-                  value={selectedCreditorId} 
-                  onValueChange={setSelectedCreditorId}
-                >
-                  <SelectTrigger id="creditor">
-                    <SelectValue placeholder="Select creditor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {creditors.map((creditor) => (
-                      <SelectItem key={creditor.id} value={creditor.id}>
-                        {creditor.partyName || creditor.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {creditorsError ? (
+                  <div className="space-y-2">
+                    <Input
+                      id="creditorName"
+                      placeholder="Enter creditor name (API unavailable)"
+                      value={selectedCreditorId}
+                      onChange={(e) => setSelectedCreditorId(e.target.value)}
+                      required
+                    />
+                    <p className="text-sm text-amber-600">Creditor API is currently unavailable. Please enter creditor name manually.</p>
+                  </div>
+                ) : (
+                  <Select 
+                    value={selectedCreditorId} 
+                    onValueChange={setSelectedCreditorId}
+                  >
+                    <SelectTrigger id="creditor">
+                      <SelectValue placeholder="Select creditor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {creditors.length > 0 ? (
+                        creditors.map((creditor) => (
+                          <SelectItem key={creditor.id} value={creditor.id}>
+                            {creditor.partyName || creditor.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-creditors" disabled>
+                          No creditors available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             )}
             
