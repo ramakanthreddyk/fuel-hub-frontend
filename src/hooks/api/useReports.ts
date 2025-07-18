@@ -5,17 +5,22 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { reportsApi, Report, GenerateReportRequest } from '@/api/unified-reports';
+import { useErrorHandler } from '../useErrorHandler';
 
 /**
  * Hook to fetch all reports
  * @returns Query result with reports data
  */
 export const useReports = () => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['reports'],
     queryFn: () => reportsApi.getReports(),
     staleTime: 60000, // 1 minute
-    retry: 2
+    retry: 2,
+    onError: (error) => {
+      handleError(error, 'Failed to fetch reports.');
+    },
   });
 };
 
@@ -25,12 +30,16 @@ export const useReports = () => {
  * @returns Query result with report data
  */
 export const useReport = (id: string) => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['report', id],
     queryFn: () => reportsApi.getReport(id),
     enabled: !!id,
     staleTime: 60000, // 1 minute
-    retry: 2
+    retry: 2,
+    onError: (error) => {
+      handleError(error, 'Failed to fetch report.');
+    },
   });
 };
 
@@ -40,10 +49,11 @@ export const useReport = (id: string) => {
  */
 export const useGenerateReport = () => {
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
 
   return useMutation({
     mutationFn: (data: GenerateReportRequest) => reportsApi.generateReport(data),
-    onSuccess: (blob) => {
+    onSuccess: (blob, data) => {
       console.log('[REPORTS-HOOK] Report generated successfully');
 
       if (blob) {
@@ -67,7 +77,7 @@ export const useGenerateReport = () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] });
     },
     onError: (error) => {
-      console.error('[REPORTS-HOOK] Error generating report:', error);
+      handleError(error, 'Failed to generate report.');
     }
   });
 };
@@ -77,6 +87,7 @@ export const useGenerateReport = () => {
  * @returns Mutation result for downloading a report
  */
 export const useDownloadReport = () => {
+  const { handleError } = useErrorHandler();
   return useMutation({
     mutationFn: (id: string) => reportsApi.downloadReport(id),
     onSuccess: (blob, id) => {
@@ -102,7 +113,7 @@ export const useDownloadReport = () => {
       }
     },
     onError: (error, id) => {
-      console.error(`[REPORTS-HOOK] Error downloading report ${id}:`, error);
+      handleError(error, `Failed to download report ${id}.`);
     }
   });
 };

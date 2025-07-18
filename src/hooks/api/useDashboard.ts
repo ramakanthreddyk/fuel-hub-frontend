@@ -7,6 +7,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService, SalesSummary, PaymentMethodBreakdown, FuelTypeBreakdown, DailySalesTrend, StationMetric, DashboardFilters } from '@/api/services/dashboardService';
+import { useErrorHandler } from '../useErrorHandler';
 
 /**
  * Hook to fetch sales summary for the dashboard
@@ -15,10 +16,14 @@ import { dashboardService, SalesSummary, PaymentMethodBreakdown, FuelTypeBreakdo
  * @returns Query result with sales summary data
  */
 export const useSalesSummary = (period: string = 'today', filters: DashboardFilters = {}) => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['sales-summary', period, filters],
     queryFn: () => dashboardService.getSalesSummary(period, filters),
     staleTime: 300000, // 5 minutes
+    onError: (error) => {
+      handleError(error, 'Failed to fetch sales summary.');
+    },
   });
 };
 
@@ -28,10 +33,14 @@ export const useSalesSummary = (period: string = 'today', filters: DashboardFilt
  * @returns Query result with payment method breakdown data
  */
 export const usePaymentMethodBreakdown = (filters: DashboardFilters = {}) => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['payment-method-breakdown', filters],
     queryFn: () => dashboardService.getPaymentMethodBreakdown(filters),
     staleTime: 300000, // 5 minutes
+    onError: (error) => {
+      handleError(error, 'Failed to fetch payment method breakdown.');
+    },
   });
 };
 
@@ -41,10 +50,14 @@ export const usePaymentMethodBreakdown = (filters: DashboardFilters = {}) => {
  * @returns Query result with fuel type breakdown data
  */
 export const useFuelTypeBreakdown = (filters: DashboardFilters = {}) => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['fuel-type-breakdown', filters],
     queryFn: () => dashboardService.getFuelTypeBreakdown(filters),
     staleTime: 300000, // 5 minutes
+    onError: (error) => {
+      handleError(error, 'Failed to fetch fuel type breakdown.');
+    },
   });
 };
 
@@ -54,10 +67,14 @@ export const useFuelTypeBreakdown = (filters: DashboardFilters = {}) => {
  * @returns Query result with daily sales trend data
  */
 export const useDailySalesTrend = (days: number = 7) => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['daily-sales-trend', days],
     queryFn: () => dashboardService.getDailySalesTrend(days),
     staleTime: 300000, // 5 minutes
+    onError: (error) => {
+      handleError(error, 'Failed to fetch daily sales trend.');
+    },
   });
 };
 
@@ -66,9 +83,13 @@ export const useDailySalesTrend = (days: number = 7) => {
  * @returns Query result with station metrics data
  */
 export const useStationMetrics = () => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['station-metrics'],
     queryFn: () => dashboardService.getStationMetrics(),
     staleTime: 300000, // 5 minutes
+    onError: (error) => {
+      handleError(error, 'Failed to fetch station metrics.');
+    },
   });
 };

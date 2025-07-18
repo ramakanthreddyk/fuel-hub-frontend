@@ -3,9 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stationsService } from '@/api/services/stationsService';
 import { toast } from '@/hooks/use-toast';
 import { useDataStore } from '@/store/dataStore';
+import { useErrorHandler } from '../useErrorHandler';
 
 export const useStations = () => {
   const { stations: storedStations, setStations } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useQuery({
     queryKey: ['stations'],
@@ -25,6 +27,9 @@ export const useStations = () => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
+    onError: (error) => {
+      handleError(error, 'Failed to fetch stations.');
+    },
   });
 };
 
@@ -51,6 +56,7 @@ export const useStation = (id: string) => {
 export const useCreateStation = () => {
   const queryClient = useQueryClient();
   const { clearStations } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (data: any) => stationsService.createStation(data),
@@ -64,12 +70,7 @@ export const useCreateStation = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to create station:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create station. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to create station.');
     },
   });
 };
@@ -77,6 +78,7 @@ export const useCreateStation = () => {
 export const useUpdateStation = () => {
   const queryClient = useQueryClient();
   const { clearStations } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => stationsService.updateStation(id, data),
@@ -91,12 +93,7 @@ export const useUpdateStation = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to update station:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update station. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to update station.');
     },
   });
 };
@@ -104,6 +101,7 @@ export const useUpdateStation = () => {
 export const useDeleteStation = () => {
   const queryClient = useQueryClient();
   const { clearStations } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (id: string) => stationsService.deleteStation(id),
@@ -117,12 +115,7 @@ export const useDeleteStation = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to delete station:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete station. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to delete station.');
     },
   });
 };

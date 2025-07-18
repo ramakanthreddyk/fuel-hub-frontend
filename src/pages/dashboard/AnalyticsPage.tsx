@@ -15,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SalesHierarchy } from "@/components/analytics/SalesHierarchy";
+import { ReconciliationDifferences } from "@/components/reconciliation/ReconciliationDifferences";
 
 export default function AnalyticsPage() {
   const queryClient = useQueryClient();
@@ -119,6 +121,12 @@ export default function AnalyticsPage() {
           <StationRanking period={rankingPeriod} />
         </CardContent>
       </Card>
+
+      {/* Sales Hierarchy */}
+      <SalesHierarchy />
+
+      {/* Reconciliation Differences */}
+      <ReconciliationDifferences />
     </div>
   );
 }

@@ -3,9 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pumpsService } from '@/api/services/pumpsService';
 import { toast } from '@/hooks/use-toast';
 import { useDataStore } from '@/store/dataStore';
+import { useErrorHandler } from '../useErrorHandler';
 
 export const usePumps = (stationId?: string) => {
   const { pumps: storedPumps, setPumps } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useQuery({
     queryKey: ['pumps', stationId || 'all'],
@@ -27,6 +29,9 @@ export const usePumps = (stationId?: string) => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
+    onError: (error) => {
+      handleError(error, 'Failed to fetch pumps.');
+    },
   });
 };
 
@@ -55,6 +60,7 @@ export const usePump = (id: string) => {
 export const useCreatePump = () => {
   const queryClient = useQueryClient();
   const { clearPumps } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (data: any) => pumpsService.createPump(data),
@@ -70,12 +76,7 @@ export const useCreatePump = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to create pump:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create pump. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to create pump.');
     },
   });
 };
@@ -83,6 +84,7 @@ export const useCreatePump = () => {
 export const useUpdatePump = () => {
   const queryClient = useQueryClient();
   const { clearPumps } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => pumpsService.updatePump(id, data),
@@ -98,12 +100,7 @@ export const useUpdatePump = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to update pump:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update pump. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to update pump.');
     },
   });
 };
@@ -111,6 +108,7 @@ export const useUpdatePump = () => {
 export const useDeletePump = () => {
   const queryClient = useQueryClient();
   const { clearPumps } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (id: string) => pumpsService.deletePump(id),
@@ -125,12 +123,7 @@ export const useDeletePump = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to delete pump:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete pump. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to delete pump.');
     },
   });
 };

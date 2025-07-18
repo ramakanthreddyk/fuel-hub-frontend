@@ -112,6 +112,17 @@ export function StationMetricsCard({ station }: StationMetricsCardProps) {
               Last activity: {new Date(station.lastActivity).toLocaleDateString()} {new Date(station.lastActivity).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
             </div>
           )}
+
+          {/* Sales Growth */}
+          {station.salesGrowth !== undefined && (
+            <div className={`flex items-center justify-between mt-2 text-xs ${station.salesGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className="flex items-center">
+                {station.salesGrowth >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                <span>Sales Growth</span>
+              </div>
+              <span>{station.salesGrowth.toFixed(2)}%</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

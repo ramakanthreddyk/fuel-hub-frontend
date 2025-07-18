@@ -4,6 +4,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { creditorService } from '@/api/services/creditorService';
+import { useErrorHandler } from '../useErrorHandler';
 
 /**
  * Hook to fetch creditors for a station
@@ -11,10 +12,14 @@ import { creditorService } from '@/api/services/creditorService';
  * @returns Query result with creditors
  */
 export const useCreditors = (stationId?: string) => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['creditors', stationId],
     queryFn: () => creditorService.getCreditors(stationId),
-    staleTime: 60000 // 1 minute
+    staleTime: 60000, // 1 minute
+    onError: (error) => {
+      handleError(error, 'Failed to fetch creditors.');
+    },
   });
 };
 
@@ -24,10 +29,14 @@ export const useCreditors = (stationId?: string) => {
  * @returns Query result with creditor details
  */
 export const useCreditor = (id?: string) => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['creditor', id],
     queryFn: () => creditorService.getCreditor(id || ''),
     enabled: !!id,
-    staleTime: 60000 // 1 minute
+    staleTime: 60000, // 1 minute
+    onError: (error) => {
+      handleError(error, 'Failed to fetch creditor.');
+    },
   });
 };

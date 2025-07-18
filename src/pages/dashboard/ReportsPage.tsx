@@ -25,6 +25,10 @@ import { useReports, useGenerateReport, useDownloadReport } from '@/hooks/api/us
 import { useStations } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { SalesHierarchy } from '@/components/analytics/SalesHierarchy';
+import { ScheduleReportForm } from '@/components/reports/ScheduleReportForm';
+import { ReconciliationDifferences } from '@/components/reconciliation/ReconciliationDifferences';
+import { ExportReportForm } from '@/components/reports/ExportReportForm';
 
 export default function ReportsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -156,6 +160,8 @@ export default function ReportsPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <ScheduleReportForm />
+          <ExportReportForm />
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
@@ -384,6 +390,12 @@ export default function ReportsPage() {
           ))
         )}
       </div>
+
+      {/* Sales Hierarchy */}
+      <SalesHierarchy />
+
+      {/* Reconciliation Differences */}
+      <ReconciliationDifferences />
     </div>
   );
 }

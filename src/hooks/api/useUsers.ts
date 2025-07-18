@@ -6,16 +6,21 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersService, User, CreateUserRequest, UpdateUserRequest, ChangePasswordRequest, ResetPasswordRequest } from '@/api/services/usersService';
+import { useErrorHandler } from '../useErrorHandler';
 
 /**
  * Hook to fetch all users for the current tenant
  * @returns Query result with users data
  */
 export const useUsers = () => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['users'],
     queryFn: () => usersService.getUsers(),
     staleTime: 60000, // 1 minute
+    onError: (error) => {
+      handleError(error, 'Failed to fetch users.');
+    },
   });
 };
 
@@ -39,11 +44,15 @@ export const useUser = (userId: string) => {
  */
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (data: CreateUserRequest) => usersService.createUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to create user.');
     },
   });
 };
@@ -54,6 +63,7 @@ export const useCreateUser = () => {
  */
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ userId, data }: { userId: string; data: UpdateUserRequest }) => 
@@ -61,6 +71,9 @@ export const useUpdateUser = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['user', variables.userId] });
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to update user.');
     },
   });
 };
@@ -71,11 +84,15 @@ export const useUpdateUser = () => {
  */
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (userId: string) => usersService.deleteUser(userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to delete user.');
     },
   });
 };
@@ -85,9 +102,13 @@ export const useDeleteUser = () => {
  * @returns Mutation result for changing password
  */
 export const useChangePassword = () => {
+  const { handleError } = useErrorHandler();
   return useMutation({
     mutationFn: ({ userId, data }: { userId: string; data: ChangePasswordRequest }) => 
       usersService.changePassword(userId, data),
+    onError: (error) => {
+      handleError(error, 'Failed to change password.');
+    },
   });
 };
 
@@ -96,8 +117,12 @@ export const useChangePassword = () => {
  * @returns Mutation result for resetting password
  */
 export const useResetPassword = () => {
+  const { handleError } = useErrorHandler();
   return useMutation({
     mutationFn: ({ userId, data }: { userId: string; data: ResetPasswordRequest }) => 
       usersService.resetPassword(userId, data),
+    onError: (error) => {
+      handleError(error, 'Failed to reset password.');
+    },
   });
 };
