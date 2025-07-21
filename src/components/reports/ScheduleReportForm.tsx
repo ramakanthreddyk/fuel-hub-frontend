@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useStations } from '@/hooks/api/useStations';
 import { useScheduleReport } from '@/hooks/api/useReports';
 import { useToast } from '@/hooks/use-toast';
+import { Clock } from 'lucide-react';
 
 export function ScheduleReportForm() {
   const { data: stations = [] } = useStations();

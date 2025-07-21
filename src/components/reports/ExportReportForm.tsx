@@ -8,6 +8,7 @@ import { useStations } from '@/hooks/api/useStations';
 import { useExportReport } from '@/hooks/api/useReports';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { Download } from 'lucide-react';
 
 export function ExportReportForm() {
   const { data: stations = [] } = useStations();

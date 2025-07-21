@@ -103,7 +103,7 @@ export function TopCreditorsTable() {
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-mono">
-                  ₹{creditor.outstandingAmount.toLocaleString()}
+                  ₹{(creditor.outstandingAmount || 0).toLocaleString()}
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge className={getStatusColor(creditor.outstandingAmount, creditor.creditLimit)}>
@@ -131,11 +131,11 @@ export function TopCreditorsTable() {
                           <div>
                             <h4 className="font-semibold">{selectedCreditor.partyName}</h4>
                             <p className="text-sm text-muted-foreground">
-                              Outstanding: ₹{selectedCreditor.outstandingAmount.toLocaleString()}
+                              Outstanding: ₹{(selectedCreditor.outstandingAmount || 0).toLocaleString()}
                             </p>
                             {selectedCreditor.creditLimit && (
                               <p className="text-sm text-muted-foreground">
-                                Credit Limit: ₹{selectedCreditor.creditLimit.toLocaleString()}
+                                Credit Limit: ₹{(selectedCreditor.creditLimit || 0).toLocaleString()}
                               </p>
                             )}
                           </div>

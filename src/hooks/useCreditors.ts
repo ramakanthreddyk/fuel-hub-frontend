@@ -3,7 +3,7 @@
  * @description React Query hooks for creditor operations
  */
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { creditorService } from '@/api/services/creditorService';
+import { creditorsService } from '@/api/services/creditors.service';
 import { CreateCreditorRequest, CreateCreditPaymentRequest } from '@/api/api-contract';
 import { dashboardService } from '@/api/services/dashboardService';
 
@@ -15,7 +15,7 @@ export const useCreateCreditor = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: CreateCreditorRequest) => creditorService.createCreditor(data),
+    mutationFn: (data: CreateCreditorRequest) => creditorsService.createCreditor(data),
     onSuccess: () => {
       // Invalidate creditors query to refetch the list
       queryClient.invalidateQueries({ queryKey: ['creditors'] });
@@ -31,7 +31,7 @@ export const useCreateCreditorPayment = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: CreateCreditPaymentRequest) => creditorService.createPayment(data),
+    mutationFn: (data: CreateCreditPaymentRequest) => creditorsService.createPayment(data),
     onSuccess: (_, variables) => {
       // Invalidate creditor query to refetch the details
       queryClient.invalidateQueries({ queryKey: ['creditor', variables.creditorId] });

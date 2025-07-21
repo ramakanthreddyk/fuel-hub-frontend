@@ -3,8 +3,8 @@
  * @description React Query hooks for creditors API
  */
 import { useQuery } from '@tanstack/react-query';
-import { creditorService } from '@/api/services/creditorService';
-import { useErrorHandler } from '../useErrorHandler';
+import { creditorsService } from '@/api/services/creditors.service';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Hook to fetch creditors for a station
@@ -12,13 +12,18 @@ import { useErrorHandler } from '../useErrorHandler';
  * @returns Query result with creditors
  */
 export const useCreditors = (stationId?: string) => {
-  const { handleError } = useErrorHandler();
+  const { toast } = useToast();
   return useQuery({
     queryKey: ['creditors', stationId],
-    queryFn: () => creditorService.getCreditors(stationId),
+    queryFn: () => creditorsService.getCreditors(stationId),
     staleTime: 60000, // 1 minute
-    onError: (error) => {
-      handleError(error, 'Failed to fetch creditors.');
+    onError: (error: any) => {
+      console.error('[CREDITORS-HOOK] Failed to fetch creditors:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch creditors. Please try again.',
+        variant: 'destructive',
+      });
     },
   });
 };
@@ -29,14 +34,19 @@ export const useCreditors = (stationId?: string) => {
  * @returns Query result with creditor details
  */
 export const useCreditor = (id?: string) => {
-  const { handleError } = useErrorHandler();
+  const { toast } = useToast();
   return useQuery({
     queryKey: ['creditor', id],
-    queryFn: () => creditorService.getCreditor(id || ''),
+    queryFn: () => creditorsService.getCreditor(id || ''),
     enabled: !!id,
     staleTime: 60000, // 1 minute
-    onError: (error) => {
-      handleError(error, 'Failed to fetch creditor.');
+    onError: (error: any) => {
+      console.error('[CREDITORS-HOOK] Failed to fetch creditor:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch creditor details. Please try again.',
+        variant: 'destructive',
+      });
     },
   });
 };

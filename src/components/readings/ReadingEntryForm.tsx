@@ -92,16 +92,24 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const { data: stations = [] } = useStations();
   const { data: pumps = [] } = usePumps(selectedStation);
   const { data: nozzles = [] } = useNozzles(selectedPump);
-  const { data: latestReading } = useLatestReading(selectedNozzle);
+  const { data: latestReading, isLoading: loadingLatestReading } = useLatestReading(selectedNozzle);
   const { data: canCreateReading, isLoading: loadingCanCreate } = useCanCreateReading(selectedNozzle);
   const { data: stationPriceValidation, isLoading: loadingPriceValidation } = useFuelPriceValidation(selectedStation);
   const { data: fuelPrices = [] } = useFuelPrices(selectedStation);
+  
+  // Debug log for latest reading
+  useEffect(() => {
+    if (selectedNozzle) {
+      console.log('[READING-FORM] Latest reading for nozzle:', selectedNozzle, latestReading);
+    }
+  }, [selectedNozzle, latestReading]);
   const createReading = useCreateReading();
 
   // Fetch creditors (to be migrated later)
   const { data: creditors = [] } = useQuery({
-    queryKey: ['creditors'],
-    queryFn: creditorsApi.getCreditors,
+    queryKey: ['creditors', selectedStation],
+    queryFn: () => creditorsApi.getCreditors(selectedStation),
+    enabled: !!selectedStation
   });
 
   const paymentMethod = form.watch('paymentMethod');

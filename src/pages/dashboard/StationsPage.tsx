@@ -315,7 +315,7 @@ function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps
                     {/* Digital Display */}
                     <div className="absolute top-1 left-0.5 right-0.5 h-3 bg-green-400 rounded-sm animate-pulse">
                       <div className="text-[6px] text-black font-mono text-center leading-3">
-                        ₹{price.toFixed(1)}
+                        ₹{price?.toFixed(1)}
                       </div>
                     </div>
                     

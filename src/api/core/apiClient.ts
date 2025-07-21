@@ -93,16 +93,23 @@ apiClient.interceptors.response.use(
     
     // Handle standard API response format: {success: true, data: {...}}
     if (response.data?.success && response.data?.data) {
+      // Preserve the original response structure but normalize the data inside
+      const originalData = response.data;
       const dataObj = response.data.data;
-      // Check for common array properties and extract them
+      
+      // Don't modify the response structure, just ensure the data is normalized
       if (dataObj.readings && Array.isArray(dataObj.readings)) {
-        response.data = dataObj.readings;
+        // Keep the original structure with normalized readings
+        response.data = originalData;
       } else if (dataObj.prices && Array.isArray(dataObj.prices)) {
-        response.data = dataObj.prices;
+        // Keep the original structure with normalized prices
+        response.data = originalData;
       } else if (Array.isArray(dataObj)) {
-        response.data = dataObj;
+        // Keep the original structure with normalized array
+        response.data = originalData;
       } else {
-        response.data = dataObj;
+        // Keep the original structure with normalized object
+        response.data = originalData;
       }
     }
     
@@ -118,7 +125,7 @@ apiClient.interceptors.response.use(
         
         try {
           // Try to refresh the token
-          refreshPromise = axios.post(`${API_BASE_URL}/api/v1/auth/refresh-token`);
+          refreshPromise = axios.post(`${API_URL}/auth/refresh-token`);
           const response = await refreshPromise;
           
           // If successful, update the token
@@ -216,12 +223,34 @@ export function extractData<T>(response: any): T {
  * @returns Extracted array
  */
 export function extractArray<T>(response: any, arrayKey?: string): T[] {
+  // First check if response.data is directly an array
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+  
+  // Check if response.data.data is directly an array
+  if (Array.isArray(response.data?.data)) {
+    return response.data.data;
+  }
+  
+  // Try to extract data using extractData
   const data = extractData(response);
   
   // If arrayKey is provided, try to get the array from that property
-  if (arrayKey && data && typeof data === 'object' && arrayKey in data) {
-    const arrayData = data[arrayKey as keyof typeof data];
-    return Array.isArray(arrayData) ? arrayData : [];
+  if (arrayKey && data && typeof data === 'object') {
+    // Check if the property exists
+    if (arrayKey in data) {
+      const arrayData = data[arrayKey as keyof typeof data];
+      return Array.isArray(arrayData) ? arrayData : [];
+    }
+    
+    // Check common array properties if the specified key doesn't exist
+    for (const key of ['readings', 'items', 'results', 'data']) {
+      if (key in data && Array.isArray(data[key as keyof typeof data])) {
+        console.log(`[API-CLIENT] Found array in '${key}' property instead of '${arrayKey}'`);
+        return data[key as keyof typeof data];
+      }
+    }
   }
   
   // Otherwise, assume the data itself is the array

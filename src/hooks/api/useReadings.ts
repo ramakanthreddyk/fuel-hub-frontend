@@ -118,30 +118,42 @@ export const useVoidReading = () => {
 
 export const useLatestReading = (nozzleId: string) => {
   const { latestReadings, setLatestReading } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useQuery({
     queryKey: ['latest-reading', nozzleId],
     queryFn: async () => {
+      console.log('[READINGS-HOOK] Fetching latest reading for nozzle:', nozzleId);
+      
       // Check if we have cached data for this nozzle
       if (nozzleId && latestReadings[nozzleId]) {
         console.log('[READINGS-HOOK] Using cached latest reading for nozzle:', nozzleId);
         return latestReadings[nozzleId];
       }
       
-      const reading = await readingsService.getLatestReading(nozzleId);
-      
-      // Store in cache if we have a reading
-      if (reading && nozzleId) {
-        setLatestReading(nozzleId, reading);
+      try {
+        const reading = await readingsService.getLatestReading(nozzleId);
+        console.log('[READINGS-HOOK] Latest reading API result:', reading);
+        
+        // Store in cache if we have a reading
+        if (reading && nozzleId) {
+          setLatestReading(nozzleId, reading);
+        }
+        
+        return reading;
+      } catch (error) {
+        console.error('[READINGS-HOOK] Error fetching latest reading:', error);
+        return null;
       }
-      
-      return reading;
     },
     enabled: !!nozzleId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true
+    staleTime: 30000, // 30 seconds - reduced to ensure fresh data
+    retry: 2,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    onError: (error) => {
+      handleError(error, 'Failed to fetch latest reading.');
+    }
   });
 };
 

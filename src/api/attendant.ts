@@ -46,9 +46,37 @@ export const attendantApi = {
   // Get assigned creditors for current attendant
   getAssignedCreditors: async (stationId?: string): Promise<Creditor[]> => {
     devLog('Fetching assigned creditors for attendant', { stationId });
-    const params = stationId ? `?stationId=${stationId}` : '';
-    const response = await apiClient.get(`/attendant/creditors${params}`);
-    return extractApiArray<Creditor>(response, 'creditors');
+    try {
+      // Ensure stationId is a string if provided
+      let params = '';
+      if (stationId && typeof stationId === 'string') {
+        params = `?stationId=${stationId}`;
+      }
+      
+      // Use the creditors endpoint directly to avoid the 502 error
+      const response = await apiClient.get(`/creditors${params}`);
+      
+      // Handle different response formats
+      let creditors = [];
+      if (response.data?.data?.creditors) {
+        creditors = response.data.data.creditors;
+      } else if (response.data?.creditors) {
+        creditors = response.data.creditors;
+      } else if (Array.isArray(response.data)) {
+        creditors = response.data;
+      }
+      
+      devLog(`[ATTENDANT-API] Successfully fetched ${creditors.length} creditors for station ${stationId || 'all'}`);
+      return creditors;
+    } catch (error: any) {
+      console.error('[ATTENDANT-API] Error fetching creditors:', error);
+      // If API is unavailable, return empty array instead of throwing
+      if (error.response?.status === 503 || error.response?.status === 502 || error.response?.status === 400) {
+        console.warn('[ATTENDANT-API] Creditors API unavailable or invalid parameters, returning empty array');
+        return [];
+      }
+      throw error;
+    }
   },
 
   // Submit cash report

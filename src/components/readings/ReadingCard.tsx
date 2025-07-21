@@ -1,91 +1,166 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+/**
+ * @file components/readings/ReadingCard.tsx
+ * @description Card component for displaying a reading
+ */
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Droplets, Clock, Eye } from 'lucide-react';
+import { Gauge, Clock, Eye, Droplets, Fuel, DollarSign } from 'lucide-react';
 import { formatDateTime, formatCurrency } from '@/utils/formatters';
+import { cn } from '@/lib/utils';
 
 interface ReadingCardProps {
   reading: {
     id: string;
+    nozzleId?: string;
     nozzleNumber?: number;
-    fuelType?: string;
     reading: number;
-    amount?: number;
+    previousReading?: number;
     recordedAt: string;
-    status?: string;
-    stationName?: string;
+    paymentMethod?: string;
+    fuelType?: string;
     pumpName?: string;
+    stationName?: string;
+    amount?: number;
+    volume?: number;
+    pricePerLitre?: number;
   };
-  onView?: (id: string) => void;
+  onView: (id: string) => void;
 }
 
 export function ReadingCard({ reading, onView }: ReadingCardProps) {
-  const getFuelTypeColor = (fuelType: string) => {
-    switch (fuelType?.toLowerCase()) {
+  // Calculate amount if not provided
+  const calculatedAmount = reading.amount !== undefined ? reading.amount : 
+                          reading.volume !== undefined && reading.pricePerLitre !== undefined ? 
+                          reading.volume * reading.pricePerLitre : 
+                          reading.reading !== undefined && reading.previousReading !== undefined && reading.pricePerLitre !== undefined ?
+                          (reading.reading - reading.previousReading) * reading.pricePerLitre : undefined;
+  
+  // Calculate volume if not provided
+  const calculatedVolume = reading.volume !== undefined ? reading.volume :
+                          reading.reading !== undefined && reading.previousReading !== undefined ?
+                          reading.reading - reading.previousReading : undefined;
+  
+  // Get fuel type color
+  const getFuelTypeColor = () => {
+    switch (reading.fuelType?.toLowerCase()) {
       case 'petrol':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
       case 'diesel':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
+        return 'bg-amber-100 text-amber-800 border-amber-200';
       case 'premium':
         return 'bg-purple-100 text-purple-800 border-purple-200';
+      default:
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+    }
+  };
+
+  // Get payment method color
+  const getPaymentMethodColor = () => {
+    switch (reading.paymentMethod?.toLowerCase()) {
+      case 'cash':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'card':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'upi':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'credit':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium">
-            Nozzle #{reading.nozzleNumber || 'N/A'}
-          </CardTitle>
+    <Card className="overflow-hidden hover:shadow-md transition-all duration-200 border-gray-200 bg-white">
+      <div className={cn(
+        "h-1.5 w-full",
+        reading.fuelType?.toLowerCase() === 'petrol' ? 'bg-emerald-500' :
+        reading.fuelType?.toLowerCase() === 'diesel' ? 'bg-amber-500' :
+        reading.fuelType?.toLowerCase() === 'premium' ? 'bg-purple-500' : 'bg-blue-500'
+      )} />
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-3">
+          <div>
+            <h3 className="font-semibold text-gray-900">
+              {reading.nozzleNumber ? `Nozzle #${reading.nozzleNumber}` : 'Nozzle'}
+            </h3>
+            <p className="text-xs text-gray-500">
+              {reading.pumpName && reading.stationName ? 
+                `${reading.stationName} - ${reading.pumpName}` : 
+                reading.pumpName || reading.stationName || 'Unknown location'}
+            </p>
+          </div>
           {reading.fuelType && (
-            <Badge className={getFuelTypeColor(reading.fuelType)}>
+            <Badge variant="outline" className={getFuelTypeColor()}>
+              <Fuel className="h-3 w-3 mr-1" />
               {reading.fuelType}
             </Badge>
           )}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-blue-600">
-            {typeof reading.reading === 'number' ? reading.reading.toLocaleString() : Number(reading.reading).toLocaleString()}
+        
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="bg-gray-50 p-2 rounded-lg border border-gray-100">
+            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+              <Gauge className="h-3 w-3" />
+              Reading
+            </div>
+            <div className="font-mono font-semibold text-gray-900">
+              {reading.reading.toLocaleString()}
+            </div>
           </div>
-          <div className="text-xs text-gray-500">Meter Reading</div>
+          
+          <div className="bg-gray-50 p-2 rounded-lg border border-gray-100">
+            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+              <Droplets className="h-3 w-3" />
+              Volume
+            </div>
+            <div className="font-mono font-semibold text-gray-900">
+              {calculatedVolume !== undefined ? 
+                `${calculatedVolume.toLocaleString()} L` : 
+                'N/A'}
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 p-2 rounded-lg border border-gray-100">
+            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+              <DollarSign className="h-3 w-3" />
+              Amount
+            </div>
+            <div className="font-mono font-semibold text-green-700">
+              {calculatedAmount !== undefined ? 
+                formatCurrency(calculatedAmount) : 
+                'N/A'}
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 p-2 rounded-lg border border-gray-100">
+            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+              <Clock className="h-3 w-3" />
+              Date
+            </div>
+            <div className="text-xs text-gray-700">
+              {formatDateTime(reading.recordedAt)}
+            </div>
+          </div>
         </div>
         
-        <div className="text-center">
-          <div className="text-lg font-semibold text-green-600">
-            {formatCurrency(
-              // Calculate amount if we have price and reading
-              reading.amount !== undefined && reading.amount !== null ? reading.amount :
-              reading.pricePerLitre && reading.reading ? 
-                (Number(reading.reading) - Number(reading.previousReading || 0)) * Number(reading.pricePerLitre) :
-                'N/A'
-            )}
-          </div>
-          <div className="text-xs text-gray-500">Amount</div>
-        </div>
-
-        <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
-          <Clock className="h-3 w-3" />
-          <span>{formatDateTime(reading.recordedAt)}</span>
-        </div>
-
-        <div className="flex gap-1">
-          {onView && (
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="w-full h-7 text-xs"
-              onClick={() => onView(reading.id)}
-            >
-              <Eye className="h-3 w-3 mr-1" />
-              View Details
-            </Button>
+        <div className="flex items-center justify-between">
+          {reading.paymentMethod && (
+            <Badge variant="outline" className={getPaymentMethodColor()}>
+              {reading.paymentMethod}
+            </Badge>
           )}
+          
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => onView(reading.id)}
+            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+          >
+            <Eye className="h-3 w-3 mr-1" />
+            View
+          </Button>
         </div>
       </CardContent>
     </Card>

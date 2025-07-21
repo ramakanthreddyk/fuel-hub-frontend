@@ -6,7 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateCreditor } from '@/hooks/useCreditors';
+import { useStations } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
 import type { CreateCreditorRequest } from '@/api/api-contract';
 
@@ -15,19 +17,51 @@ interface CreditorFormProps {
 }
 
 export function CreditorForm({ onSuccess }: CreditorFormProps) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateCreditorRequest>();
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<CreateCreditorRequest>();
   const createCreditor = useCreateCreditor();
   const { toast } = useToast();
+  const { data: stations = [], isLoading: stationsLoading } = useStations();
+  const [selectedStationId, setSelectedStationId] = useState<string>('none');
+
+  // Handle station selection
+  const handleStationChange = (value: string) => {
+    setSelectedStationId(value);
+    // Only set stationId if not 'none'
+    if (value === 'none') {
+      setValue('stationId', undefined);
+    } else {
+      setValue('stationId', value);
+    }
+  };
 
   const onSubmit = async (data: CreateCreditorRequest) => {
     try {
-      await createCreditor.mutateAsync(data);
+      // Validate credit limit
+      if (data.creditLimit && data.creditLimit > 9999999) {
+        toast({
+          title: 'Invalid Credit Limit',
+          description: 'Credit limit cannot exceed 9,999,999',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      // Create a clean copy of the data
+      const submitData = { ...data };
+      
+      // Handle stationId properly
+      if (selectedStationId === 'none' || !selectedStationId) {
+        delete submitData.stationId;
+      }
+      
+      const result = await createCreditor.mutateAsync(submitData);
       toast({
-        title: 'Creditor Added',
-        description: `${data.partyName} has been successfully added.`,
+        title: 'Success',
+        description: `Creditor ${data.partyName} has been successfully added.`,
         variant: 'success',
       });
       reset();
+      setSelectedStationId('none');
       onSuccess?.();
     } catch (error: any) {
       console.error('Failed to create creditor:', error);
@@ -58,6 +92,23 @@ export function CreditorForm({ onSuccess }: CreditorFormProps) {
                 <p className="text-sm text-red-600">{errors.partyName.message}</p>
               )}
             </div>
+            
+            <div>
+              <Label htmlFor="stationId">Station</Label>
+              <Select value={selectedStationId} onValueChange={handleStationChange}>
+                <SelectTrigger id="stationId">
+                  <SelectValue placeholder="Select station (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No specific station</SelectItem>
+                  {stations.map((station) => (
+                    <SelectItem key={station.id} value={station.id}>
+                      {station.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div>
               <Label htmlFor="contactPerson">Contact Person</Label>
@@ -82,11 +133,19 @@ export function CreditorForm({ onSuccess }: CreditorFormProps) {
               <Input
                 id="creditLimit"
                 type="number"
-                {...register('creditLimit', { valueAsNumber: true })}
+                {...register('creditLimit', { 
+                  valueAsNumber: true,
+                  max: { value: 9999999, message: 'Credit limit cannot exceed 9,999,999' }
+                })}
                 placeholder="Enter credit limit"
                 min="0"
+                max="9999999"
                 step="0.01"
               />
+              {errors.creditLimit && (
+                <p className="text-sm text-red-600">{errors.creditLimit.message}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">Maximum allowed: 9,999,999</p>
             </div>
           </div>
 

@@ -55,6 +55,15 @@ export default function CashReportPage() {
     console.error('[CASH-REPORT] Error fetching creditors:', creditorsError);
   }
   
+  // Log creditors data for debugging
+  console.log('[CASH-REPORT] Creditors data:', { 
+    stationId: selectedStationId,
+    count: creditors?.length || 0, 
+    loading: creditorsLoading, 
+    error: creditorsError,
+    creditors
+  });
+  
   // Submit cash report mutation
   const submitCashReport = useCreateCashReport();
   
@@ -272,7 +281,13 @@ export default function CashReportPage() {
             {creditAmount > 0 && (
               <div className="space-y-2">
                 <Label htmlFor="creditor">Select Creditor</Label>
-                {creditorsError ? (
+                {!selectedStationId ? (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <p className="text-sm text-amber-600">
+                      Please select a station first to load creditors.
+                    </p>
+                  </div>
+                ) : creditorsError || creditors.length === 0 ? (
                   <div className="space-y-2">
                     <Input
                       id="creditorName"
@@ -281,7 +296,11 @@ export default function CashReportPage() {
                       onChange={(e) => setSelectedCreditorId(e.target.value)}
                       required
                     />
-                    <p className="text-sm text-amber-600">Creditor API is currently unavailable. Please enter creditor name manually.</p>
+                    <p className="text-sm text-amber-600">
+                      {creditorsError 
+                        ? "Creditor API is currently unavailable. Please enter creditor name manually." 
+                        : "No creditors found for this station. Please enter creditor name manually."}
+                    </p>
                   </div>
                 ) : (
                   <Select 
@@ -292,17 +311,11 @@ export default function CashReportPage() {
                       <SelectValue placeholder="Select creditor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {creditors.length > 0 ? (
-                        creditors.map((creditor) => (
-                          <SelectItem key={creditor.id} value={creditor.id}>
-                            {creditor.partyName || creditor.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="no-creditors" disabled>
-                          No creditors available
+                      {creditors.map((creditor) => (
+                        <SelectItem key={creditor.id} value={creditor.id}>
+                          {creditor.partyName || creditor.name}
                         </SelectItem>
-                      )}
+                      ))}
                     </SelectContent>
                   </Select>
                 )}

@@ -44,7 +44,13 @@ export const useFuelPrices = (stationId?: string) => {
         return storedFuelPrices[stationId];
       }
       
-      const params = stationId ? `?stationId=${stationId}` : '';
+      // Ensure stationId is a string, not an object
+      let params = '';
+      if (stationId && typeof stationId === 'string') {
+        params = `?stationId=${stationId}`;
+      }
+      
+      console.log('[FUEL-PRICES-HOOK] Fetching fuel prices with URL:', `/fuel-prices${params}`);
       const response = await apiClient.get(`/fuel-prices${params}`);
       
       console.log('[FUEL-PRICES-HOOK] Raw response:', response.data);
@@ -107,6 +113,15 @@ export const useFuelPriceValidation = (stationId?: string) => {
       }
       
       try {
+        // Ensure stationId is a string, not an object
+        if (typeof stationId !== 'string') {
+          return {
+            stationId: '',
+            missingPrices: [{ fuelType: 'all', message: 'Invalid station ID' }],
+            hasValidPrices: false
+          };
+        }
+        
         // Get fuel prices for the station and check if they exist
         const response = await apiClient.get(`/fuel-prices?stationId=${stationId}`);
         let prices: any[] = [];

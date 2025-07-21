@@ -1,6 +1,5 @@
-
 /**
- * @file api/services/dashboardService.ts
+ * @file api/services/dashboard.service.ts
  * @description Service for dashboard API endpoints
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
@@ -82,54 +81,12 @@ export const dashboardService = {
       // Try using the apiClient first
       try {
         const response = await apiClient.get(`/dashboard/sales-summary?${params.toString()}`);
-        
-        // Handle different response formats
-        let data;
-        if (response.data?.data) {
-          data = response.data.data;
-        } else {
-          data = response.data;
-        }
-        
-        // Map the response to the expected format
-        return {
-          totalRevenue: data.totalRevenue || 0,
-          totalVolume: data.totalVolume || 0,
-          salesCount: data.salesCount || 0,
-          period: data.period || range,
-          cashSales: data.cashSales || 0,
-          creditSales: data.creditSales || 0,
-          cardSales: data.cardSales || 0,
-          upiSales: data.upiSales || 0,
-          growthPercentage: data.growthPercentage || 0,
-          averageTicketSize: data.averageTicketSize || (data.salesCount ? data.totalRevenue / data.salesCount : 0),
-          totalProfit: data.totalProfit || 0,
-          profitMargin: data.profitMargin || 0,
-          previousPeriodRevenue: data.previousPeriodRevenue || 0
-        };
+        return extractData<SalesSummary>(response);
       } catch (innerError) {
-        console.error('[DASHBOARD-API] Inner error fetching sales summary:', innerError);
         // If that fails, try a direct axios call with the full URL
         const axios = (await import('axios')).default;
         const directResponse = await axios.get(`${API_URL}/dashboard/sales-summary?${params.toString()}`);
-        const data = directResponse.data;
-        
-        // Map the response to the expected format
-        return {
-          totalRevenue: data.totalRevenue || 0,
-          totalVolume: data.totalVolume || 0,
-          salesCount: data.salesCount || 0,
-          period: data.period || range,
-          cashSales: data.cashSales || 0,
-          creditSales: data.creditSales || 0,
-          cardSales: data.cardSales || 0,
-          upiSales: data.upiSales || 0,
-          growthPercentage: data.growthPercentage || 0,
-          averageTicketSize: data.averageTicketSize || (data.salesCount ? data.totalRevenue / data.salesCount : 0),
-          totalProfit: data.totalProfit || 0,
-          profitMargin: data.profitMargin || 0,
-          previousPeriodRevenue: data.previousPeriodRevenue || 0
-        };
+        return directResponse.data;
       }
     } catch (error) {
       console.error('[DASHBOARD-API] Error fetching sales summary:', error);

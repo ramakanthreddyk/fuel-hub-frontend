@@ -88,7 +88,7 @@ export function StationMetricsCard({ station }: StationMetricsCardProps) {
             <div className="bg-orange-50 rounded-lg p-2.5 border border-orange-100" title="Revenue per pump ratio (Monthly sales / number of pumps)">
               <div className="text-xs font-medium text-orange-600 mb-1">Efficiency</div>
               <div className="text-sm font-bold text-orange-700">
-                {station.efficiency ? (station.efficiency / 1000000).toFixed(2) + 'M' : 'N/A'}
+                {station.efficiency != null ? (station.efficiency / 1000000).toFixed(2) + 'M' : 'N/A'}
               </div>
             </div>
           </div>
@@ -114,13 +114,13 @@ export function StationMetricsCard({ station }: StationMetricsCardProps) {
           )}
 
           {/* Sales Growth */}
-          {station.salesGrowth !== undefined && (
+          {station.salesGrowth != null && (
             <div className={`flex items-center justify-between mt-2 text-xs ${station.salesGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               <div className="flex items-center">
                 {station.salesGrowth >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
                 <span>Sales Growth</span>
               </div>
-              <span>{station.salesGrowth.toFixed(2)}%</span>
+              <span>{Number(station.salesGrowth).toFixed(2)}%</span>
             </div>
           )}
         </div>

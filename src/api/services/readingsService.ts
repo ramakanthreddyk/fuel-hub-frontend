@@ -80,8 +80,23 @@ export const readingsService = {
     try {
       console.log('[READINGS-API] Fetching readings');
       const response = await apiClient.get(API_CONFIG.endpoints.readings.base);
-      const readings = extractArray<Reading>(response, 'readings');
-      console.log(`[READINGS-API] Successfully fetched ${readings.length} readings`);
+      
+      // Handle different response formats
+      let readings = [];
+      if (response.data?.data?.readings) {
+        readings = response.data.data.readings;
+      } else if (response.data?.readings) {
+        readings = response.data.readings;
+      } else if (Array.isArray(response.data)) {
+        readings = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        readings = response.data.data;
+      } else if (response.data?.success && response.data?.data?.readings) {
+        // Handle the specific format we're seeing in the response
+        readings = response.data.data.readings;
+      }
+      
+      console.log(`[READINGS-API] Successfully fetched ${readings.length} readings, raw response:`, response.data);
       return readings;
     } catch (error) {
       console.error('[READINGS-API] Error fetching readings:', error);
@@ -158,13 +173,83 @@ export const readingsService = {
    */
   getLatestReading: async (nozzleId: string): Promise<Reading | null> => {
     try {
-      console.log(`[READINGS-API] Fetching latest reading for nozzle: ${nozzleId}`);
-      // Use limit=1 to get only the most recent reading as per OpenAPI spec
-      const response = await apiClient.get(`${API_CONFIG.endpoints.readings.base}?nozzleId=${nozzleId}&limit=1`);
-      const readings = extractArray<Reading>(response, 'readings');
+      if (!nozzleId) {
+        console.warn('[READINGS-API] No nozzleId provided for getLatestReading');
+        return null;
+      }
       
-      if (readings.length === 0) {
-        console.log(`[READINGS-API] No readings found for nozzle ${nozzleId}`);
+      console.log(`[READINGS-API] Fetching latest reading for nozzle: ${nozzleId}`);
+      
+      // Add tenant ID header explicitly for this request
+      const headers = {};
+      const storedUser = localStorage.getItem('fuelsync_user');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          if (user.tenantId) {
+            headers['x-tenant-id'] = user.tenantId;
+          }
+        } catch (error) {
+          console.error('[READINGS-API] Error parsing stored user:', error);
+        }
+      }
+      
+      // Try direct API call first
+      // Use limit=1 to get only the most recent reading as per OpenAPI spec
+      let readings = [];
+      try {
+        const response = await apiClient.get(`${API_CONFIG.endpoints.readings.base}?nozzleId=${nozzleId}&limit=1`, { headers });
+        console.log('[READINGS-API] Latest reading response:', response.data);
+        
+        // Handle different response formats
+        if (response.data?.data?.readings) {
+          readings = response.data.data.readings;
+        } else if (response.data?.readings) {
+          readings = response.data.readings;
+        } else if (Array.isArray(response.data)) {
+          readings = response.data;
+        } else if (response.data?.data && Array.isArray(response.data.data)) {
+          readings = response.data.data;
+        } else if (response.data?.success && response.data?.data?.readings) {
+          readings = response.data.data.readings;
+        }
+        
+        if (readings.length === 0) {
+          console.log(`[READINGS-API] No readings found for nozzle ${nozzleId}`);
+          return null;
+        }
+      } catch (error) {
+        console.error(`[READINGS-API] Error in primary method for nozzle ${nozzleId}:`, error);
+        // Try fallback method
+        try {
+          const allReadingsResponse = await apiClient.get(API_CONFIG.endpoints.readings.base);
+          const allReadings = extractArray<Reading>(allReadingsResponse, 'readings');
+          const filteredReadings = allReadings.filter(r => r.nozzleId === nozzleId || r.nozzle_id === nozzleId);
+          
+          if (filteredReadings.length === 0) {
+            console.log(`[READINGS-API] No readings found for nozzle ${nozzleId} in fallback method`);
+            return null;
+          }
+          
+          // Sort by recorded date descending
+          filteredReadings.sort((a, b) => {
+            const dateA = new Date(a.recordedAt || a.recorded_at || 0);
+            const dateB = new Date(b.recordedAt || b.recorded_at || 0);
+            return dateB.getTime() - dateA.getTime();
+          });
+          
+          const reading = filteredReadings[0];
+          console.log(`[READINGS-API] Found reading via fallback method:`, reading);
+          return reading;
+        } catch (fallbackError) {
+          console.error(`[READINGS-API] Fallback method also failed:`, fallbackError);
+          return null;
+        }
+      }
+      
+      // Make sure we have readings before trying to access them
+      if (!readings || readings.length === 0) {
+        console.log(`[READINGS-API] No readings found for nozzle ${nozzleId} after processing`);
         return null;
       }
       
