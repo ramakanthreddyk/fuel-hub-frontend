@@ -8,9 +8,9 @@
 // Export existing services
 export { fuelPricesService } from './fuel-prices.service';
 export { creditorsService } from './creditors.service';
-export { dashboardService } from './dashboard.service';
+export { dashboardService } from './dashboardService';
 export { alertsService } from './alerts.service';
-export { reportsService } from './reports.service';
+export { reportsService } from './reportsService';
 export { dailySalesService } from './dailySalesService';
 export { salesService } from './salesService';
 

@@ -82,12 +82,54 @@ export const dashboardService = {
       // Try using the apiClient first
       try {
         const response = await apiClient.get(`/dashboard/sales-summary?${params.toString()}`);
-        return extractData<SalesSummary>(response);
+        
+        // Handle different response formats
+        let data;
+        if (response.data?.data) {
+          data = response.data.data;
+        } else {
+          data = response.data;
+        }
+        
+        // Map the response to the expected format
+        return {
+          totalRevenue: data.totalRevenue || 0,
+          totalVolume: data.totalVolume || 0,
+          salesCount: data.salesCount || 0,
+          period: data.period || range,
+          cashSales: data.cashSales || 0,
+          creditSales: data.creditSales || 0,
+          cardSales: data.cardSales || 0,
+          upiSales: data.upiSales || 0,
+          growthPercentage: data.growthPercentage || 0,
+          averageTicketSize: data.averageTicketSize || (data.salesCount ? data.totalRevenue / data.salesCount : 0),
+          totalProfit: data.totalProfit || 0,
+          profitMargin: data.profitMargin || 0,
+          previousPeriodRevenue: data.previousPeriodRevenue || 0
+        };
       } catch (innerError) {
+        console.error('[DASHBOARD-API] Inner error fetching sales summary:', innerError);
         // If that fails, try a direct axios call with the full URL
         const axios = (await import('axios')).default;
         const directResponse = await axios.get(`${API_URL}/dashboard/sales-summary?${params.toString()}`);
-        return directResponse.data;
+        const data = directResponse.data;
+        
+        // Map the response to the expected format
+        return {
+          totalRevenue: data.totalRevenue || 0,
+          totalVolume: data.totalVolume || 0,
+          salesCount: data.salesCount || 0,
+          period: data.period || range,
+          cashSales: data.cashSales || 0,
+          creditSales: data.creditSales || 0,
+          cardSales: data.cardSales || 0,
+          upiSales: data.upiSales || 0,
+          growthPercentage: data.growthPercentage || 0,
+          averageTicketSize: data.averageTicketSize || (data.salesCount ? data.totalRevenue / data.salesCount : 0),
+          totalProfit: data.totalProfit || 0,
+          profitMargin: data.profitMargin || 0,
+          previousPeriodRevenue: data.previousPeriodRevenue || 0
+        };
       }
     } catch (error) {
       console.error('[DASHBOARD-API] Error fetching sales summary:', error);
@@ -184,6 +226,36 @@ export const dashboardService = {
       console.error('[DASHBOARD-API] Error fetching station metrics:', error);
       // Return empty array instead of throwing to prevent dashboard from breaking
       return [];
+    }
+  },
+
+  getTopStations: async (limit: number = 10): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/dashboard/top-stations?limit=${limit}`);
+      return extractArray<any>(response, 'stations');
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching top stations:', error);
+      throw error;
+    }
+  },
+
+  getRecentActivities: async (limit: number = 20): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/dashboard/recent-activities?limit=${limit}`);
+      return extractArray<any>(response, 'activities');
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching recent activities:', error);
+      throw error;
+    }
+  },
+
+  getAlertsSummary: async (): Promise<{ total: number; critical: number; unread: number }> => {
+    try {
+      const response = await apiClient.get('/dashboard/alerts-summary');
+      return extractData<{ total: number; critical: number; unread: number }>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching alerts summary:', error);
+      throw error;
     }
   }
 };

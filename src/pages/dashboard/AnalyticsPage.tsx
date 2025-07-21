@@ -119,6 +119,7 @@ export default function AnalyticsPage() {
           <StationRanking period={rankingPeriod} />
         </CardContent>
       </Card>
+
     </div>
   );
 }

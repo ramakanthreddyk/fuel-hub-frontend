@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStations } from '@/hooks/api/useStations';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { fuelPricesService } from '@/api/services/fuelPricesService';
+import { fuelPricesService } from '@/api/services/fuel-prices.service';
 import { AlertCircle, Building2, Fuel, Calendar } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 

@@ -1,76 +1,218 @@
-
 /**
- * Dashboard Service
- * 
- * API service for dashboard metrics and analytics
+ * @file api/services/dashboard.service.ts
+ * @description Service for dashboard API endpoints
  */
+import apiClient, { extractData, extractArray } from '../core/apiClient';
+import { API_URL } from '../config';
 
-import { apiClient } from '../client';
-import type { 
-  DashboardMetrics,
-  PaymentMethodBreakdown,
-  FuelTypeAnalytics,
-  StationPerformance,
-  ApiResponse 
-} from '../api-contract';
+export interface SalesSummary {
+  totalRevenue: number;
+  totalVolume: number;
+  salesCount: number;
+  period: string;
+  cashSales: number;
+  creditSales: number;
+  cardSales?: number;
+  upiSales?: number;
+  growthPercentage: number;
+
+  averageTicketSize?: number;
+  totalProfit?: number;
+  profitMargin?: number;
+  previousPeriodRevenue?: number;
+}
+
+export interface PaymentMethodBreakdown {
+  paymentMethod: string;
+  amount: number;
+  percentage: number;
+}
+
+export interface FuelTypeBreakdown {
+  fuelType: string;
+  volume: number;
+  amount: number;
+}
+
+export interface TopCreditor {
+  id: string;
+  partyName: string;
+  outstandingAmount: number;
+  creditLimit: number | null;
+}
+
+export interface DailySalesTrend {
+  date: string;
+  amount: number;
+  volume: number;
+}
+
+export interface StationMetric {
+  id: string;
+  name: string;
+  todaySales: number;
+  monthlySales: number;
+  salesGrowth: number;
+  activePumps: number;
+  totalPumps: number;
+  status: "active" | "inactive" | "maintenance";
+  lastActivity?: string;
+  efficiency?: number;
+}
+
+export interface DashboardFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
 
 export const dashboardService = {
-  // Get sales summary
-  getSalesSummary: async (params: {
-    range: 'daily' | 'weekly' | 'monthly' | 'yearly';
-    stationId?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  }): Promise<DashboardMetrics> => {
-    const response = await apiClient.get<ApiResponse<DashboardMetrics>>('/dashboard/sales-summary', { params });
-    return response.data.data;
+  /**
+   * Get sales summary
+   */
+  getSalesSummary: async (range: string = 'monthly', filters: DashboardFilters = {}): Promise<SalesSummary> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('range', range);
+      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+
+      // Try using the apiClient first
+      try {
+        const response = await apiClient.get(`/dashboard/sales-summary?${params.toString()}`);
+        return extractData<SalesSummary>(response);
+      } catch (innerError) {
+        // If that fails, try a direct axios call with the full URL
+        const axios = (await import('axios')).default;
+        const directResponse = await axios.get(`${API_URL}/dashboard/sales-summary?${params.toString()}`);
+        return directResponse.data;
+      }
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching sales summary:', error);
+      throw error;
+    }
   },
 
-  // Get payment methods breakdown
-  getPaymentMethods: async (stationId?: string): Promise<PaymentMethodBreakdown[]> => {
-    const params = stationId ? { stationId } : {};
-    const response = await apiClient.get<ApiResponse<{ paymentMethods: PaymentMethodBreakdown[] }>>('/dashboard/payment-methods', { params });
-    return response.data.data.paymentMethods;
+  /**
+   * Get payment method breakdown
+   */
+  getPaymentMethodBreakdown: async (filters: DashboardFilters = {}): Promise<PaymentMethodBreakdown[]> => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+
+      const response = await apiClient.get(`/dashboard/payment-methods?${params.toString()}`);
+      return extractArray<PaymentMethodBreakdown>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching payment methods:', error);
+      throw error;
+    }
   },
 
-  // Get fuel type analytics
-  getFuelTypeAnalytics: async (params?: {
-    stationId?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  }): Promise<FuelTypeAnalytics[]> => {
-    const response = await apiClient.get<ApiResponse<{ fuelTypes: FuelTypeAnalytics[] }>>('/dashboard/fuel-types', { params });
-    return response.data.data.fuelTypes;
+  /**
+   * Get fuel type breakdown
+   */
+  getFuelTypeBreakdown: async (filters: DashboardFilters = {}): Promise<FuelTypeBreakdown[]> => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+      if (filters.dateTo) params.append('dateTo', filters.dateTo);
+
+      const response = await apiClient.get(`/dashboard/fuel-breakdown?${params.toString()}`);
+      return extractArray<FuelTypeBreakdown>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching fuel breakdown:', error);
+      throw error;
+    }
   },
 
-  // Get station performance
-  getStationPerformance: async (params?: {
-    dateFrom?: string;
-    dateTo?: string;
-  }): Promise<StationPerformance[]> => {
-    const response = await apiClient.get<ApiResponse<{ stations: StationPerformance[] }>>('/dashboard/station-performance', { params });
-    return response.data.data.stations;
+  /**
+   * Get top creditors
+   */
+  getTopCreditors: async (limit: number = 5): Promise<TopCreditor[]> => {
+    try {
+      const response = await apiClient.get(`/dashboard/top-creditors?limit=${limit}`);
+      return extractArray<TopCreditor>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching top creditors:', error);
+      throw error;
+    }
   },
 
-  // Get top performing stations
-  getTopStations: async (limit: number = 10): Promise<StationPerformance[]> => {
-    const response = await apiClient.get<ApiResponse<{ stations: StationPerformance[] }>>('/dashboard/top-stations', { 
-      params: { limit } 
-    });
-    return response.data.data.stations;
+  /**
+   * Get daily sales trend
+   */
+  getDailySalesTrend: async (days: number = 7, filters: DashboardFilters = {}): Promise<DailySalesTrend[]> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('days', days.toString());
+      if (filters.stationId) params.append('stationId', filters.stationId);
+
+      const response = await apiClient.get(`/dashboard/sales-trend?${params.toString()}`);
+      return extractArray<DailySalesTrend>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching sales trend:', error);
+      throw error;
+    }
   },
 
-  // Get recent activities
+  /**
+   * Get station metrics
+   */
+  getStationMetrics: async (): Promise<StationMetric[]> => {
+    try {
+      // Try using the apiClient first
+      try {
+        const response = await apiClient.get('/dashboard/station-metrics');
+        // Handle direct array response from API without a wrapper object
+        if (Array.isArray(response.data)) {
+          return response.data;
+        }
+        return extractArray<StationMetric>(response);
+      } catch (innerError) {
+        // If that fails, try a direct axios call with the full URL
+        const axios = (await import('axios')).default;
+        const directResponse = await axios.get(`${API_URL}/dashboard/station-metrics`);
+        return Array.isArray(directResponse.data) ? directResponse.data : [];
+      }
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching station metrics:', error);
+      // Return empty array instead of throwing to prevent dashboard from breaking
+      return [];
+    }
+  },
+
+  getTopStations: async (limit: number = 10): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/dashboard/top-stations?limit=${limit}`);
+      return extractArray<any>(response, 'stations');
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching top stations:', error);
+      throw error;
+    }
+  },
+
   getRecentActivities: async (limit: number = 20): Promise<any[]> => {
-    const response = await apiClient.get<ApiResponse<{ activities: any[] }>>('/dashboard/recent-activities', { 
-      params: { limit } 
-    });
-    return response.data.data.activities;
+    try {
+      const response = await apiClient.get(`/dashboard/recent-activities?limit=${limit}`);
+      return extractArray<any>(response, 'activities');
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching recent activities:', error);
+      throw error;
+    }
   },
 
-  // Get alerts summary
   getAlertsSummary: async (): Promise<{ total: number; critical: number; unread: number }> => {
-    const response = await apiClient.get<ApiResponse<{ total: number; critical: number; unread: number }>>('/dashboard/alerts-summary');
-    return response.data.data;
+    try {
+      const response = await apiClient.get('/dashboard/alerts-summary');
+      return extractData<{ total: number; critical: number; unread: number }>(response);
+    } catch (error) {
+      console.error('[DASHBOARD-API] Error fetching alerts summary:', error);
+      throw error;
+    }
   }
 };

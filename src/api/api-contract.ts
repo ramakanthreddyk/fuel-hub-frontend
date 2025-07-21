@@ -381,6 +381,8 @@ export interface Creditor {
   updatedAt?: string;
   lastPaymentDate?: string;
   lastPurchaseDate?: string;
+  stationId?: string; // Added for station association
+  stationName?: string; // Added for station name
 }
 
 export interface CreateCreditorRequest {
@@ -392,6 +394,7 @@ export interface CreateCreditorRequest {
   creditLimit?: number;
   paymentTerms?: string;
   notes?: string;
+  stationId?: string; // Added for station association
 }
 
 export interface UpdateCreditorRequest {
@@ -404,6 +407,7 @@ export interface UpdateCreditorRequest {
   paymentTerms?: string;
   notes?: string;
   isActive?: boolean;
+  stationId?: string; // Added for station association
 }
 
 export interface CreditPayment {

@@ -32,7 +32,7 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
   const { data: stations = [], isLoading: stationsLoading } = useAttendantStations();
   const { data: pumps = [], isLoading: pumpsLoading } = useAttendantPumps(selectedStationId);
   const { data: nozzles = [], isLoading: nozzlesLoading } = useAttendantNozzles(selectedPumpId);
-  const { data: creditors = [], isLoading: creditorsLoading } = useAttendantCreditors();
+  const { data: creditors = [], isLoading: creditorsLoading } = useAttendantCreditors(selectedStationId);
   const { data: canCreateData } = useCanCreateReading(selectedNozzleId);
   const { data: latestReading } = useLatestNozzleReading(selectedNozzleId);
   

@@ -5,13 +5,18 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReadingsStore } from '@/store/readingsStore';
 import { useDataStore } from '@/store/dataStore';
+import { useErrorHandler } from '../useErrorHandler';
 
 export const useReadings = () => {
+  const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['readings'],
     queryFn: readingsService.getReadings,
     staleTime: 30000,
     retry: 2,
+    onError: (error) => {
+      handleError(error, 'Failed to fetch readings.');
+    },
   });
 };
 
@@ -27,6 +32,7 @@ export const useReading = (id: string) => {
 export const useCreateReading = () => {
   const queryClient = useQueryClient();
   const { setLastCreatedReading } = useReadingsStore();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (data: any) => readingsService.createReading(data),
@@ -54,21 +60,7 @@ export const useCreateReading = () => {
       // Toast is now handled in the component for better user experience
     },
     onError: (error: any) => {
-      console.error('Failed to create reading:', error);
-      
-      // Extract error message
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to create reading. Please try again.';
-      
-      // Log detailed error for debugging
-      console.error('Reading creation error details:', {
-        message: errorMessage,
-        status: error?.response?.status,
-        data: error?.response?.data
-      });
-      
-      // Toast is now handled in the component for better user experience
+      handleError(error, 'Failed to create reading.');
     },
   });
 };
@@ -77,6 +69,7 @@ export const useUpdateReading = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => {
@@ -96,12 +89,7 @@ export const useUpdateReading = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to update reading:', error);
-      toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update reading. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to update reading.');
     },
   });
 };
@@ -109,6 +97,7 @@ export const useUpdateReading = () => {
 export const useVoidReading = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) => readingsService.voidReading(id, reason),
@@ -122,42 +111,49 @@ export const useVoidReading = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Failed to void reading:', error);
-      toast({
-        title: "Void Failed",
-        description: error.message || "Failed to void reading. Please try again.",
-        variant: "destructive",
-      });
+      handleError(error, 'Failed to void reading.');
     },
   });
 };
 
 export const useLatestReading = (nozzleId: string) => {
   const { latestReadings, setLatestReading } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useQuery({
     queryKey: ['latest-reading', nozzleId],
     queryFn: async () => {
+      console.log('[READINGS-HOOK] Fetching latest reading for nozzle:', nozzleId);
+      
       // Check if we have cached data for this nozzle
       if (nozzleId && latestReadings[nozzleId]) {
         console.log('[READINGS-HOOK] Using cached latest reading for nozzle:', nozzleId);
         return latestReadings[nozzleId];
       }
       
-      const reading = await readingsService.getLatestReading(nozzleId);
-      
-      // Store in cache if we have a reading
-      if (reading && nozzleId) {
-        setLatestReading(nozzleId, reading);
+      try {
+        const reading = await readingsService.getLatestReading(nozzleId);
+        console.log('[READINGS-HOOK] Latest reading API result:', reading);
+        
+        // Store in cache if we have a reading
+        if (reading && nozzleId) {
+          setLatestReading(nozzleId, reading);
+        }
+        
+        return reading;
+      } catch (error) {
+        console.error('[READINGS-HOOK] Error fetching latest reading:', error);
+        return null;
       }
-      
-      return reading;
     },
     enabled: !!nozzleId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true
+    staleTime: 30000, // 30 seconds - reduced to ensure fresh data
+    retry: 2,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    onError: (error) => {
+      handleError(error, 'Failed to fetch latest reading.');
+    }
   });
 };
 

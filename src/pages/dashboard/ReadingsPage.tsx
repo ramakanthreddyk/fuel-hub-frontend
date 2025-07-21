@@ -1,11 +1,10 @@
-
 /**
  * @file ReadingsPage.tsx
  * @description Page component for viewing and managing readings
  * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
  * @see docs/journeys/MANAGER.md - Manager journey for recording readings
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +41,11 @@ export default function ReadingsPage() {
   const { data: nozzles = [] } = useNozzles();
   const { data: stations = [] } = useStations();
   
+  // Use sales summary API instead of calculating from readings
+  const { data: salesSummary } = useSalesSummary('all');
+  console.log('[READINGS-PAGE] Sales summary data:', salesSummary);
+  const totalRevenue = salesSummary?.totalRevenue || 0;
+  
   // Debug log to check readings data
   useEffect(() => {
     if (readings && readings.length > 0) {
@@ -58,6 +62,7 @@ export default function ReadingsPage() {
       );
     }
   }, [readings]);
+  
   const {
     data: pendingAlerts = [],
     acknowledge: acknowledgeAlert,
@@ -75,6 +80,12 @@ export default function ReadingsPage() {
       return () => clearTimeout(timer);
     }
   }, [lastCreatedReading, resetLastCreatedReading]);
+  
+  // Force re-render when readings data changes
+  useLayoutEffect(() => {
+    console.log('[READINGS-PAGE] Readings data changed, forcing re-render');
+    // This empty dependency array ensures this effect runs only once
+  }, []);
   
   // Ensure readings is always an array and enrich with related data
   const readingsArray = Array.isArray(readings) ? readings : [];
@@ -96,8 +107,34 @@ export default function ReadingsPage() {
     };
   });
   
+  // Calculate amount for readings that don't have it
+  const readingsWithAmount = enrichedReadings.map(reading => {
+    if (reading.amount === undefined || reading.amount === null) {
+      // Calculate amount if we have the necessary data
+      if (reading.volume !== undefined && reading.pricePerLitre !== undefined) {
+        const calculatedAmount = reading.volume * reading.pricePerLitre;
+        return {
+          ...reading,
+          amount: calculatedAmount
+        };
+      }
+      
+      // If we have reading and previousReading, calculate volume
+      if (reading.reading !== undefined && reading.previousReading !== undefined && reading.pricePerLitre !== undefined) {
+        const volume = reading.reading - reading.previousReading;
+        const calculatedAmount = volume * reading.pricePerLitre;
+        return {
+          ...reading,
+          volume: volume,
+          amount: calculatedAmount
+        };
+      }
+    }
+    return reading;
+  });
+  
   // Filter readings based on selected filter and pump
-  const filteredReadings = enrichedReadings.filter(reading => {
+  const filteredReadings = readingsWithAmount.filter(reading => {
     let dateMatch = true;
     if (filter === 'today') {
       const today = new Date().toDateString();
@@ -139,9 +176,6 @@ export default function ReadingsPage() {
   // Debug the revenue calculation
   console.log('[READINGS-PAGE] Revenue calculation debug:');
   
-  // Use sales summary API instead of calculating from readings
-  const { data: salesSummary } = useSalesSummary('all');
-  const totalRevenue = salesSummary?.totalRevenue || 0;
   const pendingAlertsCount = pendingAlerts.length;
 
   const getStatusBadge = (status: string) => {
@@ -453,7 +487,9 @@ export default function ReadingsPage() {
                       </TableCell>
                       <TableCell className="font-mono text-gray-900">{reading.reading.toLocaleString()}</TableCell>
                       <TableCell className="font-mono text-green-700 font-semibold">
-                        {reading.amount ? formatCurrency(reading.amount) : 'N/A'}
+                        {reading.amount !== undefined && reading.amount !== null ? formatCurrency(reading.amount) : 
+                         reading.volume !== undefined && reading.pricePerLitre !== undefined ? 
+                         formatCurrency(reading.volume * reading.pricePerLitre) : 'N/A'}
                       </TableCell>
                       <TableCell className="text-gray-600">{formatDateTime(reading.recordedAt)}</TableCell>
                       <TableCell>

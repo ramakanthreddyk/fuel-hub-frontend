@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/api/core/apiClient';
 import { useToast } from '@/hooks/use-toast';
 import { useDataStore } from '@/store/dataStore';
+import { useErrorHandler } from '../useErrorHandler';
 
 export interface FuelPrice {
   id: string;
@@ -32,6 +33,7 @@ export interface FuelPriceValidation {
 
 export const useFuelPrices = (stationId?: string) => {
   const { fuelPrices: storedFuelPrices, setFuelPrices } = useDataStore();
+  const { handleError } = useErrorHandler();
   
   return useQuery({
     queryKey: ['fuel-prices', stationId],
@@ -42,7 +44,13 @@ export const useFuelPrices = (stationId?: string) => {
         return storedFuelPrices[stationId];
       }
       
-      const params = stationId ? `?stationId=${stationId}` : '';
+      // Ensure stationId is a string, not an object
+      let params = '';
+      if (stationId && typeof stationId === 'string') {
+        params = `?stationId=${stationId}`;
+      }
+      
+      console.log('[FUEL-PRICES-HOOK] Fetching fuel prices with URL:', `/fuel-prices${params}`);
       const response = await apiClient.get(`/fuel-prices${params}`);
       
       console.log('[FUEL-PRICES-HOOK] Raw response:', response.data);
@@ -86,6 +94,9 @@ export const useFuelPrices = (stationId?: string) => {
     },
     enabled: true,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    onError: (error) => {
+      handleError(error, 'Failed to fetch fuel prices.');
+    },
   });
 };
 
@@ -102,6 +113,15 @@ export const useFuelPriceValidation = (stationId?: string) => {
       }
       
       try {
+        // Ensure stationId is a string, not an object
+        if (typeof stationId !== 'string') {
+          return {
+            stationId: '',
+            missingPrices: [{ fuelType: 'all', message: 'Invalid station ID' }],
+            hasValidPrices: false
+          };
+        }
+        
         // Get fuel prices for the station and check if they exist
         const response = await apiClient.get(`/fuel-prices?stationId=${stationId}`);
         let prices: any[] = [];
@@ -138,6 +158,7 @@ export const useFuelPriceValidation = (stationId?: string) => {
 export const useDeleteFuelPrice = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { handleError } = useErrorHandler();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -152,11 +173,7 @@ export const useDeleteFuelPrice = () => {
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to delete fuel price',
-        variant: 'destructive',
-      });
+      handleError(error, 'Failed to delete fuel price.');
     }
   });
 };

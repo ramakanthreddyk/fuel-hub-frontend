@@ -66,5 +66,32 @@ export const reportsService = {
       responseType: 'blob'
     });
     return response.data;
-  }
+  },
+
+  getReports: async (): Promise<any[]> => {
+    const response = await apiClient.get<ApiResponse<{ reports: any[] }>>('/reports/history');
+    return response.data.data.reports;
+  },
+
+  getReport: async (id: string): Promise<any> => {
+    const response = await apiClient.get<ApiResponse<any>>(`/reports/${id}`);
+    return response.data.data;
+  },
+
+  generateReport: async (data: any): Promise<Blob> => {
+    const response = await apiClient.post<Blob>('/reports/generate', data, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  exportReport: async (data: any): Promise<any> => {
+    const response = await apiClient.post<ApiResponse<any>>('/reports/export', data);
+    return response.data.data;
+  },
+
+  scheduleReport: async (data: any): Promise<any> => {
+    const response = await apiClient.post<ApiResponse<any>>('/reports/schedule', data);
+    return response.data.data;
+  },
 };

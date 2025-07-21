@@ -31,6 +31,17 @@ const API_CONFIG = {
       validate: (stationId: string) => `/fuel-prices/validate/${stationId}`,
       missing: '/fuel-prices/missing',
     },
+    creditors: {
+      base: '/creditors',
+      byId: (id: string) => `/creditors/${id}`,
+      byStation: (stationId: string) => `/creditors?stationId=${stationId}`,
+      payments: (creditorId: string) => `/creditors/${creditorId}/payments`,
+      balance: (creditorId: string) => `/creditors/${creditorId}/balance`,
+    },
+    creditPayments: {
+      base: '/credit-payments',
+      byId: (id: string) => `/credit-payments/${id}`,
+    },
     users: {
       base: '/users',
       byId: (id: string) => `/users/${id}`,
