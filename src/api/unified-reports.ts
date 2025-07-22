@@ -179,7 +179,7 @@ export const reportsApi = {
   // Get all reports (for listing)
   getReports: async (): Promise<Report[]> => {
     try {
-      const response = await apiClient.get(`${API_CONFIG.endpoints.reports.base}/list`);
+      const response = await apiClient.get(API_CONFIG.endpoints.reports.history);
       return extractApiArray<Report>(response, 'reports');
     } catch (error) {
       console.error('[REPORTS-API] Error fetching reports:', error);

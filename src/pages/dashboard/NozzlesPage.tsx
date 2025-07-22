@@ -2,9 +2,12 @@
  * @file pages/dashboard/NozzlesPage.tsx
  * @description Redesigned nozzles page with improved error handling
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams, Link, useParams } from 'react-router-dom';
 import { useFuelStore } from '@/store/fuelStore';
+import { useQueryClient } from '@tanstack/react-query';
+import { useFuelStoreSync } from '@/hooks/useFuelStoreSync';
+import { isNavigationFrom, createNavigationState } from '@/utils/navigationHelper';
 import { Button } from '@/components/ui/button';
 import { Plus, Droplets, Loader2, Filter, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -23,6 +26,8 @@ export default function NozzlesPage() {
   const [searchParams] = useSearchParams();
   const { pumpId } = useParams<{ pumpId: string }>();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { refreshNozzles } = useFuelStoreSync();
   
   // Get state from Zustand store
   const { 
@@ -35,9 +40,24 @@ export default function NozzlesPage() {
   } = useFuelStore();
   
   // Reset selections if we're on the main nozzles page
+  const isInitialMount = useRef(true);
+  
   useEffect(() => {
     if (location.pathname === '/dashboard/nozzles' && !pumpId && !searchParams.get('pumpId')) {
-      resetSelections();
+      // Skip on initial render to avoid circular dependencies
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        return;
+      }
+      
+      // Use setTimeout to avoid state updates during render
+      const timer = setTimeout(() => {
+        // Make sure resetSelections exists before calling it
+        if (typeof resetSelections === 'function') {
+          resetSelections();
+        }
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [location.pathname, pumpId, searchParams, resetSelections]);
   
@@ -54,8 +74,11 @@ export default function NozzlesPage() {
     if (pumpId) {
       setSelectedPump(pumpId);
       selectPump(pumpId);
+      
+      // Ensure we have the latest data when navigating directly to a pump's nozzles
+      refreshNozzles(pumpId);
     }
-  }, [pumpId, selectPump]);
+  }, [pumpId, selectPump, refreshNozzles]);
   
   // Separate effect to update document title after pumps data is loaded
   useEffect(() => {
@@ -64,6 +87,23 @@ export default function NozzlesPage() {
       document.title = `Nozzles for ${pumpName} | FuelSync`;
     }
   }, [pumpId, pumps]);
+  
+  // Separate effect to handle navigation from pumps page
+  useEffect(() => {
+    // Check if we came from the pumps page using our helper
+    const fromPumpsPage = isNavigationFrom(location.state, 'pumps') || 
+                         location.pathname.includes('/pumps/');
+    
+    if (fromPumpsPage && pumpId) {
+      // Force refresh nozzles data when coming from pumps page
+      console.log('[NOZZLES-PAGE] Coming from pumps page, refreshing nozzles data');
+      // Use a timeout to avoid immediate refresh that could cause loops
+      const timer = setTimeout(() => {
+        refreshNozzles(pumpId);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [location, pumpId, refreshNozzles]);
   
   // Effect to update store when station selection changes
   useEffect(() => {
@@ -86,19 +126,43 @@ export default function NozzlesPage() {
   // Get nozzles based on selected pump - error handling is in the hook
   const { data: nozzles = [], isLoading } = useNozzles(selectedPump !== 'all' ? selectedPump : undefined);
   
+  // Use a local state for cached nozzles instead of calling store during render
+  const [cachedNozzles, setCachedNozzles] = useState<any[]>([]);
+  
+  // Get cached nozzles in an effect to avoid render-time state updates
+  useEffect(() => {
+    // Use setTimeout to ensure this happens after render
+    const timer = setTimeout(() => {
+      if (selectedPump !== 'all') {
+        // Access the store state directly without hooks
+        const fuelStore = useFuelStore.getState();
+        if (fuelStore && typeof fuelStore.getNozzlesForPump === 'function') {
+          const cached = fuelStore.getNozzlesForPump(selectedPump);
+          setCachedNozzles(cached);
+        }
+      } else {
+        setCachedNozzles([]);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [selectedPump]);
+  
+  // Use API data if available, otherwise use cached data
+  const displayNozzles = nozzles.length > 0 ? nozzles : cachedNozzles;
+  
   // Effect to update station selection when pump is selected
   useEffect(() => {
     if (selectedPump !== 'all' && pumps.length > 0) {
       const pump = pumps.find(p => p.id === selectedPump);
-      if (pump?.stationId) {
+      if (pump?.stationId && selectedStation !== pump.stationId) {
         setSelectedStation(pump.stationId);
       }
     }
-  }, [selectedPump, pumps]);
+  }, [selectedPump, pumps, selectedStation]);
   const deleteNozzleMutation = useDeleteNozzle(); // Toast handling is in the hook
 
   // Filter nozzles based on search, fuel type, station, and pump
-  const filteredNozzles = nozzles.filter(nozzle => {
+  const filteredNozzles = displayNozzles.filter(nozzle => {
     // Get pump and station info for this nozzle
     const nozzlePump = pumps.find(p => p.id === nozzle.pumpId);
     const nozzleStation = stations.find(s => s.id === nozzlePump?.stationId);
@@ -331,15 +395,16 @@ export default function NozzlesPage() {
                     selectNozzle(nozzleId);
                     
                     // Navigate to the new reading page with proper path parameters
-                    navigate(`/dashboard/stations/${stationId}/pumps/${nozzleData?.pumpId}/nozzles/${nozzleId}/readings/new`, {
-                      state: {
+                    navigate(
+                      `/dashboard/stations/${stationId}/pumps/${nozzleData?.pumpId}/nozzles/${nozzleId}/readings/new`, 
+                      createNavigationState('nozzles', {
                         preselected: {
                           stationId: stationId,
                           pumpId: nozzleData?.pumpId,
                           nozzleId: nozzleId
                         }
-                      }
-                    });
+                      })
+                    );
                   }}
                 />
               );

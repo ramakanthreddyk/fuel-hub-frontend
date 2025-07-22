@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,8 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { RefreshCw, TrendingUp, Users, Fuel, AlertTriangle, CheckCircle, XCircle, Plus } from 'lucide-react';
 import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
 import { useSalesSummary, useStationMetrics } from '@/hooks/useDashboard';
+import { useFuelStore } from '@/store/fuelStore';
+import { shallow } from 'zustand/shallow';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useReconciliationDifferencesSummary } from '@/hooks/useReconciliationDifferencesSummary';
 
 // Dashboard Components
 import { SalesSummaryCard } from '@/components/dashboard/SalesSummaryCard';
@@ -28,15 +30,32 @@ interface DashboardFilters {
   dateTo?: string;
 }
 
+interface Station {
+  id: string;
+  name: string;
+  todaySales?: number;
+  monthlySales?: number;
+  status?: string;
+  activePumps?: number;
+  totalPumps?: number;
+  tenantId?: string; // Added for tenant filtering
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [filters, setFilters] = useState<DashboardFilters>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
-  // API hooks
+  // Use standardized hooks for metrics and sales summary
+  const { data: stationMetrics, isLoading: metricsLoading, refetch: refetchMetrics } = useStationMetrics();
   const { data: salesSummary, isLoading: salesLoading, refetch: refetchSales } = useSalesSummary('monthly', filters);
-  const { data: stationMetrics = [], isLoading: metricsLoading, refetch: refetchMetrics } = useStationMetrics();
+  const differencesEnabled = !!filters.stationId && !!selectedDate;
+  const { data: differencesSummary, isLoading: differencesLoading, error: differencesError } = useReconciliationDifferencesSummary(filters.stationId || '', selectedDate);
+
+  // Safe access to stations and nozzles from Zustand
+  const { stations = [], nozzles = {}, resetSelections } = useFuelStore();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -56,8 +75,17 @@ export default function DashboardPage() {
 
   const isLoading = salesLoading || metricsLoading;
 
-  // Calculate summary stats - fix totalSales reference
-  const totalStations = Array.isArray(stationMetrics) ? stationMetrics.length : 0;
+  // Calculate summary stats
+  // Use Zustand stations if available, else fallback to metrics
+  // Fix: Only show stations for the current tenant/user
+  // If backend filtering fails, filter stations in frontend as a fallback
+  const filteredStations = Array.isArray(stations)
+    ? stations.filter(station => !user?.tenantId || station.tenantId === user.tenantId)
+    : [];
+  const stationsList = filteredStations.length > 0
+    ? filteredStations
+    : (Array.isArray(stationMetrics) ? stationMetrics : []);
+  const totalStations = stationsList.length;
   const activeStations = Array.isArray(stationMetrics) 
     ? stationMetrics.filter(station => station.status === 'active').length 
     : 0;
@@ -65,7 +93,7 @@ export default function DashboardPage() {
   const totalVolume = salesSummary?.totalVolume || 0;
 
   // Get recent stations for display
-  const recentStations = Array.isArray(stationMetrics) ? stationMetrics.slice(0, 5) : [];
+  const recentStations = stationsList.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-white">
@@ -104,7 +132,13 @@ export default function DashboardPage() {
                 onChange={(stationId) => handleFilterChange({ ...filters, stationId })}
                 placeholder="All Stations"
               />
-              {/* Add date range pickers here if needed */}
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={e => setSelectedDate(e.target.value)}
+                className="border rounded px-2 py-1"
+                placeholder="Select Date"
+              />
             </div>
           </CardContent>
         </Card>
@@ -228,6 +262,43 @@ export default function DashboardPage() {
           </Card>
         )}
 
+        {/* Differences Summary Section */}
+        {differencesEnabled && (
+          <Card className="bg-white border-slate-200 shadow-sm mt-4">
+            <CardHeader>
+              <CardTitle className="text-lg text-slate-900">Reconciliation Differences Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {differencesLoading && <div>Loading differences summary...</div>}
+              {differencesError && <div className="text-red-600">Error: {differencesError.message}</div>}
+              {differencesSummary && Array.isArray(differencesSummary) && differencesSummary.length > 0 ? (
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="text-left">Nozzle</th>
+                      <th className="text-left">Expected</th>
+                      <th className="text-left">Actual</th>
+                      <th className="text-left">Difference</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {differencesSummary.map((row: any) => (
+                      <tr key={row.nozzleId}>
+                        <td>{row.nozzleNumber || row.nozzleId}</td>
+                        <td>{row.expectedVolume}</td>
+                        <td>{row.actualVolume}</td>
+                        <td className={Math.abs(row.difference) > 0.01 ? 'text-red-600' : 'text-green-600'}>{row.difference}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div>No differences found for selected station and date.</div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Top Creditors - Moved to Bottom */}
         <div className="w-full">
           <TopCreditorsTable />
@@ -238,3 +309,22 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+// Helper: Check if error is day finalized
+function isDayFinalizedError(error: any) {
+  return error?.response?.data?.message === 'Day already finalized for this station.';
+}
+
+// Example usage in reconciliation/cash report creation
+// In your mutation error handler (e.g., useCreateReading, useCreateCashReport):
+// onError: (error: any) => {
+//   if (isDayFinalizedError(error)) {
+//     toast({
+//       title: 'Day Finalized',
+//       description: 'No further entries can be added for this day and station.',
+//       variant: 'destructive',
+//     });
+//   } else {
+//     // ...existing error handling...
+//   }
+// }

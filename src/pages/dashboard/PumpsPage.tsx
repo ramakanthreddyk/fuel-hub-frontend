@@ -6,6 +6,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFuelStore } from '@/store/fuelStore';
+import { useFuelStoreSync } from '@/hooks/useFuelStoreSync';
+import { createNavigationState } from '@/utils/navigationHelper';
 import { Button } from '@/components/ui/button';
 import { Plus, Fuel, Loader2, Filter, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -21,13 +23,13 @@ export default function PumpsPage() {
   const navigate = useNavigate();
   const { stationId } = useParams<{ stationId: string }>();
   const { toast } = useToast();
+  const { refreshPumps } = useFuelStoreSync();
   
   // Get state from Zustand store
   const { 
     selectedStationId, 
     selectStation,
-    selectPump,
-    resetSelections
+    selectPump
   } = useFuelStore();
   
   // Local state
@@ -36,15 +38,24 @@ export default function PumpsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pumpToDelete, setPumpToDelete] = useState<string | null>(null);
   
-  // Update store when station selection changes
+  // Update store when URL stationId param changes
   useEffect(() => {
     if (stationId) {
       setSelectedStation(stationId);
       selectStation(stationId);
-    } else if (selectedStation) {
+      // Only refresh when the URL param changes
+      refreshPumps(stationId);
+    }
+  }, [stationId, selectStation, refreshPumps]);
+  
+  // Separate effect for when selectedStation changes via dropdown
+  useEffect(() => {
+    // Only run this effect if there's no stationId from URL params
+    // and selectedStation exists and has changed
+    if (!stationId && selectedStation) {
       selectStation(selectedStation);
     }
-  }, [stationId, selectedStation, selectStation]);
+  }, [selectedStation, selectStation, stationId]);
 
   const { data: pumps = [], isLoading } = usePumps(selectedStation);
   const { data: stations = [] } = useStations();
@@ -177,7 +188,10 @@ export default function PumpsPage() {
                   onViewNozzles={(id) => {
                     // Store the selected pump in Zustand
                     selectPump(id);
-                    navigate(`/dashboard/pumps/${id}/nozzles`);
+                    navigate(
+                      `/dashboard/pumps/${id}/nozzles`, 
+                      createNavigationState('pumps')
+                    );
                   }}
                   onDelete={handleDeletePump}
                   needsAttention={needsAttention}

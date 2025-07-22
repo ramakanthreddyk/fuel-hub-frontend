@@ -1,7 +1,39 @@
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { readingsApi, CreateReadingRequest } from '@/api/readings';
+import { useFuelStore } from '@/store/fuelStore';
+import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+
+// Brief overview for reconciliation differences summary UI
+// This hook and UI section help users understand discrepancies between expected and actual readings for each nozzle on a given station and date.
+// The summary table highlights differences, making it easy to spot reconciliation issues and take corrective action.
+// Use this feature to audit daily operations and ensure accurate reporting.
+
+// Hook to get readings for a nozzle, using Zustand cache first, then API fallback
+export const useNozzleReadings = (nozzleId: string) => {
+  const readings = useFuelStore((s) => s.readings[nozzleId] || []);
+  const setReadings = useFuelStore((s) => s.setReadings);
+
+  useEffect(() => {
+    if (!nozzleId) return;
+    // If readings not in store, fetch from API
+    if (readings.length === 0) {
+      readingsApi.getLatestReading(nozzleId).then((latest) => {
+        if (latest) {
+          // Map NozzleReading to Reading type
+          setReadings(nozzleId, [{
+            id: latest.id,
+            nozzleId: latest.nozzleId,
+            value: latest.reading,
+            timestamp: latest.recordedAt,
+          }]);
+        }
+      });
+    }
+  }, [nozzleId, readings.length, setReadings]);
+
+  return readings;
+};
 
 export const useCreateReading = () => {
   const queryClient = useQueryClient();

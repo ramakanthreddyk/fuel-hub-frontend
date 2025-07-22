@@ -151,7 +151,9 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
         );
       }
     });
-  }, [location.pathname]);
+    
+    // We'll handle selections reset in the NozzlesPage component instead
+  }, [location.pathname, location.search]);
 
   const isItemVisible = (item: NavItem) => {
     if (!item.roles) return true;
@@ -160,7 +162,6 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
 
   // Get state from navigation store
   const { activeSection } = useNavigationStore();
-  const { resetSelections } = useFuelStore();
   
   const isActive = (href: string) => {
     const searchParams = new URLSearchParams(location.search);
@@ -278,10 +279,6 @@ function SidebarContent({ onItemClick }: SidebarContentProps) {
             <Link
               to={item.href}
               onClick={() => {
-                // Reset selections when clicking on All Nozzles
-                if (item.href === '/dashboard/nozzles') {
-                  resetSelections();
-                }
                 if (onItemClick) onItemClick();
               }}
               className={cn(

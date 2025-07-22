@@ -72,6 +72,11 @@ export default function CashReportPage() {
     setSelectedStationId(stations[0].id);
   }
   
+  // Helper: Check if error is day finalized
+  function isDayFinalizedError(error: any) {
+    return error?.response?.data?.message === 'Day already finalized for this station.';
+  }
+  
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,11 +131,19 @@ export default function CashReportPage() {
       });
       navigate('/dashboard');
     } catch (error: any) {
-      toast({
-        title: 'Submission Failed',
-        description: error.message || 'Failed to submit cash report. Please try again.',
-        variant: 'destructive'
-      });
+      if (isDayFinalizedError(error)) {
+        toast({
+          title: 'Day Finalized',
+          description: 'No further entries can be added for this day and station.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Submission Failed',
+          description: error.message || 'Failed to submit cash report. Please try again.',
+          variant: 'destructive'
+        });
+      }
     }
   };
   
@@ -142,6 +155,16 @@ export default function CashReportPage() {
       </div>
     );
   }
+  
+  // Fix: Normalize creditor object keys for dropdown
+  // Some APIs return party_name, some return partyName or name
+  // Map creditors to always use partyName for display and id for value
+  const normalizedCreditors = Array.isArray(creditors)
+    ? creditors.map(c => ({
+        id: c.id,
+        partyName: c.partyName || c.party_name || c.name || '',
+      }))
+    : [];
   
   return (
     <div className="space-y-6">
@@ -311,9 +334,9 @@ export default function CashReportPage() {
                       <SelectValue placeholder="Select creditor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {creditors.map((creditor) => (
+                      {normalizedCreditors.map((creditor) => (
                         <SelectItem key={creditor.id} value={creditor.id}>
-                          {creditor.partyName || creditor.name}
+                          {creditor.partyName}
                         </SelectItem>
                       ))}
                     </SelectContent>

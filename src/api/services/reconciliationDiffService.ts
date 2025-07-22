@@ -40,6 +40,12 @@ export const reconciliationDiffService = {
    */
   getReconciliationDiffs: async (filters: ReconciliationDiffFilters = {}): Promise<ReconciliationDiff[]> => {
     try {
+      // Ensure we have at least one filter parameter
+      if (!filters.stationId && !filters.startDate && !filters.endDate && !filters.status) {
+        console.error('[RECONCILIATION-DIFF-API] Missing required filter parameters');
+        return [];
+      }
+
       const params = new URLSearchParams();
       if (filters.stationId) params.append('stationId', filters.stationId);
       if (filters.startDate) params.append('startDate', filters.startDate);
@@ -50,16 +56,22 @@ export const reconciliationDiffService = {
       return extractArray<ReconciliationDiff>(response);
     } catch (error) {
       console.error('[RECONCILIATION-DIFF-API] Error fetching differences:', error);
-      throw error;
+      // Return empty array instead of throwing to prevent UI errors
+      return [];
     }
   },
 
   /**
    * Get discrepancy summary for dashboard
+   * @param stationId - Station ID
+   * @param date - Date in YYYY-MM-DD format
    */
-  getDiscrepancySummary: async (): Promise<DiscrepancySummary> => {
+  getDiscrepancySummary: async (stationId: string, date: string): Promise<DiscrepancySummary> => {
     try {
-      const response = await apiClient.get('/reconciliation/differences/summary');
+      if (!stationId || !date) {
+        throw new Error('stationId and date required');
+      }
+      const response = await apiClient.get(`/reconciliation/differences/summary?stationId=${stationId}&date=${date}`);
       return extractData<DiscrepancySummary>(response);
     } catch (error) {
       console.error('[RECONCILIATION-DIFF-API] Error fetching summary:', error);

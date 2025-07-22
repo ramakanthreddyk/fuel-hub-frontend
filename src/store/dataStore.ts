@@ -4,7 +4,9 @@ import { persist } from 'zustand/middleware';
 interface DataStore {
   // Fuel Prices
   fuelPrices: Record<string, any[]>; // stationId -> prices array
+  allFuelPrices: any[]; // global cache for all prices
   setFuelPrices: (stationId: string, prices: any[]) => void;
+  setAllFuelPrices: (prices: any[]) => void;
   
   // Stations
   stations: any[];
@@ -38,6 +40,7 @@ export const useDataStore = create<DataStore>()(
     (set) => ({
       // Initial state
       fuelPrices: {},
+      allFuelPrices: [],
       stations: [],
       pumps: {},
       nozzles: {},
@@ -48,6 +51,8 @@ export const useDataStore = create<DataStore>()(
         set((state) => ({ 
           fuelPrices: { ...state.fuelPrices, [stationId]: prices } 
         })),
+      setAllFuelPrices: (prices) => 
+        set(() => ({ allFuelPrices: prices })),
       
       setStations: (stations) => set({ stations }),
       

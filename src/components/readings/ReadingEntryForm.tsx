@@ -1,13 +1,11 @@
-
 /**
  * @file ReadingEntryForm.tsx
  * @description Form component for recording nozzle readings
  */
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useFuelStore } from '@/store/fuelStore';
-import { useDataStore } from '@/store/dataStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,15 +15,15 @@ import { AlertTriangle, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
-// Import new API hooks
+// Import API hooks
 import { useStations } from '@/hooks/api/useStations';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
 import { useCreateReading, useLatestReading, useCanCreateReading } from '@/hooks/api/useReadings';
-import { useFuelPriceValidation, useFuelPrices } from '@/hooks/api/useFuelPrices';
+import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { CreateReadingRequest } from '@/api/services/readingsService';
 
-// Import creditors API (to be migrated later)
+// Import creditors API
 import { creditorsApi } from '@/api/creditors';
 import { useQuery } from '@tanstack/react-query';
 
@@ -47,112 +45,133 @@ interface ReadingEntryFormProps {
   };
 }
 
+// Helper function for sales data
+function useSales(nozzleId: string, from: string, to: string, options: { enabled: boolean }) {
+  const { data, refetch } = useQuery({
+    queryKey: ['sales', nozzleId, from, to],
+    queryFn: async () => {
+      if (!nozzleId || !from || !to) {
+        return [];
+      }
+      const response = await fetch(`/api/sales?nozzleId=${nozzleId}&from=${from}&to=${to}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch sales data');
+      }
+      return response.json();
+    },
+    enabled: options.enabled,
+  });
+
+  return { data: data || [], refetch };
+}
+
 export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   
-  // Get state from Zustand store
+  // Get initial values from props, location state, or store
   const { selectedStationId, selectedPumpId, selectedNozzleId } = useFuelStore();
+  const navigationState = location.state?.preselected;
   
-  // Get preselected values from navigation state if available
-  const navigationPreselected = location.state?.preselected;
-  const finalPreselected = {
-    stationId: navigationPreselected?.stationId || preselected?.stationId || selectedStationId || '',
-    pumpId: navigationPreselected?.pumpId || preselected?.pumpId || selectedPumpId || '',
-    nozzleId: navigationPreselected?.nozzleId || preselected?.nozzleId || selectedNozzleId || ''
-  };
-  
-  // Log preselected values for debugging
-  console.log('[READING-FORM] Preselected values:', {
-    navigationPreselected,
-    preselected,
-    selectedStationId,
-    selectedPumpId,
-    selectedNozzleId,
-    finalPreselected
+  // Store initial values in a ref to prevent re-renders
+  const initialValues = React.useRef({
+    stationId: navigationState?.stationId || preselected?.stationId || selectedStationId || '',
+    pumpId: navigationState?.pumpId || preselected?.pumpId || selectedPumpId || '',
+    nozzleId: navigationState?.nozzleId || preselected?.nozzleId || selectedNozzleId || ''
   });
   
-  const [selectedStation, setSelectedStation] = useState(finalPreselected?.stationId || '');
-  const [selectedPump, setSelectedPump] = useState(finalPreselected?.pumpId || '');
-  const [selectedNozzle, setSelectedNozzle] = useState(finalPreselected?.nozzleId || '');
+  // Local state for selections
+  const [selectedStation, setSelectedStation] = useState(initialValues.current.stationId);
+  const [selectedPump, setSelectedPump] = useState(initialValues.current.pumpId);
+  const [selectedNozzle, setSelectedNozzle] = useState(initialValues.current.nozzleId);
 
+  // Initialize form
   const form = useForm<ReadingFormData>({
     defaultValues: {
-      stationId: finalPreselected?.stationId || '',
-      pumpId: finalPreselected?.pumpId || '',
-      nozzleId: finalPreselected?.nozzleId || '',
+      stationId: initialValues.current.stationId,
+      pumpId: initialValues.current.pumpId,
+      nozzleId: initialValues.current.nozzleId,
       reading: 0,
       recordedAt: new Date().toISOString().slice(0, 16),
       paymentMethod: 'cash',
     },
   });
-
-  // Use the new API hooks
-  const { data: stations = [] } = useStations();
-  const { data: pumps = [] } = usePumps(selectedStation);
-  const { data: nozzles = [] } = useNozzles(selectedPump);
-  const { data: latestReading, isLoading: loadingLatestReading } = useLatestReading(selectedNozzle);
-  const { data: canCreateReading, isLoading: loadingCanCreate } = useCanCreateReading(selectedNozzle);
-  const { data: stationPriceValidation, isLoading: loadingPriceValidation } = useFuelPriceValidation(selectedStation);
-  const { data: fuelPrices = [] } = useFuelPrices(selectedStation);
   
-  // Debug log for latest reading
-  useEffect(() => {
-    if (selectedNozzle) {
-      console.log('[READING-FORM] Latest reading for nozzle:', selectedNozzle, latestReading);
-    }
-  }, [selectedNozzle, latestReading]);
-  const createReading = useCreateReading();
-
-  // Fetch creditors (to be migrated later)
+  // Fetch data directly without store caching to avoid circular dependencies
+  const { data: stations = [] } = useStations();
+  const { data: pumps = [] } = usePumps(selectedStation, { enabled: !!selectedStation });
+  const { data: nozzles = [] } = useNozzles(selectedPump, { enabled: !!selectedPump });
+  const { data: latestReading } = useLatestReading(selectedNozzle);
+  const { data: canCreateReading, isLoading: loadingCanCreate } = useCanCreateReading(selectedNozzle);
+  const { data: fuelPrices = [] } = useFuelPrices(selectedStation);
   const { data: creditors = [] } = useQuery({
     queryKey: ['creditors', selectedStation],
     queryFn: () => creditorsApi.getCreditors(selectedStation),
     enabled: !!selectedStation
   });
 
+  // Sale summary state
+  const [saleSummary, setSaleSummary] = useState(null);
+  const [readingWindow, setReadingWindow] = useState(null);
+  const createReading = useCreateReading();
+  
+  // Fetch sales for the nozzle between previous and new reading
+  const { data: sales = [], refetch: refetchSales } = useSales(
+    readingWindow?.nozzleId,
+    readingWindow?.from,
+    readingWindow?.to,
+    { enabled: !!readingWindow }
+  );
+
+  // Handle station change
+  useEffect(() => {
+    if (!initialValues.current.pumpId && selectedStation) {
+      setSelectedPump('');
+      setSelectedNozzle('');
+      form.setValue('pumpId', '');
+      form.setValue('nozzleId', '');
+    }
+  }, [selectedStation, form]);
+
+  // Handle pump change
+  useEffect(() => {
+    if (!initialValues.current.nozzleId && selectedPump) {
+      setSelectedNozzle('');
+      form.setValue('nozzleId', '');
+    }
+  }, [selectedPump, form]);
+  
+  // Update sale summary when sales data changes
+  useEffect(() => {
+    if (sales?.length && readingWindow) {
+      let totalLiters = 0;
+      let totalAmount = 0;
+      const byPayment = {};
+      
+      sales.forEach(sale => {
+        totalLiters += sale.liters;
+        totalAmount += sale.amount;
+        if (!byPayment[sale.paymentMethod]) byPayment[sale.paymentMethod] = { liters: 0, amount: 0 };
+        byPayment[sale.paymentMethod].liters += sale.liters;
+        byPayment[sale.paymentMethod].amount += sale.amount;
+      });
+      
+      setSaleSummary({ totalLiters, totalAmount, byPayment, sales });
+    }
+  }, [sales, readingWindow]);
+  
   const paymentMethod = form.watch('paymentMethod');
+  
+  // Find selected nozzle data
+  const selectedNozzleData = nozzles.find(n => n.id === selectedNozzle);
+  const minReading = latestReading?.reading || 0;
 
-  // Update form when preselected values change - only run once on mount
-  useEffect(() => {
-    if (finalPreselected?.stationId) {
-      setSelectedStation(finalPreselected.stationId);
-      form.setValue('stationId', finalPreselected.stationId);
-    }
-    if (finalPreselected?.pumpId) {
-      setSelectedPump(finalPreselected.pumpId);
-      form.setValue('pumpId', finalPreselected.pumpId);
-    }
-    if (finalPreselected?.nozzleId) {
-      setSelectedNozzle(finalPreselected.nozzleId);
-      form.setValue('nozzleId', finalPreselected.nozzleId);
-    }
-  }, []);  // Empty dependency array to run only once
-
-  useEffect(() => {
-    if (selectedStation) {
-      if (!finalPreselected?.pumpId) {
-        setSelectedPump('');
-        setSelectedNozzle('');
-        form.setValue('pumpId', '');
-        form.setValue('nozzleId', '');
-      }
-    }
-  }, [selectedStation, form, finalPreselected]);
-
-  useEffect(() => {
-    if (selectedPump) {
-      if (!finalPreselected?.nozzleId) {
-        setSelectedNozzle('');
-        form.setValue('nozzleId', '');
-      }
-    }
-  }, [selectedPump, form, finalPreselected]);
+  // Check if we can create reading
+  const canSubmit = loadingCanCreate ? true : canCreateReading?.canCreate !== false;
+  const hasMissingPrices = !loadingCanCreate && !canCreateReading?.canCreate && canCreateReading?.missingPrice;
 
   const onSubmit = async (data: ReadingFormData) => {
-    console.log('[READING-FORM] Submitting reading:', data);
-    
     const readingData: CreateReadingRequest = {
       nozzleId: data.nozzleId,
       reading: data.reading,
@@ -161,31 +180,26 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
       creditorId: data.paymentMethod === 'credit' ? data.creditorId : undefined,
     };
 
-    // Store the nozzle number for better user feedback
     const nozzleNumber = selectedNozzleData?.nozzleNumber;
-    const fuelType = selectedNozzleData?.fuelType;
     
     createReading.mutate(readingData, {
       onSuccess: (newReading) => {
-        console.log('[READING-FORM] Reading created successfully', newReading);
-        
-        // Show success toast
         toast({
           title: "Reading Recorded",
           description: `Successfully recorded reading ${newReading.reading}L${nozzleNumber ? ` for nozzle #${nozzleNumber}` : ''}`,
           variant: "success",
         });
-        
-        // Short delay to ensure toast is visible before navigation
-        setTimeout(() => {
-          // Navigate back to readings page
-          navigate('/dashboard/readings');
-        }, 500);
+
+        if (latestReading?.recordedAt && newReading?.recordedAt) {
+          setReadingWindow({
+            nozzleId: newReading.nozzleId,
+            from: latestReading.recordedAt,
+            to: newReading.recordedAt,
+          });
+          refetchSales();
+        }
       },
       onError: (error: any) => {
-        console.error('[READING-FORM] Error creating reading:', error);
-        
-        // Show error toast
         toast({
           title: "Failed to Record Reading",
           description: error.message || "Please check your input and try again.",
@@ -194,17 +208,6 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
       }
     });
   };
-
-  const selectedNozzleData = nozzles?.find(n => n.id === selectedNozzle);
-  const minReading = latestReading?.reading || 0;
-
-  // Check if we can create reading - default to true if data is still loading
-  const canSubmit = loadingCanCreate ? true : canCreateReading?.canCreate !== false;
-  const hasMissingPrices = !loadingCanCreate && !canCreateReading?.canCreate && canCreateReading?.missingPrice;
-  
-  // Check if station has fuel prices - disable warnings for now
-  const hasFuelPrices = fuelPrices && fuelPrices.length > 0;
-  const showMissingPricesWarning = false; // Disable the warning
 
   return (
     <div className="min-h-screen bg-white">
@@ -215,24 +218,32 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
             <p className="text-gray-600">Enter the current meter reading for the selected nozzle</p>
           </div>
 
+          {/* Sale Summary after reading creation */}
+          {saleSummary && (
+            <div className="mb-6 p-6 bg-green-50 border border-green-200 rounded-xl">
+              <h2 className="text-xl font-semibold text-green-900 mb-2">Sale Summary (since last reading)</h2>
+              <div className="mb-2 text-green-800">
+                <strong>Total Liters:</strong> {saleSummary.totalLiters.toFixed(2)} L<br />
+                <strong>Total Amount:</strong> ₹{saleSummary.totalAmount.toFixed(2)}
+              </div>
+              <div className="mb-2">
+                <strong>By Payment Method:</strong>
+                <ul className="list-disc ml-6">
+                  {Object.entries(saleSummary.byPayment).map(([method, stats]) => (
+                    <li key={method} className="text-green-700">
+                      {method}: {stats.liters.toFixed(2)} L, ₹{stats.amount.toFixed(2)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-2">
+                <Link to="/dashboard/sales" className="underline text-green-700 font-medium">View detailed sales</Link>
+              </div>
+            </div>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Fuel Price Warnings */}
-              {showMissingPricesWarning && (
-                <Alert className="mb-6 border-red-200 bg-red-50">
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-800">
-                    <strong>Missing Fuel Prices!</strong>{' '}
-                    {stationPriceValidation.missingPrices && stationPriceValidation.missingPrices.length > 0 ? 
-                      `This station is missing prices for: ${stationPriceValidation.missingPrices.map(p => p.fuelType).join(', ')}. ` : 
-                      'This station has no active fuel prices. '}
-                    <Link to="/dashboard/fuel-prices" className="underline font-medium">
-                      Update fuel prices here
-                    </Link> before recording readings.
-                  </AlertDescription>
-                </Alert>
-              )}
-
               {selectedNozzle && hasMissingPrices && (
                 <Alert className="mb-6 border-orange-200 bg-orange-50">
                   <DollarSign className="h-4 w-4 text-orange-600" />
@@ -260,7 +271,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                           field.onChange(value);
                           setSelectedStation(value);
                         }}
-                        disabled={!!finalPreselected?.stationId}
+                        disabled={!!initialValues.current.stationId}
                       >
                         <FormControl>
                           <SelectTrigger className="bg-white">
@@ -293,7 +304,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                           field.onChange(value);
                           setSelectedPump(value);
                         }}
-                        disabled={!selectedStation || !!finalPreselected?.pumpId}
+                        disabled={!selectedStation || !!initialValues.current.pumpId}
                       >
                         <FormControl>
                           <SelectTrigger className="bg-white">
@@ -332,7 +343,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                           field.onChange(value);
                           setSelectedNozzle(value);
                         }}
-                        disabled={!selectedPump || !!finalPreselected?.nozzleId}
+                        disabled={!selectedPump || !!initialValues.current.nozzleId}
                       >
                         <FormControl>
                           <SelectTrigger className="bg-white">
@@ -430,14 +441,6 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                               field.onChange(parseFloat(normalized));
                             } else {
                               field.onChange('');
-                            }
-                          }}
-                          onBlur={(e) => {
-                            const value = e.target.value;
-                            if (value && !isNaN(parseFloat(value))) {
-                              const normalized = parseFloat(value).toFixed(2);
-                              e.target.value = normalized;
-                              field.onChange(parseFloat(normalized));
                             }
                           }}
                         />

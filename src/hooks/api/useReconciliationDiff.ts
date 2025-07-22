@@ -13,19 +13,23 @@ export const useReconciliationDiffs = (filters: ReconciliationDiffFilters = {}) 
     queryKey: ['reconciliation-diffs', filters],
     queryFn: () => reconciliationDiffService.getReconciliationDiffs(filters),
     staleTime: 60000, // 1 minute
-    retry: 2
+    retry: 2,
+    enabled: !!filters.stationId // Only run the query if stationId is provided
   });
 };
 
 /**
  * Hook to fetch discrepancy summary for dashboard
+ * @param stationId - Station ID
+ * @param date - Date in YYYY-MM-DD format
  */
-export const useDiscrepancySummary = () => {
+export const useDiscrepancySummary = (stationId: string, date: string) => {
   return useQuery({
-    queryKey: ['discrepancy-summary'],
-    queryFn: () => reconciliationDiffService.getDiscrepancySummary(),
+    queryKey: ['discrepancy-summary', stationId, date],
+    queryFn: () => reconciliationDiffService.getDiscrepancySummary(stationId, date),
     staleTime: 300000, // 5 minutes
-    retry: 2
+    retry: 2,
+    enabled: !!stationId && !!date // Only run the query if stationId and date are provided
   });
 };
 

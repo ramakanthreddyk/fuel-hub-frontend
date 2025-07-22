@@ -1,12 +1,13 @@
-
 /**
  * @file useNozzles.ts
  * @description React Query hooks for nozzles API with toast notifications
+ * Enhanced to work with fuelStore as single source of truth
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { nozzlesService } from '@/api/services/nozzlesService';
 import { useToast } from '@/hooks/use-toast';
 import { useDataStore } from '@/store/dataStore';
+import { useFuelStore } from '@/store/fuelStore';
 import { useErrorHandler } from '../useErrorHandler';
 
 /**
@@ -16,23 +17,50 @@ import { useErrorHandler } from '../useErrorHandler';
  */
 export const useNozzles = (pumpId?: string) => {
   const { toast } = useToast();
-  const { nozzles: storedNozzles, setNozzles } = useDataStore();
   const { handleError } = useErrorHandler();
+  
+  // Use both stores for backward compatibility during transition
+  const { nozzles: storedNozzles, setNozzles } = useDataStore();
+  const { 
+    nozzles: fuelStoreNozzles, 
+    allNozzles,
+    nozzlesStale,
+    setNozzles: setFuelStoreNozzles,
+    setAllNozzles
+  } = useFuelStore();
   
   return useQuery({
     queryKey: ['nozzles', pumpId || 'all'],
     queryFn: async () => {
-      // Check if we have cached data for this pump
+      console.log('[NOZZLES-HOOK] Fetching nozzles for:', pumpId || 'all pumps');
+      
+      // Check if we have non-stale cached data in fuelStore
+      if (pumpId && fuelStoreNozzles[pumpId] && !nozzlesStale) {
+        console.log('[NOZZLES-HOOK] Using fuelStore cached nozzles for pump:', pumpId);
+        return fuelStoreNozzles[pumpId];
+      }
+      
+      // For 'all' nozzles, check if we have them cached and not stale
+      if (!pumpId && allNozzles.length > 0 && !nozzlesStale) {
+        console.log('[NOZZLES-HOOK] Using fuelStore cached all nozzles');
+        return allNozzles;
+      }
+      
+      // Fallback to dataStore for backward compatibility
       if (pumpId && storedNozzles[pumpId]) {
-        console.log('[NOZZLES-HOOK] Using cached nozzles for pump:', pumpId);
+        console.log('[NOZZLES-HOOK] Using dataStore cached nozzles for pump:', pumpId);
         return storedNozzles[pumpId];
       }
       
+      // If no cache or stale, fetch from API
       const nozzles = await nozzlesService.getNozzles(pumpId);
       
-      // Store in cache if we have a pumpId
+      // Store in both caches
       if (pumpId) {
-        setNozzles(pumpId, nozzles);
+        setNozzles(pumpId, nozzles); // dataStore
+        setFuelStoreNozzles(pumpId, nozzles); // fuelStore
+      } else {
+        setAllNozzles(nozzles); // Store all nozzles in fuelStore
       }
       
       return nozzles;
@@ -53,32 +81,53 @@ export const useNozzles = (pumpId?: string) => {
 export const useNozzle = (id: string) => {
   const { toast } = useToast();
   const { nozzles: storedNozzles } = useDataStore();
+  const { nozzles: fuelStoreNozzles, allNozzles, nozzlesStale } = useFuelStore();
   
   return useQuery({
     queryKey: ['nozzle', id],
     queryFn: async () => {
-      // Check if we have cached data in any pump's nozzles
-      for (const pumpId in storedNozzles) {
-        const cachedNozzle = storedNozzles[pumpId]?.find(n => n.id === id);
+      // First check fuelStore's allNozzles if not stale
+      if (allNozzles.length > 0 && !nozzlesStale) {
+        const cachedNozzle = allNozzles.find(n => n.id === id);
         if (cachedNozzle) {
-          console.log('[NOZZLES-HOOK] Using cached nozzle:', id);
+          console.log('[NOZZLES-HOOK] Using fuelStore allNozzles cache for nozzle:', id);
           return cachedNozzle;
         }
       }
       
+      // Then check fuelStore's pump-specific nozzles if not stale
+      if (!nozzlesStale) {
+        for (const pumpId in fuelStoreNozzles) {
+          const cachedNozzle = fuelStoreNozzles[pumpId]?.find(n => n.id === id);
+          if (cachedNozzle) {
+            console.log('[NOZZLES-HOOK] Using fuelStore pump cache for nozzle:', id);
+            return cachedNozzle;
+          }
+        }
+      }
+      
+      // Fallback to dataStore for backward compatibility
+      for (const pumpId in storedNozzles) {
+        const cachedNozzle = storedNozzles[pumpId]?.find(n => n.id === id);
+        if (cachedNozzle) {
+          console.log('[NOZZLES-HOOK] Using dataStore cache for nozzle:', id);
+          return cachedNozzle;
+        }
+      }
+      
+      // If no cache hit, fetch from API
+      console.log('[NOZZLES-HOOK] Fetching nozzle from API:', id);
       return nozzlesService.getNozzle(id);
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    meta: {
-      onError: (error: any) => {
-        console.error('Failed to fetch nozzle:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load nozzle details. Please try again.",
-          variant: "destructive",
-        });
-      }
+    onError: (error: any) => {
+      console.error('Failed to fetch nozzle:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load nozzle details. Please try again.",
+        variant: "destructive",
+      });
     }
   });
 };
@@ -91,16 +140,21 @@ export const useCreateNozzle = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { clearNozzles } = useDataStore();
+  const { invalidateNozzles } = useFuelStore();
   const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (data: any) => nozzlesService.createNozzle(data),
     onSuccess: (newNozzle, variables) => {
-      // Clear cached nozzles for this pump to force a refresh
-      clearNozzles(variables.pumpId);
+      // Clear cached nozzles to force a refresh
+      clearNozzles(variables.pumpId); // dataStore
+      invalidateNozzles(variables.pumpId); // fuelStore
+      
+      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['nozzles', variables.pumpId] });
       queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
       queryClient.invalidateQueries({ queryKey: ['pump', variables.pumpId] });
+      
       toast({
         title: "Success",
         description: `Nozzle #${newNozzle.nozzleNumber} created successfully`,
@@ -120,6 +174,7 @@ export const useUpdateNozzle = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { clearNozzles } = useDataStore();
+  const { invalidateNozzles } = useFuelStore();
   const { handleError } = useErrorHandler();
   
   return useMutation({
@@ -127,16 +182,25 @@ export const useUpdateNozzle = () => {
     onSuccess: (nozzle, { id }) => {
       // Clear cached nozzles for this pump to force a refresh
       if (nozzle && nozzle.pumpId) {
-        clearNozzles(nozzle.pumpId);
+        clearNozzles(nozzle.pumpId); // dataStore
+        invalidateNozzles(nozzle.pumpId); // fuelStore
+      } else {
+        // If we don't know the pump, invalidate all nozzles
+        clearNozzles(); // dataStore
+        invalidateNozzles(); // fuelStore
       }
+      
+      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['nozzle', id] });
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
+      
       // Also invalidate the pump that this nozzle belongs to
       if (nozzle && nozzle.pumpId) {
         queryClient.invalidateQueries({ queryKey: ['pump', nozzle.pumpId] });
         queryClient.invalidateQueries({ queryKey: ['nozzles', nozzle.pumpId] });
       }
+      
       toast({
         title: "Success",
         description: `Nozzle #${nozzle.nozzleNumber} updated successfully`,
@@ -156,17 +220,23 @@ export const useDeleteNozzle = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { clearNozzles } = useDataStore();
+  const { invalidateNozzles } = useFuelStore();
   const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: (id: string) => nozzlesService.deleteNozzle(id),
     onSuccess: () => {
       // Clear all cached nozzles to force a refresh
-      clearNozzles();
+      clearNozzles(); // dataStore
+      invalidateNozzles(); // fuelStore
+      
+      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
+      
       // We don't know which pump this nozzle belonged to, so we invalidate all pumps
       queryClient.invalidateQueries({ queryKey: ['pumps'] });
+      
       toast({
         title: "Success",
         description: "Nozzle deleted successfully",

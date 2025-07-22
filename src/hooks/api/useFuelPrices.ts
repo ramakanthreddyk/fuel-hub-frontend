@@ -32,32 +32,31 @@ export interface FuelPriceValidation {
 }
 
 export const useFuelPrices = (stationId?: string) => {
-  const { fuelPrices: storedFuelPrices, setFuelPrices } = useDataStore();
+  const { fuelPrices: storedFuelPrices, setFuelPrices, allFuelPrices, setAllFuelPrices } = useDataStore();
   const { handleError } = useErrorHandler();
   
-  return useQuery({
+  return useQuery<FuelPrice[], Error>({
     queryKey: ['fuel-prices', stationId],
     queryFn: async (): Promise<FuelPrice[]> => {
-      // Check if we have cached data
+      // 1. Global cache for all prices (no stationId)
+      if (!stationId && allFuelPrices && allFuelPrices.length > 0) {
+        console.log('[FUEL-PRICES-HOOK] Using global cached fuel prices');
+        return allFuelPrices;
+      }
+      // 2. Per-station cache
       if (stationId && storedFuelPrices[stationId]) {
         console.log('[FUEL-PRICES-HOOK] Using cached fuel prices for station:', stationId);
         return storedFuelPrices[stationId];
       }
-      
-      // Ensure stationId is a string, not an object
+      // 3. Fetch from API
       let params = '';
       if (stationId && typeof stationId === 'string') {
         params = `?stationId=${stationId}`;
       }
-      
       console.log('[FUEL-PRICES-HOOK] Fetching fuel prices with URL:', `/fuel-prices${params}`);
       const response = await apiClient.get(`/fuel-prices${params}`);
-      
       console.log('[FUEL-PRICES-HOOK] Raw response:', response.data);
-      
-      // Handle the API response structure: {success: true, data: {prices: [...]}}
       let prices: any[] = [];
-      
       if (response.data?.success && response.data?.data?.prices) {
         prices = response.data.data.prices;
       } else if (response.data?.data?.prices) {
@@ -69,10 +68,7 @@ export const useFuelPrices = (stationId?: string) => {
       } else {
         prices = [];
       }
-      
       console.log('[FUEL-PRICES-HOOK] Processed prices:', prices);
-      
-      // Convert to proper format with type safety
       const formattedPrices = prices.map((price: any) => ({
         id: price.id || '',
         stationId: price.stationId || price.station_id || '',
@@ -84,17 +80,17 @@ export const useFuelPrices = (stationId?: string) => {
         isActive: price.isActive !== false,
         createdAt: price.createdAt || price.created_at || new Date().toISOString()
       }));
-      
-      // Store in cache if we have a stationId
-      if (stationId) {
+      // Store in cache
+      if (!stationId) {
+        setAllFuelPrices(formattedPrices);
+      } else {
         setFuelPrices(stationId, formattedPrices);
       }
-      
       return formattedPrices;
     },
-    enabled: true,
+    enabled: (!stationId && (!allFuelPrices || allFuelPrices.length === 0)) || (stationId && !storedFuelPrices[stationId]),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    onError: (error) => {
+    onError(error) {
       handleError(error, 'Failed to fetch fuel prices.');
     },
   });

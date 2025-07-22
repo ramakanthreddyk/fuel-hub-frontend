@@ -1,3 +1,15 @@
+// IMPORTANT: When accessing entity caches (e.g., pumps, nozzles) from Zustand, always use safe defaults.
+// Example:
+//   const { pumps = {} } = useFuelStore();
+//   const pumpsList = pumps[stationId] || [];
+//   const nozzlesList = nozzles[pumpId] || [];
+// This prevents TypeError: Cannot read properties of undefined.
+// Always check for null/undefined before accessing nested properties.
+
+import { useFuelStore } from '@/store/fuelStore';
+import { useEffect, useCallback } from 'react';
+
+// Standardized hook for station metrics
 
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService, DashboardFilters } from '@/api/services/dashboardService';

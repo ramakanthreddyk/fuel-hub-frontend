@@ -26,9 +26,13 @@ export default function ReconciliationPage() {
 
   const { data: stations = [] } = useStations();
   const { data: reconciliations = [], isLoading } = useReconciliationHistory(selectedStation !== 'all' ? selectedStation : undefined);
-  const { data: discrepancySummary } = useDiscrepancySummary();
+  const { data: discrepancySummary } = useDiscrepancySummary(
+    selectedStation !== 'all' ? selectedStation : '',
+    selectedDate
+  );
+  // Only fetch reconciliation diffs when a specific station is selected
   const { data: reconciliationDiffs = [] } = useReconciliationDiffs({
-    stationId: selectedStation !== 'all' ? selectedStation : undefined,
+    stationId: selectedStation !== 'all' ? selectedStation : '',
     startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
   });
@@ -87,7 +91,7 @@ export default function ReconciliationPage() {
       </div>
 
       {/* Discrepancy Summary Cards */}
-      {discrepancySummary && (
+      {discrepancySummary && selectedStation !== 'all' && (
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-3">
@@ -250,10 +254,16 @@ export default function ReconciliationPage() {
                       </TableCell>
                     </TableRow>
                   ))}
-                  {reconciliationDiffs.length === 0 && (
+                  {selectedStation === 'all' ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No discrepancies found.
+                        Please select a specific station to view discrepancies.
+                      </TableCell>
+                    </TableRow>
+                  ) : reconciliationDiffs.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        No discrepancies found for the selected station.
                       </TableCell>
                     </TableRow>
                   )}
