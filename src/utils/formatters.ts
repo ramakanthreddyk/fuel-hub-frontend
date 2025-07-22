@@ -120,7 +120,12 @@ export function formatSafeNumber(value: number | undefined | null | string, deci
  * @param value The number to format
  * @returns Formatted string with lakhs and crores
  */
-export function formatIndianLakhsCrores(value: number): string {
+export function formatIndianLakhsCrores(value: number | null | undefined): string {
+  // Handle null or undefined values
+  if (value === null || value === undefined) {
+    return '0';
+  }
+  
   const num = Math.abs(value);
   const sign = value < 0 ? '-' : '';
   

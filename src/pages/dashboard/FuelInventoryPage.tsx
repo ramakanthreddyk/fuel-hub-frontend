@@ -28,7 +28,7 @@ export default function FuelInventoryPage() {
     data: inventory = [], 
     isLoading: inventoryLoading, 
     refetch: refetchInventory 
-  } = useInventory(selectedStationId === 'all-stations' ? undefined : selectedStationId);
+  } = useInventory(selectedStationId && selectedStationId !== 'all-stations' ? selectedStationId : undefined);
   
   // Fetch inventory summary
   const { 
@@ -130,7 +130,7 @@ export default function FuelInventoryPage() {
         </div>
       </div>
 
-      {/* Station Filter */}
+      {/* Station Filter (only show if backend supports) */}
       <Card className="p-4">
         <div className="flex items-center gap-4">
           <div className="text-sm font-medium">Filter by Station:</div>
@@ -138,6 +138,7 @@ export default function FuelInventoryPage() {
             <Select 
               value={selectedStationId} 
               onValueChange={handleStationChange}
+              disabled={false} // Set to true if backend does not support filtering
             >
               <SelectTrigger className="w-[250px]">
                 <SelectValue placeholder="All Stations" />

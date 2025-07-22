@@ -27,13 +27,19 @@ export default function SalesOverviewPage() {
     endDate: dateRange?.to?.toISOString().split('T')[0],
   };
   
-  const { data: sales = [], isLoading, error } = useSales(filters);
+  const { data: salesRaw, isLoading, error } = useSales(filters);
+  // Defensive: ensure sales is always an array
+  const sales = Array.isArray(salesRaw) ? salesRaw : (salesRaw?.sales || []);
 
   // Calculate metrics from sales data
   const totalSales = sales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
   const totalVolume = sales.reduce((sum, sale) => sum + (sale.volume || 0), 0);
   const totalTransactions = sales.length;
   const averageTransactionValue = totalTransactions > 0 ? totalSales / totalTransactions : 0;
+
+  // Fallbacks for metrics if values are unexpectedly small/large
+  const totalSalesDisplay = totalSales > 1000000 ? `₹${(totalSales / 10000000).toFixed(1)}Cr` : formatCurrency(totalSales);
+  const averageTransactionDisplay = averageTransactionValue > 100000 ? `₹${(averageTransactionValue / 1000).toFixed(1)}K` : formatCurrency(averageTransactionValue);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -68,7 +74,7 @@ export default function SalesOverviewPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-card-foreground truncate">
-                ₹{(totalSales / 10000000).toFixed(1)}Cr
+                {totalSalesDisplay}
               </div>
               <div className="flex items-center text-xs text-muted-foreground mt-1">
                 <TrendingUp className="h-3 w-3 mr-1 flex-shrink-0" />
@@ -104,7 +110,7 @@ export default function SalesOverviewPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-card-foreground truncate">
-                ₹{(averageTransactionValue / 1000).toFixed(1)}K
+                {averageTransactionDisplay}
               </div>
               <div className="flex items-center text-xs text-muted-foreground mt-1">
                 <Users className="h-3 w-3 mr-1 flex-shrink-0" />
@@ -186,7 +192,15 @@ export default function SalesOverviewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
+            {error && (
+              <div className="text-red-600 mb-2">{typeof error === 'string' ? error : 'Failed to load sales data.'}</div>
+            )}
             <SalesTable sales={sales} isLoading={isLoading} />
+            {/* Debug: show raw sales data for troubleshooting */}
+            <details className="mt-4 text-xs text-muted-foreground">
+              <summary>Debug: Raw Sales Data</summary>
+              <pre>{JSON.stringify(salesRaw, null, 2)}</pre>
+            </details>
           </CardContent>
         </Card>
       </div>

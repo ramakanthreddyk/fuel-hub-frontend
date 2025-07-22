@@ -29,19 +29,11 @@ export default function UpdateInventoryPage() {
       const currentItem = inventoryData.find(item => 
         item.stationId === stationId && item.fuelType === fuelType
       );
-      
       if (currentItem) {
-        // Pre-fill with current values, safely handling undefined/null values
-        const stockValue = currentItem.currentStock != null ? String(currentItem.currentStock) : '';
-        // Backend uses minimumLevel for both capacity and threshold
-        const minimumValue = currentItem.minimumLevel != null ? String(currentItem.minimumLevel) : '';
-        const capacityValue = minimumValue; // In the backend, capacity = minimumLevel
-        
-        setNewStock(stockValue);
-        setCapacity(minimumValue);
-        setLowThreshold(minimumValue);
+        setNewStock(currentItem.currentStock != null ? String(currentItem.currentStock) : '');
+        setCapacity(currentItem.capacity != null ? String(currentItem.capacity) : '');
+        setLowThreshold(currentItem.lowThreshold != null ? String(currentItem.lowThreshold) : '');
       } else {
-        // Reset fields if no existing data
         setNewStock('');
         setCapacity('');
         setLowThreshold('');
@@ -51,12 +43,12 @@ export default function UpdateInventoryPage() {
 
   const handleSubmit = async () => {
     if (!stationId || !newStock) return;
-    
+
     // Validate inputs
     const stockValue = Number(newStock);
     const capacityValue = capacity ? Number(capacity) : undefined;
-    const minimumLevelValue = lowThreshold ? Number(lowThreshold) : undefined;
-    
+    const lowThresholdValue = lowThreshold ? Number(lowThreshold) : undefined;
+
     if (stockValue < 0) {
       toast({
         title: 'Invalid Input',
@@ -65,7 +57,7 @@ export default function UpdateInventoryPage() {
       });
       return;
     }
-    
+
     if (capacityValue && stockValue > capacityValue) {
       toast({
         title: 'Invalid Input',
@@ -74,8 +66,8 @@ export default function UpdateInventoryPage() {
       });
       return;
     }
-    
-    if (minimumLevelValue && minimumLevelValue > capacityValue) {
+
+    if (lowThresholdValue && capacityValue && lowThresholdValue > capacityValue) {
       toast({
         title: 'Invalid Input',
         description: 'Low stock threshold cannot exceed tank capacity',
@@ -83,35 +75,31 @@ export default function UpdateInventoryPage() {
       });
       return;
     }
-    
-    // In the backend, we only use minimumLevel for both capacity and threshold
-    // If both are provided, use the threshold value
-    const finalMinimumLevel = minimumLevelValue || capacityValue;
-    
-    const updateData = {
+
+    // Send all fields to backend
+    const updateData: any = {
       stationId,
       fuelType,
       newStock: stockValue,
-      ...(finalMinimumLevel ? { minimumLevel: finalMinimumLevel } : {})
+      ...(capacityValue !== undefined ? { capacity: capacityValue } : {}),
+      ...(lowThresholdValue !== undefined ? { minimumLevel: lowThresholdValue } : {})
     };
-    
+
     try {
       const success = await mutateAsync(updateData);
-      
       if (success) {
         let message = `${fuelType.charAt(0).toUpperCase() + fuelType.slice(1)} inventory updated to ${stockValue} liters`;
-        
-        if (finalMinimumLevel) {
-          message += `, capacity/threshold set to ${finalMinimumLevel} liters`;
+        if (capacityValue !== undefined) {
+          message += `, capacity set to ${capacityValue} liters`;
         }
-        
+        if (lowThresholdValue !== undefined) {
+          message += `, threshold set to ${lowThresholdValue} liters`;
+        }
         toast({
           title: 'Inventory Updated',
           description: message,
           variant: 'default'
         });
-        
-        // Navigate back to inventory page after successful update
         setTimeout(() => navigate('/dashboard/fuel-inventory'), 1500);
       } else {
         toast({
@@ -120,13 +108,13 @@ export default function UpdateInventoryPage() {
           variant: 'destructive'
         });
       }
-    } catch (error) {
-      console.error('[UpdateInventory] Error:', error);
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred. Please try again.',
+        description: `An unexpected error occurred. ${error?.message || ''}`,
         variant: 'destructive'
       });
+      console.error('[UpdateInventory] Error:', error);
     }
   };
 
@@ -173,6 +161,15 @@ export default function UpdateInventoryPage() {
             </Select>
           </div>
           <div>
+            <Label>Tank Capacity (L) *</Label>
+            <Input 
+              value={capacity} 
+              onChange={(e) => setCapacity(e.target.value)} 
+              type="number" 
+              placeholder="Enter tank capacity"
+            />
+          </div>
+          <div>
             <Label>Current Stock (L) *</Label>
             <Input 
               value={newStock} 
@@ -182,18 +179,15 @@ export default function UpdateInventoryPage() {
             />
           </div>
           <div>
-            <Label>Tank Capacity / Low Stock Threshold (L)</Label>
+            <Label>Low Stock Threshold (L)</Label>
             <Input 
-              value={capacity} 
-              onChange={(e) => {
-                setCapacity(e.target.value);
-                setLowThreshold(e.target.value); // Keep both values in sync
-              }} 
+              value={lowThreshold} 
+              onChange={(e) => setLowThreshold(e.target.value)} 
               type="number" 
-              placeholder="Enter tank capacity"
+              placeholder="Enter low stock threshold"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              System will alert when stock falls below this level
+              System will alert when stock falls below this threshold
             </p>
           </div>
           <div className="pt-4">

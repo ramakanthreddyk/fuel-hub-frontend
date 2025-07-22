@@ -13,6 +13,8 @@ export { alertsService } from './alerts.service';
 export { reportsService } from './reportsService';
 export { dailySalesService } from './dailySalesService';
 export { salesService } from './salesService';
+export { inventoryService } from './inventoryService';
+export type { FuelInventory, FuelInventorySummary } from './inventoryService';
 
 // Export contract services (these exist)
 export { authService } from '../contract/auth.service';
