@@ -40,13 +40,13 @@ export default function ReconciliationDailySummaryPage() {
         <Button variant="ghost" size="sm" asChild>
           <Link to="/dashboard/reconciliation">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Reconciliation
+            Back to Sales Finalization
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Daily Readings Summary</h1>
+          <h1 className="text-3xl font-bold">Daily Sales Summary</h1>
           <p className="text-muted-foreground">
-            Per-nozzle breakdown for {selectedStation?.name || 'Selected Station'} on {formatDate(date)}
+            Per-nozzle sales breakdown for {selectedStation?.name || 'Selected Station'} on {formatDate(date)}
           </p>
         </div>
       </div>
@@ -190,8 +190,28 @@ export default function ReconciliationDailySummaryPage() {
               })}
               {dailySummary.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                    {isLoading ? 'Loading...' : 'No readings found for the selected station and date.'}
+                  <TableCell colSpan={9}>
+                    {isLoading ? (
+                      <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-8">
+                        <div className="bg-amber-50 border border-amber-200 rounded-md p-4 max-w-md text-center">
+                          <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                          <h3 className="font-medium text-amber-800 mb-1">No Readings Found</h3>
+                          <p className="text-amber-700 text-sm">
+                            No nozzle readings found for the selected station and date. Reconciliation cannot be performed without readings.
+                          </p>
+                          <div className="mt-3 text-xs text-amber-600">
+                            Please ensure that:
+                            <ul className="list-disc text-left pl-8 mt-1">
+                              <li>Nozzle readings have been entered for this date</li>
+                              <li>Cash reports have been submitted by attendants</li>
+                              <li>The correct station and date are selected</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               )}

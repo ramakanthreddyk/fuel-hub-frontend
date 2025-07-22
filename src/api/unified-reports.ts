@@ -155,8 +155,9 @@ export const reportsApi = {
   // Get report history
   getReportHistory: async (): Promise<ExportResponse[]> => {
     try {
-      const response = await apiClient.get<ApiResponse<{ reports: ExportResponse[] }>>(API_CONFIG.endpoints.reports.history);
-      return response.data.data.reports;
+      // Use the sales endpoint instead of history since history doesn't exist
+      const response = await apiClient.get<ApiResponse<{ reports: ExportResponse[] }>>(`${API_CONFIG.endpoints.reports.sales}?history=true`);
+      return response.data.data?.reports || [];
     } catch (error) {
       console.error('[REPORTS-API] Error fetching report history:', error);
       return [];
@@ -179,7 +180,8 @@ export const reportsApi = {
   // Get all reports (for listing)
   getReports: async (): Promise<Report[]> => {
     try {
-      const response = await apiClient.get(API_CONFIG.endpoints.reports.history);
+      // Use the sales endpoint with history parameter since history endpoint doesn't exist
+      const response = await apiClient.get(`${API_CONFIG.endpoints.reports.sales}?history=true`);
       return extractApiArray<Report>(response, 'reports');
     } catch (error) {
       console.error('[REPORTS-API] Error fetching reports:', error);

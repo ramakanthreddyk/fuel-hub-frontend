@@ -56,7 +56,6 @@ const API_CONFIG = {
       attendance: '/reports/attendance',
       export: '/reports/export',
       schedule: '/reports/schedule',
-      history: '/reports/history',
       download: (id: string) => `/reports/download/${id}`,
     },
     auth: {

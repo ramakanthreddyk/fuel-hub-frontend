@@ -743,9 +743,18 @@ export interface ReconciliationRecord {
   reconciliationNotes?: string;
   managerConfirmation: boolean;
   createdAt: string;
+  finalized?: boolean;
+  cash_total?: number;
+  card_total?: number;
+  upi_total?: number;
+  credit_total?: number;
+  total_sales?: number;
   station?: {
     name?: string;
   };
+  stationName?: string;
+  expectedSales?: number;
+  status?: 'pending' | 'matched' | 'variance';
 }
 
 export interface CreateReconciliationRequest {
