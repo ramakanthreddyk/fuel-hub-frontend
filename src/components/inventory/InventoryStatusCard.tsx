@@ -1,114 +1,65 @@
+
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useFuelInventory } from '@/hooks/useFuelInventory';
-import { FuelInventory } from '@/api/inventory-types';
-import { ErrorFallback } from '@/components/common/ErrorFallback';
+import { Progress } from '@/components/ui/progress';
+import { FuelInventory } from '@/api/api-contract';
 import { Fuel, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface InventoryStatusCardProps {
-  stationId?: string;
+  inventory: FuelInventory;
 }
 
-export function InventoryStatusCard({ stationId }: InventoryStatusCardProps) {
-  const { data: inventory = [], isLoading, error, refetch } = useFuelInventory(
-    stationId ? { stationId } : undefined
-  );
+export const InventoryStatusCard: React.FC<InventoryStatusCardProps> = ({ inventory }) => {
+  const capacity = inventory.capacity || 1000; // Default capacity if not provided
+  const currentVolume = inventory.currentVolume || 0;
+  const percentage = (currentVolume / capacity) * 100;
+  
+  const getStatusColor = () => {
+    if (percentage < 20) return 'text-red-500';
+    if (percentage < 50) return 'text-yellow-500';
+    return 'text-green-500';
+  };
 
-  if (error) {
-    return <ErrorFallback error={error} onRetry={() => refetch()} title="Inventory Status" />;
-  }
+  const getStatusIcon = () => {
+    if (percentage < 20) return <AlertTriangle className="h-4 w-4 text-red-500" />;
+    if (percentage < 50) return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    return <CheckCircle className="h-4 w-4 text-green-500" />;
+  };
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Fuel className="h-5 w-5 text-blue-600" />
-            Inventory Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 bg-muted animate-pulse rounded" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const lowStockItems = inventory.filter(item => (item.currentVolume || item.currentStock) < 1000);
-  const criticalStockItems = inventory.filter(item => (item.currentVolume || item.currentStock) < 500);
+  const getStatusText = () => {
+    if (percentage < 20) return 'Critical';
+    if (percentage < 50) return 'Low';
+    return 'Normal';
+  };
 
   return (
-    <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Fuel className="h-5 w-5 text-blue-600" />
-          Inventory Status
-          {criticalStockItems.length > 0 && (
-            <Badge variant="destructive" className="ml-auto">
-              {criticalStockItems.length} Critical
-            </Badge>
-          )}
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <Fuel className="h-4 w-4" />
+          {inventory.fuelType?.charAt(0).toUpperCase() + inventory.fuelType?.slice(1) || 'Unknown'}
         </CardTitle>
+        <Badge variant="outline" className="flex items-center gap-1">
+          {getStatusIcon()}
+          {getStatusText()}
+        </Badge>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {criticalStockItems.length > 0 && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              {criticalStockItems.length} station(s) have critical fuel levels below 500L
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <div className="grid gap-3">
-          {inventory.slice(0, 5).map((item) => {
-            const currentLevel = item.currentVolume ?? item.currentStock ?? 0;
-            return (
-              <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
-                <div className="flex items-center gap-3">
-                  <Fuel className={`h-4 w-4 ${
-                    currentLevel < 500 ? 'text-red-500' : 
-                    currentLevel < 1000 ? 'text-yellow-500' : 'text-green-500'
-                  }`} />
-                  <div>
-                    <p className="font-medium text-sm">{item.stationName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.fuelType.charAt(0).toUpperCase() + item.fuelType.slice(1)}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`font-bold text-sm ${
-                    currentLevel < 500 ? 'text-red-600' : 
-                    currentLevel < 1000 ? 'text-yellow-600' : 'text-green-600'
-                  }`}>
-                    {currentLevel.toLocaleString()}L
-                  </p>
-                  <Badge variant={
-                    currentLevel < 500 ? 'destructive' : 
-                    currentLevel < 1000 ? 'secondary' : 'default'
-                  } className="text-xs">
-                    {currentLevel < 500 ? 'Critical' : 
-                     currentLevel < 1000 ? 'Low' : 'Normal'}
-                  </Badge>
-                </div>
-              </div>
-            );
-          })}
+      <CardContent>
+        <div className="text-2xl font-bold">{currentVolume.toLocaleString()} L</div>
+        <p className="text-xs text-muted-foreground">
+          of {capacity.toLocaleString()} L capacity
+        </p>
+        <div className="mt-4">
+          <Progress value={percentage} className="h-2" />
+          <p className="text-xs text-muted-foreground mt-1">
+            {percentage.toFixed(1)}% full
+          </p>
         </div>
-
-        {inventory.length === 0 && (
-          <div className="text-center py-6 text-muted-foreground">
-            <CheckCircle className="h-8 w-8 mx-auto mb-2" />
-            <p>No inventory data available</p>
-          </div>
-        )}
+        <div className="mt-2 text-xs text-muted-foreground">
+          Station: {inventory.stationName || 'Unknown'}
+        </div>
       </CardContent>
     </Card>
   );
-}
+};
