@@ -1,83 +1,78 @@
 
-/**
- * @file api/services/creditorsService.ts
- * @description Service for creditors API endpoints
- */
-import { apiClient } from '../client';
-import { extractApiData, extractApiArray } from '../client';
-import type { Creditor, Payment, ApiResponse } from '../api-contract';
+import { api } from '../api';
 
-// Re-export Creditor type for other services
-export type { Creditor, Payment };
+export interface Creditor {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  currentBalance: number;
+  totalSales: number;
+  lastPurchase?: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Payment {
+  id: string;
+  creditorId: string;
+  creditorName: string;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: 'cash' | 'card' | 'upi' | 'bank_transfer';
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePaymentRequest {
+  creditorId: string;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: 'cash' | 'card' | 'upi' | 'bank_transfer';
+  notes?: string;
+}
 
 export const creditorsService = {
-  /**
-   * Get all creditors
-   */
   getCreditors: async (): Promise<Creditor[]> => {
-    try {
-      const response = await apiClient.get<ApiResponse<{ creditors: Creditor[] }>>('/creditors');
-      return extractApiArray<Creditor>(response, 'creditors');
-    } catch (error) {
-      console.error('[CREDITORS-SERVICE] Error fetching creditors:', error);
-      return [];
-    }
+    const response = await api.get('/creditors');
+    return response.data;
   },
 
-  /**
-   * Get creditor by ID
-   */
-  getCreditor: async (id: string): Promise<Creditor | null> => {
-    try {
-      const response = await apiClient.get<ApiResponse<Creditor>>(`/creditors/${id}`);
-      return extractApiData<Creditor>(response);
-    } catch (error) {
-      console.error('[CREDITORS-SERVICE] Error fetching creditor:', error);
-      return null;
-    }
+  getCreditor: async (id: string): Promise<Creditor> => {
+    const response = await api.get(`/creditors/${id}`);
+    return response.data;
   },
 
-  /**
-   * Create creditor
-   */
-  createCreditor: async (data: Partial<Creditor>): Promise<Creditor> => {
-    const response = await apiClient.post<ApiResponse<Creditor>>('/creditors', data);
-    return extractApiData<Creditor>(response);
+  createCreditor: async (data: Omit<Creditor, 'id' | 'createdAt' | 'updatedAt'>): Promise<Creditor> => {
+    const response = await api.post('/creditors', data);
+    return response.data;
   },
 
-  /**
-   * Update creditor
-   */
   updateCreditor: async (id: string, data: Partial<Creditor>): Promise<Creditor> => {
-    const response = await apiClient.put<ApiResponse<Creditor>>(`/creditors/${id}`, data);
-    return extractApiData<Creditor>(response);
+    const response = await api.put(`/creditors/${id}`, data);
+    return response.data;
   },
 
-  /**
-   * Delete creditor
-   */
   deleteCreditor: async (id: string): Promise<void> => {
-    await apiClient.delete(`/creditors/${id}`);
+    await api.delete(`/creditors/${id}`);
   },
 
-  /**
-   * Get payments for creditor
-   */
-  getPayments: async (creditorId: string): Promise<Payment[]> => {
-    try {
-      const response = await apiClient.get<ApiResponse<{ payments: Payment[] }>>(`/creditors/${creditorId}/payments`);
-      return extractApiArray<Payment>(response, 'payments');
-    } catch (error) {
-      console.error('[CREDITORS-SERVICE] Error fetching payments:', error);
-      return [];
-    }
+  getPayments: async (creditorId?: string): Promise<Payment[]> => {
+    const params = creditorId ? { creditorId } : {};
+    const response = await api.get('/creditors/payments', { params });
+    return response.data;
   },
 
-  /**
-   * Create payment for creditor
-   */
-  createPayment: async (creditorId: string, data: Partial<Payment>): Promise<Payment> => {
-    const response = await apiClient.post<ApiResponse<Payment>>(`/creditors/${creditorId}/payments`, data);
-    return extractApiData<Payment>(response);
+  createPayment: async (data: CreatePaymentRequest): Promise<Payment> => {
+    const response = await api.post('/creditors/payments', data);
+    return response.data;
+  },
+
+  getTopCreditors: async (limit: number = 10): Promise<Creditor[]> => {
+    const response = await api.get('/creditors/top', { params: { limit } });
+    return response.data;
   }
 };

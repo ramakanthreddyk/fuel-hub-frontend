@@ -46,10 +46,9 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = "ChartContainer"
 
-const ChartTooltip = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.Tooltip>) => {
+const ChartTooltip = ({ ...props }: React.ComponentProps<typeof RechartsPrimitive.Tooltip>) => {
   return (
     <RechartsPrimitive.Tooltip
-      className={cn("z-50", className)}
       {...props}
     />
   )

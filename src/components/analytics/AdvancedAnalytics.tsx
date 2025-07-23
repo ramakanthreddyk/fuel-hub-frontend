@@ -36,9 +36,7 @@ export default function AdvancedAnalytics({ data }: AdvancedAnalyticsProps) {
               <BarChart data={data.hourlySales}>
                 <XAxis dataKey="hour" />
                 <YAxis />
-                <ChartTooltip>
-                  <ChartTooltipContent />
-                </ChartTooltip>
+                <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="sales" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
@@ -56,9 +54,7 @@ export default function AdvancedAnalytics({ data }: AdvancedAnalyticsProps) {
               <LineChart data={data.fuelPerformance}>
                 <XAxis dataKey="fuelType" />
                 <YAxis />
-                <ChartTooltip>
-                  <ChartTooltipContent />
-                </ChartTooltip>
+                <ChartTooltip content={<ChartTooltipContent />} />
                 <Line type="monotone" dataKey="sales" stroke="#8884d8" />
                 <Line type="monotone" dataKey="volume" stroke="#82ca9d" />
                 <Line type="monotone" dataKey="margin" stroke="#ffc658" />

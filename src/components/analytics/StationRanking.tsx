@@ -62,7 +62,7 @@ export function StationRanking({ period = 'month' }: StationRankingProps) {
                   <div>
                     <h4 className="font-semibold">{station.stationName || station.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {formatCurrency(station.revenue || station.sales || 0, { useLakhsCrores: true })} • {formatVolume(station.volume, 3, true)}
+                      {formatCurrency(station.revenue || station.sales || 0, { useLakhsCrores: true })} • {formatVolume(station.volume)}
                     </p>
                   </div>
                 </div>

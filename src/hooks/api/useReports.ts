@@ -1,30 +1,47 @@
 
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { reportsApi } from '@/api/reports';
-import { SalesReportFilters, SalesReportExportFilters } from '@/api/api-contract';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/api/api';
 
-export const useSalesReport = (filters: SalesReportFilters) => {
-  return useQuery({
-    queryKey: ['sales-report', filters],
-    queryFn: () => reportsApi.getSalesReport(filters),
-    enabled: !!(filters.startDate && filters.endDate),
-  });
-};
+export interface ReportExportRequest {
+  reportType: string;
+  format: 'pdf' | 'excel' | 'csv';
+  filters?: Record<string, any>;
+  dateRange?: {
+    startDate: string;
+    endDate: string;
+  };
+}
+
+export interface ScheduleReportRequest {
+  reportType: string;
+  title: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  recipients: string[];
+  format: 'pdf' | 'excel' | 'csv';
+  filters?: Record<string, any>;
+}
 
 export const useReportExport = () => {
   return useMutation({
-    mutationFn: reportsApi.exportReport,
+    mutationFn: async (request: ReportExportRequest) => {
+      const response = await api.post('/reports/export', request);
+      return response.data;
+    },
   });
 };
+
+export const useExportReport = useReportExport;
 
 export const useScheduleReport = () => {
+  const queryClient = useQueryClient();
+  
   return useMutation({
-    mutationFn: reportsApi.scheduleReport,
-  });
-};
-
-export const useExportSalesReport = (filters: SalesReportExportFilters) => {
-  return useMutation({
-    mutationFn: () => reportsApi.exportSalesReport(filters),
+    mutationFn: async (request: ScheduleReportRequest) => {
+      const response = await api.post('/reports/schedule', request);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
+    },
   });
 };

@@ -34,9 +34,7 @@ export default function StationComparisonChart({
             <BarChart data={chartData}>
               <XAxis dataKey="name" />
               <YAxis />
-              <ChartTooltip>
-                <ChartTooltipContent />
-              </ChartTooltip>
+              <ChartTooltip content={<ChartTooltipContent />} />
               <Legend />
               <Bar dataKey="sales" fill="#8884d8" name="Sales" />
               <Bar dataKey="volume" fill="#82ca9d" name="Volume" />

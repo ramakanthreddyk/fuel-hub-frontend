@@ -92,6 +92,17 @@ export const formatDate = (
   }
 };
 
+export const formatDateTime = (
+  date: string | Date | null | undefined,
+  options: {
+    dateStyle?: 'full' | 'long' | 'medium' | 'short';
+    timeStyle?: 'full' | 'long' | 'medium' | 'short';
+    locale?: string;
+  } = {}
+): string => {
+  return formatDate(date, { ...options, format: 'datetime' });
+};
+
 export const formatPercentage = (
   value: number | string | null | undefined,
   options: {
@@ -115,10 +126,13 @@ export const formatPercentage = (
 
 export const formatVolume = (
   volume: number | string | null | undefined,
+  decimals: number = 2,
+  showUnit: boolean = true,
   unit: string = 'L'
 ): string => {
   const numValue = typeof volume === 'string' ? parseFloat(volume) : (volume || 0);
-  return `${formatNumber(numValue, { maximumFractionDigits: 2 })} ${unit}`;
+  const formatted = formatNumber(numValue, { maximumFractionDigits: decimals });
+  return showUnit ? `${formatted} ${unit}` : formatted;
 };
 
 export const formatPrice = (
