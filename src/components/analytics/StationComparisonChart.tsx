@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 import { useStationComparison } from '@/hooks/useAnalytics';
 import { Building2 } from 'lucide-react';
@@ -60,13 +60,6 @@ export function StationComparisonChart({ stationIds, period = 'month' }: Station
       growth: typeof station.growth === 'number' ? station.growth : 0
     };
   });
-  
-  const chartConfig = {
-    sales: { label: 'Sales (₹)', color: '#3b82f6' },
-    volume: { label: 'Volume (L)', color: '#22c55e' },
-    transactions: { label: 'Transactions', color: '#f59e0b' },
-    growth: { label: 'Growth %', color: '#ef4444' },
-  };
 
   return (
     <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200">
@@ -77,22 +70,22 @@ export function StationComparisonChart({ stationIds, period = 'month' }: Station
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[400px]">
+        <div className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <XAxis dataKey="stationName" />
               <YAxis />
               <ChartTooltip
-                content={props => {
-                  if (!props.active || !props.payload) return null;
-                  const data = props.payload[0]?.payload;
+                content={({ active, payload }) => {
+                  if (!active || !payload) return null;
+                  const data = payload[0]?.payload;
                   if (!data) return null;
                   
                   return (
                     <div className="rounded-lg border bg-background p-2 shadow-md">
                       <div className="font-medium">{data.stationName}</div>
                       <div className="text-sm text-muted-foreground">
-                        <div>Sales: {formatCurrency(data.sales, { useLakhsCrores: true })}</div>
+                        <div>Sales: {formatCurrency(data.sales)}</div>
                         <div>Volume: {formatVolume(data.volume)}</div>
                         <div>Transactions: {data.transactions}</div>
                         <div className={`font-medium ${data.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -104,12 +97,12 @@ export function StationComparisonChart({ stationIds, period = 'month' }: Station
                 }}
               />
               <Legend />
-              <Bar dataKey="sales" fill={chartConfig.sales.color} name="Sales (₹)" />
-              <Bar dataKey="volume" fill={chartConfig.volume.color} name="Volume (L)" />
-              <Bar dataKey="transactions" fill={chartConfig.transactions.color} name="Transactions" />
+              <Bar dataKey="sales" fill="#3b82f6" name="Sales (₹)" />
+              <Bar dataKey="volume" fill="#22c55e" name="Volume (L)" />
+              <Bar dataKey="transactions" fill="#f59e0b" name="Transactions" />
             </BarChart>
           </ResponsiveContainer>
-        </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );

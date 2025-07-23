@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -26,8 +27,16 @@ Chart.displayName = "Chart"
 
 const ChartContainer = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & {
+    config?: {
+      [key: string]: {
+        label?: string;
+        color?: string;
+        formatter?: (value: number, name: string) => string;
+      };
+    };
+  }
+>(({ className, children, config, ...props }, ref) => {
   return (
     <div
       className={cn(
@@ -45,19 +54,14 @@ ChartContainer.displayName = "ChartContainer"
 
 const ChartTooltip = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> & {
-    children: React.ReactNode
-  }
->(({ className, children, ...props }, ref) => {
+  React.ComponentProps<typeof RechartsPrimitive.Tooltip>
+>(({ className, ...props }, ref) => {
   return (
     <RechartsPrimitive.Tooltip
       ref={ref}
-      content={<ChartTooltipContent />}
       className={cn("z-50", className)}
       {...props}
-    >
-      {children}
-    </RechartsPrimitive.Tooltip>
+    />
   )
 })
 ChartTooltip.displayName = "ChartTooltip"
@@ -90,32 +94,15 @@ const ChartProvider = ({ children, config }: ChartProviderProps) => {
   )
 }
 
-interface PayloadConfig {
-  label?: string
-  formatter?: (value: number, name: string) => string
-}
-
-function getPayloadConfigFromPayload(
-  config: ChartContextProps["config"],
-  item: Payload<ValueType, NameType>,
-  key: string
-): PayloadConfig | undefined {
-  if (config && config[key]) {
-    return config[key]
-  }
-  return undefined
-}
-
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof ChartTooltip> &
-    React.ComponentProps<typeof RechartsPrimitive.Tooltip> & {
-      hideLabel?: boolean
-      hideIndicator?: boolean
-      indicator?: "line" | "dot" | "dashed"
-      nameKey?: string
-      labelKey?: string
-    }
+  React.ComponentProps<typeof RechartsPrimitive.Tooltip> & {
+    hideLabel?: boolean
+    hideIndicator?: boolean
+    indicator?: "line" | "dot" | "dashed"
+    nameKey?: string
+    labelKey?: string
+  }
 >(
   (
     {
@@ -137,33 +124,6 @@ const ChartTooltipContent = React.forwardRef<
   ) => {
     const { config } = useChart()
 
-    const tooltipLabel = React.useMemo(() => {
-      if (hideLabel || !payload?.length) {
-        return null
-      }
-
-      const [item] = payload
-      const key = `${labelKey || item.dataKey || item.name || "value"}`
-      const itemConfig = getPayloadConfigFromPayload(config, item, key)
-      const value =
-        !labelKey && typeof label === "string"
-          ? config[label as keyof typeof config]?.label || label
-          : itemConfig?.label
-
-      if (labelFormatter) {
-        return labelFormatter(label, payload)
-      }
-
-      return value
-    }, [
-      label,
-      labelFormatter,
-      payload,
-      hideLabel,
-      labelKey,
-      config,
-    ])
-
     if (!active || !payload?.length) {
       return null
     }
@@ -176,52 +136,29 @@ const ChartTooltipContent = React.forwardRef<
           className
         )}
       >
-        {!hideLabel && tooltipLabel && (
+        {!hideLabel && label && (
           <div className={cn("font-medium", labelClassName)}>
-            {tooltipLabel}
+            {label}
           </div>
         )}
         <div className="grid gap-1.5">
-          {payload.map((item, index) => {
-            const key = `${nameKey || item.name || item.dataKey || "value"}`
-            const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color || item.payload?.fill || item.color
-
-            return (
-              <div
-                key={item.dataKey}
-                className={cn(
-                  "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
-                  indicator === "dot" && "items-center"
-                )}
-              >
-                {formatter && typeof item?.value === "number" && (
-                  <div className="flex flex-1 justify-between leading-none">
-                    <div className="grid gap-1.5">
-                      <span className="text-muted-foreground">
-                        {itemConfig?.label || item.name}
-                      </span>
-                    </div>
-                    <div className="font-mono font-medium tabular-nums text-foreground">
-                      {formatter(item.value, item.name, item, index, payload)}
-                    </div>
-                  </div>
-                )}
-                {!formatter && (
-                  <div className="flex flex-1 justify-between leading-none">
-                    <div className="grid gap-1.5">
-                      <span className="text-muted-foreground">
-                        {itemConfig?.label || item.name}
-                      </span>
-                    </div>
-                    <div className="font-mono font-medium tabular-nums text-foreground">
-                      {typeof item.value === "number" ? item.value : String(item.value)}
-                    </div>
-                  </div>
-                )}
+          {payload.map((item, index) => (
+            <div
+              key={index}
+              className="flex w-full flex-wrap items-stretch gap-2"
+            >
+              <div className="flex flex-1 justify-between leading-none">
+                <div className="grid gap-1.5">
+                  <span className="text-muted-foreground">
+                    {item.name}
+                  </span>
+                </div>
+                <div className="font-mono font-medium tabular-nums text-foreground">
+                  {typeof item.value === "number" ? item.value : String(item.value)}
+                </div>
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
       </div>
     )
@@ -313,6 +250,7 @@ export {
   ChartPie,
   ChartProvider,
   ChartTooltip,
+  ChartTooltipContent,
   ChartXAxis,
   ChartYAxis,
   useChart,

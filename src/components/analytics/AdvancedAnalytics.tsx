@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useHourlySales, usePeakHours, useFuelPerformance } from '@/hooks/useAnalytics';
 import { Clock, TrendingUp, Fuel } from 'lucide-react';
@@ -37,7 +37,7 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
             {hourlyLoading ? (
               <div className="h-[300px] bg-muted animate-pulse rounded" />
             ) : (
-              <ChartContainer config={{ sales: { label: 'Sales', color: '#8b5cf6' } }} className="h-[300px]">
+              <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={hourlySales}>
                     <XAxis 
@@ -47,16 +47,16 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
                     />
                     <YAxis />
                     <ChartTooltip 
-                      content={(props) => {
-                        if (!props.active || !props.payload) return null;
-                        const data = props.payload[0]?.payload;
+                      content={({ active, payload }) => {
+                        if (!active || !payload) return null;
+                        const data = payload[0]?.payload;
                         if (!data) return null;
                         
                         return (
                           <div className="rounded-lg border bg-background p-2 shadow-md">
                             <div className="font-medium">Hour: {data.hour}:00</div>
                             <div className="text-sm text-muted-foreground">
-                              <div>Sales: {formatCurrency(data.revenue, { useLakhsCrores: true })}</div>
+                              <div>Sales: {formatCurrency(data.revenue)}</div>
                               <div>Volume: {formatVolume(data.volume)}</div>
                               <div>Transactions: {data.salesCount || 0}</div>
                             </div>
@@ -67,7 +67,7 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
                     <Line type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2} name="Sales" />
                   </LineChart>
                 </ResponsiveContainer>
-              </ChartContainer>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -93,7 +93,7 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
                     <div className="mt-2 space-y-1">
                       <p className="text-sm flex justify-between">
                         <span className="text-muted-foreground">Avg Sales:</span>
-                        <span className="font-medium">{formatCurrency(peak.avgSales || peak.averageRevenue || 0, { useLakhsCrores: true })}</span>
+                        <span className="font-medium">{formatCurrency(peak.avgSales || peak.averageRevenue || 0)}</span>
                       </p>
                       <p className="text-sm flex justify-between">
                         <span className="text-muted-foreground">Avg Volume:</span>
@@ -124,27 +124,22 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
             {fuelLoading ? (
               <div className="h-[300px] bg-muted animate-pulse rounded" />
             ) : (
-              <ChartContainer config={{ 
-                sales: { label: 'Sales', color: '#3b82f6' },
-                volume: { label: 'Volume', color: '#22c55e' },
-                margin: { label: 'Margin %', color: '#f97316' },
-                growth: { label: 'Growth %', color: '#ef4444' }
-              }} className="h-[300px]">
+              <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={fuelPerformance}>
                     <XAxis dataKey="fuelType" />
                     <YAxis />
                     <ChartTooltip
-                      content={(props) => {
-                        if (!props.active || !props.payload) return null;
-                        const data = props.payload[0]?.payload;
+                      content={({ active, payload }) => {
+                        if (!active || !payload) return null;
+                        const data = payload[0]?.payload;
                         if (!data) return null;
                         
                         return (
                           <div className="rounded-lg border bg-background p-2 shadow-md">
                             <div className="font-medium">{data.fuelType}</div>
                             <div className="text-sm text-muted-foreground space-y-1">
-                              <div>Sales: {formatCurrency(data.sales || data.revenue || 0, { useLakhsCrores: true })}</div>
+                              <div>Sales: {formatCurrency(data.sales || data.revenue || 0)}</div>
                               <div>Volume: {formatVolume(data.volume || 0)}</div>
                               <div>Avg Price: {formatCurrency(data.averagePrice || 0)}/L</div>
                               <div className={`${data.growth >= 0 ? 'text-green-600' : 'text-red-600'} font-medium`}>
@@ -161,7 +156,7 @@ export function AdvancedAnalytics({ stationId, dateRange }: AdvancedAnalyticsPro
                     <Bar dataKey="margin" fill="#f97316" name="Margin %" />
                   </BarChart>
                 </ResponsiveContainer>
-              </ChartContainer>
+              </div>
             )}
           </CardContent>
         </Card>

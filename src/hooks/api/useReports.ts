@@ -12,19 +12,15 @@ export const useSalesReport = (filters: SalesReportFilters) => {
 };
 
 export const useReportExport = () => {
-  const exportMutation = useMutation({
+  return useMutation({
     mutationFn: reportsApi.exportReport,
   });
+};
 
-  const scheduleMutation = useMutation({
+export const useScheduleReport = () => {
+  return useMutation({
     mutationFn: reportsApi.scheduleReport,
   });
-
-  return {
-    exportReport: exportMutation.mutateAsync,
-    scheduleReport: scheduleMutation.mutateAsync,
-    isExporting: exportMutation.isPending,
-  };
 };
 
 export const useExportSalesReport = (filters: SalesReportExportFilters) => {

@@ -1,94 +1,99 @@
 
 /**
- * Fuel Prices Service
- * 
- * API service for managing fuel prices
+ * @file api/services/fuel-prices.service.ts
+ * @description Service for fuel prices API endpoints
  */
+import apiClient, { extractData, extractArray } from '../core/apiClient';
 
-import { apiClient } from '../client';
-import type { 
-  FuelPrice, 
-  CreateFuelPriceRequest, 
-  UpdateFuelPriceRequest,
-  FuelPriceValidation,
-  ApiResponse 
-} from '../api-contract';
+export interface FuelPrice {
+  id: string;
+  stationId: string;
+  fuelType: string;
+  price: number;
+  validFrom: string;
+  validTo?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FuelPriceFilters {
+  stationId?: string;
+  fuelType?: string;
+  isActive?: boolean;
+  validFrom?: string;
+  validTo?: string;
+}
 
 export const fuelPricesService = {
-  // Get all fuel prices
-  getFuelPrices: async (stationId?: string): Promise<FuelPrice[]> => {
-    const params = stationId ? { stationId } : {};
-    const response = await apiClient.get<ApiResponse<{ prices: FuelPrice[] }>>('/fuel-prices', { params });
-    return response.data.data.prices;
+  /**
+   * Get fuel prices
+   */
+  getFuelPrices: async (filters: FuelPriceFilters = {}): Promise<FuelPrice[]> => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.fuelType) params.append('fuelType', filters.fuelType);
+      if (filters.isActive !== undefined) params.append('isActive', filters.isActive.toString());
+      if (filters.validFrom) params.append('validFrom', filters.validFrom);
+      if (filters.validTo) params.append('validTo', filters.validTo);
+
+      const response = await apiClient.get(`/fuel-prices?${params.toString()}`);
+      return extractArray<FuelPrice>(response, 'fuelPrices');
+    } catch (error) {
+      console.error('[FUEL-PRICES-API] Error fetching fuel prices:', error);
+      return [];
+    }
   },
 
-  // Get fuel price by ID
-  getFuelPrice: async (id: string): Promise<FuelPrice> => {
-    const response = await apiClient.get<ApiResponse<FuelPrice>>(`/fuel-prices/${id}`);
-    return response.data.data;
+  /**
+   * Get fuel price by ID
+   */
+  getFuelPrice: async (id: string): Promise<FuelPrice | null> => {
+    try {
+      const response = await apiClient.get(`/fuel-prices/${id}`);
+      return extractData<FuelPrice>(response);
+    } catch (error) {
+      console.error('[FUEL-PRICES-API] Error fetching fuel price:', error);
+      return null;
+    }
   },
 
-  // Create fuel price
-  createFuelPrice: async (data: CreateFuelPriceRequest): Promise<FuelPrice> => {
-    const response = await apiClient.post<ApiResponse<FuelPrice>>('/fuel-prices', data);
-    return response.data.data;
+  /**
+   * Create fuel price
+   */
+  createFuelPrice: async (data: Partial<FuelPrice>): Promise<FuelPrice> => {
+    try {
+      const response = await apiClient.post('/fuel-prices', data);
+      return extractData<FuelPrice>(response);
+    } catch (error) {
+      console.error('[FUEL-PRICES-API] Error creating fuel price:', error);
+      throw error;
+    }
   },
 
-  // Update fuel price
-  updateFuelPrice: async (id: string, data: UpdateFuelPriceRequest): Promise<FuelPrice> => {
-    const response = await apiClient.put<ApiResponse<FuelPrice>>(`/fuel-prices/${id}`, data);
-    return response.data.data;
+  /**
+   * Update fuel price
+   */
+  updateFuelPrice: async (id: string, data: Partial<FuelPrice>): Promise<FuelPrice> => {
+    try {
+      const response = await apiClient.put(`/fuel-prices/${id}`, data);
+      return extractData<FuelPrice>(response);
+    } catch (error) {
+      console.error('[FUEL-PRICES-API] Error updating fuel price:', error);
+      throw error;
+    }
   },
 
-  // Delete fuel price
+  /**
+   * Delete fuel price
+   */
   deleteFuelPrice: async (id: string): Promise<void> => {
-    await apiClient.delete(`/fuel-prices/${id}`);
-  },
-
-  // Validate fuel prices for a station
-  validateStationPrices: async (stationId: string): Promise<FuelPriceValidation> => {
-    const response = await apiClient.get<ApiResponse<FuelPriceValidation>>(`/fuel-prices/validate/${stationId}`);
-    return response.data.data;
-  },
-
-  // Get missing fuel prices
-  getMissingPrices: async (): Promise<FuelPriceValidation[]> => {
-    const response = await apiClient.get<ApiResponse<{ validations: FuelPriceValidation[] }>>('/fuel-prices/missing');
-    return response.data.data.validations;
-  },
-
-  // Bulk update fuel prices
-  bulkUpdatePrices: async (prices: Array<{ stationId: string; fuelType: string; price: number }>): Promise<FuelPrice[]> => {
-    const response = await apiClient.post<ApiResponse<{ prices: FuelPrice[] }>>('/fuel-prices/bulk', { prices });
-    return response.data.data.prices;
-  },
-
-  // Create a new fuel price
-  createFuelPrice: async (data: CreateFuelPriceRequest): Promise<FuelPrice> => {
-    const response = await apiClient.post<ApiResponse<FuelPrice>>('/fuel-prices', data);
-    return response.data.data;
-  },
-
-  // Update a fuel price
-  updateFuelPrice: async (id: string, data: UpdateFuelPriceRequest): Promise<FuelPrice> => {
-    const response = await apiClient.put<ApiResponse<FuelPrice>>(`/fuel-prices/${id}`, data);
-    return response.data.data;
-  },
-
-  // Delete a fuel price
-  deleteFuelPrice: async (id: string): Promise<void> => {
-    await apiClient.delete(`/fuel-prices/${id}`);
-  },
-
-  // Validate fuel prices for a station
-  validateFuelPrices: async (stationId: string): Promise<FuelPriceValidation> => {
-    const response = await apiClient.get<ApiResponse<FuelPriceValidation>>(`/fuel-prices/validate/${stationId}`);
-    return response.data.data;
-  },
-
-  // Get stations missing active prices
-  getMissingPrices: async (): Promise<any[]> => {
-    const response = await apiClient.get<ApiResponse<any[]>>('/fuel-prices/missing');
-    return response.data.data;
-  },
+    try {
+      await apiClient.delete(`/fuel-prices/${id}`);
+    } catch (error) {
+      console.error('[FUEL-PRICES-API] Error deleting fuel price:', error);
+      throw error;
+    }
+  }
 };

@@ -1,76 +1,74 @@
 
 /**
- * @file formatters.ts
+ * @file utils/formatters.ts
  * @description Utility functions for formatting data
  */
 
-/**
- * Format a number as currency
- */
-export const formatCurrency = (amount: number): string => {
+export const formatCurrency = (value: number, options?: { maximumFractionDigits?: number; useLakhsCrores?: boolean }) => {
+  if (typeof value !== 'number' || isNaN(value)) return '₹0';
+  
+  const { maximumFractionDigits = 2, useLakhsCrores = false } = options || {};
+  
+  if (useLakhsCrores) {
+    if (value >= 10000000) { // 1 crore
+      return `₹${(value / 10000000).toFixed(2)}Cr`;
+    } else if (value >= 100000) { // 1 lakh
+      return `₹${(value / 100000).toFixed(2)}L`;
+    }
+  }
+  
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-  }).format(amount);
+    maximumFractionDigits,
+  }).format(value);
 };
 
-/**
- * Format a price value
- */
-export const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-};
-
-/**
- * Format a reading value
- */
-export const formatReading = (reading: number): string => {
-  return new Intl.NumberFormat('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(reading);
-};
-
-/**
- * Format a percentage
- */
-export const formatPercent = (value: number): string => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'percent',
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  }).format(value / 100);
-};
-
-/**
- * Format a number with commas
- */
-export const formatNumber = (value: number): string => {
+export const formatNumber = (value: number) => {
+  if (typeof value !== 'number' || isNaN(value)) return '0';
   return new Intl.NumberFormat('en-IN').format(value);
 };
 
-/**
- * Format a volume value
- */
-export const formatVolume = (volume: number): string => {
-  return `${formatNumber(volume)} L`;
+export const formatVolume = (value: number) => {
+  if (typeof value !== 'number' || isNaN(value)) return '0L';
+  return `${formatNumber(value)}L`;
 };
 
-/**
- * Format a date string
- */
-export const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-IN');
+export const formatPercentage = (value: number) => {
+  if (typeof value !== 'number' || isNaN(value)) return '0%';
+  return `${value.toFixed(1)}%`;
 };
 
-/**
- * Format a date and time string
- */
-export const formatDateTime = (dateString: string): string => {
-  return new Date(dateString).toLocaleString('en-IN');
+export const formatPrice = (value: number) => {
+  if (typeof value !== 'number' || isNaN(value)) return '₹0.00';
+  return `₹${value.toFixed(2)}`;
 };
+
+export const formatReading = (value: number) => {
+  if (typeof value !== 'number' || isNaN(value)) return '0.00';
+  return value.toFixed(2);
+};
+
+export const formatDate = (date: string | Date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-IN');
+};
+
+export const formatDateTime = (date: string | Date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-IN');
+};
+
+export const formatTime = (date: string | Date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('en-IN');
+};
+
+// Legacy alias for backward compatibility
+export const formatSafeNumber = formatNumber;

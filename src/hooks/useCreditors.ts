@@ -1,65 +1,78 @@
-/**
- * @file hooks/useCreditors.ts
- * @description React Query hooks for creditor operations
- */
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { creditorsService } from '@/api/services/creditors.service';
-import { CreateCreditorRequest, CreateCreditPaymentRequest } from '@/api/api-contract';
-import { dashboardService } from '@/api/services/dashboardService';
 
 /**
- * Hook to create a new creditor
- * @returns Mutation for creating a creditor
+ * @file hooks/useCreditors.ts
+ * @description Hooks for creditors management
  */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { creditorsService } from '@/api/services/creditorsService';
+import type { Creditor, Payment } from '@/api/api-contract';
+
+export const useCreditors = () => {
+  return useQuery({
+    queryKey: ['creditors'],
+    queryFn: creditorsService.getCreditors,
+  });
+};
+
+export const useCreditor = (id: string) => {
+  return useQuery({
+    queryKey: ['creditor', id],
+    queryFn: () => creditorsService.getCreditor(id),
+    enabled: !!id,
+  });
+};
+
 export const useCreateCreditor = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: CreateCreditorRequest) => creditorsService.createCreditor(data),
+    mutationFn: creditorsService.createCreditor,
     onSuccess: () => {
-      // Invalidate creditors query to refetch the list
       queryClient.invalidateQueries({ queryKey: ['creditors'] });
-    }
+    },
   });
 };
 
-/**
- * Hook to create a new payment for a creditor
- * @returns Mutation for creating a payment
- */
-export const useCreateCreditorPayment = () => {
+export const useUpdateCreditor = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: CreateCreditPaymentRequest) => creditorsService.createPayment(data),
-    onSuccess: (_, variables) => {
-      // Invalidate creditor query to refetch the details
-      queryClient.invalidateQueries({ queryKey: ['creditor', variables.creditorId] });
-      // Invalidate creditors query to refetch the list with updated balances
+    mutationFn: ({ id, data }: { id: string; data: Partial<Creditor> }) =>
+      creditorsService.updateCreditor(id, data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['creditors'] });
-    }
+    },
   });
 };
 
-/**
- * Hook to get top creditors by outstanding amount
- * @param limit Number of creditors to return (default: 5)
- * @returns Query result with top creditors
- */
-export const useTopCreditors = (limit: number = 5) => {
-  return useQuery({
-    queryKey: ['top-creditors', limit],
-    queryFn: async () => {
-      try {
-        const result = await dashboardService.getTopCreditors(limit);
-        console.log('[useTopCreditors] API result:', result);
-        return result;
-      } catch (error) {
-        console.error('[useTopCreditors] Error fetching top creditors:', error);
-        return [];
-      }
+export const useDeleteCreditor = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: creditorsService.deleteCreditor,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['creditors'] });
     },
-    staleTime: 60000, // 1 minute
-    retry: 1
+  });
+};
+
+export const usePayments = (creditorId: string) => {
+  return useQuery({
+    queryKey: ['payments', creditorId],
+    queryFn: () => creditorsService.getPayments(creditorId),
+    enabled: !!creditorId,
+  });
+};
+
+export const useCreatePayment = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ creditorId, data }: { creditorId: string; data: Partial<Payment> }) =>
+      creditorsService.createPayment(creditorId, data),
+    onSuccess: (_, { creditorId }) => {
+      queryClient.invalidateQueries({ queryKey: ['payments', creditorId] });
+      queryClient.invalidateQueries({ queryKey: ['creditor', creditorId] });
+    },
   });
 };
