@@ -410,6 +410,21 @@ export interface UpdateCreditorRequest {
   stationId?: string; // Added for station association
 }
 
+export interface Payment {
+  id: string;
+  creditorId: string;
+  creditorName?: string;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: PaymentMethod;
+  reference?: string;
+  referenceNumber?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt?: string;
+  recordedBy?: string;
+}
+
 export interface CreditPayment {
   id: string;
   creditorId: string;
@@ -755,6 +770,27 @@ export interface ReconciliationRecord {
   stationName?: string;
   expectedSales?: number;
   status?: 'pending' | 'matched' | 'variance';
+  // Additional properties that may be used
+  openingCash?: number;
+  closingCash?: number;
+  expenses?: number;
+  totalSales?: number;
+}
+
+export interface ReconciliationSummary {
+  totalRecords: number;
+  totalRevenue: number;
+  totalVariance: number;
+  averageVariance: number;
+  reconciliationRate: number;
+  period?: string;
+  lastUpdated?: string;
+  stationBreakdown?: Array<{
+    stationId: string;
+    stationName: string;
+    recordCount: number;
+    totalVariance: number;
+  }>;
 }
 
 export interface CreateReconciliationRequest {
@@ -762,6 +798,7 @@ export interface CreateReconciliationRequest {
   date: string;
   reconciliationNotes?: string;
   managerConfirmation: boolean;
+  notes?: string;
 }
 
 export interface DailyReadingSummary {
@@ -962,27 +999,6 @@ export interface SuperAdminSummary {
 // ANALYTICS TYPES
 // =============================================================================
 
-export interface StationComparison {
-  stationId: string;
-  stationName: string;
-  currentPeriod: {
-    revenue: number;
-    volume: number;
-    salesCount: number;
-  };
-  previousPeriod: {
-    revenue: number;
-    volume: number;
-    salesCount: number;
-  };
-  growth: number;
-}
-
-export interface StationComparisonParams {
-  stationIds: string[];
-  period?: string;
-}
-
 export interface HourlySales {
   hour: number;
   revenue: number;
@@ -1035,43 +1051,10 @@ export interface StationRanking {
 // INVENTORY & DELIVERY TYPES
 // =============================================================================
 
-export interface FuelInventory {
-  id: string;
-  stationId: string;
-  stationName?: string;
-  fuelType: 'petrol' | 'diesel' | 'premium';
-  capacity?: number;
-  currentVolume: number;
-  lastUpdated: string;
-}
-
 export interface FuelInventoryParams {
   stationId?: string;
   fuelType?: string;
 }
-
-export interface FuelDelivery {
-  id: string;
-  stationId: string;
-  stationName?: string;
-  fuelType: 'petrol' | 'diesel' | 'premium';
-  volume: number;
-  deliveryDate: string;
-  supplier?: string;
-  createdAt: string;
-}
-
-export interface CreateFuelDeliveryRequest {
-  stationId: string;
-  fuelType: 'petrol' | 'diesel' | 'premium';
-  volume: number;
-  deliveryDate: string;
-  supplier?: string;
-}
-
-// =============================================================================
-// REPORTS TYPES
-// =============================================================================
 
 // =============================================================================
 // REPORTS TYPES

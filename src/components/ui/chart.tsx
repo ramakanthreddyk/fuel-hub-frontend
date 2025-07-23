@@ -3,12 +3,6 @@
 
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import {
-  NameType,
-  Payload,
-  ValueType,
-} from "recharts/types/component/DefaultTooltipContent"
-
 import { cn } from "@/lib/utils"
 
 const Chart = React.forwardRef<
@@ -52,18 +46,14 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = "ChartContainer"
 
-const ChartTooltip = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip>
->(({ className, ...props }, ref) => {
+const ChartTooltip = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.Tooltip>) => {
   return (
     <RechartsPrimitive.Tooltip
-      ref={ref}
       className={cn("z-50", className)}
       {...props}
     />
   )
-})
+}
 ChartTooltip.displayName = "ChartTooltip"
 
 interface ChartContextProps {
@@ -116,7 +106,6 @@ const ChartTooltipContent = React.forwardRef<
       labelFormatter,
       labelClassName,
       formatter,
-      color,
       nameKey,
       labelKey,
     },
@@ -166,76 +155,51 @@ const ChartTooltipContent = React.forwardRef<
 )
 ChartTooltipContent.displayName = "ChartTooltipContent"
 
-const ChartBar = React.forwardRef<
-  RechartsPrimitive.Bar,
-  React.ComponentProps<typeof RechartsPrimitive.Bar>
->(({ className, ...props }, ref) => {
-  return <RechartsPrimitive.Bar ref={ref} className={cn("", className)} {...props} />
-})
+const ChartBar = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.Bar>) => {
+  return <RechartsPrimitive.Bar className={cn("", className)} {...props} />
+}
 ChartBar.displayName = "ChartBar"
 
-const ChartLine = React.forwardRef<
-  RechartsPrimitive.Line,
-  React.ComponentProps<typeof RechartsPrimitive.Line>
->(({ className, ...props }, ref) => {
+const ChartLine = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.Line>) => {
   return (
     <RechartsPrimitive.Line
-      ref={ref}
       className={cn("", className)}
       strokeWidth={2}
       dot={false}
       {...props}
     />
   )
-})
+}
 ChartLine.displayName = "ChartLine"
 
-const ChartArea = React.forwardRef<
-  RechartsPrimitive.Area,
-  React.ComponentProps<typeof RechartsPrimitive.Area>
->(({ className, ...props }, ref) => {
-  return <RechartsPrimitive.Area ref={ref} className={cn("", className)} {...props} />
-})
+const ChartArea = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.Area>) => {
+  return <RechartsPrimitive.Area className={cn("", className)} {...props} />
+}
 ChartArea.displayName = "ChartArea"
 
-const ChartPie = React.forwardRef<
-  RechartsPrimitive.Pie,
-  React.ComponentProps<typeof RechartsPrimitive.Pie>
->(({ className, ...props }, ref) => {
-  return <RechartsPrimitive.Pie ref={ref} className={cn("", className)} {...props} />
-})
+const ChartPie = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.Pie>) => {
+  return <RechartsPrimitive.Pie className={cn("", className)} {...props} />
+}
 ChartPie.displayName = "ChartPie"
 
-const ChartCell = React.forwardRef<
-  RechartsPrimitive.Cell,
-  React.ComponentProps<typeof RechartsPrimitive.Cell>
->(({ className, ...props }, ref) => {
-  return <RechartsPrimitive.Cell ref={ref} className={cn("", className)} {...props} />
-})
+const ChartCell = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.Cell>) => {
+  return <RechartsPrimitive.Cell className={cn("", className)} {...props} />
+}
 ChartCell.displayName = "ChartCell"
 
-const ChartXAxis = React.forwardRef<
-  RechartsPrimitive.XAxis,
-  React.ComponentProps<typeof RechartsPrimitive.XAxis>
->(({ className, ...props }, ref) => {
-  return <RechartsPrimitive.XAxis ref={ref} className={cn("", className)} {...props} />
-})
+const ChartXAxis = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.XAxis>) => {
+  return <RechartsPrimitive.XAxis className={cn("", className)} {...props} />
+}
 ChartXAxis.displayName = "ChartXAxis"
 
-const ChartYAxis = React.forwardRef<
-  RechartsPrimitive.YAxis,
-  React.ComponentProps<typeof RechartsPrimitive.YAxis>
->(({ className, ...props }, ref) => {
-  return <RechartsPrimitive.YAxis ref={ref} className={cn("", className)} {...props} />
-})
+const ChartYAxis = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.YAxis>) => {
+  return <RechartsPrimitive.YAxis className={cn("", className)} {...props} />
+}
 ChartYAxis.displayName = "ChartYAxis"
 
-const ChartLegend = React.forwardRef<
-  RechartsPrimitive.Legend,
-  React.ComponentProps<typeof RechartsPrimitive.Legend>
->(({ className, ...props }, ref) => {
-  return <RechartsPrimitive.Legend ref={ref} className={cn("", className)} {...props} />
-})
+const ChartLegend = ({ className, ...props }: React.ComponentProps<typeof RechartsPrimitive.Legend>) => {
+  return <RechartsPrimitive.Legend className={cn("", className)} {...props} />
+}
 ChartLegend.displayName = "ChartLegend"
 
 export {

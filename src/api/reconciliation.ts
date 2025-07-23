@@ -81,16 +81,15 @@ export const getReconciliationAnalytics = async (params: {
   if (records.length > 0) {
     const discrepancies = records.map(record => {
       const expected = record.total_sales || 0;
-      const actual = (record.closingCash - record.openingCash) + record.expenses;
-      return Math.abs(expected - actual);
+      const actual = record.variance || 0;
+      return Math.abs(actual);
     });
 
     analytics.averageDiscrepancy = discrepancies.reduce((a, b) => a + b, 0) / discrepancies.length;
     analytics.largestDiscrepancy = Math.max(...discrepancies);
     analytics.reconciliationRate = (records.filter(r => {
-      const expected = r.total_sales || 0;
-      const actual = (r.closingCash - r.openingCash) + r.expenses;
-      return Math.abs(expected - actual) < 100; // Within 100 rupees tolerance
+      const variance = r.variance || 0;
+      return Math.abs(variance) < 100; // Within 100 rupees tolerance
     }).length / records.length) * 100;
   }
 
@@ -111,9 +110,9 @@ export const getDailyReconciliationStatus = async (params: {
     stationId: record.stationId,
     date: record.date,
     status: record.status,
-    discrepancy: Math.abs((record.total_sales || 0) - ((record.closingCash - record.openingCash) + record.expenses)),
+    discrepancy: record.variance || 0,
     totalSales: record.total_sales || 0,
-    cashBalance: record.closingCash - record.openingCash,
-    expenses: record.expenses
+    cashBalance: record.variance || 0,
+    expenses: 0
   }));
 };

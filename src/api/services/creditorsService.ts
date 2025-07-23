@@ -7,6 +7,9 @@ import { apiClient } from '../client';
 import { extractApiData, extractApiArray } from '../client';
 import type { Creditor, Payment, ApiResponse } from '../api-contract';
 
+// Re-export Creditor type for other services
+export type { Creditor, Payment };
+
 export const creditorsService = {
   /**
    * Get all creditors
