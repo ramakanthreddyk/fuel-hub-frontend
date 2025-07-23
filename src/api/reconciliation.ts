@@ -127,7 +127,19 @@ export const reconciliationApi = {
       if (stationId) params.append('stationId', stationId);
       
       const response = await apiClient.get(`/reconciliation?${params.toString()}`);
-      return extractApiArray<ReconciliationRecord>(response, 'reconciliations');
+      const records = extractApiArray<ReconciliationRecord>(response, 'reconciliations');
+      
+      // Additional validation to ensure finalized flag is correct
+      return records.map(record => {
+        const hasReadings = (record.openingReading > 0 || record.closingReading > 0);
+        const hasSales = (record.totalSales > 0 || record.cash_total > 0);
+        const shouldBeFinalized = record.finalized && hasReadings && hasSales;
+        
+        return {
+          ...record,
+          finalized: shouldBeFinalized
+        };
+      });
     } catch (error) {
       console.error('Error fetching reconciliation history:', error);
       return [];
@@ -137,13 +149,33 @@ export const reconciliationApi = {
   // Get reconciliation by ID
   getReconciliationById: async (id: string): Promise<ReconciliationRecord> => {
     const response = await apiClient.get(`/reconciliation/${id}`);
-    return extractApiData<ReconciliationRecord>(response);
+    const record = extractApiData<ReconciliationRecord>(response);
+    
+    // Additional validation to ensure finalized flag is correct
+    const hasReadings = (record.openingReading > 0 || record.closingReading > 0);
+    const hasSales = (record.totalSales > 0 || record.cash_total > 0);
+    const shouldBeFinalized = record.finalized && hasReadings && hasSales;
+    
+    return {
+      ...record,
+      finalized: shouldBeFinalized
+    };
   },
 
   // Get reconciliation by station and date
   getReconciliationByStationAndDate: async (stationId: string, date: string): Promise<ReconciliationRecord> => {
     const response = await apiClient.get(`/reconciliation/${stationId}/${date}`);
-    return extractApiData<ReconciliationRecord>(response);
+    const record = extractApiData<ReconciliationRecord>(response);
+    
+    // Additional validation to ensure finalized flag is correct
+    const hasReadings = (record.openingReading > 0 || record.closingReading > 0);
+    const hasSales = (record.totalSales > 0 || record.cash_total > 0);
+    const shouldBeFinalized = record.finalized && hasReadings && hasSales;
+    
+    return {
+      ...record,
+      finalized: shouldBeFinalized
+    };
   },
 
   // Approve reconciliation

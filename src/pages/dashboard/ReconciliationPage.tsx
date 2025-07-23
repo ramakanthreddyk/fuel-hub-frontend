@@ -76,13 +76,15 @@ export default function ReconciliationPage() {
       return <Badge className="bg-red-100 text-red-800"><AlertTriangle className="w-3 h-3 mr-1" />Missing Data</Badge>;
     }
     
-    const status = reconciliation.status || 'pending';
-    
-    if (status === 'matched') {
-      return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Balanced</Badge>;
-    } else if (status === 'variance') {
-      return <Badge className="bg-red-100 text-red-800"><AlertTriangle className="w-3 h-3 mr-1" />Discrepancy</Badge>;
+    // If finalized is true, determine status based on variance
+    if (reconciliation.finalized) {
+      if (reconciliation.variance === 0) {
+        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Balanced</Badge>;
+      } else {
+        return <Badge className="bg-red-100 text-red-800"><AlertTriangle className="w-3 h-3 mr-1" />Discrepancy</Badge>;
+      }
     } else {
+      // Not finalized, so it's pending
       return <Badge className="bg-yellow-100 text-yellow-800"><AlertCircle className="w-3 h-3 mr-1" />Pending</Badge>;
     }
   };
@@ -231,12 +233,15 @@ export default function ReconciliationPage() {
   // Function to actually perform the sales finalization after confirmation
   const handleTriggerReconciliation = async (stationId: string, stationName: string, date: string = selectedDate) => {
     try {
+      console.log(`Starting reconciliation for station ${stationId} on ${date}`);
+      
       // Mark this station as processing
       setProcessingStations(prev => new Set(prev).add(stationId));
       
-      // Check if reconciliation already exists
+      // Double-check if reconciliation already exists
       const existingReconciliation = checkExistingReconciliation(stationId, date);
       if (existingReconciliation) {
+        console.log('Found existing reconciliation:', existingReconciliation);
         toast({
           title: "Already Finalized",
           description: `Sales for ${stationName} on ${formatDate(date)} have already been finalized. You cannot finalize sales multiple times for the same day.`,
@@ -248,10 +253,12 @@ export default function ReconciliationPage() {
       // Check if we have sales summary data
       let summary = salesSummary;
       if (!summary || !summary.hasReadings) {
+        console.log('No sales summary data, fetching...');
         // Try to get the sales summary data if it's not already available
         summary = await getDailySalesSummary(stationId, date);
         
         if (!summary || !summary.hasReadings) {
+          console.error('No readings found after fetching summary');
           toast({
             title: "No Sales Data",
             description: `Cannot finalize as there are no sales records for ${stationName} on ${formatDate(date)}. Please ensure all nozzle readings are entered first.`,
@@ -263,6 +270,7 @@ export default function ReconciliationPage() {
       
       // Verify that there are actual readings with non-zero values
       if (summary.totals.volume === 0 || summary.readings.length === 0) {
+        console.error('Zero volume or no readings found');
         toast({
           title: "Invalid Sales Data",
           description: `Cannot finalize with zero sales volume for ${stationName} on ${formatDate(date)}. Please ensure valid readings are entered.`,
@@ -271,23 +279,27 @@ export default function ReconciliationPage() {
         return;
       }
       
+      console.log('Creating reconciliation with data:', { 
+        stationId, 
+        date,
+        notes: `Sales finalization for ${date}`,
+        managerConfirmation: true
+      });
+      
       // Create the reconciliation record
-      await createReconciliation.mutateAsync({ 
+      const result = await createReconciliation.mutateAsync({ 
         stationId, 
         date,
         notes: `Sales finalization for ${date}`,
         managerConfirmation: true // Auto-confirm to simplify the process
       });
+      
+      console.log('Reconciliation created successfully:', result);
 
       toast({
         title: "Sales Finalized",
         description: `Daily sales for ${stationName} on ${formatDate(date)} have been successfully finalized.`,
       });
-      
-      // Close the dialog and clear the sales summary data
-      setConfirmDialogOpen(false);
-      setSalesSummary(null);
-      setStationToReconcile(null);
       
     } catch (error: any) {
       console.error('Failed to finalize sales:', error);
@@ -305,6 +317,11 @@ export default function ReconciliationPage() {
         });
       }
     } finally {
+      // Reset UI state
+      setConfirmDialogOpen(false);
+      setSalesSummary(null);
+      setStationToReconcile(null);
+      
       // Remove this station from processing state
       setProcessingStations(prev => {
         const updated = new Set(prev);
@@ -321,11 +338,14 @@ export default function ReconciliationPage() {
         open={confirmDialogOpen} 
         onOpenChange={(open) => {
           console.log('Dialog open state changed to:', open);
-          setConfirmDialogOpen(open);
-          if (!open) {
+          // Only allow closing if we're not processing
+          if (!open && stationToReconcile && !processingStations.has(stationToReconcile.id)) {
+            setConfirmDialogOpen(open);
             // Reset state when dialog is closed
             setSalesSummary(null);
             setStationToReconcile(null);
+          } else if (open) {
+            setConfirmDialogOpen(open);
           }
         }}
       >
@@ -412,20 +432,44 @@ export default function ReconciliationPage() {
           )}
           
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel
+              onClick={() => {
+                console.log('Dialog cancelled');
+                // Reset state when dialog is cancelled
+                setSalesSummary(null);
+                setStationToReconcile(null);
+                setConfirmDialogOpen(false);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction 
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 console.log('Confirm button clicked');
                 if (stationToReconcile) {
-                  handleTriggerReconciliation(stationToReconcile.id, stationToReconcile.name);
+                  // Close the dialog first to prevent UI issues
+                  setConfirmDialogOpen(false);
+                  // Then trigger the reconciliation
+                  setTimeout(() => {
+                    handleTriggerReconciliation(stationToReconcile.id, stationToReconcile.name);
+                  }, 100);
                 }
               }}
               className={salesSummary && salesSummary.variance > 0 ? 'bg-red-600 hover:bg-red-700' : ''}
+              disabled={processingStations.has(stationToReconcile?.id || '')}
             >
-              {salesSummary && salesSummary.variance !== 0 
-                ? 'Finalize with Discrepancy' 
-                : 'Finalize Daily Sales'}
+              {processingStations.has(stationToReconcile?.id || '') ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                salesSummary && salesSummary.variance !== 0 
+                  ? 'Finalize with Discrepancy' 
+                  : 'Finalize Daily Sales'
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -710,29 +754,63 @@ export default function ReconciliationPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex gap-2">
-                    {checkExistingReconciliation(station.id, selectedDate) ? (
-                      <div className="w-full">
-                        <div className="flex items-center justify-between bg-green-50 p-2 rounded-md mb-2">
-                          <div className="flex items-center">
-                            <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                            <span className="text-green-800 font-medium">Sales Finalized</span>
+                    {(() => {
+                      const existingRec = checkExistingReconciliation(station.id, selectedDate);
+                      if (existingRec && existingRec.finalized) {
+                        return (
+                          <div className="w-full">
+                            <div className="flex items-center justify-between bg-green-50 p-2 rounded-md mb-2">
+                              <div className="flex items-center">
+                                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                                <span className="text-green-800 font-medium">Sales Finalized</span>
+                              </div>
+                              <Badge variant="outline" className="text-xs bg-green-100 text-green-800 border-green-200">
+                                Completed
+                              </Badge>
+                            </div>
+                            <Button 
+                              variant="outline"
+                              className="flex-1 w-full"
+                              size="sm"
+                              asChild
+                            >
+                              <Link to={`/dashboard/reconciliation/daily-summary?stationId=${station.id}&date=${selectedDate}`}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Sales Details
+                              </Link>
+                            </Button>
                           </div>
-                          <Badge variant="outline" className="text-xs bg-green-100 text-green-800 border-green-200">
-                            Completed
-                          </Badge>
-                        </div>
-                        <Button 
-                          variant="outline"
-                          className="flex-1 w-full"
-                          size="sm"
-                          asChild
-                        >
-                          <Link to={`/dashboard/reconciliation/daily-summary?stationId=${station.id}&date=${selectedDate}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Sales Details
-                          </Link>
-                        </Button>
-                      </div>
+                        );
+                      } else if (existingRec && !existingRec.finalized) {
+                        // Reconciliation exists but not finalized
+                        return (
+                          <div className="w-full">
+                            <div className="flex items-center justify-between bg-yellow-50 p-2 rounded-md mb-2">
+                              <div className="flex items-center">
+                                <AlertCircle className="mr-2 h-4 w-4 text-yellow-600" />
+                                <span className="text-yellow-800 font-medium">Pending Finalization</span>
+                              </div>
+                              <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-800 border-yellow-200">
+                                Pending
+                              </Badge>
+                            </div>
+                            <Button 
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                showReconciliationConfirmation({id: station.id, name: station.name});
+                              }}
+                              className="flex-1 w-full"
+                              size="sm"
+                            >
+                              <Play className="mr-2 h-4 w-4" />
+                              Finalize Daily Sales
+                            </Button>
+                          </div>
+                        );
+                      } else {
+                        return null; // Will fall through to the next condition
+                      }
+                    })()
                     ) : processingStations.has(station.id) ? (
                       <Button 
                         variant="outline"
@@ -749,28 +827,67 @@ export default function ReconciliationPage() {
                           e.preventDefault();
                           console.log('Finalize button clicked for station:', station.name);
                           
-                          // First check if there are readings for this station and date
-                          const summary = await getDailySalesSummary(station.id, selectedDate);
-                          
-                          if (!summary || !summary.hasReadings) {
+                          try {
+                            // Mark this station as processing to prevent multiple clicks
+                            setProcessingStations(prev => new Set(prev).add(station.id));
+                            
+                            // First check if reconciliation already exists
+                            const existingReconciliation = checkExistingReconciliation(station.id, selectedDate);
+                            if (existingReconciliation) {
+                              toast({
+                                title: "Already Finalized",
+                                description: `Sales for ${station.name} on ${formatDate(selectedDate)} have already been finalized.`,
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            // Check if there are readings for this station and date
+                            const summary = await getDailySalesSummary(station.id, selectedDate);
+                            
+                            if (!summary || !summary.hasReadings) {
+                              toast({
+                                title: "No Sales Data",
+                                description: `Cannot finalize sales for ${station.name} as there are no readings for ${formatDate(selectedDate)}. Please ensure readings are entered first.`,
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            // If readings exist, show the confirmation dialog
+                            showReconciliationConfirmation({id: station.id, name: station.name});
+                          } catch (error) {
+                            console.error('Error in finalize button click handler:', error);
                             toast({
-                              title: "No Sales Data",
-                              description: `Cannot finalize sales for ${station.name} as there are no readings for ${formatDate(selectedDate)}. Please ensure readings are entered first.`,
+                              title: "Error",
+                              description: `An error occurred while checking sales data for ${station.name}. Please try again.`,
                               variant: "destructive"
                             });
-                            return;
+                          } finally {
+                            // Remove this station from processing state if there was an error
+                            setProcessingStations(prev => {
+                              const updated = new Set(prev);
+                              updated.delete(station.id);
+                              return updated;
+                            });
                           }
-                          
-                          // If readings exist, show the confirmation dialog
-                          showReconciliationConfirmation({id: station.id, name: station.name});
                         }}
-                        disabled={createReconciliation.isPending}
+                        disabled={createReconciliation.isPending || processingStations.has(station.id)}
                         className="flex-1"
                         size="sm"
                         title="Finalize daily sales to compare reported cash with actual sales"
                       >
-                        <Play className="mr-2 h-4 w-4" />
-                        Finalize Daily Sales
+                        {processingStations.has(station.id) ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="mr-2 h-4 w-4" />
+                            Finalize Daily Sales
+                          </>
+                        )}
                       </Button>
                     )}
                   </div>
