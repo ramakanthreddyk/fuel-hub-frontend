@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/api/api';
+import { apiClient } from '@/api/client';
 
 export interface ReportExportRequest {
   reportType: string;
@@ -24,20 +24,23 @@ export interface ScheduleReportRequest {
 export const useReportExport = () => {
   return useMutation({
     mutationFn: async (request: ReportExportRequest) => {
-      const response = await api.post('/reports/export', request);
+      const response = await apiClient.post('/reports/export', request);
       return response.data;
     },
   });
 };
 
 export const useExportReport = useReportExport;
+export const useGenerateReport = useReportExport; // Alias for backward compatibility
+export const useDownloadReport = useReportExport; // Another alias for backward compatibility
+export const useReports = useReportExport; // Another alias for backward compatibility
 
 export const useScheduleReport = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (request: ScheduleReportRequest) => {
-      const response = await api.post('/reports/schedule', request);
+      const response = await apiClient.post('/reports/schedule', request);
       return response.data;
     },
     onSuccess: () => {

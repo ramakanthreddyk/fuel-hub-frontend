@@ -1,5 +1,5 @@
 
-import { api } from '../api';
+import { apiClient } from '../client';
 
 export interface Creditor {
   id: string;
@@ -37,42 +37,42 @@ export interface CreatePaymentRequest {
 
 export const creditorsService = {
   getCreditors: async (): Promise<Creditor[]> => {
-    const response = await api.get('/creditors');
+    const response = await apiClient.get('/creditors');
     return response.data;
   },
 
   getCreditor: async (id: string): Promise<Creditor> => {
-    const response = await api.get(`/creditors/${id}`);
+    const response = await apiClient.get(`/creditors/${id}`);
     return response.data;
   },
 
   createCreditor: async (data: Omit<Creditor, 'id' | 'createdAt' | 'updatedAt'>): Promise<Creditor> => {
-    const response = await api.post('/creditors', data);
+    const response = await apiClient.post('/creditors', data);
     return response.data;
   },
 
   updateCreditor: async (id: string, data: Partial<Creditor>): Promise<Creditor> => {
-    const response = await api.put(`/creditors/${id}`, data);
+    const response = await apiClient.put(`/creditors/${id}`, data);
     return response.data;
   },
 
   deleteCreditor: async (id: string): Promise<void> => {
-    await api.delete(`/creditors/${id}`);
+    await apiClient.delete(`/creditors/${id}`);
   },
 
   getPayments: async (creditorId?: string): Promise<Payment[]> => {
     const params = creditorId ? { creditorId } : {};
-    const response = await api.get('/creditors/payments', { params });
+    const response = await apiClient.get('/creditors/payments', { params });
     return response.data;
   },
 
   createPayment: async (data: CreatePaymentRequest): Promise<Payment> => {
-    const response = await api.post('/creditors/payments', data);
+    const response = await apiClient.post('/creditors/payments', data);
     return response.data;
   },
 
   getTopCreditors: async (limit: number = 10): Promise<Creditor[]> => {
-    const response = await api.get('/creditors/top', { params: { limit } });
+    const response = await apiClient.get('/creditors/top', { params: { limit } });
     return response.data;
   }
 };

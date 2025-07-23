@@ -23,7 +23,7 @@ interface AdvancedAnalyticsProps {
   };
 }
 
-export default function AdvancedAnalytics({ data }: AdvancedAnalyticsProps) {
+function AdvancedAnalytics({ data }: AdvancedAnalyticsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
@@ -67,3 +67,7 @@ export default function AdvancedAnalytics({ data }: AdvancedAnalyticsProps) {
     </div>
   );
 }
+
+// Export both as named export and default export for compatibility
+export { AdvancedAnalytics };
+export default AdvancedAnalytics;

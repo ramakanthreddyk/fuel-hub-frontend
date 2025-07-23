@@ -8,11 +8,20 @@ export const useStationComparison = (opts: StationComparisonParams) => {
   const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['analytics', 'station-comparison', opts.stationIds, opts.period],
-    queryFn: () => analyticsApi.getStationComparison(opts),
-    enabled: opts.stationIds.length > 0,
-    onError: (error) => {
-      handleError(error, 'Failed to fetch station comparison.');
+    queryFn: async () => {
+      try {
+        if (!opts.stationIds || opts.stationIds.length === 0) {
+          return [];
+        }
+        const result = await analyticsApi.getStationComparison(opts);
+        return result || [];
+      } catch (error) {
+        console.error('Error fetching station comparison:', error);
+        handleError(error, 'Failed to fetch station comparison.');
+        return []; // Return empty array to prevent map errors
+      }
     },
+    enabled: opts.stationIds && opts.stationIds.length > 0,
   });
 };
 
@@ -63,9 +72,15 @@ export const useStationRanking = (period: string) => {
   const { handleError } = useErrorHandler();
   return useQuery({
     queryKey: ['analytics', 'station-ranking', period],
-    queryFn: () => analyticsApi.getStationRanking(period),
-    onError: (error) => {
-      handleError(error, 'Failed to fetch station ranking.');
+    queryFn: async () => {
+      try {
+        const result = await analyticsApi.getStationRanking(period);
+        return result || [];
+      } catch (error) {
+        console.error('Error fetching station ranking:', error);
+        handleError(error, 'Failed to fetch station ranking.');
+        return []; // Return empty array to prevent map errors
+      }
     },
   });
 };

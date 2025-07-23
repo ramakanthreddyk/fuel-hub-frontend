@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { SearchableStationSelector } from "@/components/filters/SearchableStationSelector";
-import { StationComparisonChart } from "@/components/analytics/StationComparisonChart";
-import { AdvancedAnalytics } from "@/components/analytics/AdvancedAnalytics";
+import { StationComparisonChartContainer } from "@/components/analytics/StationComparisonChartContainer";
+import { AdvancedAnalyticsContainer } from "@/components/analytics/AdvancedAnalyticsContainer";
 import { StationRanking } from "@/components/analytics/StationRanking";
 import {
   Select,
@@ -65,7 +65,7 @@ export default function AnalyticsPage() {
             placeholder="Select stations"
           />
           {stationIds.length > 0 ? (
-            <StationComparisonChart stationIds={stationIds} />
+            <StationComparisonChartContainer stationIds={stationIds} />
           ) : (
             <p className="text-muted-foreground text-sm">
               Choose stations to view performance comparison.
@@ -86,7 +86,7 @@ export default function AnalyticsPage() {
             placeholder="Select station"
           />
           {stationId ? (
-            <AdvancedAnalytics stationId={stationId} />
+            <AdvancedAnalyticsContainer stationId={stationId} />
           ) : (
             <p className="text-muted-foreground text-sm">
               Select a station to view detailed analytics.

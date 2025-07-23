@@ -11,7 +11,7 @@ interface StationComparisonChartProps {
   title?: string;
 }
 
-export default function StationComparisonChart({ 
+function StationComparisonChart({ 
   data, 
   title = "Station Performance Comparison" 
 }: StationComparisonChartProps) {
@@ -47,3 +47,7 @@ export default function StationComparisonChart({
     </Card>
   );
 }
+
+// Export both as named export and default export for compatibility
+export { StationComparisonChart };
+export default StationComparisonChart;

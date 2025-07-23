@@ -4,7 +4,8 @@
  * @description Reconciliation API functions
  */
 import { contractClient } from './contract-client';
-import { ReconciliationRecord, ReconciliationSummary } from './api-contract';
+import { apiClient } from './client';
+import { ReconciliationRecord, ReconciliationSummary, CreateReconciliationRequest, DailyReadingSummary } from './api-contract';
 
 /**
  * Get reconciliation records
@@ -115,4 +116,109 @@ export const getDailyReconciliationStatus = async (params: {
     cashBalance: record.variance || 0,
     expenses: 0
   }));
+};
+
+/**
+ * Reconciliation API object that combines all reconciliation functions
+ */
+export const reconciliationApi = {
+  // Get daily readings summary for reconciliation
+  getDailyReadingsSummary: async (stationId: string, date: string): Promise<DailyReadingSummary[]> => {
+    try {
+      if (!stationId || !date) {
+        console.error('Error: stationId and date are required for daily readings summary');
+        throw new Error('Station ID and date are required for daily readings summary');
+      }
+      
+      // Ensure the date is properly formatted (YYYY-MM-DD)
+      const formattedDate = new Date(date).toISOString().split('T')[0];
+      
+      const response = await apiClient.get(`/reconciliation/daily-summary?stationId=${stationId}&date=${formattedDate}`);
+      return response.data.data || [];
+    } catch (error: any) {
+      console.error('Error fetching daily readings summary:', error);
+      // If it's a 404 error, return an empty array instead of throwing
+      if (error.response && error.response.status === 404) {
+        console.log('No reconciliation found, returning empty array');
+        return [];
+      }
+      throw new Error(`Failed to fetch sales data: ${error.message || 'Unknown error'}`);
+    }
+  },
+
+  // Create new reconciliation record
+  createReconciliation: async (data: CreateReconciliationRequest): Promise<ReconciliationRecord> => {
+    try {
+      // First check if reconciliation already exists
+      try {
+        const existingRec = await reconciliationApi.getReconciliationByStationAndDate(data.stationId, data.date);
+        if (existingRec) {
+          console.log('Reconciliation already exists:', existingRec);
+          return existingRec; // Return the existing reconciliation instead of creating a new one
+        }
+      } catch (err) {
+        // If error is not 404 (not found), rethrow it
+        if (err.response && err.response.status !== 404) {
+          throw err;
+        }
+        // Otherwise, continue with creating a new reconciliation
+      }
+      
+      const response = await apiClient.post('/reconciliation', data);
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error creating reconciliation:', error);
+      throw new Error(error.response?.data?.message || error.message || 'Failed to create reconciliation');
+    }
+  },
+
+  // Get reconciliation history
+  getReconciliationHistory: async (stationId?: string): Promise<ReconciliationRecord[]> => {
+    try {
+      const params = new URLSearchParams();
+      if (stationId) params.append('stationId', stationId);
+      
+      const response = await apiClient.get(`/reconciliation?${params.toString()}`);
+      return response.data.data || [];
+    } catch (error) {
+      console.error('Error fetching reconciliation history:', error);
+      return [];
+    }
+  },
+
+  // Get reconciliation by ID
+  getReconciliationById: async (id: string): Promise<ReconciliationRecord> => {
+    const response = await apiClient.get(`/reconciliation/${id}`);
+    return response.data.data;
+  },
+
+  // Get reconciliation by station and date
+  getReconciliationByStationAndDate: async (stationId: string, date: string): Promise<ReconciliationRecord | null> => {
+    try {
+      const response = await apiClient.get(`/reconciliation/${stationId}/${date}`);
+      return response.data.data;
+    } catch (error: any) {
+      // If it's a 404 error, return null instead of throwing
+      if (error.response && error.response.status === 404) {
+        console.log('Found existing reconciliation: undefined');
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  // Approve reconciliation
+  approveReconciliation: async (id: string): Promise<ReconciliationRecord> => {
+    const response = await apiClient.post(`/reconciliation/${id}/approve`);
+    return response.data.data;
+  },
+  
+  // Add the existing functions
+  getReconciliationRecords,
+  getReconciliationSummary,
+  createReconciliationRecord,
+  updateReconciliationRecord,
+  deleteReconciliationRecord,
+  getReconciliationAnalytics,
+  getDailyReconciliationStatus
 };

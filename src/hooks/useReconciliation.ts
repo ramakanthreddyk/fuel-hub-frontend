@@ -81,7 +81,15 @@ export const useReconciliationById = (id: string) => {
 export const useReconciliationByStationAndDate = (stationId: string, date: string) => {
   return useQuery({
     queryKey: ['reconciliation', 'station-date', stationId, date],
-    queryFn: () => reconciliationApi.getReconciliationByStationAndDate(stationId, date),
+    queryFn: async () => {
+      try {
+        const result = await reconciliationApi.getReconciliationByStationAndDate(stationId, date);
+        return result; // This might be null if no reconciliation exists
+      } catch (error) {
+        console.error('Error fetching reconciliation by station and date:', error);
+        return null; // Return null on error
+      }
+    },
     enabled: !!stationId && !!date,
     staleTime: 60000,
   });

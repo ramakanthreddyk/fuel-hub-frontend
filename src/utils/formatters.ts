@@ -32,11 +32,16 @@ export const formatCurrency = (
     }
   }
 
+  // Ensure maximumFractionDigits is within valid range (0-20)
+  const safeMaxFractionDigits = Math.min(Math.max(0, maximumFractionDigits), 20);
+  // Ensure minimumFractionDigits is within valid range and not greater than maximumFractionDigits
+  const safeMinFractionDigits = Math.min(Math.max(0, minimumFractionDigits), safeMaxFractionDigits);
+
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-    minimumFractionDigits,
-    maximumFractionDigits
+    minimumFractionDigits: safeMinFractionDigits,
+    maximumFractionDigits: safeMaxFractionDigits
   }).format(numValue);
 };
 
