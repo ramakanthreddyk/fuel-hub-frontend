@@ -68,7 +68,7 @@ export const useNozzleDetails = (nozzleId?: string, updateStore: boolean = true)
         error: nozzleError
       });
       
-      console.log('[NOZZLE-DETAILS] Details loaded:', { nozzle, pump, station });
+      // Details loaded successfully
     } else {
       setDetails(prev => ({
         ...prev,
@@ -76,7 +76,7 @@ export const useNozzleDetails = (nozzleId?: string, updateStore: boolean = true)
         error: nozzleError
       }));
     }
-  }, [nozzle, pumps, stations, isLoadingNozzle, isLoadingPumps, isLoadingStations, nozzleError, updateSelections]);
+  }, [nozzle, pumps, stations, isLoadingNozzle, isLoadingPumps, isLoadingStations, nozzleError, updateSelections, updateStore]);
 
   return details;
 };

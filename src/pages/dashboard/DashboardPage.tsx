@@ -9,10 +9,12 @@ import { useFuelStore } from '@/store/fuelStore';
 import { shallow } from 'zustand/shallow';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { useReconciliationDifferencesSummary } from '@/hooks/useReconciliationDifferencesSummary';
 
 // Dashboard Components
 import { SalesSummaryCard } from '@/components/dashboard/SalesSummaryCard';
+import { TodaysSalesCard } from '@/components/dashboard/TodaysSalesCard';
 import { PaymentMethodChart } from '@/components/dashboard/PaymentMethodChart';
 import { FuelBreakdownChart } from '@/components/dashboard/FuelBreakdownChart';
 import { SalesTrendChart } from '@/components/dashboard/SalesTrendChart';
@@ -51,6 +53,7 @@ export default function DashboardPage() {
   // Use standardized hooks for metrics and sales summary
   const { data: stationMetrics, isLoading: metricsLoading, refetch: refetchMetrics } = useStationMetrics();
   const { data: salesSummary, isLoading: salesLoading, refetch: refetchSales } = useSalesSummary('monthly', filters);
+  const { data: todaysSales, isLoading: todaysLoading, refetch: refetchTodaysSales } = useTodaysSales();
   const differencesEnabled = !!filters.stationId && !!selectedDate;
   const { data: differencesSummary, isLoading: differencesLoading, error: differencesError } = useReconciliationDifferencesSummary(filters.stationId || '', selectedDate);
 
@@ -63,6 +66,7 @@ export default function DashboardPage() {
       await Promise.all([
         refetchSales(),
         refetchMetrics(),
+        refetchTodaysSales(),
       ]);
     } finally {
       setIsRefreshing(false);
@@ -73,9 +77,9 @@ export default function DashboardPage() {
     setFilters(newFilters);
   };
 
-  const isLoading = salesLoading || metricsLoading;
+  const isLoading = salesLoading || metricsLoading || todaysLoading;
 
-  // Calculate summary stats
+  // Calculate summary stats - prioritize today's data
   // Use Zustand stations if available, else fallback to metrics
   // Fix: Only show stations for the current tenant/user
   // If backend filtering fails, filter stations in frontend as a fallback
@@ -89,8 +93,13 @@ export default function DashboardPage() {
   const activeStations = Array.isArray(stationMetrics) 
     ? stationMetrics.filter(station => station.status === 'active').length 
     : 0;
-  const totalRevenue = salesSummary?.totalRevenue || 0;
-  const totalVolume = salesSummary?.totalVolume || 0;
+  
+  // Use today's data for key metrics, fallback to monthly summary
+  const todaysRevenue = todaysSales?.totalAmount || 0;
+  const todaysVolume = todaysSales?.totalVolume || 0;
+  const todaysEntries = todaysSales?.totalEntries || 0;
+  const monthlyRevenue = salesSummary?.totalRevenue || 0;
+  const monthlyVolume = salesSummary?.totalVolume || 0;
 
   // Get recent stations for display
   const recentStations = stationsList.slice(0, 5);
@@ -155,14 +164,15 @@ export default function DashboardPage() {
           </Button>
         </div>
         
-        {/* Key Metrics */}
+        {/* Key Metrics - Today's Focus */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalRevenue, { useLakhsCrores: true })}</p>
+                  <p className="text-sm font-medium text-blue-600">Today's Revenue</p>
+                  <p className="text-2xl font-bold text-slate-900">{formatCurrency(todaysRevenue, { useLakhsCrores: true })}</p>
+                  <p className="text-xs text-slate-500">Monthly: {formatCurrency(monthlyRevenue, { useLakhsCrores: true })}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-blue-600" />
               </div>
@@ -173,8 +183,9 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600">Total Volume</p>
-                  <p className="text-2xl font-bold text-slate-900">{formatVolume(totalVolume, 3, true)}</p>
+                  <p className="text-sm font-medium text-green-600">Today's Volume</p>
+                  <p className="text-2xl font-bold text-slate-900">{formatVolume(todaysVolume, 3, true)}</p>
+                  <p className="text-xs text-slate-500">Monthly: {formatVolume(monthlyVolume, 3, true)}</p>
                 </div>
                 <Fuel className="h-8 w-8 text-green-600" />
               </div>
@@ -185,8 +196,9 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600">Active Stations</p>
-                  <p className="text-2xl font-bold text-slate-900">{activeStations}</p>
+                  <p className="text-sm font-medium text-purple-600">Today's Entries</p>
+                  <p className="text-2xl font-bold text-slate-900">{todaysEntries}</p>
+                  <p className="text-xs text-slate-500">Sales transactions</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-purple-600" />
               </div>
@@ -197,8 +209,9 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-orange-600">Total Stations</p>
-                  <p className="text-2xl font-bold text-slate-900">{totalStations}</p>
+                  <p className="text-sm font-medium text-orange-600">Active Stations</p>
+                  <p className="text-2xl font-bold text-slate-900">{activeStations}</p>
+                  <p className="text-xs text-slate-500">Total: {totalStations}</p>
                 </div>
                 <Users className="h-8 w-8 text-orange-600" />
               </div>
@@ -206,9 +219,21 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Main Dashboard Components */}
+        {/* Today's Sales - Primary Focus */}
         <div className="grid grid-cols-1 gap-6">
-          <SalesSummaryCard filters={filters} />
+          <TodaysSalesCard />
+        </div>
+
+        {/* Historical Sales Summary */}
+        <div className="grid grid-cols-1 gap-6">
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-slate-900">Monthly Sales Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SalesSummaryCard filters={filters} />
+            </CardContent>
+          </Card>
         </div>
 
         {/* Charts */}

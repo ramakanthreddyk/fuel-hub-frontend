@@ -7,25 +7,22 @@ import { ReadingEntryForm } from '@/components/readings/ReadingEntryForm';
 import { useNozzleDetails } from '@/hooks/api/useNozzleDetails';
 import { useFuelStore } from '@/store/fuelStore';
 import { useDataStore } from '@/store/dataStore';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 export default function NewReadingPage() {
   const { nozzleId, pumpId, stationId } = useParams<{ nozzleId: string; pumpId: string; stationId: string }>();
   const location = useLocation();
   
-  // Get preselected values from navigation state or URL params
-  const navigationPreselected = location.state?.preselected;
-  const urlPreselected = {
-    stationId: stationId || undefined,
-    pumpId: pumpId || undefined,
-    nozzleId: nozzleId || undefined
-  };
-  
-  const preselected = navigationPreselected || urlPreselected;
-  
-  // Log the preselected values for debugging
-  console.log('[NEW-READING-PAGE] URL params:', { stationId, pumpId, nozzleId });
-  console.log('[NEW-READING-PAGE] Preselected values:', preselected);
+  // Memoize preselected values to prevent infinite loops
+  const preselected = useMemo(() => {
+    const navigationPreselected = location.state?.preselected;
+    const urlPreselected = {
+      stationId: stationId || undefined,
+      pumpId: pumpId || undefined,
+      nozzleId: nozzleId || undefined
+    };
+    return navigationPreselected || urlPreselected;
+  }, [location.state?.preselected, stationId, pumpId, nozzleId]);
   
   // Use the hook to fetch nozzle details - but disable store updates
   const { nozzle, pump, station, isLoading, error } = useNozzleDetails(nozzleId, false);
@@ -37,19 +34,17 @@ export default function NewReadingPage() {
     }
   }, [error]);
   
-  // Derive final preselected values
-  let finalPreselected = preselected;
-  
-  // If we have nozzle data but no preselected values, derive them
-  if (nozzle && pump && (!preselected.stationId || !preselected.pumpId)) {
-    finalPreselected = {
-      stationId: station?.id || preselected.stationId,
-      pumpId: pump?.id || preselected.pumpId,
-      nozzleId: nozzle.id || preselected.nozzleId
-    };
-    
-    console.log('[NEW-READING-PAGE] Derived preselected values:', finalPreselected);
-  }
+  // Memoize final preselected values
+  const finalPreselected = useMemo(() => {
+    if (nozzle && pump && (!preselected.stationId || !preselected.pumpId)) {
+      return {
+        stationId: station?.id || preselected.stationId,
+        pumpId: pump?.id || preselected.pumpId,
+        nozzleId: nozzle.id || preselected.nozzleId
+      };
+    }
+    return preselected;
+  }, [nozzle, pump, station, preselected]);
   
   return <ReadingEntryForm preselected={finalPreselected} />;
 }

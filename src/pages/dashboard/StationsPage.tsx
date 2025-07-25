@@ -13,7 +13,7 @@ import { useStations, useDeleteStation } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { usePumps } from '@/hooks/api/usePumps';
-import { useEnhancedSales } from '@/hooks/useEnhancedSales';
+import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
@@ -201,11 +201,26 @@ interface ModernStationCardProps {
 function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps) {
   const { data: fuelPrices = [], isLoading: pricesLoading } = useFuelPrices(station.id);
   const { data: pumps = [] } = usePumps(station.id);
-  const { data: sales = [] } = useEnhancedSales({ stationId: station.id });
+  // Get today's sales data for this specific station
+  const { data: todaysSalesData, isLoading: salesLoading, error: salesError } = useTodaysSales();
   
-  // Calculate metrics from real data
-  const todaySales = sales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
-  const todayTransactions = sales.length;
+  // Find this station's data in today's sales
+  const stationSales = todaysSalesData?.salesByStation?.find(s => s.stationId === station.id);
+  const todaySales = stationSales?.totalAmount || 0;
+  const todayTransactions = stationSales?.entriesCount || 0;
+  
+  // Debug logging
+  if (salesError) {
+    console.error('[STATION-CARD] Sales error:', salesError);
+  }
+  if (!salesLoading && todaysSalesData) {
+    console.log('[STATION-CARD] Sales data received:', {
+      totalStations: todaysSalesData.salesByStation?.length || 0,
+      stationIds: todaysSalesData.salesByStation?.map(s => s.stationId) || [],
+      lookingFor: station.id,
+      found: !!stationSales
+    });
+  }
   const activePumps = pumps.filter(p => p.status === 'active').length;
   
   const getStatusConfig = () => {
@@ -352,7 +367,20 @@ function ModernStationCard({ station, onView, onDelete }: ModernStationCardProps
         {/* Today's Sales - Full Width Row */}
         <div className="mb-3 text-center p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-100">
           <div className="text-xs text-green-600 mb-1">Today's Sales</div>
-          <div className="text-lg font-bold text-green-700 truncate">{formatCurrency(todaySales, { maximumFractionDigits: 0 })}</div>
+          <div className="text-lg font-bold text-green-700 truncate">
+            {salesLoading ? (
+              'Loading...'
+            ) : salesError ? (
+              'Error'
+            ) : todaySales > 0 ? (
+              formatCurrency(todaySales, { maximumFractionDigits: 0 })
+            ) : (
+              'No Sales'
+            )}
+          </div>
+          {!salesLoading && !salesError && todaySales === 0 && (
+            <div className="text-xs text-gray-500">No transactions today</div>
+          )}
         </div>
         
         {/* Other Stats in 2-column Grid */}

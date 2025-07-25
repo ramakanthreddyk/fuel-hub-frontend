@@ -100,8 +100,8 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   
   // Fetch data directly without store caching to avoid circular dependencies
   const { data: stations = [] } = useStations();
-  const { data: pumps = [] } = usePumps(selectedStation, { enabled: !!selectedStation });
-  const { data: nozzles = [] } = useNozzles(selectedPump, { enabled: !!selectedPump });
+  const { data: pumps = [] } = usePumps(selectedStation);
+  const { data: nozzles = [] } = useNozzles(selectedPump);
   const { data: latestReading } = useLatestReading(selectedNozzle);
   const { data: canCreateReading, isLoading: loadingCanCreate } = useCanCreateReading(selectedNozzle);
   const { data: fuelPrices = [] } = useFuelPrices(selectedStation);
@@ -186,9 +186,14 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
       onSuccess: (newReading) => {
         toast({
           title: "Reading Recorded",
-          description: `Successfully recorded reading ${newReading.reading}L${nozzleNumber ? ` for nozzle #${nozzleNumber}` : ''}`,
+          description: `Successfully recorded reading ${newReading?.reading || data.reading}L${nozzleNumber ? ` for nozzle #${nozzleNumber}` : ''}`,
           variant: "success",
         });
+
+        // Navigate back to dashboard after successful submission
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
 
         if (latestReading?.recordedAt && newReading?.recordedAt) {
           setReadingWindow({

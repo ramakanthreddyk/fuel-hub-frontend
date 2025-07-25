@@ -22,23 +22,19 @@ export const getStationComparison = async (params: { stationIds: string[]; perio
     
     // Transform the response to match the StationComparison interface
     return response.map((item: any) => ({
-      id: item.id || item.stationId,
       stationId: item.stationId || item.id,
       stationName: item.stationName || item.name,
-      sales: item.sales || item.revenue || 0,
-      volume: item.volume || 0,
-      transactions: item.transactions || item.salesCount || 0,
-      growth: item.growth || 0,
       currentPeriod: {
-        revenue: item.currentPeriod?.revenue || item.sales || item.revenue || 0,
-        volume: item.currentPeriod?.volume || item.volume || 0,
-        salesCount: item.currentPeriod?.salesCount || item.transactions || item.salesCount || 0,
+        revenue: item.totalSales || item.sales || 0,
+        volume: item.totalVolume || item.volume || 0,
+        salesCount: item.transactionCount || item.transactions || 0,
       },
       previousPeriod: {
-        revenue: item.previousPeriod?.revenue || item.previousSales || 0,
-        volume: item.previousPeriod?.volume || item.previousVolume || 0,
-        salesCount: item.previousPeriod?.salesCount || item.previousTransactions || 0,
+        revenue: item.previousSales || 0,
+        volume: item.previousVolume || 0,
+        salesCount: item.previousTransactions || 0,
       },
+      growth: item.salesGrowth || item.growth || 0,
     }));
   } catch (error) {
     console.error('Error fetching station comparison data:', error);

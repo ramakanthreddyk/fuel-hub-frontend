@@ -2,7 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
-import { usePaymentMethodBreakdown } from '@/hooks/useDashboard';
+import { useTodaysSales } from '@/hooks/api/useTodaysSales';
+import { formatCurrency } from '@/utils/formatters';
 
 const COLORS = {
   cash: '#22c55e',
@@ -22,7 +23,22 @@ interface PaymentMethodChartProps {
 }
 
 export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
-  const { data: breakdown = [], isLoading } = usePaymentMethodBreakdown(filters);
+  const { data: todaysSales, isLoading } = useTodaysSales();
+  
+  // Convert payment breakdown to chart data
+  const breakdown = todaysSales?.paymentBreakdown ? [
+    { paymentMethod: 'cash', amount: todaysSales.paymentBreakdown.cash },
+    { paymentMethod: 'card', amount: todaysSales.paymentBreakdown.card },
+    { paymentMethod: 'upi', amount: todaysSales.paymentBreakdown.upi },
+    { paymentMethod: 'credit', amount: todaysSales.paymentBreakdown.credit },
+  ].filter(item => item.amount > 0) : [];
+  
+  // Calculate percentages
+  const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
+  const chartData = breakdown.map(item => ({
+    ...item,
+    percentage: total > 0 ? ((item.amount / total) * 100).toFixed(1) : '0',
+  }));
 
   if (isLoading) {
     return (
@@ -37,7 +53,7 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
     );
   }
 
-  const chartData = breakdown.map(item => ({
+  const pieData = chartData.map(item => ({
     name: item.paymentMethod,
     value: item.amount,
     percentage: item.percentage,
@@ -61,14 +77,14 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={chartData}
+                  data={pieData}
                   cx="50%"
                   cy="50%"
                   outerRadius="60%"
                   dataKey="value"
                   label={({ name, percentage }) => `${name}: ${percentage}%`}
                 >
-                  {chartData.map((entry, index) => (
+                  {pieData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
                       fill={COLORS[entry.name as keyof typeof COLORS] || '#gray'} 
@@ -77,7 +93,7 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
                 </Pie>
                 <ChartTooltip 
                   content={<ChartTooltipContent />}
-                  formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Amount']}
+                  formatter={(value: number) => [formatCurrency(value), 'Amount']}
                 />
                 <Legend 
                   verticalAlign="bottom" 
