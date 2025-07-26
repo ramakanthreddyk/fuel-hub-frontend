@@ -1,12 +1,12 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, TrendingUp, Users, Fuel, AlertTriangle, CheckCircle, XCircle, Plus } from 'lucide-react';
-import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
+import { RefreshCw, TrendingUp, Users, Fuel, CheckCircle, Plus } from 'lucide-react';
+import { formatCurrency, formatVolume } from '@/utils/formatters';
 import { useSalesSummary, useStationMetrics } from '@/hooks/useDashboard';
 import { useFuelStore } from '@/store/fuelStore';
-import { shallow } from 'zustand/shallow';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
@@ -19,9 +19,7 @@ import { PaymentMethodChart } from '@/components/dashboard/PaymentMethodChart';
 import { FuelBreakdownChart } from '@/components/dashboard/FuelBreakdownChart';
 import { SalesTrendChart } from '@/components/dashboard/SalesTrendChart';
 import { TopCreditorsTable } from '@/components/dashboard/TopCreditorsTable';
-import { StationMetricsCard } from '@/components/dashboard/StationMetricsCard';
 import { StationMetricsList } from '@/components/dashboard/StationMetricsList';
-import { ApiDiagnosticPanel } from '@/components/dashboard/ApiDiagnosticPanel';
 
 // Filters
 import { SearchableStationSelector } from '@/components/filters/SearchableStationSelector';
@@ -30,17 +28,6 @@ interface DashboardFilters {
   stationId?: string;
   dateFrom?: string;
   dateTo?: string;
-}
-
-interface Station {
-  id: string;
-  name: string;
-  todaySales?: number;
-  monthlySales?: number;
-  status?: string;
-  activePumps?: number;
-  totalPumps?: number;
-  tenantId?: string; // Added for tenant filtering
 }
 
 export default function DashboardPage() {
@@ -57,8 +44,8 @@ export default function DashboardPage() {
   const differencesEnabled = !!filters.stationId && !!selectedDate;
   const { data: differencesSummary, isLoading: differencesLoading, error: differencesError } = useReconciliationDifferencesSummary(filters.stationId || '', selectedDate);
 
-  // Safe access to stations and nozzles from Zustand
-  const { stations = [], nozzles = {}, resetSelections } = useFuelStore();
+  // Safe access to stations from Zustand
+  const { stations = [] } = useFuelStore();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -79,10 +66,7 @@ export default function DashboardPage() {
 
   const isLoading = salesLoading || metricsLoading || todaysLoading;
 
-  // Calculate summary stats - prioritize today's data
-  // Use Zustand stations if available, else fallback to metrics
-  // Fix: Only show stations for the current tenant/user
-  // If backend filtering fails, filter stations in frontend as a fallback
+  // Calculate summary stats
   const filteredStations = Array.isArray(stations)
     ? stations.filter(station => !user?.tenantId || station.tenantId === user.tenantId)
     : [];
@@ -94,7 +78,7 @@ export default function DashboardPage() {
     ? stationMetrics.filter(station => station.status === 'active').length 
     : 0;
   
-  // Use today's data for key metrics, fallback to monthly summary
+  // Use today's data for key metrics
   const todaysRevenue = todaysSales?.totalAmount || 0;
   const todaysVolume = todaysSales?.totalVolume || 0;
   const todaysEntries = todaysSales?.totalEntries || 0;
@@ -102,183 +86,233 @@ export default function DashboardPage() {
   const monthlyVolume = salesSummary?.totalVolume || 0;
 
   // Get recent stations for display
-  const recentStations = stationsList.slice(0, 5);
+  const recentStations = stationsList.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="space-y-6 p-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-            <p className="text-slate-600">
-              Welcome back, {user?.name}! Here's your business overview.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2 bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      {/* Modern Header */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+                  Dashboard
+                </h1>
+                <p className="text-slate-600 text-sm sm:text-base">
+                  Welcome back, {user?.name}! Here's your business overview.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                variant="outline"
+                size="sm"
+                className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-white hover:border-slate-300 transition-all duration-200"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
+              </Button>
+              <Button
+                onClick={() => navigate('/dashboard/fuel-inventory/update')}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Update Inventory</span>
+                <span className="sm:hidden">Update</span>
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Filters */}
-        <Card className="bg-white border-slate-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg text-slate-900">Filters</CardTitle>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Filters - Modern Design */}
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg shadow-slate-200/50 rounded-3xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-slate-900">Filters & Settings</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <SearchableStationSelector
-                value={filters.stationId}
-                onChange={(stationId) => handleFilterChange({ ...filters, stationId })}
-                placeholder="All Stations"
-              />
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={e => setSelectedDate(e.target.value)}
-                className="border rounded px-2 py-1"
-                placeholder="Select Date"
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Station</label>
+                <SearchableStationSelector
+                  value={filters.stationId}
+                  onChange={(stationId) => handleFilterChange({ ...filters, stationId })}
+                  placeholder="All Stations"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Date</label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={e => setSelectedDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
-        <div className="flex flex-wrap gap-2 mb-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate('/dashboard/fuel-inventory/update')}
-          >
-            <Fuel className="mr-2 h-4 w-4" />
-            Update Inventory
-          </Button>
-        </div>
-        
-        {/* Key Metrics - Today's Focus */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600">Today's Revenue</p>
-                  <p className="text-2xl font-bold text-slate-900">{formatCurrency(todaysRevenue, { useLakhsCrores: true })}</p>
-                  <p className="text-xs text-slate-500">Monthly: {formatCurrency(monthlyRevenue, { useLakhsCrores: true })}</p>
+        {/* Key Metrics - Modern Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          {/* Today's Revenue */}
+          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 shadow-lg shadow-blue-500/25 rounded-3xl text-white overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
+            <CardContent className="p-6 relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-white/20 rounded-xl">
+                  <TrendingUp className="h-6 w-6" />
                 </div>
-                <TrendingUp className="h-8 w-8 text-blue-600" />
+                <div className="text-right">
+                  <div className="text-2xl sm:text-3xl font-bold">
+                    {formatCurrency(todaysRevenue, { useLakhsCrores: true })}
+                  </div>
+                  <div className="text-blue-100 text-sm">Today's Revenue</div>
+                </div>
+              </div>
+              <div className="text-blue-100 text-xs">
+                Monthly: {formatCurrency(monthlyRevenue, { useLakhsCrores: true })}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600">Today's Volume</p>
-                  <p className="text-2xl font-bold text-slate-900">{formatVolume(todaysVolume, 3, true)}</p>
-                  <p className="text-xs text-slate-500">Monthly: {formatVolume(monthlyVolume, 3, true)}</p>
+          {/* Today's Volume */}
+          <Card className="bg-gradient-to-br from-green-500 to-emerald-600 border-0 shadow-lg shadow-green-500/25 rounded-3xl text-white overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
+            <CardContent className="p-6 relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-white/20 rounded-xl">
+                  <Fuel className="h-6 w-6" />
                 </div>
-                <Fuel className="h-8 w-8 text-green-600" />
+                <div className="text-right">
+                  <div className="text-2xl sm:text-3xl font-bold">
+                    {formatVolume(todaysVolume, 3, true)}
+                  </div>
+                  <div className="text-green-100 text-sm">Today's Volume</div>
+                </div>
+              </div>
+              <div className="text-green-100 text-xs">
+                Monthly: {formatVolume(monthlyVolume, 3, true)}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-600">Today's Entries</p>
-                  <p className="text-2xl font-bold text-slate-900">{todaysEntries}</p>
-                  <p className="text-xs text-slate-500">Sales transactions</p>
+          {/* Today's Entries */}
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 border-0 shadow-lg shadow-purple-500/25 rounded-3xl text-white overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
+            <CardContent className="p-6 relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-white/20 rounded-xl">
+                  <CheckCircle className="h-6 w-6" />
                 </div>
-                <CheckCircle className="h-8 w-8 text-purple-600" />
+                <div className="text-right">
+                  <div className="text-2xl sm:text-3xl font-bold">{todaysEntries}</div>
+                  <div className="text-purple-100 text-sm">Today's Entries</div>
+                </div>
               </div>
+              <div className="text-purple-100 text-xs">Sales transactions</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-600">Active Stations</p>
-                  <p className="text-2xl font-bold text-slate-900">{activeStations}</p>
-                  <p className="text-xs text-slate-500">Total: {totalStations}</p>
+          {/* Active Stations */}
+          <Card className="bg-gradient-to-br from-orange-500 to-red-500 border-0 shadow-lg shadow-orange-500/25 rounded-3xl text-white overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
+            <CardContent className="p-6 relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-white/20 rounded-xl">
+                  <Users className="h-6 w-6" />
                 </div>
-                <Users className="h-8 w-8 text-orange-600" />
+                <div className="text-right">
+                  <div className="text-2xl sm:text-3xl font-bold">{activeStations}</div>
+                  <div className="text-orange-100 text-sm">
+                    <span className="hidden sm:inline">Active Stations</span>
+                    <span className="sm:hidden">Active</span>
+                  </div>
+                </div>
               </div>
+              <div className="text-orange-100 text-xs">Total: {totalStations}</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Today's Sales - Primary Focus */}
-        <div className="grid grid-cols-1 gap-6">
-          <TodaysSalesCard />
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg shadow-slate-200/50 rounded-3xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold text-slate-900">Today's Sales Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TodaysSalesCard />
+          </CardContent>
+        </Card>
+
+        {/* Charts Grid - Mobile Responsive */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="bg-white/90 backdrop-blur-sm border-0 shadow-lg shadow-slate-200/50 rounded-3xl">
+            <PaymentMethodChart filters={filters} />
+          </div>
+          <div className="bg-white/90 backdrop-blur-sm border-0 shadow-lg shadow-slate-200/50 rounded-3xl">
+            <FuelBreakdownChart filters={filters} />
+          </div>
         </div>
 
-        {/* Historical Sales Summary */}
-        <div className="grid grid-cols-1 gap-6">
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-slate-900">Monthly Sales Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SalesSummaryCard filters={filters} />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PaymentMethodChart filters={filters} />
-          <FuelBreakdownChart filters={filters} />
-        </div>
-
-        <div className="grid grid-cols-1 gap-6">
+        {/* Sales Trend - Full Width */}
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg shadow-slate-200/50 rounded-3xl">
           <SalesTrendChart filters={filters} />
-        </div>
+        </Card>
 
-        {/* Station Metrics - Full Width */}
-        <div className="w-full">
+        {/* Station Metrics - Modern List */}
+        <div className="bg-white/90 backdrop-blur-sm border-0 shadow-lg shadow-slate-200/50 rounded-3xl">
           <StationMetricsList />
         </div>
 
-        {/* Recent Stations - Two Cards Per Row */}
+        {/* Recent Stations - Mobile Optimized */}
         {recentStations.length > 0 && (
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-slate-900">Recent Stations</CardTitle>
+          <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg shadow-slate-200/50 rounded-3xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-semibold text-slate-900">Recent Stations</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {recentStations.map((station) => (
-                  <div key={station.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg bg-white">
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-medium text-slate-900 truncate">{station.name}</h3>
-                      <div className="space-y-1 mt-2">
-                        <div className="text-sm text-slate-600">
-                          <span className="font-medium">Today:</span> {formatCurrency(station.todaySales || 0, { useLakhsCrores: true })}
-                        </div>
-                        <div className="text-sm text-slate-600">
-                          <span className="font-medium">Monthly:</span> {formatCurrency(station.monthlySales || 0, { useLakhsCrores: true })}
+                  <div key={station.id} className="bg-gradient-to-br from-slate-50 to-blue-50/30 rounded-2xl p-4 hover:shadow-lg transition-all duration-200">
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-slate-900 truncate text-lg">{station.name}</h3>
+                        <div className="space-y-2 mt-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-slate-600">Today:</span>
+                            <span className="font-semibold text-slate-900">
+                              {formatCurrency(station.todaySales || 0, { useLakhsCrores: true })}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-slate-600">Monthly:</span>
+                            <span className="font-semibold text-slate-900">
+                              {formatCurrency(station.monthlySales || 0, { useLakhsCrores: true })}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2 flex-shrink-0 ml-4">
-                      <Badge variant={station.status === 'active' ? 'default' : 'secondary'}>
-                        {station.status}
-                      </Badge>
-                      <span className="text-sm text-slate-500">
-                        {station.activePumps || 0}/{station.totalPumps || 0} pumps
-                      </span>
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0 ml-4">
+                        <Badge 
+                          variant={station.status === 'active' ? 'default' : 'secondary'}
+                          className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 hidden sm:flex"
+                        >
+                          {station.status}
+                        </Badge>
+                        <span className="text-sm text-slate-500 bg-white/50 px-2 py-1 rounded-lg">
+                          {station.activePumps || 0}/{station.totalPumps || 0} pumps
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -287,69 +321,63 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {/* Differences Summary Section */}
+        {/* Differences Summary - Conditional */}
         {differencesEnabled && (
-          <Card className="bg-white border-slate-200 shadow-sm mt-4">
-            <CardHeader>
-              <CardTitle className="text-lg text-slate-900">Reconciliation Differences Summary</CardTitle>
+          <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg shadow-slate-200/50 rounded-3xl">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-semibold text-slate-900">Reconciliation Differences</CardTitle>
             </CardHeader>
             <CardContent>
-              {differencesLoading && <div>Loading differences summary...</div>}
-              {differencesError && <div className="text-red-600">Error: {differencesError.message}</div>}
+              {differencesLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-3 text-slate-600">Loading differences...</span>
+                </div>
+              )}
+              {differencesError && (
+                <div className="text-red-600 bg-red-50 p-4 rounded-2xl">
+                  Error: {differencesError.message}
+                </div>
+              )}
               {differencesSummary && Array.isArray(differencesSummary) && differencesSummary.length > 0 ? (
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th className="text-left">Nozzle</th>
-                      <th className="text-left">Expected</th>
-                      <th className="text-left">Actual</th>
-                      <th className="text-left">Difference</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {differencesSummary.map((row: any) => (
-                      <tr key={row.nozzleId}>
-                        <td>{row.nozzleNumber || row.nozzleId}</td>
-                        <td>{row.expectedVolume}</td>
-                        <td>{row.actualVolume}</td>
-                        <td className={Math.abs(row.difference) > 0.01 ? 'text-red-600' : 'text-green-600'}>{row.difference}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="border-b border-slate-200">
+                      <tr>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-900">Nozzle</th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-900">Expected</th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-900">Actual</th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-900">Difference</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {differencesSummary.map((row: any, index: number) => (
+                        <tr key={row.nozzleId} className={index % 2 === 0 ? 'bg-slate-50/50' : 'bg-white'}>
+                          <td className="py-3 px-4">{row.nozzleNumber || row.nozzleId}</td>
+                          <td className="py-3 px-4">{row.expectedVolume}</td>
+                          <td className="py-3 px-4">{row.actualVolume}</td>
+                          <td className={`py-3 px-4 font-semibold ${Math.abs(row.difference) > 0.01 ? 'text-red-600' : 'text-green-600'}`}>
+                            {row.difference}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
-                <div>No differences found for selected station and date.</div>
+                <div className="text-center py-8 text-slate-600">
+                  No differences found for selected station and date.
+                </div>
               )}
             </CardContent>
           </Card>
         )}
 
-        {/* Top Creditors - Moved to Bottom */}
-        <div className="w-full">
+        {/* Top Creditors - Bottom */}
+        <div className="bg-white/90 backdrop-blur-sm border-0 shadow-lg shadow-slate-200/50 rounded-3xl">
           <TopCreditorsTable />
         </div>
-        
-        {/* API Diagnostics Panel - Temporarily disabled */}
       </div>
     </div>
   );
 }
-
-// Helper: Check if error is day finalized
-function isDayFinalizedError(error: any) {
-  return error?.response?.data?.message === 'Day already finalized for this station.';
-}
-
-// Example usage in reconciliation/cash report creation
-// In your mutation error handler (e.g., useCreateReading, useCreateCashReport):
-// onError: (error: any) => {
-//   if (isDayFinalizedError(error)) {
-//     toast({
-//       title: 'Day Finalized',
-//       description: 'No further entries can be added for this day and station.',
-//       variant: 'destructive',
-//     });
-//   } else {
-//     // ...existing error handling...
-//   }
-// }
