@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, BadgeIndianRupee, Fuel, Users, Calendar, Download } from 'lucide-react';
+import { TrendingUp, BadgeIndianRupee, Fuel, Users, Calendar } from 'lucide-react';
 import { useSales } from '@/hooks/api/useSales';
 import { formatCurrency, formatDate, formatVolume } from '@/utils/formatters';
 import { SalesTable } from '@/components/sales/SalesTable';
@@ -54,13 +54,7 @@ export default function SalesOverviewPage() {
               Comprehensive analysis of sales performance and trends
             </p>
           </div>
-          <Button 
-            size="sm" 
-            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
-          >
-            <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-            Export Report
-          </Button>
+
         </div>
 
         {/* Key Metrics Cards */}
