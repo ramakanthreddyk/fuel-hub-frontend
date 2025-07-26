@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, CheckCircle, AlertTriangle, Eye, Play, Loader2, TrendingUp, AlertCircle } from 'lucide-react';
+import { Calendar, CheckCircle, AlertTriangle, Eye, Play, TrendingUp, AlertCircle } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { useStations } from '@/hooks/api/useStations';
 import { useReconciliationHistory, useCreateReconciliation, useDailyReadingsSummary } from '@/hooks/useReconciliation';
 import { reconciliationApi } from '@/api/reconciliation';
@@ -607,7 +608,7 @@ export default function ReconciliationPage() {
             <CardContent>
               {isLoading ? (
                 <div className="flex justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <FuelLoader size="md" text="Loading reconciliation..." />
                 </div>
               ) : (
                 <Table>
@@ -817,7 +818,7 @@ export default function ReconciliationPage() {
                                 size="sm"
                                 disabled
                               >
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <FuelLoader size="sm" />
                                 Finalizing Sales...
                               </Button>
                             ) : (
@@ -878,7 +879,7 @@ export default function ReconciliationPage() {
                               >
                                 {processingStations.has(station.id) ? (
                                   <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <FuelLoader size="sm" />
                                     Processing...
                                   </>
                                 ) : (

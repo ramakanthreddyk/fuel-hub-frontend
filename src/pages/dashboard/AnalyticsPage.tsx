@@ -9,6 +9,7 @@ import { formatCurrency, formatNumber } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAutoLoader } from "@/hooks/useAutoLoader";
 
 export default function AnalyticsPage() {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -19,6 +20,10 @@ export default function AnalyticsPage() {
   const { data: stations = [] } = useStations();
   const { data: fuelPerformance, isLoading: fuelLoading } = useFuelPerformance(selectedStationId);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useAutoLoader(isLoading, 'Loading analytics...');
+  useAutoLoader(rankingLoading, 'Loading station rankings...');
+  useAutoLoader(fuelLoading, 'Loading fuel performance...');
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

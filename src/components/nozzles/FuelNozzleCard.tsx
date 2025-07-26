@@ -14,9 +14,9 @@ import {
   Fuel,
   Gauge,
   FileText,
-  MapPin,
-  Loader2
+  MapPin
 } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { useLatestReading } from '@/hooks/api/useReadings';
 import { cn } from '@/lib/utils';
 import { useFuelStore } from '@/store/fuelStore';
@@ -260,7 +260,7 @@ function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-6">
-        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+        <FuelLoader size="sm" />
       </div>
     );
   }

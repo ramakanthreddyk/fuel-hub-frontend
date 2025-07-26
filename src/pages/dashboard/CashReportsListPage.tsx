@@ -12,7 +12,8 @@ import { useCashReports } from '@/hooks/useAttendant';
 import { useAttendantStations } from '@/hooks/api/useAttendant';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
-import { ArrowLeft, RefreshCw, Loader2, DollarSign } from 'lucide-react';
+import { ArrowLeft, RefreshCw, DollarSign } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Badge } from '@/components/ui/badge';
 
 export default function CashReportsListPage() {
@@ -46,7 +47,7 @@ export default function CashReportsListPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <FuelLoader size="md" text="Loading cash reports..." />
       </div>
     );
   }

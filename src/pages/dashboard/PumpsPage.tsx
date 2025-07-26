@@ -9,7 +9,8 @@ import { useFuelStore } from '@/store/fuelStore';
 import { useFuelStoreSync } from '@/hooks/useFuelStoreSync';
 import { createNavigationState } from '@/utils/navigationHelper';
 import { Button } from '@/components/ui/button';
-import { Plus, Fuel, Loader2, Filter, Search } from 'lucide-react';
+import { Plus, Fuel, Filter, Search } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Input } from '@/components/ui/input';
 import { usePumps, useDeletePump } from '@/hooks/api/usePumps';
 import { useStations } from '@/hooks/api/useStations';
@@ -95,7 +96,7 @@ export default function PumpsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="relative">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <FuelLoader size="md" text="Loading pumps..." />
           <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-blue-600/20"></div>
         </div>
       </div>

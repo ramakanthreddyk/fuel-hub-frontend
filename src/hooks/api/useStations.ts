@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stationsService } from '@/api/services/stationsService';
-import { toast } from '@/hooks/use-toast';
+import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useDataStore } from '@/store/dataStore';
 import { useErrorHandler } from '../useErrorHandler';
 
@@ -56,21 +56,27 @@ export const useStation = (id: string) => {
 export const useCreateStation = () => {
   const queryClient = useQueryClient();
   const { clearStations } = useDataStore();
-  const { handleError } = useErrorHandler();
+  const { showSuccess, handleApiError, showLoader, hideLoader } = useToastNotifications();
   
   return useMutation({
-    mutationFn: (data: any) => stationsService.createStation(data),
+    mutationFn: async (data: any) => {
+      showLoader('Creating station...');
+      try {
+        const result = await stationsService.createStation(data);
+        hideLoader();
+        return result;
+      } catch (error) {
+        hideLoader();
+        throw error;
+      }
+    },
     onSuccess: (newStation) => {
-      // Clear cached stations to force a refresh
       clearStations();
       queryClient.invalidateQueries({ queryKey: ['stations'] });
-      toast({
-        title: "Success",
-        description: `Station "${newStation.name}" created successfully`,
-      });
+      showSuccess('Station Created', `Station "${newStation.name}" created successfully`);
     },
     onError: (error: any) => {
-      handleError(error, 'Failed to create station.');
+      handleApiError(error, 'Create Station');
     },
   });
 };
@@ -78,22 +84,18 @@ export const useCreateStation = () => {
 export const useUpdateStation = () => {
   const queryClient = useQueryClient();
   const { clearStations } = useDataStore();
-  const { handleError } = useErrorHandler();
+  const { showSuccess, handleApiError } = useToastNotifications();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => stationsService.updateStation(id, data),
     onSuccess: (updatedStation, { id }) => {
-      // Clear cached stations to force a refresh
       clearStations();
       queryClient.invalidateQueries({ queryKey: ['station', id] });
       queryClient.invalidateQueries({ queryKey: ['stations'] });
-      toast({
-        title: "Success",
-        description: `Station "${updatedStation.name}" updated successfully`,
-      });
+      showSuccess('Station Updated', `Station "${updatedStation.name}" updated successfully`);
     },
     onError: (error: any) => {
-      handleError(error, 'Failed to update station.');
+      handleApiError(error, 'Update Station');
     },
   });
 };
@@ -101,21 +103,17 @@ export const useUpdateStation = () => {
 export const useDeleteStation = () => {
   const queryClient = useQueryClient();
   const { clearStations } = useDataStore();
-  const { handleError } = useErrorHandler();
+  const { showSuccess, handleApiError } = useToastNotifications();
   
   return useMutation({
     mutationFn: (id: string) => stationsService.deleteStation(id),
     onSuccess: () => {
-      // Clear cached stations to force a refresh
       clearStations();
       queryClient.invalidateQueries({ queryKey: ['stations'] });
-      toast({
-        title: "Success",
-        description: "Station deleted successfully",
-      });
+      showSuccess('Station Deleted', 'Station deleted successfully');
     },
     onError: (error: any) => {
-      handleError(error, 'Failed to delete station.');
+      handleApiError(error, 'Delete Station');
     },
   });
 };

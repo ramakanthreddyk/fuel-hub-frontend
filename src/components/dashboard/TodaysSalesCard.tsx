@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Fuel, TrendingUp, Users, CreditCard, Loader2 } from 'lucide-react';
+import { Fuel, TrendingUp, Users, CreditCard } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { formatCurrency, formatVolume } from '@/utils/formatters';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 
@@ -25,7 +26,7 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-32">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <FuelLoader size="md" text="Loading today's sales..." />
           </div>
         </CardContent>
       </Card>

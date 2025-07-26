@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Fuel, AlertTriangle, TrendingDown, RefreshCw, Loader2, Download, FileSpreadsheet } from 'lucide-react';
+import { Fuel, AlertTriangle, TrendingDown, RefreshCw, Download, FileSpreadsheet } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { useStations } from '@/hooks/api/useStations';
 import { useInventory, useInventorySummary } from '@/hooks/api/useInventory';
 import { useGenerateReport } from '@/hooks/api/useReports';
@@ -86,7 +87,7 @@ export default function FuelInventoryPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <FuelLoader size="lg" text="Loading fuel inventory..." />
       </div>
     );
   }

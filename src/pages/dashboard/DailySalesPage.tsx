@@ -14,9 +14,9 @@ import {
   Calendar,
   Building2,
   Zap,
-  Droplets,
-  Loader2
+  Droplets
 } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { useDailySales } from '@/hooks/api/useDailySales';
 import { formatCurrency, formatVolume } from '@/utils/formatters';
 
@@ -95,7 +95,7 @@ export default function DailySalesPage() {
       {/* Loading State */}
       {isLoading && (
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <FuelLoader size="md" text="Loading daily sales..." />
         </div>
       )}
 

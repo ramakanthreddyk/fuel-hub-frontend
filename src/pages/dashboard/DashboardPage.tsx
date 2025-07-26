@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { useReconciliationDifferencesSummary } from '@/hooks/useReconciliationDifferencesSummary';
+import { useAutoLoader } from '@/hooks/useAutoLoader';
 
 // Dashboard Components
 import { SalesSummaryCard } from '@/components/dashboard/SalesSummaryCard';
@@ -75,6 +76,12 @@ export default function DashboardPage() {
   };
 
   const isLoading = salesLoading || metricsLoading || todaysLoading;
+  
+  useAutoLoader(salesLoading, 'Loading sales data...');
+  useAutoLoader(metricsLoading, 'Loading station metrics...');
+  useAutoLoader(todaysLoading, 'Loading today\'s sales...');
+  useAutoLoader(lifetimeLoading, 'Loading lifetime data...');
+  useAutoLoader(differencesLoading, 'Loading reconciliation data...');
 
   // Calculate summary stats
   const filteredStations = Array.isArray(stations)

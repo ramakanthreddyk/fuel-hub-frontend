@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { readingsService } from '@/api/services/readingsService';
-import { useToast } from '@/hooks/use-toast';
+import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReadingsStore } from '@/store/readingsStore';
 import { useDataStore } from '@/store/dataStore';
@@ -67,13 +67,11 @@ export const useCreateReading = () => {
 
 export const useUpdateReading = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const { showSuccess, handleApiError } = useToastNotifications();
   const { user } = useAuth();
-  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => {
-      // Only allow managers and owners to update readings
       if (user?.role !== 'manager' && user?.role !== 'owner') {
         throw new Error('Only managers and owners can update readings');
       }
@@ -82,36 +80,27 @@ export const useUpdateReading = () => {
     onSuccess: (updatedReading, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['reading', id] });
       queryClient.invalidateQueries({ queryKey: ['readings'] });
-      toast({
-        title: "Reading Updated",
-        description: `Successfully updated reading for nozzle #${updatedReading.nozzleNumber || 'N/A'}`,
-        variant: "success",
-      });
+      showSuccess('Reading Updated', `Successfully updated reading for nozzle #${updatedReading.nozzleNumber || 'N/A'}`);
     },
     onError: (error: any) => {
-      handleError(error, 'Failed to update reading.');
+      handleApiError(error, 'Update Reading');
     },
   });
 };
 
 export const useVoidReading = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const { handleError } = useErrorHandler();
+  const { showSuccess, handleApiError } = useToastNotifications();
   
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) => readingsService.voidReading(id, reason),
     onSuccess: (result, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['reading', id] });
       queryClient.invalidateQueries({ queryKey: ['readings'] });
-      toast({
-        title: "Reading Voided",
-        description: "The reading has been marked as void and will require manager approval.",
-        variant: "success",
-      });
+      showSuccess('Reading Voided', 'The reading has been marked as void and will require manager approval.');
     },
     onError: (error: any) => {
-      handleError(error, 'Failed to void reading.');
+      handleApiError(error, 'Void Reading');
     },
   });
 };

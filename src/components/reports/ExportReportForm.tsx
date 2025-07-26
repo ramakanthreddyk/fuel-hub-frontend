@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStations } from '@/hooks/api/useStations';
 import { useExportReport } from '@/hooks/api/useReports';
-import { useToast } from '@/hooks/use-toast';
+import { useToastNotifications } from '@/hooks/useToastNotifications';
+import { useAutoLoader } from '@/hooks/useAutoLoader';
 import { format } from 'date-fns';
 import { Download } from 'lucide-react';
 
@@ -16,7 +17,9 @@ export function ExportReportForm() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: stations = [] } = useStations();
   const exportReport = useExportReport();
-  const { toast } = useToast();
+  const { showSuccess, showError } = useToastNotifications();
+  
+  useAutoLoader(exportReport.isPending, 'Generating report...');
 
   const form = useForm({
     defaultValues: {
@@ -46,17 +49,10 @@ export function ExportReportForm() {
           generatePDFReport(response.data.data, response.data.summary, data);
         }
         setIsOpen(false);
-        toast({
-          title: '📊 Report Generated Successfully!',
-          description: `PDF report with ${response?.data?.summary?.totalRecords || 0} records has been downloaded.`,
-        });
+        showSuccess('📊 Report Generated Successfully!', `PDF report with ${response?.data?.summary?.totalRecords || 0} records has been downloaded.`);
       },
       onError: (error) => {
-        toast({
-          title: 'Error',
-          description: 'Failed to export report. Please try again.',
-          variant: 'destructive',
-        });
+        showError('Export Failed', 'Failed to export report. Please try again.');
       },
     });
   };

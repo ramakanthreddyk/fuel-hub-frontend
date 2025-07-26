@@ -13,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { useToastNotifications } from '@/hooks/useToastNotifications';
 
 // Import API hooks
 import { useStations } from '@/hooks/api/useStations';
@@ -21,6 +21,7 @@ import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
 import { useCreateReading, useLatestReading, useCanCreateReading } from '@/hooks/api/useReadings';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
+import { useAutoLoader } from '@/hooks/useAutoLoader';
 import { CreateReadingRequest } from '@/api/services/readingsService';
 
 // Import creditors API
@@ -68,7 +69,7 @@ function useSales(nozzleId: string, from: string, to: string, options: { enabled
 export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
+  const { showSuccess, showError } = useToastNotifications();
   
   // Get initial values from props, location state, or store
   const { selectedStationId, selectedPumpId, selectedNozzleId } = useFuelStore();
@@ -102,9 +103,9 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const { data: stations = [] } = useStations();
   const { data: pumps = [] } = usePumps(selectedStation);
   const { data: nozzles = [] } = useNozzles(selectedPump);
-  const { data: latestReading } = useLatestReading(selectedNozzle);
+  const { data: latestReading, isLoading: loadingLatestReading } = useLatestReading(selectedNozzle);
   const { data: canCreateReading, isLoading: loadingCanCreate } = useCanCreateReading(selectedNozzle);
-  const { data: fuelPrices = [] } = useFuelPrices(selectedStation);
+  const { data: fuelPrices = [], isLoading: loadingPrices } = useFuelPrices(selectedStation);
   const { data: creditors = [] } = useQuery({
     queryKey: ['creditors', selectedStation],
     queryFn: () => creditorsApi.getCreditors(selectedStation),
@@ -115,6 +116,11 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const [saleSummary, setSaleSummary] = useState(null);
   const [readingWindow, setReadingWindow] = useState(null);
   const createReading = useCreateReading();
+  
+  useAutoLoader(createReading.isPending, 'Recording reading...');
+  useAutoLoader(loadingLatestReading, 'Loading latest reading...');
+  useAutoLoader(loadingCanCreate, 'Checking reading permissions...');
+  useAutoLoader(loadingPrices, 'Loading fuel prices...');
   
   // Fetch sales for the nozzle between previous and new reading
   const { data: sales = [], refetch: refetchSales } = useSales(
@@ -184,11 +190,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
     
     createReading.mutate(readingData, {
       onSuccess: (newReading) => {
-        toast({
-          title: "Reading Recorded",
-          description: `Successfully recorded reading ${newReading?.reading || data.reading}L${nozzleNumber ? ` for nozzle #${nozzleNumber}` : ''}`,
-          variant: "success",
-        });
+        showSuccess('Reading Recorded', `Successfully recorded reading ${newReading?.reading || data.reading}L${nozzleNumber ? ` for nozzle #${nozzleNumber}` : ''}`);
 
         // Navigate back to dashboard after successful submission
         setTimeout(() => {
@@ -205,11 +207,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
         }
       },
       onError: (error: any) => {
-        toast({
-          title: "Failed to Record Reading",
-          description: error.message || "Please check your input and try again.",
-          variant: "destructive",
-        });
+        showError('Failed to Record Reading', error.message || 'Please check your input and try again.');
       }
     });
   };

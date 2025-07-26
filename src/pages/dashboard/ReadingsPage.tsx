@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Gauge, Clock, AlertTriangle, CheckCircle, Plus, FileText, Eye, Loader2, TrendingUp, Activity, Zap, DollarSign } from 'lucide-react';
+import { Gauge, Clock, AlertTriangle, CheckCircle, Plus, FileText, Eye, TrendingUp, Activity, Zap, DollarSign } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, Link } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
@@ -25,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatDateTime, formatCurrency } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { ReadingCard } from '@/components/readings/ReadingCard';
+import { useAutoLoader } from '@/hooks/useAutoLoader';
 
 export default function ReadingsPage() {
   const navigate = useNavigate();
@@ -37,9 +39,14 @@ export default function ReadingsPage() {
 
   // Fetch readings using the API hook
   const { data: readings, isLoading, error } = useReadings();
-  const { data: pumps = [] } = usePumps();
-  const { data: nozzles = [] } = useNozzles();
-  const { data: stations = [] } = useStations();
+  const { data: pumps = [], isLoading: pumpsLoading } = usePumps();
+  const { data: nozzles = [], isLoading: nozzlesLoading } = useNozzles();
+  const { data: stations = [], isLoading: stationsLoading } = useStations();
+  
+  useAutoLoader(isLoading, 'Loading readings...');
+  useAutoLoader(pumpsLoading, 'Loading pumps...');
+  useAutoLoader(nozzlesLoading, 'Loading nozzles...');
+  useAutoLoader(stationsLoading, 'Loading stations...');
   
   // Use sales summary API instead of calculating from readings
   const { data: salesSummary } = useSalesSummary('all');
@@ -405,7 +412,7 @@ export default function ReadingsPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center p-12">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <FuelLoader size="md" text="Loading readings..." />
               <span className="ml-2 text-gray-600">Loading readings...</span>
             </div>
           ) : error ? (

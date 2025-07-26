@@ -9,7 +9,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useFuelStoreSync } from '@/hooks/useFuelStoreSync';
 import { isNavigationFrom, createNavigationState } from '@/utils/navigationHelper';
 import { Button } from '@/components/ui/button';
-import { Plus, Droplets, Loader2, Filter, Search } from 'lucide-react';
+import { Plus, Droplets, Filter, Search } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNozzles, useDeleteNozzle } from '@/hooks/api/useNozzles';
@@ -226,7 +227,7 @@ export default function NozzlesPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="relative">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <FuelLoader size="md" text="Loading nozzles..." />
           <div className="absolute inset-0 h-8 w-8 animate-ping rounded-full bg-blue-600/20"></div>
         </div>
       </div>

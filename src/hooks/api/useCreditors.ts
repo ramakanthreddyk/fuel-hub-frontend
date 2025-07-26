@@ -4,7 +4,8 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { creditorsService } from '@/api/services/creditors.service';
-import { useToast } from '@/hooks/use-toast';
+import { useToastNotifications } from '@/hooks/useToastNotifications';
+import { useAutoLoader } from '@/hooks/useAutoLoader';
 
 /**
  * Hook to fetch creditors for a station
@@ -12,20 +13,18 @@ import { useToast } from '@/hooks/use-toast';
  * @returns Query result with creditors
  */
 export const useCreditors = (stationId?: string) => {
-  const { toast } = useToast();
-  return useQuery({
+  const { handleApiError } = useToastNotifications();
+  const query = useQuery({
     queryKey: ['creditors', stationId],
     queryFn: () => creditorsService.getCreditors(stationId),
-    staleTime: 60000, // 1 minute
+    staleTime: 60000,
     onError: (error: any) => {
-      console.error('[CREDITORS-HOOK] Failed to fetch creditors:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch creditors. Please try again.',
-        variant: 'destructive',
-      });
+      handleApiError(error, 'Fetch Creditors');
     },
   });
+  
+  useAutoLoader(query.isLoading, 'Loading creditors...');
+  return query;
 };
 
 /**
@@ -34,19 +33,17 @@ export const useCreditors = (stationId?: string) => {
  * @returns Query result with creditor details
  */
 export const useCreditor = (id?: string) => {
-  const { toast } = useToast();
-  return useQuery({
+  const { handleApiError } = useToastNotifications();
+  const query = useQuery({
     queryKey: ['creditor', id],
     queryFn: () => creditorsService.getCreditor(id || ''),
     enabled: !!id,
-    staleTime: 60000, // 1 minute
+    staleTime: 60000,
     onError: (error: any) => {
-      console.error('[CREDITORS-HOOK] Failed to fetch creditor:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch creditor details. Please try again.',
-        variant: 'destructive',
-      });
+      handleApiError(error, 'Fetch Creditor');
     },
   });
+  
+  useAutoLoader(query.isLoading, 'Loading creditor details...');
+  return query;
 };

@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UserPlus, Users, Edit, Trash2, Key, Loader2 } from 'lucide-react';
+import { UserPlus, Users, Edit, Trash2, Key } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { UserForm } from '@/components/users/UserForm';
@@ -184,7 +185,7 @@ export default function UsersPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <FuelLoader size="md" text="Loading users..." />
             </div>
           ) : (
             <Table>

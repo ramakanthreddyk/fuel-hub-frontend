@@ -1,12 +1,14 @@
 
 import { useFuelInventory } from '@/hooks/useFuelInventory';
 import { InventoryTable } from '@/components/fuel-deliveries/InventoryTable';
-
 import { useState } from 'react';
 import { updateInventory } from '@/api/services/inventoryService';
+import { useAutoLoader } from '@/hooks/useAutoLoader';
 
 export default function InventoryPage() {
   const { data: inventory = [], isLoading } = useFuelInventory();
+  
+  useAutoLoader(isLoading, 'Loading inventory...');
 
   // Form state
   const [stationId, setStationId] = useState('');

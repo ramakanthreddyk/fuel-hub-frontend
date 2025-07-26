@@ -5,7 +5,8 @@
  */
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Loader2, Search } from 'lucide-react';
+import { Plus, Users, Search } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useCreditors } from '@/hooks/api/useCreditors';
@@ -37,7 +38,7 @@ export default function CreditorsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <FuelLoader size="md" text="Loading creditors..." />
       </div>
     );
   }

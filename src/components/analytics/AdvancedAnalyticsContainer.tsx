@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { AdvancedAnalytics } from './AdvancedAnalytics';
-import { Loader2 } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 
 interface AdvancedAnalyticsContainerProps {
   stationId: string;
@@ -40,7 +40,7 @@ export function AdvancedAnalyticsContainer({ stationId }: AdvancedAnalyticsConta
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[300px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <FuelLoader size="md" text="Loading analytics..." />
       </div>
     );
   }

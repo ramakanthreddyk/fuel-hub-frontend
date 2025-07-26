@@ -2,7 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StationMetricsCard } from './StationMetricsCard';
 import { useStationMetrics } from '@/hooks/api/useDashboard';
-import { Building2, Loader2 } from 'lucide-react';
+import { Building2 } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 
 export function StationMetricsList() {
   const { data: stationMetrics = [], isLoading, error } = useStationMetrics();
@@ -20,7 +21,7 @@ export function StationMetricsList() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <FuelLoader size="md" text="Loading station metrics..." />
             <span className="ml-3 text-gray-600">Loading station metrics...</span>
           </div>
         </CardContent>

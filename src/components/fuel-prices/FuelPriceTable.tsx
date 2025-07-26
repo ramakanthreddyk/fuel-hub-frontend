@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { Edit, Trash2, Building2, Fuel, AlertCircle, Loader2 } from 'lucide-react';
+import { Edit, Trash2, Building2, Fuel, AlertCircle } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { useState } from 'react';
 import {
   AlertDialog,
@@ -42,7 +43,7 @@ export function FuelPriceTable() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <FuelLoader size="md" text="Loading fuel prices..." />
             <span className="ml-2 text-muted-foreground">Loading fuel prices...</span>
           </div>
         </CardContent>

@@ -18,7 +18,8 @@ import {
 } from '@/hooks/api/useAttendant';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
-import { ArrowLeft, DollarSign, CreditCard, Loader2, Users } from 'lucide-react';
+import { ArrowLeft, DollarSign, CreditCard, Users } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 
 export default function CashReportPage() {
   const navigate = useNavigate();
@@ -151,7 +152,7 @@ export default function CashReportPage() {
   if (stationsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <FuelLoader size="md" text="Loading cash report..." />
       </div>
     );
   }

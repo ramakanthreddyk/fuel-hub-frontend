@@ -6,7 +6,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, Fuel, AlertCircle, Loader2, Plus, Edit } from 'lucide-react';
+import { Building2, Fuel, AlertCircle, Plus, Edit } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { useStations } from '@/hooks/api/useStations';
 import { formatCurrency } from '@/utils/formatters';
@@ -21,7 +22,7 @@ export function FuelPriceCards() {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <FuelLoader size="md" text="Loading fuel prices..." />
           <span className="ml-2 text-muted-foreground">Loading fuel prices...</span>
         </CardContent>
       </Card>

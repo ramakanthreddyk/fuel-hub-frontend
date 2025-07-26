@@ -6,10 +6,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Plus, Building2, Loader2, Search } from 'lucide-react';
+import { Plus, Building2, Search } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Input } from '@/components/ui/input';
 import { useStations, useDeleteStation } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
+import { useAutoLoader } from '@/hooks/useAutoLoader';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useUnifiedStationData } from '@/store/stationStore';
@@ -26,6 +28,9 @@ export default function StationsPage() {
 
   const { data: stations = [], isLoading } = useStations();
   const deleteStationMutation = useDeleteStation();
+  
+  useAutoLoader(isLoading, 'Loading stations...');
+  useAutoLoader(deleteStationMutation.isPending, 'Deleting station...');
 
   const filteredStations = stations.filter(station =>
     station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -61,7 +66,7 @@ export default function StationsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <FuelLoader size="lg" text="Loading stations..." />
           <p className="text-gray-600">Loading stations...</p>
         </div>
       </div>

@@ -5,7 +5,8 @@
  */
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Building2, Fuel, DollarSign } from 'lucide-react';
+import { Building2, Fuel, DollarSign } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Sale } from '@/api/services/salesService';
 import { formatCurrency, formatVolume, formatDateTime } from '@/utils/formatters';
 
@@ -18,7 +19,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <FuelLoader size="md" text="Loading sales data..." />
         <span className="ml-2 text-muted-foreground">Loading sales...</span>
       </div>
     );
