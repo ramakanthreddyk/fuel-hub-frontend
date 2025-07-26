@@ -298,36 +298,47 @@ export default function AnalyticsPage() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                     <p className="text-gray-500 mt-2">Loading fuel performance...</p>
                   </div>
-                ) : fuelPerformance?.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {fuelPerformance.map((fuel) => (
-                      <div key={fuel.fuelType} className="p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Fuel className="h-5 w-5 text-blue-600" />
-                          <h3 className="font-medium text-gray-900 uppercase">{fuel.fuelType}</h3>
+                ) : fuelPerformance?.data?.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h3 className="font-medium text-blue-900 mb-2">Summary</h3>
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-blue-600">Total Records:</span>
+                          <span className="font-medium ml-2">{fuelPerformance.summary?.totalRecords || 0}</span>
                         </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Revenue:</span>
-                            <span className="font-medium">{formatCurrency(fuel.revenue)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Volume:</span>
-                            <span className="font-medium">{formatNumber(fuel.volume)} L</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Avg Price:</span>
-                            <span className="font-medium">₹{fuel.avgPrice?.toFixed(2)}/L</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Growth:</span>
-                            <span className={`font-medium ${fuel.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {fuel.growth >= 0 ? '+' : ''}{fuel.growth?.toFixed(1)}%
-                            </span>
-                          </div>
+                        <div>
+                          <span className="text-blue-600">Total Sales:</span>
+                          <span className="font-medium ml-2">{formatCurrency(fuelPerformance.summary?.totalSales || 0)}</span>
+                        </div>
+                        <div>
+                          <span className="text-blue-600">Total Profit:</span>
+                          <span className="font-medium ml-2">{formatCurrency(fuelPerformance.summary?.totalProfit || 0)}</span>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      <div className="space-y-2">
+                        {fuelPerformance.data.slice(0, 10).map((transaction) => (
+                          <div key={transaction.id} className="p-3 bg-gray-50 rounded-lg">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-medium text-gray-900">{transaction.station_name}</h4>
+                                <p className="text-sm text-gray-600 uppercase">{transaction.fuel_type}</p>
+                                <p className="text-xs text-gray-500">
+                                  {new Date(transaction.recorded_at).toLocaleDateString()} - {transaction.payment_method}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-medium">{formatCurrency(parseFloat(transaction.amount))}</p>
+                                <p className="text-sm text-gray-600">{parseFloat(transaction.volume).toFixed(2)} L</p>
+                                <p className="text-xs text-gray-500">₹{parseFloat(transaction.fuel_price).toFixed(2)}/L</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8">
