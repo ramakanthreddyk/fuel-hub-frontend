@@ -1,3 +1,4 @@
+
 /**
  * @file pages/dashboard/StationsPage.tsx
  * @description Clean stations management page with improved layout
@@ -69,23 +70,23 @@ export default function StationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 border-0">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-blue-600" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Building2 className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Station Network</h1>
-                <p className="text-gray-600">Manage your fuel stations</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Station Network</h1>
+                <p className="text-sm text-gray-600">Manage your fuel stations</p>
               </div>
             </div>
             
             <Button 
               onClick={() => navigate('/dashboard/stations/new')} 
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Station
@@ -94,21 +95,21 @@ export default function StationsPage() {
         </div>
 
         {/* Search */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 border-0">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border-0">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search stations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+              className="pl-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
             />
           </div>
         </div>
 
         {/* Stations Grid */}
         {filteredStations.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm p-12 border-0">
+          <div className="bg-white rounded-xl shadow-sm p-8 sm:p-12 border-0">
             <EmptyState
               icon={<Building2 className="h-12 w-12 text-gray-400" />}
               title={searchQuery ? "No stations found" : "No stations yet"}
@@ -124,7 +125,7 @@ export default function StationsPage() {
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredStations.map((station) => (
               <StationCardWithData
                 key={station.id}
