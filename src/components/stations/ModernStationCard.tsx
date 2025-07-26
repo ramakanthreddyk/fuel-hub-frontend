@@ -162,10 +162,6 @@ export function ModernStationCard({
               </div>
             </div>
           </div>
-          
-          <div className="text-center text-sm text-gray-600 font-medium mt-4">
-            {station.pumpCount} Fuel Dispensers
-          </div>
         </div>
 
         {/* Action Buttons */}

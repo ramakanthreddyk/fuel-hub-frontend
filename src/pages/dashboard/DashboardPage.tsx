@@ -39,7 +39,17 @@ export default function DashboardPage() {
 
   // Use standardized hooks for metrics and sales summary
   const { data: stationMetrics, isLoading: metricsLoading, refetch: refetchMetrics } = useStationMetrics();
-  const { data: salesSummary, isLoading: salesLoading, refetch: refetchSales } = useSalesSummary('monthly', filters);
+  // Get current month date range for accurate monthly data
+  const currentDate = new Date();
+  const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0];
+  const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().split('T')[0];
+  
+  const monthlyFilters = { ...filters, dateFrom: monthStart, dateTo: monthEnd };
+  const { data: salesSummary, isLoading: salesLoading, refetch: refetchSales } = useSalesSummary('monthly', monthlyFilters);
+  
+  // For lifetime, use a very early date to get all historical data
+  const lifetimeFilters = { dateFrom: '2020-01-01', dateTo: new Date().toISOString().split('T')[0] };
+  const { data: lifetimeSales, isLoading: lifetimeLoading } = useSalesSummary('all', lifetimeFilters);
   const { data: todaysSales, isLoading: todaysLoading, refetch: refetchTodaysSales } = useTodaysSales();
   const differencesEnabled = !!filters.stationId && !!selectedDate;
   const { data: differencesSummary, isLoading: differencesLoading, error: differencesError } = useReconciliationDifferencesSummary(filters.stationId || '', selectedDate);
@@ -84,6 +94,8 @@ export default function DashboardPage() {
   const todaysEntries = todaysSales?.totalEntries || 0;
   const monthlyRevenue = salesSummary?.totalRevenue || 0;
   const monthlyVolume = salesSummary?.totalVolume || 0;
+  const lifetimeRevenue = lifetimeSales?.totalRevenue || 0;
+  const lifetimeVolume = lifetimeSales?.totalVolume || 0;
 
   // Get recent stations for display
   const recentStations = stationsList.slice(0, 4);
@@ -180,7 +192,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="text-blue-100 text-xs">
-                Monthly: {formatCurrency(monthlyRevenue, { useLakhsCrores: true })}
+                Monthly: {formatCurrency(monthlyRevenue, { useLakhsCrores: true })} | Lifetime: {formatCurrency(lifetimeRevenue, { useLakhsCrores: true })}
               </div>
             </CardContent>
           </Card>
@@ -201,7 +213,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="text-green-100 text-xs">
-                Monthly: {formatVolume(monthlyVolume, 3, true)}
+                Monthly: {formatVolume(monthlyVolume, 3, true)} | Lifetime: {formatVolume(lifetimeVolume, 3, true)}
               </div>
             </CardContent>
           </Card>
