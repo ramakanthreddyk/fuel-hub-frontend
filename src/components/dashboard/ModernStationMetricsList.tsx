@@ -110,7 +110,7 @@ export function ModernStationMetricsList() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-2 bg-blue-50 rounded-lg">
                       <div className="text-sm font-bold text-blue-600">
-                        {station.efficiency ? `₹${(station.efficiency / 100000).toFixed(1)}L` : 'N/A'}
+                        {station.efficiency ? formatCurrency(station.efficiency, { useLakhsCrores: true, maximumFractionDigits: 1 }) : 'N/A'}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">Efficiency</div>
                     </div>
@@ -136,13 +136,13 @@ export function ModernStationMetricsList() {
                     <div className="grid grid-cols-2 gap-4 text-center">
                       <div>
                         <div className="text-sm font-bold text-gray-900">
-                          {formatCurrency(station.todaySales || 0, { maximumFractionDigits: 0 })}
+                          {formatCurrency(station.todaySales || 0, { useLakhsCrores: true, maximumFractionDigits: 0 })}
                         </div>
                         <div className="text-xs text-gray-500">Today</div>
                       </div>
                       <div>
                         <div className="text-sm font-bold text-gray-900">
-                          {formatCurrency(station.monthlySales || 0, { maximumFractionDigits: 0 })}
+                          {formatCurrency(station.monthlySales || 0, { useLakhsCrores: true, maximumFractionDigits: 0 })}
                         </div>
                         <div className="text-xs text-gray-500">Monthly</div>
                       </div>

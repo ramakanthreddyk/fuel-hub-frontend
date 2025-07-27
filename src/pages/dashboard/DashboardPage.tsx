@@ -235,7 +235,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-right min-w-0">
                   <div className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                    {formatCurrency(lifetimeRevenue, { useLakhsCrores: true })}
+                    {lifetimeLoading ? '...' : formatCurrency(lifetimeRevenue, { useLakhsCrores: true })}
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
                     <span className="sm:hidden">Total</span>
@@ -256,7 +256,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-right min-w-0">
                   <div className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                    {formatVolume(lifetimeVolume, 0, true)}
+                    {lifetimeLoading ? '...' : formatVolume(lifetimeVolume, 0, true)}
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
                     <span className="sm:hidden">Volume</span>
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-right min-w-0">
                   <div className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                    {formatCurrency(monthlyRevenue, { useLakhsCrores: true })}
+                    {salesLoading ? '...' : formatCurrency(monthlyRevenue, { useLakhsCrores: true })}
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
                     <span className="sm:hidden">Monthly</span>
