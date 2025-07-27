@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertTriangle, DollarSign, Calendar } from 'lucide-react';
 import { useStations } from '@/hooks/api/useStations';
@@ -13,13 +12,13 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export default function SimpleReconciliationPage() {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState('2025-06-28'); // Use date with actual data
   const [selectedStation, setSelectedStation] = useState('');
   const [systemSales, setSystemSales] = useState(0);
   const [actualCash, setActualCash] = useState('');
   const [reason, setReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState(1); // 1: Select, 2: Enter Cash, 3: Confirm
+  const [step, setStep] = useState(1);
 
   const { data: stations = [] } = useStations();
   const { toast } = useToast();
@@ -33,15 +32,33 @@ export default function SimpleReconciliationPage() {
     
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/v1/reconciliation/daily-summary?stationId=${selectedStation}&date=${selectedDate}`);
-      const data = await response.json();
+      const url = `/api/v1/reconciliation/daily-summary?stationId=${selectedStation}&date=${selectedDate}`;
+      console.log('Fetching:', url);
       
-      if (data.success && data.data?.length > 0) {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
+      });
+      
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+      
+      // API returns array directly, not wrapped in data.data
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
         const total = data.data.reduce((sum: number, item: any) => sum + (item.saleValue || 0), 0);
         setSystemSales(total);
-        setActualCash(total.toString()); // Default to system sales
+        setActualCash(total.toString());
+        setStep(2);
+      } else if (Array.isArray(data) && data.length > 0) {
+        // Handle direct array response
+        const total = data.reduce((sum: number, item: any) => sum + (item.saleValue || 0), 0);
+        setSystemSales(total);
+        setActualCash(total.toString());
         setStep(2);
       } else {
+        console.log('No data or empty array:', data);
         toast({
           title: "No Sales Data",
           description: "No sales found for this date. Add nozzle readings first.",
@@ -49,6 +66,7 @@ export default function SimpleReconciliationPage() {
         });
       }
     } catch (error) {
+      console.error('API Error:', error);
       toast({
         title: "Error",
         description: "Failed to load sales data",
@@ -92,7 +110,6 @@ export default function SimpleReconciliationPage() {
           title: "Day Reconciled",
           description: "Business day has been successfully closed",
         });
-        // Reset form
         setStep(1);
         setSelectedStation('');
         setActualCash('');
@@ -120,7 +137,6 @@ export default function SimpleReconciliationPage() {
         <p className="text-muted-foreground">Compare system sales with actual cash collected</p>
       </div>
 
-      {/* Step 1: Select Station & Date */}
       {step === 1 && (
         <Card>
           <CardHeader>
@@ -174,7 +190,6 @@ export default function SimpleReconciliationPage() {
         </Card>
       )}
 
-      {/* Step 2: Enter Cash */}
       {step === 2 && (
         <Card>
           <CardHeader>
@@ -187,7 +202,6 @@ export default function SimpleReconciliationPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* System Sales Display */}
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="text-sm text-blue-700 mb-1">System Calculated Sales</div>
               <div className="text-2xl font-bold text-blue-900">
@@ -195,7 +209,6 @@ export default function SimpleReconciliationPage() {
               </div>
             </div>
 
-            {/* Cash Input */}
             <div>
               <Label htmlFor="cash">Actual Cash Collected</Label>
               <Input
@@ -210,7 +223,6 @@ export default function SimpleReconciliationPage() {
               />
             </div>
 
-            {/* Variance Display */}
             {actualCash && (
               <div className={cn(
                 "p-4 rounded-lg border",
@@ -268,7 +280,6 @@ export default function SimpleReconciliationPage() {
         </Card>
       )}
 
-      {/* Step 3: Confirm */}
       {step === 3 && (
         <Card>
           <CardHeader>
