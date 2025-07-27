@@ -10,6 +10,7 @@ import { useStations } from '@/hooks/api/useStations';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 
 export default function SimpleReconciliationPage() {
   const [selectedDate, setSelectedDate] = useState('2025-06-28'); // Use date with actual data
@@ -32,36 +33,42 @@ export default function SimpleReconciliationPage() {
     
     setIsLoading(true);
     try {
-      const url = `/api/v1/reconciliation/daily-summary?stationId=${selectedStation}&date=${selectedDate}`;
-      console.log('Fetching:', url);
+      const { apiClient } = await import('@/api/client');
+      console.log('Fetching daily summary...');
       
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      const response = await apiClient.get('/reconciliation/daily-summary', {
+        params: {
+          stationId: selectedStation,
+          date: selectedDate
         }
       });
       
-      console.log('Response status:', response.status);
-      const data = await response.json();
+      const data = response.data;
       console.log('Response data:', data);
       
-      // API returns array directly, not wrapped in data.data
-      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-        const total = data.data.reduce((sum: number, item: any) => sum + (item.saleValue || 0), 0);
-        setSystemSales(total);
-        setActualCash(total.toString());
-        setStep(2);
-      } else if (Array.isArray(data) && data.length > 0) {
-        // Handle direct array response
-        const total = data.reduce((sum: number, item: any) => sum + (item.saleValue || 0), 0);
-        setSystemSales(total);
-        setActualCash(total.toString());
-        setStep(2);
+      console.log('API Response:', data);
+      
+      if (data.success && Array.isArray(data.data)) {
+        if (data.data.length > 0) {
+          const total = data.data.reduce((sum: number, item: any) => sum + (item.saleValue || 0), 0);
+          setSystemSales(total);
+          setActualCash(total.toString());
+          setStep(2);
+          toast({
+            title: "Sales Data Loaded",
+            description: `Found ${data.data.length} nozzle readings with total sales of ${formatCurrency(total)}`
+          });
+        } else {
+          toast({
+            title: "No Sales Data",
+            description: "No nozzle readings found for this date. Add readings first.",
+            variant: "destructive"
+          });
+        }
       } else {
-        console.log('No data or empty array:', data);
         toast({
-          title: "No Sales Data",
-          description: "No sales found for this date. Add nozzle readings first.",
+          title: "Invalid Response",
+          description: "Unexpected response format from server",
           variant: "destructive"
         });
       }
@@ -130,6 +137,14 @@ export default function SimpleReconciliationPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <FuelLoader text="Loading reconciliation data..." size="md" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 max-w-2xl">
       <div className="text-center mb-8">
@@ -181,10 +196,10 @@ export default function SimpleReconciliationPage() {
 
             <Button 
               onClick={loadSystemSales}
-              disabled={!selectedStation || !selectedDate || isLoading}
+              disabled={!selectedStation || !selectedDate}
               className="w-full"
             >
-              {isLoading ? 'Loading...' : 'Load Sales Data'}
+              Load Sales Data
             </Button>
           </CardContent>
         </Card>
@@ -323,7 +338,7 @@ export default function SimpleReconciliationPage() {
                 disabled={isLoading}
                 className="flex-1"
               >
-                {isLoading ? 'Processing...' : 'Confirm & Close Day'}
+                Confirm & Close Day
               </Button>
             </div>
           </CardContent>
