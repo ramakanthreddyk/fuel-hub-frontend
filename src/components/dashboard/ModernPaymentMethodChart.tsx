@@ -3,7 +3,7 @@ import React from 'react';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
-import { useTodaysSales } from '@/hooks/api/useTodaysSales';
+import { useDashboardPaymentMethods } from '@/hooks/api/useDashboardPaymentMethods';
 import { formatCurrency } from '@/utils/formatters';
 import { CreditCard, Banknote, Smartphone, Users } from 'lucide-react';
 
@@ -25,22 +25,10 @@ interface ModernPaymentMethodChartProps {
 }
 
 export function ModernPaymentMethodChart({ filters = {} }: ModernPaymentMethodChartProps) {
-  const { data: todaysSales, isLoading } = useTodaysSales();
+  const { data: paymentMethods = [], isLoading } = useDashboardPaymentMethods();
   
-  // Convert payment breakdown to chart data
-  const breakdown = todaysSales?.paymentBreakdown ? [
-    { paymentMethod: 'cash', amount: todaysSales.paymentBreakdown.cash },
-    { paymentMethod: 'card', amount: todaysSales.paymentBreakdown.card },
-    { paymentMethod: 'upi', amount: todaysSales.paymentBreakdown.upi },
-    { paymentMethod: 'credit', amount: todaysSales.paymentBreakdown.credit },
-  ].filter(item => item.amount > 0) : [];
-  
-  // Calculate percentages
-  const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
-  const chartData = breakdown.map(item => ({
-    ...item,
-    percentage: total > 0 ? ((item.amount / total) * 100).toFixed(1) : '0',
-  }));
+  // Data is already formatted from the dashboard endpoint
+  const chartData = paymentMethods;
 
   if (isLoading) {
     return (

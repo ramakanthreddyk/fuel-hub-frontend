@@ -3,11 +3,12 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Fuel } from 'lucide-react';
-import { useStationMetrics } from '@/hooks/api/useDashboard';
+import { useStations } from '@/hooks/api/useStations';
 import { formatCurrency } from '@/utils/formatters';
 
 export function ModernStationMetricsList() {
-  const { data: stations = [], isLoading } = useStationMetrics();
+  // Get stations with metrics included
+  const { data: stations = [], isLoading } = useStations(true);
 
   if (isLoading) {
     return (

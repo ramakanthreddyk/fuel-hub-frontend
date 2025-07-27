@@ -1,52 +1,78 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useErrorHandler } from '../useErrorHandler';
+import { apiClient } from '@/api/client';
+import { useToastNotifications } from '@/hooks/useToastNotifications';
+import { useAutoLoader } from '@/hooks/useAutoLoader';
+import { handleApiResponse } from '@/api/responseHandler';
 
-// Mock interface for today's sales data
+// Interface matching the actual backend response structure
 interface TodaysSalesData {
-  totalAmount: number;
-  totalVolume: number;
+  date: string;
   totalEntries: number;
+  totalVolume: number;
+  totalAmount: number;
   paymentBreakdown: {
     cash: number;
     card: number;
     upi: number;
     credit: number;
   };
-  fuelBreakdown: {
-    petrol: { amount: number; volume: number };
-    diesel: { amount: number; volume: number };
-    premium: { amount: number; volume: number };
-  };
+  nozzleEntries: Array<{
+    nozzle_id: string;
+    nozzle_number: number;
+    fuel_type: string;
+    pump_id: string;
+    pump_name: string;
+    station_id: string;
+    station_name: string;
+    entries_count: number;
+    total_volume: number;
+    total_amount: number;
+    last_entry_time: string;
+    average_ticket_size: number;
+  }>;
+  salesByFuel: Array<{
+    fuel_type: string;
+    total_volume: number;
+    total_amount: number;
+    entries_count: number;
+    average_price: number;
+    stations_count: number;
+  }>;
+  salesByStation: Array<{
+    station_id: string;
+    station_name: string;
+    total_volume: number;
+    total_amount: number;
+    entries_count: number;
+    fuel_types: string[];
+    nozzles_active: number;
+    last_activity: string | null;
+  }>;
+  creditSales: Array<any>;
 }
 
-export const useTodaysSales = () => {
-  const { handleError } = useErrorHandler();
+export const useTodaysSales = (date?: string) => {
+  const { handleApiError } = useToastNotifications();
   
-  return useQuery({
-    queryKey: ['todays-sales'],
+  const query = useQuery({
+    queryKey: ['todays-sales', date],
     queryFn: async (): Promise<TodaysSalesData> => {
-      // Mock data for demonstration
-      return {
-        totalAmount: 125000,
-        totalVolume: 1500,
-        totalEntries: 45,
-        paymentBreakdown: {
-          cash: 45000,
-          card: 35000,
-          upi: 30000,
-          credit: 15000
-        },
-        fuelBreakdown: {
-          petrol: { amount: 60000, volume: 800 },
-          diesel: { amount: 50000, volume: 600 },
-          premium: { amount: 15000, volume: 100 }
-        }
-      };
+      const params = new URLSearchParams();
+      if (date) {
+        params.append('date', date);
+      }
+      
+      return handleApiResponse(() => 
+        apiClient.get(`/todays-sales/summary${params.toString() ? '?' + params.toString() : ''}`)
+      );
     },
     staleTime: 300000, // 5 minutes
     onError: (error) => {
-      handleError(error, 'Failed to fetch today\'s sales data.');
+      handleApiError(error, 'Today\'s Sales');
     },
   });
+  
+  useAutoLoader(query.isLoading, 'Loading today\'s sales...');
+  return query;
 };

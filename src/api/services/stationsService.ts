@@ -37,10 +37,11 @@ export const stationsService = {
   /**
    * Get all stations
    */
-  getStations: async (): Promise<Station[]> => {
+  getStations: async (includeMetrics: boolean = false): Promise<Station[]> => {
     try {
-      console.log('[STATIONS-API] Fetching stations');
-      const response = await apiClient.get('/stations');
+      const url = includeMetrics ? '/stations?includeMetrics=true' : '/stations';
+      console.log(`[STATIONS-API] Fetching stations from ${url}`);
+      const response = await apiClient.get(url);
       const stations = extractArray<Station>(response, 'stations');
       console.log(`[STATIONS-API] Successfully fetched ${stations.length} stations`);
       return stations;

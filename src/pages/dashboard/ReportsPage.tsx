@@ -14,13 +14,13 @@ import {
   FileSpreadsheet, 
   Download, 
   RefreshCw, 
-  Loader2, 
   FileText, 
   File, 
   Clock, 
   CheckCircle, 
   XCircle 
 } from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 import { useReports, useGenerateReport, useDownloadReport } from '@/hooks/api/useReports';
 import { useStations } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
@@ -143,7 +143,7 @@ export default function ReportsPage() {
   if (reportsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <FuelLoader size="md" text="Loading reports..." />
       </div>
     );
   }

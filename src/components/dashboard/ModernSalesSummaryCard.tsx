@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, DollarSign, BarChart3 } from 'lucide-react';
-import { useSalesSummary } from '@/hooks/useDashboard';
+import { useTodaysSales } from '@/hooks/api/useTodaysSales';
+import { useDashboardSalesSummary } from '@/hooks/api/useDashboardSalesSummary';
 import { formatCurrency } from '@/utils/formatters';
 
 interface ModernSalesSummaryCardProps {
@@ -15,7 +16,13 @@ interface ModernSalesSummaryCardProps {
 }
 
 export function ModernSalesSummaryCard({ filters = {} }: ModernSalesSummaryCardProps) {
-  const { data: summary, isLoading } = useSalesSummary('monthly', filters);
+  // Get today's sales data
+  const { data: todaysSales, isLoading: todaysLoading } = useTodaysSales();
+  
+  // Get monthly sales summary
+  const { data: monthlySales, isLoading: monthlyLoading } = useDashboardSalesSummary('monthly');
+  
+  const isLoading = todaysLoading || monthlyLoading;
 
   if (isLoading) {
     return (
@@ -55,14 +62,14 @@ export function ModernSalesSummaryCard({ filters = {} }: ModernSalesSummaryCardP
               <DollarSign className="h-5 w-5 text-blue-600" />
             </div>
             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              +{summary?.growthPercentage || 0}%
+              Today
             </Badge>
           </div>
           <div>
             <div className="text-2xl font-bold text-gray-900">
-              {formatCurrency(summary?.totalRevenue || 0, { useLakhsCrores: true })}
+              {formatCurrency(monthlySales?.totalAmount || 0, { useLakhsCrores: true })}
             </div>
-            <div className="text-sm text-gray-600">Total Revenue</div>
+            <div className="text-sm text-gray-600">Monthly Revenue</div>
           </div>
         </div>
 
@@ -72,14 +79,14 @@ export function ModernSalesSummaryCard({ filters = {} }: ModernSalesSummaryCardP
               <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              {summary?.salesCount || 0}
+              {todaysSales?.totalEntries || 0}
             </Badge>
           </div>
           <div>
             <div className="text-2xl font-bold text-gray-900">
-              {summary?.totalVolume?.toFixed(1) || 0}L
+              {(monthlySales?.totalVolume || 0).toFixed(1)}L
             </div>
-            <div className="text-sm text-gray-600">Total Volume</div>
+            <div className="text-sm text-gray-600">Monthly Volume</div>
           </div>
         </div>
       </div>

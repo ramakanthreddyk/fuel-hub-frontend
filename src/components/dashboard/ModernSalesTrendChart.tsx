@@ -3,7 +3,7 @@ import React from 'react';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { useDailySalesTrend } from '@/hooks/useDashboard';
+import { useDashboardSalesTrend } from '@/hooks/api/useDashboardSalesTrend';
 import { format } from 'date-fns';
 import { TrendingUp, BarChart3 } from 'lucide-react';
 
@@ -18,7 +18,8 @@ interface ModernSalesTrendChartProps {
 }
 
 export function ModernSalesTrendChart({ filters = {} }: ModernSalesTrendChartProps) {
-  const { data: trend = [], isLoading } = useDailySalesTrend(7, filters);
+  // Get last 7 days trend data
+  const { data: trend = [], isLoading } = useDashboardSalesTrend(7);
 
   if (isLoading) {
     return (

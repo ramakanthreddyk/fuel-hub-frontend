@@ -5,27 +5,29 @@ import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useDataStore } from '@/store/dataStore';
 import { useErrorHandler } from '../useErrorHandler';
 
-export const useStations = () => {
+export const useStations = (includeMetrics: boolean = false) => {
   const { stations: storedStations, setStations } = useDataStore();
   const { handleError } = useErrorHandler();
   
   return useQuery({
-    queryKey: ['stations'],
+    queryKey: ['stations', includeMetrics],
     queryFn: async () => {
-      // Check if we have cached data
-      if (storedStations.length > 0) {
+      // Don't use cache if metrics are requested
+      if (!includeMetrics && storedStations.length > 0) {
         console.log('[STATIONS-HOOK] Using cached stations');
         return storedStations;
       }
       
-      const stations = await stationsService.getStations();
+      const stations = await stationsService.getStations(includeMetrics);
       
-      // Store in cache
-      setStations(stations);
+      // Store in cache only if no metrics requested
+      if (!includeMetrics) {
+        setStations(stations);
+      }
       
       return stations;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: includeMetrics ? 60 * 1000 : 5 * 60 * 1000, // 1 min for metrics, 5 min for basic
     retry: 2,
     onError: (error) => {
       handleError(error, 'Failed to fetch stations.');

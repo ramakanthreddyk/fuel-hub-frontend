@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Fuel, BarChart3, TrendingUp } from 'lucide-react';
-import { useFuelTypeBreakdown } from '@/hooks/api/useDashboard';
+import { useDashboardFuelBreakdown } from '@/hooks/api/useDashboardFuelBreakdown';
 import { formatCurrency, formatVolume } from '@/utils/formatters';
 
 interface DashboardFilters {
@@ -17,7 +17,7 @@ interface ModernFuelBreakdownChartProps {
 }
 
 export function ModernFuelBreakdownChart({ filters = {} }: ModernFuelBreakdownChartProps) {
-  const { data: fuelBreakdown = [], isLoading } = useFuelTypeBreakdown(filters);
+  const { data: fuelBreakdown = [], isLoading } = useDashboardFuelBreakdown();
 
   if (isLoading) {
     return (

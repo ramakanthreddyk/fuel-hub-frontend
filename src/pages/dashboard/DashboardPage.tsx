@@ -1,3 +1,29 @@
+/**
+ * Modern Dashboard Page - Real API Integration Status
+ * 
+ * ✅ WORKING WITH REAL DATA:
+ * - Today's sales summary (/todays-sales/summary)
+ * - Payment method breakdown (from today's sales)
+ * - Fuel type breakdown (from today's sales)
+ * - Station list (/stations)
+ * - Basic creditors list (/creditors)
+ * 
+ * ⚠️  PARTIALLY WORKING (needs API enhancement):
+ * - Station metrics (missing monthly sales per station)
+ * - Station pump counts (relationship might need population)
+ * 
+ * ❌ MISSING API ENDPOINTS NEEDED:
+ * - Daily sales trend: Need /sales/analytics?groupBy=date or /dashboard/sales-trend
+ * - Monthly sales per station: Need /reports/sales with station grouping
+ * - Historical data for growth calculations
+ * - Station performance metrics over time
+ * 
+ * 💡 RECOMMENDED API ADDITIONS:
+ * 1. /dashboard/metrics - Combined dashboard metrics
+ * 2. /sales/analytics?groupBy=date&days=7 - Daily trend data
+ * 3. /stations/{id}/metrics?period=month - Station-specific metrics
+ * 4. Enhanced /reports/sales with breakdown options
+ */
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
