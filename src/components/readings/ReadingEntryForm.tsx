@@ -174,9 +174,14 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const selectedNozzleData = nozzles.find(n => n.id === selectedNozzle);
   const minReading = latestReading?.reading || 0;
 
-  // Check if we can create reading
-  const canSubmit = loadingCanCreate ? true : canCreateReading?.canCreate !== false;
-  const hasMissingPrices = !loadingCanCreate && !canCreateReading?.canCreate && canCreateReading?.missingPrice;
+  // Check if we can create reading - allow submission if loading or if canCreate is true/undefined
+  const canSubmit = loadingCanCreate || !canCreateReading || canCreateReading?.canCreate !== false;
+  const hasMissingPrices = !loadingCanCreate && canCreateReading?.canCreate === false && canCreateReading?.missingPrice;
+  
+  // Also check if form has required fields filled
+  const formValues = form.watch();
+  const hasRequiredFields = formValues.stationId && formValues.pumpId && formValues.nozzleId && formValues.reading > minReading;
+  const finalCanSubmit = canSubmit && hasRequiredFields;
 
   const onSubmit = async (data: ReadingFormData) => {
     const readingData: CreateReadingRequest = {
@@ -604,7 +609,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
 
                 <Button 
                   type="submit" 
-                  disabled={createReading.isPending || !canSubmit} 
+                  disabled={createReading.isPending || !finalCanSubmit} 
                   className="w-full h-14 text-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   {createReading.isPending ? (
@@ -612,8 +617,10 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                       <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
                       Recording...
                     </>
-                  ) : !canSubmit ? (
+                  ) : hasMissingPrices ? (
                     'Set Fuel Price Required'
+                  ) : !hasRequiredFields ? (
+                    'Fill Required Fields'
                   ) : (
                     <>
                       <Gauge className="mr-2 h-5 w-5" />
