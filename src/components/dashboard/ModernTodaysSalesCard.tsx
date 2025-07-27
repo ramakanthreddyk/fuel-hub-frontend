@@ -5,8 +5,12 @@ import { TrendingUp, DollarSign, Fuel, Users, CreditCard } from 'lucide-react';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { formatCurrency, formatVolume } from '@/utils/formatters';
 
-export function ModernTodaysSalesCard() {
-  const { data: todaysSales, isLoading } = useTodaysSales();
+interface ModernTodaysSalesCardProps {
+  date?: string;
+}
+
+export function ModernTodaysSalesCard({ date }: ModernTodaysSalesCardProps) {
+  const { data: todaysSales, isLoading } = useTodaysSales(date);
 
   if (isLoading) {
     return (
@@ -23,37 +27,25 @@ export function ModernTodaysSalesCard() {
       title: 'Total Revenue',
       value: formatCurrency(todaysSales?.totalAmount || 0, { useLakhsCrores: true }),
       icon: DollarSign,
-      color: 'bg-green-500',
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-700',
-      change: '+12%'
+      color: 'bg-green-500'
     },
     {
       title: 'Total Volume',
-      value: formatVolume(todaysSales?.totalVolume || 0, 1, true),
+      value: formatVolume(todaysSales?.totalVolume || 0, 0, true),
       icon: Fuel,
-      color: 'bg-blue-500',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-700',
-      change: '+8%'
+      color: 'bg-blue-500'
     },
     {
       title: 'Transactions',
       value: (todaysSales?.totalEntries || 0).toString(),
       icon: CreditCard,
-      color: 'bg-purple-500',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-700',
-      change: '+15%'
+      color: 'bg-purple-500'
     },
     {
       title: 'Active Stations',
       value: (todaysSales?.salesByStation?.length || 0).toString(),
       icon: Users,
-      color: 'bg-orange-500',
-      bgColor: 'bg-orange-50',
-      textColor: 'text-orange-700',
-      change: '100%'
+      color: 'bg-orange-500'
     }
   ];
 
@@ -62,13 +54,10 @@ export function ModernTodaysSalesCard() {
       {metrics.map((metric, index) => (
         <Card key={metric.title} className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-center mb-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${metric.color}`}>
                 <metric.icon className="h-5 w-5 text-white" />
               </div>
-              <Badge variant="outline" className={`${metric.bgColor} ${metric.textColor} border-transparent text-xs`}>
-                {metric.change}
-              </Badge>
             </div>
             <div>
               <div className="text-2xl font-bold text-gray-900 mb-1">

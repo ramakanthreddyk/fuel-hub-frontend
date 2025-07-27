@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNozzles, useDeleteNozzle } from '@/hooks/api/useNozzles';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useStations } from '@/hooks/api/useStations';
-import { useToast } from '@/hooks/use-toast';
+import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { FuelNozzleCard } from '@/components/nozzles/FuelNozzleCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -26,7 +26,7 @@ export default function NozzlesPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { pumpId } = useParams<{ pumpId: string }>();
-  const { toast } = useToast();
+  const { showSuccess, showError } = useToastNotifications();
   const queryClient = useQueryClient();
   const { refreshNozzles } = useFuelStoreSync();
   
@@ -206,16 +206,9 @@ export default function NozzlesPage() {
     
     try {
       await deleteNozzleMutation.mutateAsync(nozzleToDelete);
-      toast({
-        title: "Success",
-        description: "Nozzle deleted successfully"
-      });
+      showSuccess('Nozzle Deleted', 'Nozzle deleted successfully');
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete nozzle",
-        variant: "destructive"
-      });
+      showError('Delete Failed', error.message || 'Failed to delete nozzle');
       console.error('Delete failed:', error);
     } finally {
       setNozzleToDelete(null);

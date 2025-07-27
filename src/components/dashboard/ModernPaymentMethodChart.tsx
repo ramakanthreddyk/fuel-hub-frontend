@@ -4,6 +4,7 @@ import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { useDashboardPaymentMethods } from '@/hooks/api/useDashboardPaymentMethods';
+import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { formatCurrency } from '@/utils/formatters';
 import { CreditCard, Banknote, Smartphone, Users } from 'lucide-react';
 
@@ -22,10 +23,23 @@ interface DashboardFilters {
 
 interface ModernPaymentMethodChartProps {
   filters?: DashboardFilters;
+  date?: string;
 }
 
-export function ModernPaymentMethodChart({ filters = {} }: ModernPaymentMethodChartProps) {
-  const { data: paymentMethods = [], isLoading } = useDashboardPaymentMethods();
+export function ModernPaymentMethodChart({ filters = {}, date }: ModernPaymentMethodChartProps) {
+  // If date is provided, use today's sales data instead of dashboard endpoint
+  const { data: todaysSales, isLoading: todaysLoading } = useTodaysSales(date);
+  const { data: dashboardPayments = [], isLoading: dashboardLoading } = useDashboardPaymentMethods();
+  
+  const isLoading = date ? todaysLoading : dashboardLoading;
+  
+  // Use appropriate data source based on whether date is selected
+  const paymentMethods = date && todaysSales ? [
+    { paymentMethod: 'cash', amount: todaysSales.paymentBreakdown.cash, percentage: ((todaysSales.paymentBreakdown.cash / todaysSales.totalAmount) * 100).toFixed(1) },
+    { paymentMethod: 'card', amount: todaysSales.paymentBreakdown.card, percentage: ((todaysSales.paymentBreakdown.card / todaysSales.totalAmount) * 100).toFixed(1) },
+    { paymentMethod: 'upi', amount: todaysSales.paymentBreakdown.upi, percentage: ((todaysSales.paymentBreakdown.upi / todaysSales.totalAmount) * 100).toFixed(1) },
+    { paymentMethod: 'credit', amount: todaysSales.paymentBreakdown.credit, percentage: ((todaysSales.paymentBreakdown.credit / todaysSales.totalAmount) * 100).toFixed(1) }
+  ].filter(item => item.amount > 0) : dashboardPayments;
   
   // Data is already formatted from the dashboard endpoint
   const chartData = paymentMethods;
@@ -76,7 +90,9 @@ export function ModernPaymentMethodChart({ filters = {} }: ModernPaymentMethodCh
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Payment Methods</h3>
-          <p className="text-sm text-gray-600">Today's payment breakdown</p>
+          <p className="text-sm text-gray-600">
+            {date ? `Payment breakdown for ${new Date(date).toLocaleDateString()}` : "Today's payment breakdown"}
+          </p>
         </div>
       </div>
 

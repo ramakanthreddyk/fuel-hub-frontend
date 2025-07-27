@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Fuel, BarChart3, TrendingUp } from 'lucide-react';
 import { useDashboardFuelBreakdown } from '@/hooks/api/useDashboardFuelBreakdown';
+import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { formatCurrency, formatVolume } from '@/utils/formatters';
 
 interface DashboardFilters {
@@ -14,10 +15,24 @@ interface DashboardFilters {
 
 interface ModernFuelBreakdownChartProps {
   filters?: DashboardFilters;
+  date?: string;
 }
 
-export function ModernFuelBreakdownChart({ filters = {} }: ModernFuelBreakdownChartProps) {
-  const { data: fuelBreakdown = [], isLoading } = useDashboardFuelBreakdown();
+export function ModernFuelBreakdownChart({ filters = {}, date }: ModernFuelBreakdownChartProps) {
+  // If date is provided, use today's sales data instead of dashboard endpoint
+  const { data: todaysSales, isLoading: todaysLoading } = useTodaysSales(date);
+  const { data: dashboardFuel = [], isLoading: dashboardLoading } = useDashboardFuelBreakdown();
+  
+  const isLoading = date ? todaysLoading : dashboardLoading;
+  
+  // Use appropriate data source based on whether date is selected
+  const fuelBreakdown = date && todaysSales ? 
+    todaysSales.salesByFuel.map(fuel => ({
+      fuelType: fuel.fuel_type,
+      amount: fuel.total_amount,
+      volume: fuel.total_volume,
+      percentage: ((fuel.total_amount / todaysSales.totalAmount) * 100).toFixed(1)
+    })) : dashboardFuel;
 
   if (isLoading) {
     return (
@@ -52,7 +67,9 @@ export function ModernFuelBreakdownChart({ filters = {} }: ModernFuelBreakdownCh
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xl font-bold text-gray-900">Fuel Breakdown</h3>
-          <p className="text-sm text-gray-600">Today's fuel type performance</p>
+          <p className="text-sm text-gray-600">
+            {date ? `Fuel performance for ${new Date(date).toLocaleDateString()}` : "Today's fuel type performance"}
+          </p>
         </div>
         <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
           <BarChart3 className="h-5 w-5 text-green-600" />

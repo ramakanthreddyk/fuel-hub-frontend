@@ -136,6 +136,16 @@ export const formatVolume = (
   unit: string = 'L'
 ): string => {
   const numValue = typeof volume === 'string' ? parseFloat(volume) : (volume || 0);
+  
+  // Use compact notation for large volumes
+  if (numValue >= 1000000) {
+    const millions = (numValue / 1000000).toFixed(1);
+    return showUnit ? `${millions}M ${unit}` : `${millions}M`;
+  } else if (numValue >= 100000) {
+    const lakhs = (numValue / 100000).toFixed(1);
+    return showUnit ? `${lakhs}L ${unit}` : `${lakhs}L`;
+  }
+  
   const formatted = formatNumber(numValue, { maximumFractionDigits: decimals });
   return showUnit ? `${formatted} ${unit}` : formatted;
 };

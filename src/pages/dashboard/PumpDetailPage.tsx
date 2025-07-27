@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { usePump } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
+import { FuelLoader } from '@/components/ui/FuelLoader';
 
 export default function PumpDetailPage() {
   // Get pump ID from URL params
@@ -40,7 +41,7 @@ export default function PumpDetailPage() {
   if (pumpLoading || nozzlesLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <FuelLoader size="md" text="Loading pump details..." />
       </div>
     );
   }

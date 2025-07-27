@@ -37,7 +37,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { useReconciliationDifferencesSummary } from '@/hooks/useReconciliationDifferencesSummary';
-import { useAutoLoader } from '@/hooks/useAutoLoader';
+import { useDashboardStore } from '@/store/dashboardStore';
 
 // Modern Dashboard Components
 import { ModernSalesSummaryCard } from '@/components/dashboard/ModernSalesSummaryCard';
@@ -62,7 +62,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<DashboardFilters>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const { selectedDate, setSelectedDate } = useDashboardStore();
 
   // Use standardized hooks for metrics and sales summary
   const { data: stationMetrics, isLoading: metricsLoading, refetch: refetchMetrics } = useStationMetrics();
@@ -77,7 +77,7 @@ export default function DashboardPage() {
   // For lifetime, use a very early date to get all historical data
   const lifetimeFilters = { dateFrom: '2020-01-01', dateTo: new Date().toISOString().split('T')[0] };
   const { data: lifetimeSales, isLoading: lifetimeLoading } = useSalesSummary('all', lifetimeFilters);
-  const { data: todaysSales, isLoading: todaysLoading, refetch: refetchTodaysSales } = useTodaysSales();
+  const { data: todaysSales, isLoading: todaysLoading, refetch: refetchTodaysSales } = useTodaysSales(selectedDate || undefined);
   const differencesEnabled = !!filters.stationId && !!selectedDate;
   const { data: differencesSummary, isLoading: differencesLoading, error: differencesError } = useReconciliationDifferencesSummary(filters.stationId || '', selectedDate);
 
@@ -103,11 +103,7 @@ export default function DashboardPage() {
 
   const isLoading = salesLoading || metricsLoading || todaysLoading;
   
-  useAutoLoader(salesLoading, 'Loading sales data...');
-  useAutoLoader(metricsLoading, 'Loading station metrics...');
-  useAutoLoader(todaysLoading, 'Loading today\'s sales...');
-  useAutoLoader(lifetimeLoading, 'Loading lifetime data...');
-  useAutoLoader(differencesLoading, 'Loading reconciliation data...');
+  // Loading states are now handled by individual hooks with toast notifications
 
   // Calculate summary stats
   const filteredStations = Array.isArray(stations)
@@ -201,12 +197,24 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Date</label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={e => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={selectedDate || ''}
+                  onChange={e => setSelectedDate(e.target.value || null)}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+                {selectedDate && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedDate(null)}
+                    className="px-3 py-2.5 text-gray-600 hover:text-gray-800"
+                  >
+                    Today
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -225,15 +233,12 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold text-gray-900">
                     {formatCurrency(todaysRevenue, { useLakhsCrores: true })}
                   </div>
-                  <div className="text-sm text-gray-600">Today's Revenue</div>
+                  <div className="text-sm text-gray-600">
+                    {selectedDate ? `Revenue (${new Date(selectedDate).toLocaleDateString()})` : "Today's Revenue"}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-gray-100 rounded-full h-2">
-                  <div className="h-2 bg-blue-500 rounded-full w-3/4"></div>
-                </div>
-                <span className="text-xs text-gray-500">+12%</span>
-              </div>
+
             </div>
           </div>
 
@@ -247,17 +252,14 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-gray-900">
-                    {formatVolume(todaysVolume, 3, true)}
+                    {formatVolume(todaysVolume, 0, true)}
                   </div>
-                  <div className="text-sm text-gray-600">Today's Volume</div>
+                  <div className="text-sm text-gray-600">
+                    {selectedDate ? `Volume (${new Date(selectedDate).toLocaleDateString()})` : "Today's Volume"}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-gray-100 rounded-full h-2">
-                  <div className="h-2 bg-green-500 rounded-full w-2/3"></div>
-                </div>
-                <span className="text-xs text-gray-500">+8%</span>
-              </div>
+
             </div>
           </div>
 
@@ -271,15 +273,12 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-gray-900">{todaysEntries}</div>
-                  <div className="text-sm text-gray-600">Today's Entries</div>
+                  <div className="text-sm text-gray-600">
+                    {selectedDate ? `Entries (${new Date(selectedDate).toLocaleDateString()})` : "Today's Entries"}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-gray-100 rounded-full h-2">
-                  <div className="h-2 bg-purple-500 rounded-full w-4/5"></div>
-                </div>
-                <span className="text-xs text-gray-500">+15%</span>
-              </div>
+
             </div>
           </div>
 
@@ -299,17 +298,12 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-gray-100 rounded-full h-2">
-                  <div className="h-2 bg-orange-500 rounded-full w-full"></div>
-                </div>
-                <span className="text-xs text-gray-500">{totalStations} total</span>
-              </div>
+
             </div>
           </div>
         </div>
 
-        {/* Today's Sales Overview - Modern */}
+        {/* Sales Overview - Modern */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center gap-3">
@@ -317,24 +311,28 @@ export default function DashboardPage() {
                 <PieChart className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Today's Sales Overview</h2>
-                <p className="text-sm text-gray-600">Real-time sales performance</p>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {selectedDate ? `Sales for ${new Date(selectedDate).toLocaleDateString()}` : "Today's Sales Overview"}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {selectedDate ? 'Historical sales performance' : 'Real-time sales performance'}
+                </p>
               </div>
             </div>
           </div>
           <div className="p-6">
-            <ModernTodaysSalesCard />
+            <ModernTodaysSalesCard date={selectedDate} />
           </div>
         </div>
 
-        {/* Modern Charts Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
-            <ModernPaymentMethodChart filters={filters} />
-          </div>
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
-            <ModernFuelBreakdownChart filters={filters} />
-          </div>
+        {/* Payment Methods Chart - Full Width */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
+          <ModernPaymentMethodChart filters={filters} date={selectedDate} />
+        </div>
+
+        {/* Fuel Breakdown Chart - Full Width */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
+          <ModernFuelBreakdownChart filters={filters} date={selectedDate} />
         </div>
 
         {/* Sales Trend - Modern */}

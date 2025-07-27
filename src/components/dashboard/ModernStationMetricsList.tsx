@@ -74,7 +74,7 @@ export function ModernStationMetricsList() {
       </div>
 
       {/* Stations Grid */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {stations.map((station) => {
           const statusConfig = getStatusConfig(station.status);
           
@@ -105,7 +105,7 @@ export function ModernStationMetricsList() {
                   </div>
 
                   {/* Metrics */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 sm:flex-shrink-0">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:flex-shrink-0">
                     <div className="text-center">
                       <div className="text-sm sm:text-base font-bold text-gray-900">
                         {formatCurrency(station.todaySales || 0, { maximumFractionDigits: 0 })}
@@ -118,15 +118,7 @@ export function ModernStationMetricsList() {
                       </div>
                       <div className="text-xs text-gray-500">Monthly</div>
                     </div>
-                    <div className="text-center col-span-2 sm:col-span-1">
-                      <div className="flex items-center justify-center gap-1">
-                        <TrendingUp className="h-3 w-3 text-green-500" />
-                        <span className="text-sm sm:text-base font-bold text-green-600">
-                          {station.salesGrowth || 0}%
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-500">Growth</div>
-                    </div>
+
                   </div>
                 </div>
               </CardContent>
