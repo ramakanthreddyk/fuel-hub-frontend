@@ -17,8 +17,19 @@ const apiClient = axios.create({
   timeout: 30000, // 30 seconds
 });
 
-// Default tenant ID for demo purposes
-const DEFAULT_TENANT_ID = "df9347c2-9f6c-4d32-942f-1208b91fbb2b";
+// Get tenant ID from environment or user context - no hardcoded defaults
+const getTenantId = () => {
+  const storedUser = localStorage.getItem('fuelsync_user');
+  if (storedUser) {
+    try {
+      const user = JSON.parse(storedUser);
+      return user.tenantId;
+    } catch (error) {
+      console.error('[API-CLIENT] Error parsing stored user:', error);
+    }
+  }
+  return import.meta.env.VITE_DEFAULT_TENANT || null;
+};
 
 // Track if a token refresh is in progress
 let isRefreshing = false;
@@ -38,29 +49,34 @@ apiClient.interceptors.request.use(
       }
     }
 
-    // Add tenant context - ALWAYS required for API calls
+    // Add tenant context - check user role and endpoint type
     const storedUser = localStorage.getItem('fuelsync_user');
+    let userRole = null;
+    let tenantId = null;
     
-    // Always add tenant ID header for non-admin endpoints
-    if (!config.url?.startsWith('/admin') && !isAuthEndpoint) {
-      // Default to demo tenant ID
-      config.headers['x-tenant-id'] = DEFAULT_TENANT_ID;
-    }
-    
-    // Override with user's tenant ID if available
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
-        if (user.tenantId && user.role !== 'superadmin') {
-          config.headers['x-tenant-id'] = user.tenantId;
-        }
-        // For superadmin, don't add tenant header for admin endpoints
-        if (user.role === 'superadmin' && config.url?.startsWith('/admin')) {
-          // Don't add tenant header for superadmin admin endpoints
-          delete config.headers['x-tenant-id'];
-        }
+        userRole = user.role;
+        tenantId = user.tenantId;
       } catch (error) {
         console.error('[API-CLIENT] Error parsing stored user:', error);
+      }
+    }
+    
+    // Don't add tenant ID for:
+    // 1. Auth endpoints (login, refresh)
+    // 2. Admin endpoints
+    // 3. Superadmin users
+    const isAdminEndpoint = config.url?.startsWith('/admin');
+    const isSuperAdmin = userRole === 'superadmin';
+    
+    if (!isAuthEndpoint && !isAdminEndpoint && !isSuperAdmin) {
+      if (tenantId) {
+        config.headers['x-tenant-id'] = tenantId;
+      } else {
+        // Only warn for non-auth endpoints that actually need tenant context
+        console.warn('[API-CLIENT] No tenant ID available - request may fail');
       }
     }
     
@@ -69,6 +85,7 @@ apiClient.interceptors.request.use(
       console.log('[API-CLIENT] Request:', {
         url: config.url,
         method: config.method,
+        userRole: userRole || 'None',
         headers: {
           'x-tenant-id': config.headers['x-tenant-id'] || 'None',
           'Authorization': config.headers.Authorization ? 'Bearer [TOKEN]' : 'None'

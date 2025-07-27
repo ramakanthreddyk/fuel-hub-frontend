@@ -98,34 +98,28 @@ export default function SimpleReconciliationPage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/v1/reconciliation/close-with-cash', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          stationId: selectedStation,
-          date: selectedDate,
-          reportedCashAmount: Number(actualCash),
-          varianceReason: reason || undefined
-        })
-      });
+      const { apiClient } = await import('@/api/client');
+      const { validateAndSanitize, reconciliationSchema } = await import('@/utils/inputValidation');
+      
+      // Validate and sanitize input
+      const validatedData = validateAndSanitize({
+        stationId: selectedStation,
+        date: selectedDate,
+        reportedCashAmount: Number(actualCash),
+        varianceReason: reason || undefined
+      }, reconciliationSchema);
+      
+      await apiClient.post('/reconciliation/close-with-cash', validatedData);
 
-      if (response.ok) {
-        toast({
-          title: "Day Reconciled",
-          description: "Business day has been successfully closed",
-        });
-        setStep(1);
-        setSelectedStation('');
-        setActualCash('');
-        setReason('');
-        setSystemSales(0);
-      } else {
-        const error = await response.json();
-        throw new Error(error.message);
-      }
+      toast({
+        title: "Day Reconciled",
+        description: "Business day has been successfully closed",
+      });
+      setStep(1);
+      setSelectedStation('');
+      setActualCash('');
+      setReason('');
+      setSystemSales(0);
     } catch (error: any) {
       toast({
         title: "Error",
