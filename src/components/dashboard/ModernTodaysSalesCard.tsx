@@ -28,6 +28,7 @@ export function ModernTodaysSalesCard({ date }: ModernTodaysSalesCardProps) {
       title: "Revenue",
       shortTitle: "Revenue",
       value: formatCurrency(todaysSales?.totalAmount || 0, { useLakhsCrores: true }),
+      mobileValue: formatCurrency(todaysSales?.totalAmount || 0, { useLakhsCrores: true, maximumFractionDigits: 1 }),
       icon: DollarSign,
       color: 'bg-green-500',
       gradient: 'from-green-400 to-green-600',
@@ -37,6 +38,7 @@ export function ModernTodaysSalesCard({ date }: ModernTodaysSalesCardProps) {
       title: "Volume",
       shortTitle: "Volume",
       value: formatVolume(todaysSales?.totalVolume || 0, 0, true),
+      mobileValue: `${todaysSales?.totalVolume >= 1000 ? `${(todaysSales.totalVolume / 1000).toFixed(1)}KL` : `${Math.round(todaysSales?.totalVolume || 0)}L`}`,
       icon: Fuel,
       color: 'bg-blue-500',
       gradient: 'from-blue-400 to-blue-600',
@@ -77,8 +79,9 @@ export function ModernTodaysSalesCard({ date }: ModernTodaysSalesCardProps) {
                   <metric.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
                 <div className="text-right flex-1 min-w-0">
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                    {metric.value}
+                  <div className="text-sm sm:text-2xl font-bold text-gray-900 truncate">
+                    <span className="sm:hidden">{metric.mobileValue || metric.value}</span>
+                    <span className="hidden sm:inline">{metric.value}</span>
                   </div>
                 </div>
               </div>
