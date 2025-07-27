@@ -66,12 +66,12 @@ export function ModernStationMetricsList() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">Station Metrics</h3>
-          <p className="text-sm text-gray-600">Performance overview of all stations</p>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900">Station Metrics</h3>
+          <p className="text-xs sm:text-sm text-gray-600 truncate">Performance overview of all stations</p>
         </div>
-        <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-          <Building2 className="h-5 w-5 text-blue-600" />
+        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0 ml-2">
+          <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
         </div>
       </div>
 

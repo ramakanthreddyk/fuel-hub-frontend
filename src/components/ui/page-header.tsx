@@ -43,7 +43,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className={cn(
-      "flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+      "flex flex-col gap-4 pb-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:flex-row sm:items-start sm:justify-between",
       sticky && "sticky top-14 md:top-16 z-30 pt-6 -mt-6",
       className
     )}>
@@ -78,7 +78,7 @@ export function PageHeader({
       </div>
       
       {actions && (
-        <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:flex-shrink-0 sm:ml-4">
           {actions}
         </div>
       )}
