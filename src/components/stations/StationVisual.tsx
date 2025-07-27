@@ -34,7 +34,7 @@ export function StationVisual({ stationName, pumpCount }: StationVisualProps) {
       <div className="relative flex justify-center mb-6">
         <div className="relative">
           {/* Clean Canopy */}
-          <div className="absolute -top-4 -left-10 -right-10 h-6 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 rounded-t-xl shadow-lg">
+          <div className="absolute -top-4 -left-10 -right-10 h-6 bg-gradient-to-r from-blue-200 via-indigo-300 to-purple-200 rounded-t-xl shadow-lg border border-blue-300/50">
             {/* Support Columns */}
             <div className="absolute top-0 left-4 w-0.5 h-16 bg-gray-400 shadow-sm"></div>
             <div className="absolute top-0 right-4 w-0.5 h-16 bg-gray-400 shadow-sm"></div>
@@ -57,9 +57,9 @@ export function StationVisual({ stationName, pumpCount }: StationVisualProps) {
             </div>
             
             {/* Brand Sign */}
-            <div className="absolute top-1 left-1 right-1 h-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-sm">
-              <div className="text-[8px] font-semibold text-white truncate px-1">
-                {stationName.slice(0, 12)}
+            <div className="absolute top-1 left-1 right-1 h-6 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 rounded-md flex items-center justify-center shadow-lg">
+              <div className="text-[8px] font-bold text-white truncate px-1 drop-shadow-sm">
+                ⛽ {stationName.slice(0, 10)}
               </div>
             </div>
             

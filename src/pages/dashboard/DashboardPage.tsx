@@ -221,7 +221,7 @@ export default function DashboardPage() {
 
         {/* Modern Key Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Today's Revenue */}
+          {/* Total Sales (Lifetime) */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
             <div className="relative bg-white rounded-3xl p-6 shadow-lg">
@@ -231,18 +231,17 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(todaysRevenue, { useLakhsCrores: true })}
+                    {formatCurrency(lifetimeRevenue, { useLakhsCrores: true })}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {selectedDate ? `Revenue (${new Date(selectedDate).toLocaleDateString()})` : "Today's Revenue"}
+                    Total Sales
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
 
-          {/* Today's Volume */}
+          {/* Total Volume (Lifetime) */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-600 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
             <div className="relative bg-white rounded-3xl p-6 shadow-lg">
@@ -252,18 +251,17 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-gray-900">
-                    {formatVolume(todaysVolume, 0, true)}
+                    {formatVolume(lifetimeVolume, 0, true)}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {selectedDate ? `Volume (${new Date(selectedDate).toLocaleDateString()})` : "Today's Volume"}
+                    Total Volume
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
 
-          {/* Today's Entries */}
+          {/* Monthly Revenue */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-600 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
             <div className="relative bg-white rounded-3xl p-6 shadow-lg">
@@ -272,13 +270,14 @@ export default function DashboardPage() {
                   <CheckCircle className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-900">{todaysEntries}</div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {formatCurrency(monthlyRevenue, { useLakhsCrores: true })}
+                  </div>
                   <div className="text-sm text-gray-600">
-                    {selectedDate ? `Entries (${new Date(selectedDate).toLocaleDateString()})` : "Today's Entries"}
+                    This Month
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -293,12 +292,10 @@ export default function DashboardPage() {
                 <div className="text-right">
                   <div className="text-2xl font-bold text-gray-900">{activeStations}</div>
                   <div className="text-sm text-gray-600">
-                    <span className="hidden sm:inline">Active Stations</span>
-                    <span className="sm:hidden">Active</span>
+                    Active Stations
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -379,26 +376,37 @@ export default function DashboardPage() {
                         </div>
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">Today:</span>
-                            <span className="font-semibold text-gray-900">
-                              {formatCurrency(station.todaySales || 0, { useLakhsCrores: true })}
+                            <span className="text-sm text-gray-600">Last Activity:</span>
+                            <span className="text-xs text-gray-500">
+                              {station.lastActivity ? 
+                                new Date(station.lastActivity).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                                'No activity'
+                              }
                             </span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">Monthly:</span>
-                            <span className="font-semibold text-gray-900">
-                              {formatCurrency(station.monthlySales || 0, { useLakhsCrores: true })}
+                            <span className="text-sm text-gray-600">Status:</span>
+                            <span className={`text-xs font-medium ${
+                              station.status === 'active' ? 'text-green-600' : 
+                              station.status === 'maintenance' ? 'text-orange-600' : 'text-red-600'
+                            }`}>
+                              {station.status.toUpperCase()}
                             </span>
                           </div>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2 flex-shrink-0 ml-4">
-                        <div className="bg-gray-100 rounded-lg px-3 py-1">
-                          <span className="text-sm font-medium text-gray-700">
-                            {station.activePumps || 0}/{station.totalPumps || 0}
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-gray-900">
+                            {formatCurrency(station.todaySales || 0, { useLakhsCrores: true })}
+                          </div>
+                          <div className="text-xs text-gray-500">today's sales</div>
+                        </div>
+                        <div className="bg-gray-100 rounded-lg px-2 py-1">
+                          <span className="text-xs font-medium text-gray-700">
+                            {station.activePumps || 0}/{station.totalPumps || 0} pumps
                           </span>
                         </div>
-                        <div className="text-xs text-gray-500">pumps</div>
                       </div>
                     </div>
                   </div>

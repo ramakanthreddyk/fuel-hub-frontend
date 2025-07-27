@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, DollarSign } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, DollarSign, Fuel, Gauge, Clock, CreditCard, Building2, Droplets, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 
@@ -213,334 +214,417 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-2xl border shadow-sm p-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Record Reading</h1>
-            <p className="text-gray-600">Enter the current meter reading for the selected nozzle</p>
-          </div>
-
-          {/* Sale Summary after reading creation */}
-          {saleSummary && (
-            <div className="mb-6 p-6 bg-green-50 border border-green-200 rounded-xl">
-              <h2 className="text-xl font-semibold text-green-900 mb-2">Sale Summary (since last reading)</h2>
-              <div className="mb-2 text-green-800">
-                <strong>Total Liters:</strong> {saleSummary.totalLiters.toFixed(2)} L<br />
-                <strong>Total Amount:</strong> ₹{saleSummary.totalAmount.toFixed(2)}
-              </div>
-              <div className="mb-2">
-                <strong>By Payment Method:</strong>
-                <ul className="list-disc ml-6">
-                  {Object.entries(saleSummary.byPayment).map(([method, stats]) => (
-                    <li key={method} className="text-green-700">
-                      {method}: {stats.liters.toFixed(2)} L, ₹{stats.amount.toFixed(2)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-2">
-                <Link to="/dashboard/sales" className="underline text-green-700 font-medium">View detailed sales</Link>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              Dashboard → Readings → <span className="font-medium text-foreground">Record Reading</span>
             </div>
-          )}
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <Gauge className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900">Record Reading</h1>
+              <p className="text-lg text-muted-foreground">Enter the current meter reading for the selected nozzle</p>
+            </div>
+          </div>
+        </div>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {selectedNozzle && hasMissingPrices && (
-                <Alert className="mb-6 border-orange-200 bg-orange-50">
-                  <DollarSign className="h-4 w-4 text-orange-600" />
-                  <AlertDescription className="text-orange-800">
-                    <strong>Cannot record reading:</strong> {canCreateReading?.reason || 'Missing fuel price for this nozzle type'}. {' '}
-                    <Link to="/dashboard/fuel-prices" className="underline font-medium">
-                      Set fuel price first
-                    </Link>.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Row 1: Station, Pump, Nozzle Selection */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="stationId"
-                  rules={{ required: 'Station is required' }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Station</FormLabel>
-                      <Select 
-                        value={field.value} 
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedStation(value);
-                        }}
-                        disabled={!!initialValues.current.stationId}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-white">
-                            <SelectValue placeholder="Select station" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-white z-50">
-                          {stations.map((station) => (
-                            <SelectItem key={station.id} value={station.id}>
-                              {station.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="pumpId"
-                  rules={{ required: 'Pump is required' }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pump</FormLabel>
-                      <Select 
-                        value={field.value} 
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedPump(value);
-                        }}
-                        disabled={!selectedStation || !!initialValues.current.pumpId}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-white">
-                            <SelectValue placeholder="Select pump" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-white z-50">
-                          {pumps.length > 0 ? (
-                            pumps.map((pump) => (
-                              <SelectItem key={pump.id} value={pump.id}>
-                                {pump.name}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem key="no-pumps" value="no-pumps-placeholder" disabled>
-                              No pumps available
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="nozzleId"
-                  rules={{ required: 'Nozzle is required' }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nozzle</FormLabel>
-                      <Select 
-                        value={field.value} 
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedNozzle(value);
-                        }}
-                        disabled={!selectedPump || !!initialValues.current.nozzleId}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-white">
-                            <SelectValue placeholder="Select nozzle" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-white z-50">
-                          {nozzles.length > 0 ? (
-                            nozzles.map((nozzle) => (
-                              <SelectItem key={nozzle.id} value={nozzle.id}>
-                                Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem key="no-nozzles" value="no-nozzles-placeholder" disabled>
-                              No nozzles available
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        {/* Sale Summary after reading creation */}
+        {saleSummary && (
+          <Card className="mb-8 border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-100">
+            <CardHeader>
+              <CardTitle className="text-green-900 flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Sale Summary (since last reading)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <div className="text-green-800">
+                    <strong>Total Liters:</strong> {saleSummary.totalLiters.toFixed(2)} L
+                  </div>
+                  <div className="text-green-800">
+                    <strong>Total Amount:</strong> ₹{saleSummary.totalAmount.toFixed(2)}
+                  </div>
+                </div>
+                <div>
+                  <strong className="text-green-900">By Payment Method:</strong>
+                  <ul className="list-disc ml-6 mt-2">
+                    {Object.entries(saleSummary.byPayment).map(([method, stats]) => (
+                      <li key={method} className="text-green-700">
+                        {method}: {stats.liters.toFixed(2)} L, ₹{stats.amount.toFixed(2)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
+              <div className="mt-4">
+                <Link to="/dashboard/sales" className="text-green-700 font-medium hover:underline">
+                  View detailed sales →
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-              {/* Enhanced Nozzle Info Panel */}
-              {selectedNozzleData && (
-                <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Nozzle Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Fuel Type:</span>
-                        <span className="font-semibold text-gray-900 capitalize">{selectedNozzleData.fuelType}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Nozzle Number:</span>
-                        <span className="font-semibold text-gray-900">#{selectedNozzleData.nozzleNumber}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Status:</span>
-                        <span className="font-semibold text-gray-900 capitalize">{selectedNozzleData.status}</span>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="p-4 bg-white rounded-lg border border-gray-200">
-                        <div className="text-center">
-                          <div className="text-sm text-gray-600 mb-1">Previous Reading</div>
-                          <div className="text-2xl font-bold text-blue-600">{latestReading?.reading || 0} L</div>
-                          {latestReading?.recordedAt && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              {new Date(latestReading.recordedAt).toLocaleDateString()} at{' '}
-                              {new Date(latestReading.recordedAt).toLocaleTimeString()}
+        <Card className="border-0 shadow-xl">
+          <CardContent className="p-8">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                {selectedNozzle && hasMissingPrices && (
+                  <Alert className="border-orange-200 bg-orange-50">
+                    <DollarSign className="h-4 w-4 text-orange-600" />
+                    <AlertDescription className="text-orange-800">
+                      <strong>Cannot record reading:</strong> {canCreateReading?.reason || 'Missing fuel price for this nozzle type'}. {' '}
+                      <Link to="/dashboard/fuel-prices" className="underline font-medium">
+                        Set fuel price first
+                      </Link>.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Selection Section */}
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                    <Building2 className="h-5 w-5" />
+                    Station & Equipment Selection
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="stationId"
+                      rules={{ required: 'Station is required' }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Station</FormLabel>
+                          <Select 
+                            value={field.value} 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setSelectedStation(value);
+                            }}
+                            disabled={!!initialValues.current.stationId}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="h-12 bg-white border-gray-200">
+                                <SelectValue placeholder="Select station" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white z-50">
+                              {stations.map((station) => (
+                                <SelectItem key={station.id} value={station.id}>
+                                  {station.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="pumpId"
+                      rules={{ required: 'Pump is required' }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Pump</FormLabel>
+                          <Select 
+                            value={field.value} 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setSelectedPump(value);
+                            }}
+                            disabled={!selectedStation || !!initialValues.current.pumpId}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="h-12 bg-white border-gray-200">
+                                <SelectValue placeholder="Select pump" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white z-50">
+                              {pumps.length > 0 ? (
+                                pumps.map((pump) => (
+                                  <SelectItem key={pump.id} value={pump.id}>
+                                    {pump.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem key="no-pumps" value="no-pumps-placeholder" disabled>
+                                  No pumps available
+                                </SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="nozzleId"
+                      rules={{ required: 'Nozzle is required' }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Nozzle</FormLabel>
+                          <Select 
+                            value={field.value} 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setSelectedNozzle(value);
+                            }}
+                            disabled={!selectedPump || !!initialValues.current.nozzleId}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="h-12 bg-white border-gray-200">
+                                <SelectValue placeholder="Select nozzle" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white z-50">
+                              {nozzles.length > 0 ? (
+                                nozzles.map((nozzle) => (
+                                  <SelectItem key={nozzle.id} value={nozzle.id}>
+                                    Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem key="no-nozzles" value="no-nozzles-placeholder" disabled>
+                                  No nozzles available
+                                </SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Nozzle Info Panel */}
+                {selectedNozzleData && (
+                  <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+                    <CardHeader>
+                      <CardTitle className="text-gray-900 flex items-center gap-2">
+                        <Droplets className="h-5 w-5" />
+                        Nozzle Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center p-3 bg-white rounded-lg">
+                            <span className="text-gray-600">Fuel Type:</span>
+                            <span className="font-semibold text-gray-900 capitalize">{selectedNozzleData.fuelType}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-white rounded-lg">
+                            <span className="text-gray-600">Nozzle Number:</span>
+                            <span className="font-semibold text-gray-900">#{selectedNozzleData.nozzleNumber}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-white rounded-lg">
+                            <span className="text-gray-600">Status:</span>
+                            <span className="font-semibold text-gray-900 capitalize">{selectedNozzleData.status}</span>
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                          <Card className="bg-white border-gray-200">
+                            <CardContent className="p-6 text-center">
+                              <div className="text-sm text-gray-600 mb-2">Previous Reading</div>
+                              <div className="text-3xl font-bold text-blue-600 mb-2">{latestReading?.reading || 0} L</div>
+                              {latestReading?.recordedAt && (
+                                <div className="text-xs text-gray-500">
+                                  {new Date(latestReading.recordedAt).toLocaleDateString()} at{' '}
+                                  {new Date(latestReading.recordedAt).toLocaleTimeString()}
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                          {latestReading && (
+                            <div className="flex items-center gap-2 text-xs text-orange-700 bg-orange-50 p-3 rounded-lg border border-orange-200">
+                              <AlertTriangle className="h-4 w-4" />
+                              New reading must be greater than {latestReading.reading} L
                             </div>
                           )}
                         </div>
                       </div>
-                      {latestReading && (
-                        <div className="text-xs text-gray-600 bg-orange-50 p-2 rounded border border-orange-200">
-                          ⚠️ New reading must be greater than {latestReading.reading} L
-                        </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Reading & Time Section */}
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                    <Gauge className="h-5 w-5" />
+                    Reading Details
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="reading"
+                      rules={{
+                        required: 'Reading is required',
+                        min: {
+                          value: minReading,
+                          message: `Reading must be at least ${minReading}`,
+                        },
+                      }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Current Reading (L)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min={minReading}
+                              className="h-12 bg-white border-gray-200 text-lg"
+                              placeholder="Enter reading"
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value) {
+                                  const normalized = parseFloat(value).toFixed(2);
+                                  field.onChange(parseFloat(normalized));
+                                } else {
+                                  field.onChange('');
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </div>
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="recordedAt"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            Recorded At
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="datetime-local" className="h-12 bg-white border-gray-200" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
-              )}
 
-              {/* Row 2: Reading and Time */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="reading"
-                  rules={{
-                    required: 'Reading is required',
-                    min: {
-                      value: minReading,
-                      message: `Reading must be at least ${minReading}`,
-                    },
-                  }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Current Reading (L)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min={minReading}
-                          className="bg-white"
-                          {...field}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value) {
-                              const normalized = parseFloat(value).toFixed(2);
-                              field.onChange(parseFloat(normalized));
-                            } else {
-                              field.onChange('');
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Payment Section */}
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Payment Details
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="paymentMethod"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Payment Method</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 bg-white border-gray-200">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white z-50">
+                              <SelectItem value="cash">💵 Cash</SelectItem>
+                              <SelectItem value="card">💳 Card</SelectItem>
+                              <SelectItem value="upi">📱 UPI</SelectItem>
+                              <SelectItem value="credit">🏢 Credit</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name="recordedAt"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Recorded At</FormLabel>
-                      <FormControl>
-                        <Input type="datetime-local" className="bg-white" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Row 3: Payment Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="paymentMethod"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Payment Method</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="bg-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-white z-50">
-                          <SelectItem value="cash">Cash</SelectItem>
-                          <SelectItem value="card">Card</SelectItem>
-                          <SelectItem value="upi">UPI</SelectItem>
-                          <SelectItem value="credit">Credit</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Credit Party - shown only when needed */}
-                {paymentMethod === 'credit' && (
-                  <FormField
-                    control={form.control}
-                    name="creditorId"
-                    rules={{ required: 'Credit party is required for credit payments' }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Credit Party</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ""}>
-                          <FormControl>
-                            <SelectTrigger className="bg-white">
-                              <SelectValue placeholder="Select party" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-white z-50">
-                            {creditors.length > 0 ? (
-                              creditors.map((creditor) => (
-                                <SelectItem key={creditor.id} value={creditor.id}>
-                                  {creditor.partyName}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem key="no-creditors" value="no-creditors-placeholder" disabled>
-                                No creditors available
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
+                    {paymentMethod === 'credit' && (
+                      <FormField
+                        control={form.control}
+                        name="creditorId"
+                        rules={{ required: 'Credit party is required for credit payments' }}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Credit Party</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ""}>
+                              <FormControl>
+                                <SelectTrigger className="h-12 bg-white border-gray-200">
+                                  <SelectValue placeholder="Select party" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="bg-white z-50">
+                                {creditors.length > 0 ? (
+                                  creditors.map((creditor) => (
+                                    <SelectItem key={creditor.id} value={creditor.id}>
+                                      {creditor.partyName}
+                                    </SelectItem>
+                                  ))
+                                ) : (
+                                  <SelectItem key="no-creditors" value="no-creditors-placeholder" disabled>
+                                    No creditors available
+                                  </SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
-                )}
-              </div>
+                  </div>
+                </div>
 
-              <Button 
-                type="submit" 
-                disabled={createReading.isPending || !canSubmit} 
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-              >
-                {createReading.isPending ? 'Recording...' : 
-                 !canSubmit ? 'Set Fuel Price Required' : 'Record Reading'}
-              </Button>
-            </form>
-          </Form>
-        </div>
+                <Button 
+                  type="submit" 
+                  disabled={createReading.isPending || !canSubmit} 
+                  className="w-full h-14 text-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  {createReading.isPending ? (
+                    <>
+                      <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                      Recording...
+                    </>
+                  ) : !canSubmit ? (
+                    'Set Fuel Price Required'
+                  ) : (
+                    <>
+                      <Gauge className="mr-2 h-5 w-5" />
+                      Record Reading
+                    </>
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

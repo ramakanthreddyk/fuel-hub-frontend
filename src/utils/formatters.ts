@@ -143,7 +143,7 @@ export const formatVolume = (
     return showUnit ? `${millions}M ${unit}` : `${millions}M`;
   } else if (numValue >= 100000) {
     const lakhs = (numValue / 100000).toFixed(1);
-    return showUnit ? `${lakhs}L ${unit}` : `${lakhs}L`;
+    return showUnit ? `${lakhs} Lakh ${unit}` : `${lakhs} Lakh`;
   }
   
   const formatted = formatNumber(numValue, { maximumFractionDigits: decimals });

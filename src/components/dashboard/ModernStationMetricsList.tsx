@@ -3,12 +3,14 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, TrendingUp, Activity, CheckCircle, AlertTriangle, Clock, Fuel } from 'lucide-react';
-import { useStations } from '@/hooks/api/useStations';
+import { useStationMetrics } from '@/hooks/api/useDashboard';
 import { formatCurrency } from '@/utils/formatters';
 
 export function ModernStationMetricsList() {
-  // Get stations with metrics included
-  const { data: stations = [], isLoading } = useStations(true);
+  // Get station metrics
+  const { data: stations = [], isLoading } = useStationMetrics();
+  
+  console.log('ModernStationMetricsList render:', { stations, isLoading }); // Debug log
 
   if (isLoading) {
     return (
@@ -81,14 +83,14 @@ export function ModernStationMetricsList() {
           return (
             <Card key={station.id} className="border-0 shadow-sm">
               <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="space-y-4">
                   {/* Station Info */}
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${statusConfig.color}`}>
                       <Building2 className="h-6 w-6 text-white" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-semibold text-gray-900 truncate text-sm sm:text-base">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 truncate">
                         {station.name}
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
@@ -104,21 +106,47 @@ export function ModernStationMetricsList() {
                     </div>
                   </div>
 
-                  {/* Metrics */}
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:flex-shrink-0">
-                    <div className="text-center">
-                      <div className="text-sm sm:text-base font-bold text-gray-900">
-                        {formatCurrency(station.todaySales || 0, { maximumFractionDigits: 0 })}
+                  {/* Performance Metrics */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center p-2 bg-blue-50 rounded-lg">
+                      <div className="text-sm font-bold text-blue-600">
+                        {station.efficiency ? `₹${(station.efficiency / 100000).toFixed(1)}L` : 'N/A'}
                       </div>
-                      <div className="text-xs text-gray-500">Today</div>
+                      <div className="text-xs text-gray-500 mt-1">Efficiency</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-sm sm:text-base font-bold text-gray-900">
-                        {formatCurrency(station.monthlySales || 0, { maximumFractionDigits: 0 })}
+                    <div className="text-center p-2 bg-gray-50 rounded-lg">
+                      <div className={`text-sm font-bold ${
+                        station.salesGrowth > 0 ? 'text-green-600' : 
+                        station.salesGrowth < 0 ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {station.salesGrowth ? `${station.salesGrowth > 0 ? '+' : ''}${station.salesGrowth.toFixed(1)}%` : 'N/A'}
                       </div>
-                      <div className="text-xs text-gray-500">Monthly</div>
+                      <div className="text-xs text-gray-500 mt-1">Growth</div>
                     </div>
-
+                    <div className="text-center p-2 bg-purple-50 rounded-lg">
+                      <div className="text-sm font-bold text-purple-600">
+                        {Math.round((station.activePumps / station.totalPumps) * 100)}%
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">Active</div>
+                    </div>
+                  </div>
+                  
+                  {/* Sales Summary */}
+                  <div className="pt-3 border-t border-gray-100">
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div>
+                        <div className="text-sm font-bold text-gray-900">
+                          {formatCurrency(station.todaySales || 0, { maximumFractionDigits: 0 })}
+                        </div>
+                        <div className="text-xs text-gray-500">Today</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-gray-900">
+                          {formatCurrency(station.monthlySales || 0, { maximumFractionDigits: 0 })}
+                        </div>
+                        <div className="text-xs text-gray-500">Monthly</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>

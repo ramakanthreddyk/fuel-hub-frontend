@@ -169,14 +169,24 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
             </div>
           </div>
           
-          <div className={cn(
-            "inline-flex px-4 py-2 rounded-full border items-center gap-2 backdrop-blur-sm ring-1",
-            statusConfig.bgColor
-          )}>
-            <StatusIcon className={cn("w-4 h-4", statusConfig.iconColor)} />
-            <span className={cn("text-sm font-semibold", statusConfig.textColor)}>
-              {statusConfig.label}
-            </span>
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              "inline-flex px-4 py-2 rounded-full border items-center gap-2 backdrop-blur-sm ring-1",
+              statusConfig.bgColor
+            )}>
+              <StatusIcon className={cn("w-4 h-4", statusConfig.iconColor)} />
+              <span className={cn("text-sm font-semibold", statusConfig.textColor)}>
+                {statusConfig.label}
+              </span>
+            </div>
+            <Button 
+              onClick={() => onDelete(pump.id)}
+              size="sm"
+              variant="ghost"
+              className="w-8 h-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
@@ -241,60 +251,28 @@ export function FuelPumpCard({ pump, onViewNozzles, onDelete, needsAttention }: 
           </div>
         </div>
 
-        {/* Enhanced Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-blue-50/80 backdrop-blur-sm rounded-2xl p-4 border border-blue-200/60">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-xl bg-blue-500/20 ring-1 ring-blue-400/30">
-                <Droplets className="h-5 w-5 text-blue-600" />
+        {/* Enhanced Nozzle Info */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-200/60">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm shadow-lg">
+                {pump.nozzleCount}
               </div>
-              <span className="text-sm font-semibold text-blue-700">Nozzles</span>
+              <span className="text-sm font-semibold text-gray-700">Nozzles</span>
             </div>
-            <div className="text-2xl font-bold text-gray-800">
-              {pump.nozzleCount}
-            </div>
-            <div className="text-xs text-gray-600 mt-1">
-              Connected dispensers
-            </div>
-          </div>
-          
-          <div className="bg-purple-50/80 backdrop-blur-sm rounded-2xl p-4 border border-purple-200/60">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-xl bg-purple-500/20 ring-1 ring-purple-400/30">
-                <Gauge className="h-5 w-5 text-purple-600" />
-              </div>
-              <span className="text-sm font-semibold text-purple-700 truncate">Status</span>
-            </div>
-            <div className="text-lg font-bold text-gray-800 capitalize truncate">
-              {pump.status}
-            </div>
-            <div className="text-xs text-gray-600 mt-1 truncate">
-              Current state
-            </div>
+            <Button 
+              onClick={() => onViewNozzles(pump.id)}
+              size="sm"
+              variant="outline"
+              className="bg-white/60 backdrop-blur-sm border border-blue-300 hover:bg-blue-50 text-blue-700 hover:text-blue-800"
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              View
+            </Button>
           </div>
         </div>
 
-        {/* Enhanced Action Buttons */}
-        <div className="flex gap-3 pt-2">
-          <Button 
-            onClick={() => {
-              // Store the selected pump in Zustand
-              selectPump(pump.id);
-              onViewNozzles(pump.id);
-            }}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 ring-2 ring-blue-400/20 hover:ring-blue-300/40"
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            View Nozzles
-          </Button>
-          <Button 
-            onClick={() => onDelete(pump.id)}
-            variant="outline"
-            className="bg-red-50/80 backdrop-blur-sm border-red-300/60 text-red-600 hover:bg-red-100/80 hover:border-red-400/70 hover:text-red-700 rounded-xl transition-all duration-300 ring-1 ring-red-300/20 hover:ring-red-400/40"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
+
       </div>
     </div>
   );

@@ -21,14 +21,12 @@ export function StationStats({ pumpCount, fuelPrices, pricesLoading }: StationSt
   return (
     <div className="space-y-4">
       {/* Pump Count Display */}
-      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-blue-100 rounded-md">
-            <Fuel className="h-3 w-3 text-blue-600" />
-          </div>
-          <span className="text-sm font-medium text-gray-900">Fuel Pumps</span>
+          <Fuel className="h-3 w-3 text-blue-600" />
+          <span className="text-xs font-medium text-gray-900">Pumps</span>
         </div>
-        <Badge variant="secondary" className="font-semibold bg-white border-gray-200">
+        <Badge variant="secondary" className="text-xs font-semibold bg-white border-gray-200">
           {pumpCount}
         </Badge>
       </div>
@@ -36,10 +34,8 @@ export function StationStats({ pumpCount, fuelPrices, pricesLoading }: StationSt
       {/* Fuel Prices Section */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 mb-2">
-          <div className="p-1.5 bg-gray-100 rounded-md">
-            <TrendingUp className="h-3 w-3 text-gray-600" />
-          </div>
-          <h4 className="text-sm font-medium text-gray-900">Current Prices</h4>
+          <TrendingUp className="h-3 w-3 text-gray-600" />
+          <h4 className="text-xs font-medium text-gray-900">Prices</h4>
         </div>
 
         {pricesLoading ? (
@@ -51,20 +47,20 @@ export function StationStats({ pumpCount, fuelPrices, pricesLoading }: StationSt
         ) : priceEntries.length > 0 ? (
           <div className="grid grid-cols-1 gap-2">
             {priceEntries.slice(0, 3).map(([fuelType, price]) => (
-              <div key={fuelType} className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-md">
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${
+              <div key={fuelType} className="flex items-center justify-between p-1.5 bg-white border border-gray-200 rounded-md">
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-1.5 h-1.5 rounded-full ${
                     fuelType.toLowerCase().includes('petrol') ? 'bg-green-500' :
                     fuelType.toLowerCase().includes('diesel') ? 'bg-orange-500' :
                     'bg-blue-500'
                   }`} />
                   <span className="text-xs font-medium text-gray-900 capitalize">
-                    {fuelType}
+                    {fuelType.slice(0, 6)}
                   </span>
                 </div>
-                <Badge variant="outline" className="text-xs font-semibold bg-white border-gray-200">
-                  {price?.price ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(price.price) : '₹0.00'}
-                </Badge>
+                <span className="text-xs font-semibold text-gray-700">
+                  ₹{price?.price ? price.price.toFixed(0) : '0'}
+                </span>
               </div>
             ))}
           </div>

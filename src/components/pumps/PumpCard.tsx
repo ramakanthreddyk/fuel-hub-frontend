@@ -80,25 +80,25 @@ export function PumpCard({ pump, onViewNozzles, onSettings }: PumpCardProps) {
             <StatusBadge status={pump.status} size="sm" />
           </div>
 
-          {/* Stats Row */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Stats Rows */}
+          <div className="space-y-2">
             <div className="bg-white/60 rounded-lg p-3 backdrop-blur-sm border border-white/30">
-              <div className="flex items-center gap-2">
-                <Hash className="h-4 w-4 text-blue-600" />
-                <div>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Hash className="h-4 w-4 text-blue-600" />
                   <p className="text-xs text-gray-600">Nozzles</p>
-                  <p className="font-bold text-gray-900 text-lg">{pump.nozzleCount}</p>
                 </div>
+                <p className="font-bold text-gray-900 text-lg ml-6">{pump.nozzleCount}</p>
               </div>
             </div>
             
             <div className="bg-white/60 rounded-lg p-3 backdrop-blur-sm border border-white/30">
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-green-600" />
-                <div>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-green-600" />
                   <p className="text-xs text-gray-600">Status</p>
-                  <p className="font-bold text-gray-900 text-sm capitalize">{pump.status}</p>
                 </div>
+                <p className="font-bold text-gray-900 text-sm capitalize ml-6">{pump.status}</p>
               </div>
             </div>
           </div>

@@ -79,13 +79,12 @@ export function ModernStationCard({
     <Card className="group overflow-hidden bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl transform hover:scale-[1.02] hover:-translate-y-1">
       {/* Header Section */}
       <div className={`${statusConfig.bgColor} p-6 pb-4 relative`}>
-        {/* Status Indicator */}
-        <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${statusConfig.accentColor} animate-pulse shadow-lg`}></div>
+
         
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 shadow-lg">
-              <Building2 className="h-7 w-7 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg border border-white/20">
+              <span className="text-lg">⛽</span>
             </div>
             <div className="min-w-0 flex-1">
               <h3 className={`font-bold text-xl mb-1 truncate ${statusConfig.textColor}`} title={station.name}>
@@ -108,29 +107,17 @@ export function ModernStationCard({
 
       <CardContent className="p-6 space-y-6">
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-              <TrendingUp className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-blue-900">{formatNumber(todayTransactions)}</div>
-            <div className="text-xs text-blue-700 font-medium">Sales Today</div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="text-center p-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+            <TrendingUp className="h-3 w-3 text-blue-600 mx-auto mb-1" />
+            <div className="text-lg font-bold text-blue-900">{formatNumber(todayTransactions)}</div>
+            <div className="text-[10px] text-blue-700 font-medium">Sales Today</div>
           </div>
           
-          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
-            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-              <Fuel className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-purple-900">{activePumps}/{station.pumpCount}</div>
-            <div className="text-xs text-purple-700 font-medium">Active Pumps</div>
-          </div>
-          
-          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
-            <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-              <Activity className="h-5 w-5 text-white" />
-            </div>
-            <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${statusConfig.accentColor}`}></div>
-            <div className="text-xs text-green-700 font-medium">Status</div>
+          <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+            <Fuel className="h-3 w-3 text-purple-600 mx-auto mb-1" />
+            <div className="text-lg font-bold text-purple-900">{activePumps}/{station.pumpCount}</div>
+            <div className="text-[10px] text-purple-700 font-medium">Active Pumps</div>
           </div>
         </div>
 

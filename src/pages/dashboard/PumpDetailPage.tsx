@@ -13,7 +13,11 @@ import {
   ArrowLeft, 
   Plus,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  Activity,
+  Gauge,
+  Settings,
+  Droplets
 } from 'lucide-react';
 import { usePump } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
@@ -65,41 +69,102 @@ export default function PumpDetailPage() {
     );
   }
 
+  const activeNozzles = nozzles?.filter(n => n.status === 'active').length || 0;
+  const totalNozzles = nozzles?.length || 0;
+
   return (
-    <div className="space-y-6">
-      {/* Header with back button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+      {/* Header with Breadcrumb */}
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            asChild
+            className="flex items-center gap-2"
+          >
             <Link to="/dashboard/pumps">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
               Back
             </Link>
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{pump.name}</h1>
-            <p className="text-muted-foreground">
-              Serial: {pump.serialNumber}
-            </p>
+          <div className="text-sm text-muted-foreground">
+            Dashboard → Stations → <span className="font-medium text-foreground">Pumps</span>
           </div>
         </div>
-        <Badge 
-          variant={pump.status === 'active' ? 'default' : 'secondary'}
-          className={
-            pump.status === 'active' ? 'bg-green-100 text-green-800' :
-            pump.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
-            'bg-red-100 text-red-800'
-          }
-        >
-          {pump.status}
-        </Badge>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <Fuel className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900">{pump.name}</h1>
+              <p className="text-lg text-muted-foreground">Serial: {pump.serialNumber}</p>
+            </div>
+          </div>
+          <Badge 
+            className={
+              pump.status === 'active' ? 'bg-green-100 text-green-800 border-green-200 px-4 py-2 text-sm' :
+              pump.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800 border-yellow-200 px-4 py-2 text-sm' :
+              'bg-red-100 text-red-800 border-red-200 px-4 py-2 text-sm'
+            }
+          >
+            {pump.status}
+          </Badge>
+        </div>
       </div>
 
-      {/* Nozzles List */}
-      <div className="space-y-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-100">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+                <Activity className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-900">{activeNozzles}</div>
+                <div className="text-sm text-green-700 font-medium">Active Nozzles</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                <Gauge className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-blue-900">{totalNozzles}</div>
+                <div className="text-sm text-blue-700 font-medium">Total Nozzles</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+                <Settings className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-purple-900">{Math.round((activeNozzles/totalNozzles)*100) || 0}%</div>
+                <div className="text-sm text-purple-700 font-medium">Operational</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Nozzles Section */}
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Nozzles</h2>
-          <Button size="sm" asChild>
+          <h2 className="text-2xl font-bold text-gray-900">Nozzles</h2>
+          <Button className="bg-blue-600 hover:bg-blue-700 shadow-lg" asChild>
             <Link to={`/dashboard/stations/${pump.stationId}/pumps/${pump.id}/nozzles/new`}>
               <Plus className="mr-2 h-4 w-4" />
               Add Nozzle
@@ -108,39 +173,55 @@ export default function PumpDetailPage() {
         </div>
 
         {nozzlesError ? (
-          <Card className="p-6 text-center">
-            <AlertTriangle className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-            <p>Error loading nozzles: {nozzlesError.message}</p>
+          <Card className="border-0 shadow-lg border-red-200">
+            <CardContent className="p-12 text-center">
+              <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <p className="text-red-600 font-medium">Error loading nozzles: {nozzlesError.message}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline" 
+                className="mt-4"
+              >
+                Retry
+              </Button>
+            </CardContent>
           </Card>
         ) : nozzles?.length === 0 ? (
-          <Card className="p-8 text-center">
-            <Fuel className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">No nozzles yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Get started by adding your first nozzle to this pump
-            </p>
-            <Button asChild>
-              <Link to={`/dashboard/stations/${pump.stationId}/pumps/${pump.id}/nozzles/new`}>
-                Add First Nozzle
-              </Link>
-            </Button>
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-12 text-center">
+              <Fuel className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Nozzles Found</h3>
+              <p className="text-muted-foreground mb-6">
+                Get started by adding your first nozzle to this pump
+              </p>
+              <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+                <Link to={`/dashboard/stations/${pump.stationId}/pumps/${pump.id}/nozzles/new`}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add First Nozzle
+                </Link>
+              </Button>
+            </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {nozzles?.map((nozzle) => (
-              <Card key={nozzle.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle>Nozzle #{nozzle.nozzleNumber}</CardTitle>
-                      <CardDescription>Fuel: {nozzle.fuelType}</CardDescription>
+              <Card key={nozzle.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <Droplets className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg font-bold">Nozzle #{nozzle.nozzleNumber}</CardTitle>
+                        <CardDescription className="font-medium">Fuel: {nozzle.fuelType}</CardDescription>
+                      </div>
                     </div>
                     <Badge 
-                      variant={nozzle.status === 'active' ? 'default' : 'secondary'}
                       className={
-                        nozzle.status === 'active' ? 'bg-green-100 text-green-800' :
-                        nozzle.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
+                        nozzle.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' :
+                        nozzle.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                        'bg-red-100 text-red-800 border-red-200'
                       }
                     >
                       {nozzle.status}
@@ -148,8 +229,12 @@ export default function PumpDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="outline" size="sm" asChild className="w-full mb-2">
+                  <Button 
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg transition-all duration-200" 
+                    asChild
+                  >
                     <Link to={`/dashboard/stations/${pump.stationId}/pumps/${pump.id}/nozzles/${nozzle.id}/readings/new`}>
+                      <Gauge className="mr-2 h-4 w-4" />
                       Record Reading
                     </Link>
                   </Button>

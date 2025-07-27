@@ -8,7 +8,14 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Fuel, Eye, Settings, Zap, Hash } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Fuel, Eye, Settings, Droplets, Cog, Edit, Power, Wrench, Trash2 } from 'lucide-react';
 
 interface RealisticPumpCardProps {
   pump: {
@@ -19,7 +26,7 @@ interface RealisticPumpCardProps {
     nozzleCount: number;
   };
   onViewNozzles: (id: string) => void;
-  onSettings: (id: string) => void;
+  onSettings?: (id: string) => void;
 }
 
 export function RealisticPumpCard({ pump, onViewNozzles, onSettings }: RealisticPumpCardProps) {
@@ -62,13 +69,10 @@ export function RealisticPumpCard({ pump, onViewNozzles, onSettings }: Realistic
     <Card className="group overflow-hidden bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl transform hover:scale-[1.02]">
       {/* Header Section */}
       <div className={`${statusConfig.bgColor} p-6 pb-4 relative`}>
-        {/* Status Indicator */}
-        <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${statusConfig.accentColor} animate-pulse shadow-lg`}></div>
-        
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 shadow-lg">
-              <Fuel className="h-7 w-7 text-white" />
+            <div className="w-14 h-14 bg-slate-800/80 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-slate-600/50 shadow-lg">
+              <Cog className="h-7 w-7 text-slate-200" />
             </div>
             <div className="min-w-0 flex-1">
               <h3 className={`font-bold text-xl mb-1 truncate ${statusConfig.textColor}`} title={pump.name}>
@@ -81,30 +85,18 @@ export function RealisticPumpCard({ pump, onViewNozzles, onSettings }: Realistic
               )}
             </div>
           </div>
-          
-          <Badge className={`${statusConfig.badgeColor} font-medium text-sm px-3 py-1 border-0`}>
-            {pump.status.charAt(0).toUpperCase() + pump.status.slice(1)}
-          </Badge>
         </div>
       </div>
 
       <CardContent className="p-6 space-y-6">
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-              <Hash className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-blue-900">{pump.nozzleCount}</div>
-            <div className="text-xs text-blue-700 font-medium">Nozzles</div>
+        <div className="flex items-center justify-center gap-3 p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+            <Droplets className="h-6 w-6 text-white" />
           </div>
-          
-          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
-            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-              <Zap className="h-5 w-5 text-white" />
-            </div>
-            <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${statusConfig.accentColor}`}></div>
-            <div className="text-xs text-purple-700 font-medium">Status</div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-900">{pump.nozzleCount}</div>
+            <div className="text-sm text-blue-700 font-medium">Nozzles Available</div>
           </div>
         </div>
 
@@ -116,7 +108,7 @@ export function RealisticPumpCard({ pump, onViewNozzles, onSettings }: Realistic
               {/* Pump Body */}
               <div className="w-20 h-32 bg-gradient-to-b from-gray-600 to-gray-800 rounded-lg shadow-xl relative">
                 {/* Brand Logo Area */}
-                <div className="absolute top-2 left-1 right-1 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-md flex items-center justify-center shadow-sm">
+                <div className="absolute top-2 left-1 right-1 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-md flex items-center justify-center shadow-sm">
                   <Fuel className="h-4 w-4 text-white" />
                 </div>
                 
@@ -185,13 +177,42 @@ export function RealisticPumpCard({ pump, onViewNozzles, onSettings }: Realistic
             <span className="sm:hidden">Nozzles</span>
           </Button>
           
-          <Button
-            onClick={() => onSettings(pump.id)}
-            variant="outline"
-            className="px-4 border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-300 transform hover:scale-105"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="px-4 border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-300 transform hover:scale-105"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => alert(`Edit ${pump.name}`)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Pump
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => alert(`Toggle status from ${pump.status}`)}>
+                <Power className="mr-2 h-4 w-4" />
+                {pump.status === 'active' ? 'Deactivate' : 'Activate'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => alert(`Set ${pump.name} to maintenance`)}>
+                <Wrench className="mr-2 h-4 w-4" />
+                Maintenance Mode
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => {
+                  if (confirm(`Delete ${pump.name}?`)) {
+                    alert(`${pump.name} deleted`);
+                  }
+                }}
+                className="text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Pump
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardContent>
 

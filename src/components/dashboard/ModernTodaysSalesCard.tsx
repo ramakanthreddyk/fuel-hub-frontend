@@ -24,13 +24,13 @@ export function ModernTodaysSalesCard({ date }: ModernTodaysSalesCardProps) {
 
   const metrics = [
     {
-      title: 'Total Revenue',
+      title: "Today's Revenue",
       value: formatCurrency(todaysSales?.totalAmount || 0, { useLakhsCrores: true }),
       icon: DollarSign,
       color: 'bg-green-500'
     },
     {
-      title: 'Total Volume',
+      title: "Today's Volume",
       value: formatVolume(todaysSales?.totalVolume || 0, 0, true),
       icon: Fuel,
       color: 'bg-blue-500'

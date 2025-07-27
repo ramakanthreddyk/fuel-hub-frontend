@@ -6,7 +6,20 @@ import { Building2 } from 'lucide-react';
 import { FuelLoader } from '@/components/ui/FuelLoader';
 
 export function StationMetricsList() {
-  const { data: stationMetrics = [], isLoading, error } = useStationMetrics();
+  const { data: stationMetrics = [], isLoading, error, refetch } = useStationMetrics();
+  
+  console.log('StationMetricsList render:', { 
+    stationMetrics, 
+    isLoading, 
+    error,
+    hasData: stationMetrics?.length > 0
+  }); // Debug log
+  
+  // Force refetch on mount
+  React.useEffect(() => {
+    console.log('StationMetricsList mounted, forcing refetch');
+    refetch();
+  }, [refetch]);
 
   if (isLoading) {
     return (
@@ -29,6 +42,8 @@ export function StationMetricsList() {
     );
   }
 
+  console.log('Station metrics data:', stationMetrics, 'Error:', error); // Debug log
+  
   if (error || !stationMetrics || !Array.isArray(stationMetrics) || stationMetrics.length === 0) {
     return (
       <Card className="bg-white border border-gray-200 rounded-xl w-full">
@@ -67,18 +82,19 @@ export function StationMetricsList() {
         {/* Updated grid to show maximum 2 cards per row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl mx-auto">
           {stationMetrics.slice(0, 10).map((stationMetric) => {
+            console.log('Station metric data:', stationMetric); // Debug log
             // Map StationMetric to StationMetrics interface
             const mappedStation = {
               id: stationMetric.id,
               name: stationMetric.name,
-              totalSales: stationMetric.todaySales || 0,
-              monthlySales: stationMetric.monthlySales || 0,
-              activePumps: stationMetric.activePumps,
-              totalPumps: stationMetric.totalPumps,
-              status: stationMetric.status,
+              totalSales: Number(stationMetric.todaySales) || 0,
+              monthlySales: Number(stationMetric.monthlySales) || 0,
+              activePumps: Number(stationMetric.activePumps) || 0,
+              totalPumps: Number(stationMetric.totalPumps) || 0,
+              status: stationMetric.status as 'active' | 'inactive' | 'maintenance',
               lastActivity: stationMetric.lastActivity,
-              efficiency: stationMetric.efficiency,
-              salesGrowth: stationMetric.salesGrowth
+              efficiency: Number(stationMetric.efficiency) || 0,
+              salesGrowth: stationMetric.salesGrowth ? Number(stationMetric.salesGrowth) : undefined
             };
 
             return (

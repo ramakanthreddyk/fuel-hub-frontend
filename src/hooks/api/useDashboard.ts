@@ -54,13 +54,8 @@ export const useSalesSummary = (period: string = 'today', filters: DashboardFilt
   return useQuery({
     queryKey: ['sales-summary', period, filters],
     queryFn: async (): Promise<SalesSummary> => {
-      // Mock data for demonstration
-      return {
-        totalRevenue: 250000,
-        totalVolume: 3200,
-        salesCount: 89,
-        growthPercentage: 12
-      };
+      const { dashboardApi } = await import('@/api/dashboard');
+      return dashboardApi.getSalesSummary(period, filters);
     },
     staleTime: 300000, // 5 minutes
     onError: (error) => {
@@ -74,13 +69,8 @@ export const usePaymentMethodBreakdown = (filters: DashboardFilters = {}) => {
   return useQuery({
     queryKey: ['payment-method-breakdown', filters],
     queryFn: async (): Promise<PaymentMethodBreakdown[]> => {
-      // Mock data for demonstration
-      return [
-        { paymentMethod: 'cash', amount: 80000, percentage: 32 },
-        { paymentMethod: 'card', amount: 75000, percentage: 30 },
-        { paymentMethod: 'upi', amount: 65000, percentage: 26 },
-        { paymentMethod: 'credit', amount: 30000, percentage: 12 }
-      ];
+      const { dashboardApi } = await import('@/api/dashboard');
+      return dashboardApi.getPaymentMethodBreakdown(filters);
     },
     staleTime: 300000, // 5 minutes
     onError: (error) => {
@@ -94,12 +84,8 @@ export const useFuelTypeBreakdown = (filters: DashboardFilters = {}) => {
   return useQuery({
     queryKey: ['fuel-type-breakdown', filters],
     queryFn: async (): Promise<FuelTypeBreakdown[]> => {
-      // Mock data for demonstration
-      return [
-        { fuelType: 'petrol', volume: 1800, amount: 150000 },
-        { fuelType: 'diesel', volume: 1200, amount: 85000 },
-        { fuelType: 'premium', volume: 200, amount: 25000 }
-      ];
+      const { dashboardApi } = await import('@/api/dashboard');
+      return dashboardApi.getFuelTypeBreakdown(filters);
     },
     staleTime: 300000, // 5 minutes
     onError: (error) => {
@@ -113,18 +99,8 @@ export const useDailySalesTrend = (days: number = 7, filters: DashboardFilters =
   return useQuery({
     queryKey: ['daily-sales-trend', days, filters],
     queryFn: async (): Promise<DailySalesTrend[]> => {
-      // Mock data for demonstration
-      const data = [];
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        data.push({
-          date: date.toISOString().split('T')[0],
-          amount: 180000 + Math.random() * 80000,
-          volume: 2000 + Math.random() * 1000
-        });
-      }
-      return data;
+      const { dashboardApi } = await import('@/api/dashboard');
+      return dashboardApi.getDailySalesTrend(days, filters);
     },
     staleTime: 300000, // 5 minutes
     onError: (error) => {
@@ -138,42 +114,45 @@ export const useStationMetrics = () => {
   return useQuery({
     queryKey: ['station-metrics'],
     queryFn: async (): Promise<StationMetric[]> => {
-      // Mock data for demonstration
-      return [
-        {
-          id: '1',
-          name: 'Main Street Station',
-          status: 'active',
-          activePumps: 6,
-          totalPumps: 8,
-          todaySales: 145000,
-          monthlySales: 3800000,
-          salesGrowth: 15
-        },
-        {
-          id: '2',
-          name: 'Highway Junction',
-          status: 'active',
-          activePumps: 4,
-          totalPumps: 6,
-          todaySales: 98000,
-          monthlySales: 2500000,
-          salesGrowth: 8
-        },
-        {
-          id: '3',
-          name: 'City Center',
-          status: 'maintenance',
-          activePumps: 2,
-          totalPumps: 4,
-          todaySales: 45000,
-          monthlySales: 1200000,
-          salesGrowth: -5
+      console.log('useStationMetrics queryFn triggered'); // Debug log
+      try {
+        const response = await fetch('/api/dashboard/station-metrics', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+          },
+        });
+        console.log('Direct fetch response:', response); // Debug log
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-      ];
+        
+        const data = await response.json();
+        console.log('Station metrics raw data:', data); // Debug log
+        
+        // Handle nested data structure
+        if (data?.success && Array.isArray(data.data)) {
+          console.log('Returning data.data:', data.data); // Debug log
+          return data.data;
+        }
+        if (Array.isArray(data)) {
+          console.log('Returning direct array:', data); // Debug log
+          return data;
+        }
+        
+        console.log('No valid data found, returning empty array'); // Debug log
+        return [];
+      } catch (error) {
+        console.error('Station metrics query error:', error); // Debug log
+        throw error;
+      }
     },
+    retry: 3,
     staleTime: 300000, // 5 minutes
+    refetchOnWindowFocus: false,
     onError: (error) => {
+      console.error('Station metrics onError:', error); // Debug log
       handleError(error, 'Failed to fetch station metrics.');
     },
   });
