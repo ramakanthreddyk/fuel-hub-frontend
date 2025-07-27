@@ -12,8 +12,19 @@ interface RoleRedirectProps {
  * Component that redirects users to a specific path if they don't have the required role
  */
 export function RoleRedirect({ children, allowedRoles, redirectPath }: RoleRedirectProps) {
-  const { user } = useAuth();
   const navigate = useNavigate();
+  
+  // Get user from localStorage directly to avoid context issues
+  const getUserFromStorage = () => {
+    try {
+      const storedUser = localStorage.getItem('fuelsync_user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      return null;
+    }
+  };
+  
+  const user = getUserFromStorage();
 
   useEffect(() => {
     // If user is logged in but doesn't have the required role, redirect

@@ -146,6 +146,14 @@ export const readingsService = {
       const response = await apiClient.post(API_CONFIG.endpoints.readings.base, data);
       const result = extractData<Reading>(response);
       console.log('[READINGS-API] Reading created successfully:', result);
+      
+      // Show success toast here instead of in the hook to avoid duplicates
+      import('react-hot-toast').then(({ default: toast }) => {
+        const reading = result?.reading || 'N/A';
+        const nozzleNumber = result?.nozzleNumber || result?.nozzle_number || 'N/A';
+        toast.success(`Reading Recorded: Successfully recorded reading ${reading}L for nozzle #${nozzleNumber}`);
+      });
+      
       return result;
     } catch (error) {
       console.error('[READINGS-API] Error creating reading:', error);

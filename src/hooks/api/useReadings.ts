@@ -16,7 +16,6 @@ export const useReadings = () => {
       showLoader('Loading readings...');
       const data = await readingsService.getReadings();
       hideLoader();
-      showSuccess('Readings Loaded', 'Reading entries loaded successfully');
       return data;
     },
     onError: (error: any) => {
@@ -44,6 +43,12 @@ export const useCreateReading = () => {
   return useMutation({
     mutationFn: (data: any) => readingsService.createReading(data),
     onSuccess: (newReading) => {
+      // Clear store data to force refetch
+      const { clearLatestReading } = useDataStore.getState();
+      if (newReading?.nozzleId) {
+        clearLatestReading(newReading.nozzleId);
+      }
+      
       // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['readings'] });
       queryClient.invalidateQueries({ queryKey: ['nozzles'] });
@@ -64,8 +69,7 @@ export const useCreateReading = () => {
         timestamp: newReading.recordedAt || newReading.createdAt
       });
       
-      // Show success toast
-      showSuccess('Reading Created', `Successfully recorded reading ${newReading.reading} for nozzle #${newReading.nozzleNumber}`);
+      // Toast is now handled in the service to avoid duplicates
     },
     onError: (error: any) => {
       handleApiError(error, 'Create Reading');

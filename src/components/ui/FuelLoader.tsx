@@ -148,7 +148,7 @@ export function FuelLoader({ className, text = 'Loading...', size = 'md' }: Fuel
         <div className="h-full bg-gradient-to-r from-blue-500 to-green-500 animate-progress rounded-full"></div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fuel-flow {
           0% { transform: translateX(-100%); }
           50% { transform: translateX(0%); }
