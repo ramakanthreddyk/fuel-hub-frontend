@@ -3,13 +3,7 @@ import { apiClient } from '@/api/client';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useAutoLoader } from '@/hooks/useAutoLoader';
 import { handleApiResponse } from '@/api/responseHandler';
-
-interface FuelBreakdownData {
-  fuelType: string;
-  amount: number;
-  volume: number;
-  percentage: number;
-}
+import { FuelBreakdownData } from '@/api/api-contract';
 
 export const useDashboardFuelBreakdown = () => {
   const { handleApiError } = useToastNotifications();

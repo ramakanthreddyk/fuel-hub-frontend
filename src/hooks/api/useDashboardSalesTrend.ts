@@ -3,12 +3,7 @@ import { apiClient } from '@/api/client';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useAutoLoader } from '@/hooks/useAutoLoader';
 import { handleApiResponse } from '@/api/responseHandler';
-
-interface SalesTrendData {
-  date: string;
-  amount: number;
-  volume: number;
-}
+import { SalesTrendData } from '@/api/api-contract';
 
 export const useDashboardSalesTrend = (days: number = 7) => {
   const { handleApiError } = useToastNotifications();

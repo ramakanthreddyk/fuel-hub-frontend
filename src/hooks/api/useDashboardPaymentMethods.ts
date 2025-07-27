@@ -3,12 +3,7 @@ import { apiClient } from '@/api/client';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useAutoLoader } from '@/hooks/useAutoLoader';
 import { handleApiResponse } from '@/api/responseHandler';
-
-interface PaymentMethodData {
-  paymentMethod: string;
-  amount: number;
-  percentage: number;
-}
+import { PaymentMethodData } from '@/api/api-contract';
 
 export const useDashboardPaymentMethods = () => {
   const { handleApiError } = useToastNotifications();

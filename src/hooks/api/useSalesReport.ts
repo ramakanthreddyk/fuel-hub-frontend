@@ -1,30 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { handleApiResponse } from '@/api/responseHandler';
-
-interface SalesReportParams {
-  startDate?: string;
-  endDate?: string;
-  paymentMethod?: string;
-  nozzleId?: string;
-  stationId?: string;
-}
-
-interface SalesReportData {
-  totalAmount: number;
-  totalVolume: number;
-  totalTransactions: number;
-  // TODO: API MISSING - Need these additional fields:
-  // dailyBreakdown?: Array<{ date: string; amount: number; volume: number; }>;
-  // stationBreakdown?: Array<{ stationId: string; stationName: string; amount: number; }>;
-  // fuelTypeBreakdown?: Array<{ fuelType: string; amount: number; volume: number; }>;
-  // paymentMethodBreakdown?: { cash: number; card: number; upi: number; credit: number; };
-}
+import { SalesReportParams, SalesReport } from '@/api/api-contract';
 
 export const useSalesReport = (params: SalesReportParams = {}) => {
   return useQuery({
     queryKey: ['sales-report', params],
-    queryFn: async (): Promise<SalesReportData> => {
+    queryFn: async (): Promise<SalesReport> => {
       const searchParams = new URLSearchParams();
       
       if (params.startDate) searchParams.append('startDate', params.startDate);
