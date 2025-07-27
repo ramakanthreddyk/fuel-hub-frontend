@@ -1,9 +1,14 @@
 
+/**
+ * @file components/stations/ModernStationCard.tsx
+ * @description Modern station card with realistic design and better space utilization
+ * Updated: 2025-07-27
+ */
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, MapPin, TrendingUp, Fuel, Activity, Trash2, Eye } from 'lucide-react';
+import { Building2, MapPin, TrendingUp, Fuel, Activity, Trash2, Eye, Zap } from 'lucide-react';
 import { formatCurrency, formatNumber } from '@/utils/formatters';
 
 interface ModernStationCardProps {
@@ -39,23 +44,31 @@ export function ModernStationCard({
     switch (station.status) {
       case 'active':
         return {
-          bgColor: 'bg-green-500',
-          badgeColor: 'bg-green-100 text-green-800',
+          bgColor: 'bg-gradient-to-br from-blue-50 to-indigo-100',
+          badgeColor: 'bg-green-100 text-green-800 border-green-200',
+          accentColor: 'bg-green-500',
+          textColor: 'text-blue-900'
         };
       case 'maintenance':
         return {
-          bgColor: 'bg-yellow-500',
-          badgeColor: 'bg-yellow-100 text-yellow-800',
+          bgColor: 'bg-gradient-to-br from-orange-50 to-yellow-100',
+          badgeColor: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+          accentColor: 'bg-yellow-500',
+          textColor: 'text-orange-900'
         };
       case 'inactive':
         return {
-          bgColor: 'bg-red-500',
-          badgeColor: 'bg-red-100 text-red-800',
+          bgColor: 'bg-gradient-to-br from-gray-50 to-slate-100',
+          badgeColor: 'bg-red-100 text-red-800 border-red-200',
+          accentColor: 'bg-red-500',
+          textColor: 'text-gray-900'
         };
       default:
         return {
-          bgColor: 'bg-green-500',
-          badgeColor: 'bg-green-100 text-green-800',
+          bgColor: 'bg-gradient-to-br from-blue-50 to-indigo-100',
+          badgeColor: 'bg-green-100 text-green-800 border-green-200',
+          accentColor: 'bg-green-500',
+          textColor: 'text-blue-900'
         };
     }
   };
@@ -63,100 +76,126 @@ export function ModernStationCard({
   const statusConfig = getStatusConfig();
 
   return (
-    <Card className="overflow-hidden bg-white border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl">
-      {/* Header Section with Gradient Background */}
-      <div className={`${statusConfig.bgColor} p-4 text-white relative`}>
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30 flex-shrink-0">
-              <Building2 className="h-5 w-5 text-white" />
+    <Card className="group overflow-hidden bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl transform hover:scale-[1.02] hover:-translate-y-1">
+      {/* Header Section */}
+      <div className={`${statusConfig.bgColor} p-6 pb-4 relative`}>
+        {/* Status Indicator */}
+        <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${statusConfig.accentColor} animate-pulse shadow-lg`}></div>
+        
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 shadow-lg">
+              <Building2 className="h-7 w-7 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-base mb-1 truncate" title={station.name}>
+              <h3 className={`font-bold text-xl mb-1 truncate ${statusConfig.textColor}`} title={station.name}>
                 {station.name}
               </h3>
-              <div className="flex items-center gap-1 text-white/90">
-                <MapPin className="h-3 w-3 flex-shrink-0" />
-                <span className="text-xs truncate" title={station.address}>
+              <div className="flex items-center gap-1 text-blue-700/80">
+                <MapPin className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm truncate" title={station.address}>
                   {station.address}
                 </span>
               </div>
             </div>
           </div>
           
-          <Badge className={`${statusConfig.badgeColor} font-medium text-xs px-2 py-1 border-0 hidden sm:flex`}>
+          <Badge className={`${statusConfig.badgeColor} font-medium text-sm px-3 py-1 border-0`}>
             {station.status.charAt(0).toUpperCase() + station.status.slice(1)}
           </Badge>
         </div>
       </div>
 
-      <CardContent className="p-4 space-y-4">
-        {/* Stats Grid - Three Columns */}
-        <div className="grid grid-cols-3 gap-3">
-          {/* Sales Today */}
-          <div className="text-center">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
+      <CardContent className="p-6 space-y-6">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+              <TrendingUp className="h-5 w-5 text-white" />
             </div>
-            <div className="text-lg font-bold text-blue-600">{formatNumber(todayTransactions)}</div>
-            <div className="text-xs text-blue-600 font-medium">Sales Today</div>
+            <div className="text-2xl font-bold text-blue-900">{formatNumber(todayTransactions)}</div>
+            <div className="text-xs text-blue-700 font-medium">Sales Today</div>
           </div>
           
-          {/* Active Pumps */}
-          <div className="text-center">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Fuel className="h-5 w-5 text-purple-600" />
+          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+              <Fuel className="h-5 w-5 text-white" />
             </div>
-            <div className="text-lg font-bold text-purple-600">{activePumps}/{station.pumpCount}</div>
-            <div className="text-xs text-purple-600 font-medium">Active Pumps</div>
+            <div className="text-2xl font-bold text-purple-900">{activePumps}/{station.pumpCount}</div>
+            <div className="text-xs text-purple-700 font-medium">Active Pumps</div>
           </div>
           
-          {/* Status Circle */}
-          <div className="text-center">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <div className={`w-3 h-3 rounded-full ${station.status === 'active' ? 'bg-green-500' : station.status === 'maintenance' ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
+            <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+              <Activity className="h-5 w-5 text-white" />
             </div>
-            <div className="text-lg font-bold text-green-600">●</div>
-            <div className="text-xs text-green-600 font-medium">Status</div>
+            <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${statusConfig.accentColor}`}></div>
+            <div className="text-xs text-green-700 font-medium">Status</div>
           </div>
         </div>
 
-        {/* Today's Revenue Section */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        {/* Revenue Section */}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-medium text-gray-600">Today's Revenue</div>
-            <Activity className="h-4 w-4 text-gray-500" />
+            <div className="text-sm font-semibold text-gray-700">Today's Revenue</div>
+            <Zap className="h-4 w-4 text-gray-500" />
           </div>
-          <div className="text-2xl font-bold text-gray-900">
+          <div className="text-3xl font-bold text-gray-900">
             {todaySales > 0 ? formatCurrency(todaySales, { maximumFractionDigits: 0 }) : '₹0'}
           </div>
         </div>
 
-        {/* Enhanced Fuel Dispensers Visual */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="flex justify-center items-center mb-3">
-            {/* Station Canopy */}
+        {/* Realistic Fuel Station Visual */}
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-5 border border-slate-200">
+          <div className="flex justify-center items-center mb-4">
+            {/* Modern Station Canopy */}
             <div className="relative">
-              <div className="w-32 h-3 bg-green-500 rounded-lg shadow-sm"></div>
+              <div className="w-40 h-4 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 rounded-lg shadow-lg"></div>
               
-              {/* Fuel Dispensers - Better Visualization */}
-              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                {Array.from({ length: Math.min(station.pumpCount, 6) }, (_, i) => (
+              {/* Support Pillars */}
+              <div className="absolute -bottom-12 left-2 w-2 h-12 bg-gray-400 rounded-b-lg shadow-md"></div>
+              <div className="absolute -bottom-12 right-2 w-2 h-12 bg-gray-400 rounded-b-lg shadow-md"></div>
+              
+              {/* LED Strip */}
+              <div className="absolute bottom-1 left-4 right-4 flex justify-center space-x-2">
+                {Array.from({ length: 4 }, (_, i) => (
+                  <div key={i} className="w-1 h-1 bg-blue-300 rounded-full animate-pulse" style={{ animationDelay: `${i * 500}ms` }}></div>
+                ))}
+              </div>
+              
+              {/* Fuel Dispensers */}
+              <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-3">
+                {Array.from({ length: Math.min(station.pumpCount, 4) }, (_, i) => (
                   <div key={i} className="flex flex-col items-center">
-                    {/* Dispenser Unit */}
-                    <div className="w-4 h-8 bg-gray-700 rounded-t-md shadow-sm relative">
-                      {/* Display Screen */}
-                      <div className="absolute top-1 left-0.5 right-0.5 h-1.5 bg-blue-400 rounded-sm"></div>
+                    {/* Dispenser Body */}
+                    <div className="w-6 h-12 bg-gradient-to-b from-gray-600 to-gray-800 rounded-lg shadow-lg relative">
+                      {/* Digital Display */}
+                      <div className="absolute top-1 left-0.5 right-0.5 h-2 bg-green-400 rounded-sm opacity-80"></div>
+                      
                       {/* Fuel Indicators */}
-                      <div className="absolute top-3 left-1 right-1 flex justify-between">
-                        <div className="w-0.5 h-0.5 bg-green-400 rounded-full"></div>
-                        <div className="w-0.5 h-0.5 bg-red-400 rounded-full"></div>
+                      <div className="absolute top-4 left-1 right-1 flex justify-between">
+                        <div className="w-0.5 h-0.5 bg-green-400 rounded-full animate-pulse"></div>
+                        <div className="w-0.5 h-0.5 bg-blue-400 rounded-full animate-pulse delay-300"></div>
                       </div>
-                      {/* Nozzle */}
-                      <div className="absolute -right-1 top-2 w-1 h-1 bg-gray-500 rounded-full"></div>
+                      
+                      {/* Nozzle Holster */}
+                      <div className="absolute right-0 top-5 w-1.5 h-3 bg-gray-400 rounded-l-md shadow-sm">
+                        <div className="absolute top-0.5 -right-0.5 w-0.5 h-2 bg-gray-300 rounded-full"></div>
+                      </div>
+                      
+                      {/* Fuel Hose */}
+                      <div className="absolute -right-1 top-6 w-0.5 h-4 bg-gray-400 rounded-full animate-sway"></div>
+                      
+                      {/* Price Display */}
+                      <div className="absolute bottom-0.5 left-0.5 right-0.5 h-1.5 bg-gray-900 rounded-sm">
+                        <div className="text-[3px] text-green-400 font-mono text-center leading-1">
+                          ₹{(85 + Math.random() * 15).toFixed(1)}
+                        </div>
+                      </div>
                     </div>
-                    {/* Base */}
-                    <div className="w-5 h-2 bg-gray-600 rounded-b-md"></div>
+                    
+                    {/* Base Platform */}
+                    <div className="w-7 h-2 bg-gray-500 rounded-b-lg shadow-md"></div>
                   </div>
                 ))}
               </div>
@@ -168,21 +207,31 @@ export function ModernStationCard({
         <div className="flex gap-3 pt-2">
           <Button
             onClick={() => onView(station.id)}
-            className="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
-            <Eye className="mr-2 h-4 w-4" />
+            <Eye className="mr-2 h-5 w-5" />
             View Details
           </Button>
           
           <Button
             onClick={() => onDelete(station.id)}
             variant="outline"
-            className="px-3 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-lg transition-all duration-200"
+            className="px-4 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl transition-all duration-300 transform hover:scale-105"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-5 w-5" />
           </Button>
         </div>
       </CardContent>
+
+      <style>{`
+        @keyframes sway {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(5deg); }
+        }
+        .animate-sway {
+          animation: sway 4s ease-in-out infinite;
+        }
+      `}</style>
     </Card>
   );
 }
