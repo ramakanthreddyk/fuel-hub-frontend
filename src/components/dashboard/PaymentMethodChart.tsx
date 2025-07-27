@@ -5,6 +5,7 @@ import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { formatCurrency } from '@/utils/formatters';
 import { useState } from 'react';
 import { useDashboardStore } from '@/store/dashboardStore';
+import { CreditCard, Wallet, Smartphone, Building } from 'lucide-react';
 
 const COLORS = {
   cash: '#10b981',
@@ -13,11 +14,11 @@ const COLORS = {
   credit: '#f59e0b',
 };
 
-const HOVER_COLORS = {
-  cash: '#059669',
-  card: '#2563eb',
-  upi: '#7c3aed', 
-  credit: '#d97706',
+const PAYMENT_ICONS = {
+  cash: Wallet,
+  card: CreditCard,
+  upi: Smartphone,
+  credit: Building,
 };
 
 interface DashboardFilters {
@@ -33,7 +34,7 @@ interface PaymentMethodChartProps {
 export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
   const { selectedDate } = useDashboardStore();
   const { data: todaysSales, isLoading } = useTodaysSales(selectedDate || undefined);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
   
   // Convert payment breakdown to chart data
   const breakdown = todaysSales?.paymentBreakdown ? [
@@ -70,6 +71,69 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
     percentage: total > 0 ? ((item.amount / total) * 100).toFixed(1) : '0',
   }));
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload[0]) {
+      const data = payload[0].payload;
+      const IconComponent = PAYMENT_ICONS[data.paymentMethod as keyof typeof PAYMENT_ICONS];
+      
+      return (
+        <div className="bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-xl border border-gray-200/50 min-w-[180px]">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: COLORS[data.paymentMethod as keyof typeof COLORS] }}>
+              <IconComponent className="w-4 h-4 text-white" />
+            </div>
+            <div className="font-semibold text-gray-900">{data.name}</div>
+          </div>
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Amount:</span>
+              <span className="font-bold text-gray-900">{formatCurrency(data.value)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Share:</span>
+              <span className="font-bold text-gray-900">{data.percentage}%</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomLegend = ({ payload }: any) => {
+    if (!payload) return null;
+    
+    return (
+      <div className="flex flex-wrap justify-center gap-4 mt-4">
+        {payload.map((entry: any, index: number) => {
+          const IconComponent = PAYMENT_ICONS[entry.payload.paymentMethod as keyof typeof PAYMENT_ICONS];
+          const isActive = activeIndex === index;
+          
+          return (
+            <div
+              key={index}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                isActive ? 'bg-gray-100 scale-105' : 'hover:bg-gray-50'
+              }`}
+              onMouseEnter={() => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(-1)}
+            >
+              <div 
+                className="w-3 h-3 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: entry.color }}
+              >
+                <IconComponent className="w-2 h-2 text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-700">
+                {entry.value} ({entry.payload.percentage}%)
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -77,7 +141,9 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
           <CardTitle className="text-lg">Payment Methods</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[400px] bg-muted animate-pulse rounded" />
+          <div className="h-[400px] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -99,85 +165,60 @@ export function PaymentMethodChart({ filters = {} }: PaymentMethodChartProps) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200 w-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg text-blue-700">Payment Methods</CardTitle>
-        <div className="text-sm text-gray-500">
-          Total: {formatCurrency(total)} • {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'Today'}
+    <Card className="w-full bg-gradient-to-br from-white to-blue-50/30 border-blue-200/50 shadow-lg">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl font-bold text-gray-900">Payment Methods</CardTitle>
+            <p className="text-sm text-gray-600 mt-1">
+              Total: {formatCurrency(total)} • {selectedDate ? new Date(selectedDate).toLocaleDateString() : 'Today'}
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
+            <CreditCard className="w-6 h-6 text-blue-600" />
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-2">
-        <div className="h-[400px] w-full">
+      <CardContent>
+        <div className="h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={120}
-                paddingAngle={2}
+                cy="45%"
+                innerRadius={50}
+                outerRadius={100}
+                paddingAngle={3}
                 dataKey="value"
                 onMouseEnter={(_, index) => setActiveIndex(index)}
-                onMouseLeave={() => setActiveIndex(null)}
+                onMouseLeave={() => setActiveIndex(-1)}
                 animationBegin={0}
                 animationDuration={800}
+                animationEasing="ease-out"
               >
                 {chartData.map((entry, index) => {
                   const isActive = activeIndex === index;
                   const baseColor = COLORS[entry.paymentMethod as keyof typeof COLORS] || '#6b7280';
-                  const hoverColor = HOVER_COLORS[entry.paymentMethod as keyof typeof HOVER_COLORS] || '#4b5563';
                   
                   return (
                     <Cell 
                       key={`cell-${index}`}
-                      fill={isActive ? hoverColor : baseColor}
-                      stroke={isActive ? '#ffffff' : baseColor}
-                      strokeWidth={isActive ? 3 : 1}
+                      fill={baseColor}
+                      stroke={isActive ? '#ffffff' : 'none'}
+                      strokeWidth={isActive ? 2 : 0}
                       style={{
-                        filter: isActive ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
-                        cursor: 'pointer',
-                        transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                        filter: isActive ? 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))' : 'none',
+                        transform: isActive ? 'scale(1.02)' : 'scale(1)',
                         transformOrigin: 'center',
-                        transition: 'all 0.2s ease-in-out'
+                        transition: 'all 0.2s ease-out'
                       }}
                     />
                   );
                 })}
               </Pie>
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload[0]) {
-                    const data = payload[0].payload;
-                    return (
-                      <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-                        <div className="font-medium capitalize mb-2 text-gray-900">{data.name}</div>
-                        <div className="text-sm text-gray-600 space-y-1">
-                          <div>Amount: <span className="font-semibold">{formatCurrency(data.value)}</span></div>
-                          <div>Share: <span className="font-semibold">{data.percentage}%</span></div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Legend 
-                verticalAlign="bottom"
-                height={60}
-                formatter={(value, entry) => {
-                  const data = chartData.find(d => d.name === value);
-                  return (
-                    <span className="text-sm text-gray-700">
-                      {value} ({data?.percentage}%)
-                    </span>
-                  );
-                }}
-                wrapperStyle={{ 
-                  fontSize: '14px',
-                  paddingTop: '20px'
-                }}
-              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend content={<CustomLegend />} />
             </PieChart>
           </ResponsiveContainer>
         </div>
