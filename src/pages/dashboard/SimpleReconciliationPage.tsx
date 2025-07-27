@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { FuelLoader } from '@/components/ui/FuelLoader';
 
 export default function SimpleReconciliationPage() {
-  const [selectedDate, setSelectedDate] = useState('2025-06-28'); // Use date with actual data
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedStation, setSelectedStation] = useState('');
   const [systemSales, setSystemSales] = useState(0);
   const [actualCash, setActualCash] = useState('');
