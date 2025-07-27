@@ -14,7 +14,7 @@ import { useCreditor } from '@/hooks/api/useCreditors';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/formatters';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { creditorService } from '@/api/services/creditorService';
+import { creditorsService } from '@/api/services/creditors.service';
 
 export default function NewCreditorPaymentPage() {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function NewCreditorPaymentPage() {
   const [amount, setAmount] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
   const [referenceNumber, setReferenceNumber] = useState<string>('');
-  const [notes, setNotes] = useState<string>('');
+
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,13 +52,13 @@ export default function NewCreditorPaymentPage() {
     setIsSubmitting(true);
     
     try {
-      await creditorService.createPayment({
+      await creditorsService.createPayment({
         creditorId,
         amount,
         paymentMethod,
         referenceNumber: referenceNumber || undefined,
-        notes: notes || undefined,
-        receivedAt: new Date().toISOString(),
+
+
       });
       
       toast({
@@ -167,16 +167,7 @@ export default function NewCreditorPaymentPage() {
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add any additional notes..."
-                rows={3}
-              />
-            </div>
+
           </CardContent>
         </Card>
         

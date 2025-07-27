@@ -5,18 +5,25 @@ import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReadingsStore } from '@/store/readingsStore';
 import { useDataStore } from '@/store/dataStore';
-import { useErrorHandler } from '../useErrorHandler';
+
 
 export const useReadings = () => {
-  const { handleError } = useErrorHandler();
+  const { handleApiError, showLoader, hideLoader } = useToastNotifications();
+  
   return useQuery({
     queryKey: ['readings'],
-    queryFn: readingsService.getReadings,
+    queryFn: async () => {
+      showLoader('Loading readings...');
+      const data = await readingsService.getReadings();
+      hideLoader();
+      showSuccess('Readings Loaded', 'Reading entries loaded successfully');
+      return data;
+    },
+    onError: (error: any) => {
+      handleApiError(error, 'Readings');
+    },
     staleTime: 30000,
     retry: 2,
-    onError: (error) => {
-      handleError(error, 'Failed to fetch readings.');
-    },
   });
 };
 
@@ -32,7 +39,7 @@ export const useReading = (id: string) => {
 export const useCreateReading = () => {
   const queryClient = useQueryClient();
   const { setLastCreatedReading } = useReadingsStore();
-  const { handleError } = useErrorHandler();
+  const { showSuccess, handleApiError } = useToastNotifications();
   
   return useMutation({
     mutationFn: (data: any) => readingsService.createReading(data),
@@ -57,10 +64,11 @@ export const useCreateReading = () => {
         timestamp: newReading.recordedAt || newReading.createdAt
       });
       
-      // Toast is now handled in the component for better user experience
+      // Show success toast
+      showSuccess('Reading Created', `Successfully recorded reading ${newReading.reading} for nozzle #${newReading.nozzleNumber}`);
     },
     onError: (error: any) => {
-      handleError(error, 'Failed to create reading.');
+      handleApiError(error, 'Create Reading');
     },
   });
 };
@@ -107,7 +115,7 @@ export const useVoidReading = () => {
 
 export const useLatestReading = (nozzleId: string) => {
   const { latestReadings, setLatestReading } = useDataStore();
-  const { handleError } = useErrorHandler();
+  const { handleApiError } = useToastNotifications();
   
   return useQuery({
     queryKey: ['latest-reading', nozzleId],
@@ -140,8 +148,8 @@ export const useLatestReading = (nozzleId: string) => {
     retry: 2,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    onError: (error) => {
-      handleError(error, 'Failed to fetch latest reading.');
+    onError: (error: any) => {
+      handleApiError(error, 'Latest Reading');
     }
   });
 };

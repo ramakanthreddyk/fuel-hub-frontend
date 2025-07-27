@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCreatePayment } from '@/hooks/useCreditors';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { creditorsService } from '@/api/services/creditors.service';
+import { useToast } from '@/hooks/use-toast';
 
 interface PaymentFormProps {
   creditorId: string;
@@ -17,9 +18,31 @@ export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps)
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'upi' | 'bank_transfer' | 'cheque'>('cash');
   const [referenceNumber, setReferenceNumber] = useState('');
-  const [notes, setNotes] = useState('');
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const createPayment = useCreatePayment();
+  const createPayment = useMutation({
+    mutationFn: creditorsService.createPayment,
+    onSuccess: () => {
+      toast({
+        title: 'Payment recorded',
+        description: 'Payment has been successfully recorded.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['creditors'] });
+      queryClient.invalidateQueries({ queryKey: ['creditor', creditorId] });
+      setAmount('');
+      setReferenceNumber('');
+      onSuccess?.();
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to record payment',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,16 +52,9 @@ export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps)
     createPayment.mutate({
       creditorId,
       amount: Number(amount),
-      paymentDate: new Date().toISOString(),
       paymentMethod,
       referenceNumber: referenceNumber || undefined,
-      notes: notes || undefined,
     });
-
-    // Reset form on success
-    setAmount('');
-    setReferenceNumber('');
-    setNotes('');
   };
 
   return (
@@ -85,17 +101,6 @@ export default function PaymentForm({ creditorId, onSuccess }: PaymentFormProps)
               value={referenceNumber}
               onChange={(e) => setReferenceNumber(e.target.value)}
               placeholder="Transaction ID, etc."
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Additional notes (optional)"
-              rows={3}
             />
           </div>
 

@@ -6,7 +6,7 @@ import { StationSelector } from '@/components/filters/StationSelector';
 import { DateRangePicker, DateRange } from '@/components/filters/DateRangePicker';
 import { useSales } from '@/hooks/api/useSales';
 import { SalesFilters } from '@/api/services/salesService';
-import { useStations } from '@/hooks/api/useStations';
+import { useDataStore } from '@/store/dataStore';
 import { BadgeIndianRupee, TrendingUp, CreditCard, Users, Download, Filter, BarChart3, Fuel } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
@@ -22,8 +22,11 @@ export default function SalesPage() {
   };
   
   const { data: sales = [], isLoading } = useSales(filters);
-  const { data: stations = [] } = useStations();
+  const { stations } = useDataStore();
 
+  // Get all stations from store (flatten if nested)
+  const allStations = Object.values(stations).flat();
+  
   // Calculate summary stats with safe number handling
   const totalAmount = sales.reduce((sum, sale) => {
     const amount = typeof sale.amount === 'number' ? sale.amount : 0;
@@ -35,7 +38,7 @@ export default function SalesPage() {
     return sum + (isNaN(volume) ? 0 : volume);
   }, 0);
   
-  const creditSales = sales.filter(sale => sale.paymentMethod === 'credit');
+  const creditSales = sales.filter(sale => sale.payment_method === 'credit' || sale.paymentMethod === 'credit');
   const creditAmount = creditSales.reduce((sum, sale) => {
     const amount = typeof sale.amount === 'number' ? sale.amount : 0;
     return sum + (isNaN(amount) ? 0 : amount);
@@ -67,18 +70,22 @@ export default function SalesPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <StationSelector
-              value={selectedStation}
-              onChange={setSelectedStation}
-              showAll={true}
-              placeholder="All Stations"
-            />
-            <DateRangePicker
-              value={dateRange}
-              onChange={setDateRange}
-              placeholder="Select date range"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative z-10">
+              <StationSelector
+                value={selectedStation}
+                onChange={setSelectedStation}
+                showAll={true}
+                placeholder="All Stations"
+              />
+            </div>
+            <div className="relative z-20">
+              <DateRangePicker
+                value={dateRange}
+                onChange={setDateRange}
+                placeholder="Select date range"
+              />
+            </div>
             <Button variant="outline" className="bg-white border-2 shadow-sm hover:shadow-md">
               <Download className="h-4 w-4 mr-2" />
               Export
@@ -156,13 +163,28 @@ export default function SalesPage() {
 
       {/* Sales Table */}
       <Card className="shadow-lg border-2 border-gray-200/50">
-        <CardHeader>
-          <CardTitle className="text-xl">Sales Transactions</CardTitle>
-          <CardDescription className="text-base">
-            {selectedStation ? 'Station-specific' : 'All'} sales generated from nozzle readings
-          </CardDescription>
+        <CardHeader className="bg-gradient-to-r from-slate-50 to-gray-50 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <BarChart3 className="h-6 w-6 text-blue-600" />
+                Detailed Sales Transactions
+              </CardTitle>
+              <CardDescription className="text-base mt-1">
+                {selectedStation ? 'Station-specific' : 'All'} sales with payment methods, fuel types, and volumes
+              </CardDescription>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-green-600">
+                {sales.length}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Total Transactions
+              </div>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <SalesTable sales={sales} isLoading={isLoading} />
         </CardContent>
       </Card>

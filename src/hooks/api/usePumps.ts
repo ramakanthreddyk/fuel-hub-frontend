@@ -6,21 +6,19 @@ import { useDataStore } from '@/store/dataStore';
 
 export const usePumps = (stationId?: string) => {
   const { pumps: storedPumps, setPumps } = useDataStore();
-  const { handleApiError, showLoader, hideLoader } = useToastNotifications();
+  const { handleApiError, showLoader, hideLoader, showSuccess } = useToastNotifications();
   
   return useQuery({
     queryKey: ['pumps', stationId || 'all'],
     queryFn: async () => {
       try {
-        showLoader('Loading pumps...');
-        
         // Check if we have cached data for this station
         if (stationId && storedPumps[stationId]) {
           console.log('[PUMPS-HOOK] Using cached pumps for station:', stationId);
-          hideLoader();
           return storedPumps[stationId];
         }
         
+        showLoader('Loading pumps...');
         const pumps = await pumpsService.getPumps(stationId);
         
         // Store in cache if we have a stationId
@@ -29,6 +27,7 @@ export const usePumps = (stationId?: string) => {
         }
         
         hideLoader();
+        showSuccess('Pumps Loaded', 'Pump data loaded successfully');
         return pumps;
       } catch (error: any) {
         hideLoader();
@@ -43,26 +42,25 @@ export const usePumps = (stationId?: string) => {
 
 export const usePump = (id: string) => {
   const { pumps: storedPumps } = useDataStore();
-  const { handleApiError, showLoader, hideLoader } = useToastNotifications();
+  const { handleApiError, showLoader, hideLoader, showSuccess } = useToastNotifications();
   
   return useQuery({
     queryKey: ['pump', id],
     queryFn: async () => {
       try {
-        showLoader('Loading pump details...');
-        
         // Check if we have cached data in any station's pumps
         for (const stationId in storedPumps) {
           const cachedPump = storedPumps[stationId]?.find(p => p.id === id);
           if (cachedPump) {
             console.log('[PUMPS-HOOK] Using cached pump:', id);
-            hideLoader();
             return cachedPump;
           }
         }
         
+        showLoader('Loading pump details...');
         const pump = await pumpsService.getPump(id);
         hideLoader();
+        showSuccess('Pump Details Loaded', 'Pump details loaded successfully');
         return pump;
       } catch (error: any) {
         hideLoader();

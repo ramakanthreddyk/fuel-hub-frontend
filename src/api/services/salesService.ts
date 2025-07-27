@@ -74,7 +74,23 @@ export const salesService = {
       });
       console.log('[SALES-API] Response received:', response.data);
       
-      return extractArray<Sale>(response, 'sales');
+      // Handle different response structures
+      let salesArray: Sale[] = [];
+      
+      if (response.data?.data?.sales) {
+        salesArray = response.data.data.sales;
+      } else if (response.data?.sales) {
+        salesArray = response.data.sales;
+      } else if (Array.isArray(response.data)) {
+        salesArray = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        salesArray = response.data.data;
+      } else {
+        salesArray = extractArray<Sale>(response, 'sales');
+      }
+      
+      console.log(`[SALES-API] Successfully fetched ${salesArray.length} sales`);
+      return salesArray;
     } catch (error) {
       console.error('[SALES-API] Error fetching sales:', error);
       throw error;

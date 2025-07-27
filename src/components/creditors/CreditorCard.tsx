@@ -1,20 +1,18 @@
 
 /**
  * @file components/creditors/CreditorCard.tsx
- * @description Redesigned creditor card component with consistent styling
+ * @description Clean, compact creditor card with essential information
  */
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ColorfulCard, CardHeader, CardContent } from '@/components/ui/colorful-card';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   User, 
-  CreditCard, 
   AlertTriangle, 
   CheckCircle, 
   Eye, 
   Plus,
-  DollarSign,
-  Clock
+  Phone
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/formatters';
@@ -23,149 +21,135 @@ interface CreditorCardProps {
   creditor: {
     id: string;
     name: string;
-    email?: string;
     phone?: string;
     creditLimit: number;
     currentBalance: number;
-    lastPaymentDate?: string;
-    status: 'active' | 'suspended' | 'inactive';
+    status: 'active' | 'inactive';
+    stationName?: string;
   };
   onViewDetails: (creditorId: string) => void;
   onAddPayment: (creditorId: string) => void;
 }
 
 export function CreditorCard({ creditor, onViewDetails, onAddPayment }: CreditorCardProps) {
-  const getStatusConfig = () => {
-    const isOverLimit = creditor.currentBalance > creditor.creditLimit;
-    const isNearLimit = creditor.currentBalance > creditor.creditLimit * 0.8;
-    
-    if (creditor.status === 'suspended' || isOverLimit) {
-      return {
-        gradient: 'from-red-50 via-pink-50 to-rose-50',
-        color: 'bg-red-100 text-red-800 border-red-300',
-        icon: AlertTriangle,
-        label: isOverLimit ? 'Over Limit' : 'Suspended'
-      };
-    } else if (creditor.status === 'inactive') {
-      return {
-        gradient: 'from-gray-50 via-slate-50 to-zinc-50',
-        color: 'bg-gray-100 text-gray-800 border-gray-300',
-        icon: Clock,
-        label: 'Inactive'
-      };
-    } else if (isNearLimit) {
-      return {
-        gradient: 'from-orange-50 via-red-50 to-pink-50',
-        color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-        icon: AlertTriangle,
-        label: 'Near Limit'
-      };
-    } else {
-      return {
-        gradient: 'from-green-50 via-emerald-50 to-teal-50',
-        color: 'bg-green-100 text-green-800 border-green-300',
-        icon: CheckCircle,
-        label: 'Active'
-      };
-    }
+  const isOverLimit = creditor.currentBalance > creditor.creditLimit;
+  const isNearLimit = creditor.currentBalance > creditor.creditLimit * 0.8;
+  const utilizationPercent = creditor.creditLimit > 0 ? (creditor.currentBalance / creditor.creditLimit) * 100 : 0;
+  
+  const getStatusColor = () => {
+    if (creditor.status === 'inactive' || isOverLimit) return 'destructive';
+    if (isNearLimit) return 'secondary';
+    return 'default';
   };
 
-  const statusConfig = getStatusConfig();
-  const StatusIcon = statusConfig.icon;
-  const utilizationPercent = (creditor.currentBalance / creditor.creditLimit) * 100;
+  const getStatusLabel = () => {
+    if (creditor.status === 'inactive') return 'Inactive';
+    if (isOverLimit) return 'Over Limit';
+    if (isNearLimit) return 'Near Limit';
+    return 'Active';
+  };
 
   return (
-    <ColorfulCard 
-      gradient={statusConfig.gradient}
-      className="transform hover:scale-[1.02] transition-all duration-200"
-    >
-      <CardHeader className="pb-3">
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
+        {/* Header */}
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-white/80 backdrop-blur-sm">
-              <User className="h-5 w-5 text-blue-600" />
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-blue-100">
+              <User className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-800 text-lg">{creditor.name}</h3>
-              {creditor.email && (
-                <p className="text-xs text-slate-600">{creditor.email}</p>
-              )}
+              <h3 className="font-semibold text-sm">{creditor.name}</h3>
               {creditor.phone && (
-                <p className="text-xs text-slate-600">{creditor.phone}</p>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Phone className="h-3 w-3" />
+                  {creditor.phone}
+                </div>
               )}
             </div>
           </div>
           
-          <Badge className={cn("text-xs font-semibold", statusConfig.color)}>
-            <StatusIcon className="w-3 h-3 mr-1" />
-            {statusConfig.label}
+          <Badge 
+            variant={getStatusColor() as any}
+            className="text-xs"
+          >
+            {isOverLimit || isNearLimit ? (
+              <AlertTriangle className="w-3 h-3 mr-1" />
+            ) : (
+              <CheckCircle className="w-3 h-3 mr-1" />
+            )}
+            {getStatusLabel()}
           </Badge>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <DollarSign className="h-4 w-4 text-blue-500" />
-              <span className="text-xs font-semibold text-slate-600">Balance</span>
-            </div>
-            <div className="text-lg font-bold text-slate-800">
+        {/* Balance & Limit */}
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="text-center p-2 bg-muted/50 rounded-md">
+            <div className="text-xs text-muted-foreground mb-1">Balance</div>
+            <div className={cn(
+              "text-sm font-bold",
+              isOverLimit ? "text-red-600" : "text-foreground"
+            )}>
               {formatCurrency(creditor.currentBalance)}
             </div>
           </div>
           
-          <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <CreditCard className="h-4 w-4 text-green-500" />
-              <span className="text-xs font-semibold text-slate-600">Limit</span>
-            </div>
-            <div className="text-lg font-bold text-slate-800">
+          <div className="text-center p-2 bg-muted/50 rounded-md">
+            <div className="text-xs text-muted-foreground mb-1">Limit</div>
+            <div className="text-sm font-bold">
               {formatCurrency(creditor.creditLimit)}
             </div>
           </div>
         </div>
 
         {/* Utilization Bar */}
-        <div className="mt-3">
-          <div className="flex justify-between text-xs text-slate-600 mb-1">
-            <span>Credit Utilization</span>
-            <span>{utilizationPercent.toFixed(1)}%</span>
+        {creditor.creditLimit > 0 && (
+          <div className="mb-3">
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <span>Utilization</span>
+              <span>{utilizationPercent.toFixed(0)}%</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-1.5">
+              <div 
+                className={cn(
+                  "h-1.5 rounded-full transition-all",
+                  utilizationPercent > 100 ? "bg-red-500" :
+                  utilizationPercent > 80 ? "bg-yellow-500" : "bg-green-500"
+                )}
+                style={{ width: `${Math.min(utilizationPercent, 100)}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className={cn(
-                "h-2 rounded-full transition-all duration-300",
-                utilizationPercent > 100 ? "bg-red-500" :
-                utilizationPercent > 80 ? "bg-yellow-500" : "bg-green-500"
-              )}
-              style={{ width: `${Math.min(utilizationPercent, 100)}%` }}
-            />
-          </div>
-        </div>
-      </CardHeader>
+        )}
 
-      <CardContent className="pt-0">
-        <div className="flex flex-col sm:flex-row gap-2">
+        {/* Station Info */}
+        {creditor.stationName && (
+          <div className="text-xs text-muted-foreground mb-3">
+            Station: {creditor.stationName}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-2">
           <Button 
             variant="outline" 
             size="sm" 
-            className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white text-xs"
+            className="flex-1 h-8 text-xs"
             onClick={() => onViewDetails(creditor.id)}
           >
             <Eye className="w-3 h-3 mr-1" />
-            View Details
+            Details
           </Button>
           <Button 
-            variant="outline" 
             size="sm" 
-            className="flex-1 bg-white/80 backdrop-blur-sm border-white hover:bg-white text-xs"
+            className="flex-1 h-8 text-xs"
             onClick={() => onAddPayment(creditor.id)}
           >
             <Plus className="w-3 h-3 mr-1" />
-            Add Payment
+            Payment
           </Button>
         </div>
       </CardContent>
-    </ColorfulCard>
+    </Card>
   );
 }

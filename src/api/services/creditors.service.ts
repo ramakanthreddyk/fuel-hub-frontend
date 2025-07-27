@@ -19,28 +19,29 @@ export const creditorsService = {
   // Get all creditors
   getCreditors: async (stationId?: string | object): Promise<Creditor[]> => {
     try {
-      // Ensure stationId is a string, not an object
-      let url;
+      // Build URL with proper query params
+      let url = API_CONFIG.endpoints.creditors.base;
       if (stationId && typeof stationId === 'string') {
-        url = API_CONFIG.endpoints.creditors.byStation(stationId);
-      } else {
-        url = API_CONFIG.endpoints.creditors.base;
+        url += `?stationId=${encodeURIComponent(stationId)}`;
       }
       
       console.log('[CREDITORS-SERVICE] Fetching creditors with URL:', url);
       const response = await apiClient.get(url);
       
-      // Extract creditors from response
+      // Extract creditors from response - handle multiple response formats
       let creditors = [];
       if (response.data?.data?.creditors) {
         creditors = response.data.data.creditors;
       } else if (response.data?.creditors) {
         creditors = response.data.creditors;
+      } else if (Array.isArray(response.data?.data)) {
+        creditors = response.data.data;
       } else if (Array.isArray(response.data)) {
         creditors = response.data;
       }
       
-      return creditors;
+      console.log('[CREDITORS-SERVICE] Extracted creditors:', creditors);
+      return Array.isArray(creditors) ? creditors : [];
     } catch (error) {
       console.error('[CREDITORS-SERVICE] Error fetching creditors:', error);
       return [];

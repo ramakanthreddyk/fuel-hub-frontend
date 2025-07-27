@@ -54,18 +54,16 @@ export function ModernTodaysSalesCard({ date }: ModernTodaysSalesCardProps) {
       {metrics.map((metric, index) => (
         <Card key={metric.title} className="border-0 shadow-sm">
           <CardContent className="p-4">
-            <div className="flex items-center justify-center mb-3">
+            <div className="flex items-center gap-3 mb-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${metric.color}`}>
                 <metric.icon className="h-5 w-5 text-white" />
               </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="text-2xl font-bold text-gray-900">
                 {metric.value}
               </div>
-              <div className="text-sm text-gray-600">
-                {metric.title}
-              </div>
+            </div>
+            <div className="text-sm text-gray-600">
+              {metric.title}
             </div>
           </CardContent>
         </Card>

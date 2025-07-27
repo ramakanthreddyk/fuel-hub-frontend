@@ -67,6 +67,7 @@ export const useNozzles = (pumpId?: string) => {
         }
         
         hideLoader();
+        showSuccess('Nozzles Loaded', 'Nozzle data loaded successfully');
         return nozzles;
       } catch (error: any) {
         hideLoader();

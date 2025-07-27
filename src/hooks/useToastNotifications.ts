@@ -1,42 +1,41 @@
-import { useToast } from '@/hooks/use-toast';
+import toast from 'react-hot-toast';
 import { useCallback } from 'react';
 import { useGlobalLoader } from '@/hooks/useGlobalLoader';
 
 export const useToastNotifications = () => {
-  const { toast } = useToast();
   const { show: showLoader, hide: hideLoader } = useGlobalLoader();
 
   const showSuccess = useCallback((title: string, description?: string) => {
-    toast({
-      title,
-      description,
-      variant: 'default',
-    });
-  }, [toast]);
+    hideLoader();
+    toast.success(description ? `${title}: ${description}` : title);
+  }, [hideLoader]);
 
   const showError = useCallback((title: string, description?: string) => {
-    toast({
-      title,
-      description,
-      variant: 'destructive',
-    });
-  }, [toast]);
+    hideLoader();
+    toast.error(description ? `${title}: ${description}` : title);
+  }, [hideLoader]);
 
   const showWarning = useCallback((title: string, description?: string) => {
-    toast({
-      title: `⚠️ ${title}`,
-      description,
-      variant: 'default',
+    hideLoader();
+    toast(description ? `⚠️ ${title}: ${description}` : `⚠️ ${title}`, {
+      icon: '⚠️',
+      style: {
+        background: '#fbbf24',
+        color: '#000',
+      },
     });
-  }, [toast]);
+  }, [hideLoader]);
 
   const showInfo = useCallback((title: string, description?: string) => {
-    toast({
-      title: `ℹ️ ${title}`,
-      description,
-      variant: 'default',
+    hideLoader();
+    toast(description ? `ℹ️ ${title}: ${description}` : `ℹ️ ${title}`, {
+      icon: 'ℹ️',
+      style: {
+        background: '#3b82f6',
+        color: '#fff',
+      },
     });
-  }, [toast]);
+  }, [hideLoader]);
 
   const handleApiResponse = useCallback((response: any, successMessage?: string) => {
     if (response?.success) {
@@ -49,9 +48,10 @@ export const useToastNotifications = () => {
   }, [showSuccess, showError]);
 
   const handleApiError = useCallback((error: any, context?: string) => {
+    hideLoader();
     const message = error?.response?.data?.message || error?.message || 'An unexpected error occurred';
-    showError(context ? `${context} Failed` : 'Error', message);
-  }, [showError]);
+    toast.error(context ? `${context} Failed: ${message}` : message);
+  }, [hideLoader]);
 
   return {
     showSuccess,

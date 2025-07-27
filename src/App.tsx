@@ -6,7 +6,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { GlobalErrorBoundary } from './components/common/GlobalErrorBoundary';
-import { Toaster } from './components/ui/toaster';
+import { Toaster } from 'react-hot-toast';
 
 // Layout Components
 import { DashboardLayout } from './components/layout/DashboardLayout';
@@ -46,6 +46,7 @@ import UpdateInventoryPage from './pages/dashboard/UpdateInventoryPage';
 import ReportExportPage from './pages/dashboard/ReportExportPage';
 import ResetPasswordPage from './pages/dashboard/ResetPasswordPage';
 import ReconciliationPage from './pages/dashboard/ReconciliationPage';
+import SimpleReconciliationPage from './pages/dashboard/SimpleReconciliationPage';
 import ReconciliationDetailPage from './pages/dashboard/ReconciliationDetailPage';
 import UsersPage from './pages/dashboard/UsersPage';
 import SettingsPage from './pages/dashboard/SettingsPage';
@@ -166,7 +167,8 @@ function App() {
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="stations/comparison" element={<StationComparisonPage />} />
                 <Route path="stations/ranking" element={<StationRankingPage />} />
-                <Route path="reconciliation" element={<ReconciliationPage />} />
+                <Route path="reconciliation" element={<SimpleReconciliationPage />} />
+                <Route path="reconciliation/advanced" element={<ReconciliationPage />} />
                 <Route path="reconciliation/:reconciliationId" element={<ReconciliationDetailPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 </Route>
@@ -208,7 +210,36 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             
-            <Toaster />
+            <Toaster 
+              position="top-right"
+              reverseOrder={false}
+              gutter={8}
+              toastOptions={{
+                duration: 4000,
+                success: {
+                  duration: 3000,
+                  style: {
+                    background: '#10b981',
+                    color: '#fff',
+                  },
+                  iconTheme: {
+                    primary: '#fff',
+                    secondary: '#10b981',
+                  },
+                },
+                error: {
+                  duration: 5000,
+                  style: {
+                    background: '#ef4444',
+                    color: '#fff',
+                  },
+                  iconTheme: {
+                    primary: '#fff',
+                    secondary: '#ef4444',
+                  },
+                },
+              }}
+            />
           </div>
         </AuthProvider>
       </ThemeProvider>

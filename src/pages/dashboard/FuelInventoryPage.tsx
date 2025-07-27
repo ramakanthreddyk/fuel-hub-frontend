@@ -179,7 +179,10 @@ export default function FuelInventoryPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {summary?.lowStockCount || inventory.filter(item => item.status === 'critical' || item.status === 'low').length}
+              {summary?.lowStockCount ?? inventory.filter(item => 
+                item.status === 'critical' || item.status === 'low' || 
+                (item.currentStock || 0) <= (item.lowThreshold || 0)
+              ).length}
             </div>
             <p className="text-xs text-muted-foreground">
               Requires attention
@@ -194,9 +197,20 @@ export default function FuelInventoryPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {summary?.averageFillPercentage || 
-                Math.round(inventory.reduce((acc, item) => acc + (item.currentStock / item.capacity * 100), 0) / 
-                (inventory.length || 1))}%
+              {(() => {
+                if (summary?.averageFillPercentage) {
+                  return `${summary.averageFillPercentage}%`;
+                }
+                if (inventory.length === 0) {
+                  return '0%';
+                }
+                const totalCapacity = inventory.reduce((acc, item) => acc + (item.capacity || 0), 0);
+                const totalStock = inventory.reduce((acc, item) => acc + (item.currentStock || 0), 0);
+                if (totalCapacity === 0) {
+                  return '0%';
+                }
+                return `${Math.round((totalStock / totalCapacity) * 100)}%`;
+              })()}
             </div>
             <p className="text-xs text-muted-foreground">
               Across all tanks
@@ -213,7 +227,7 @@ export default function FuelInventoryPage() {
             <div className="text-2xl font-bold">
               {(
                 summary?.totalCapacity ??
-                inventory.reduce((acc, item) => acc + (item.capacity ?? 0), 0)
+                inventory.reduce((acc, item) => acc + (item.capacity || 0), 0)
               ).toLocaleString()}L
             </div>
             <p className="text-xs text-muted-foreground">
@@ -251,45 +265,92 @@ export default function FuelInventoryPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {inventory.map((item) => {
                 const currentStock = item.currentStock ?? 0;
                 const capacity = item.capacity ?? 0;
                 const stockStatus = getStockStatus(currentStock, capacity, item.lowThreshold);
                 const fillPercentage = capacity > 0 ? (currentStock / capacity) * 100 : 0;
+                const fuelTypeColors = {
+                  petrol: 'from-blue-500 to-blue-600',
+                  diesel: 'from-yellow-500 to-yellow-600',
+                  premium: 'from-purple-500 to-purple-600'
+                };
 
                 return (
-                  <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-medium">{item.fuelType}</h3>
+                  <Card key={item.id} className="relative overflow-hidden">
+                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${fuelTypeColors[item.fuelType] || 'from-gray-500 to-gray-600'}`}></div>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Fuel className="h-5 w-5 text-blue-600" />
+                          <h3 className="font-semibold capitalize">{item.fuelType}</h3>
+                        </div>
                         <Badge className={stockStatus.color}>
                           {stockStatus.status}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">{item.stationName}</p>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full ${
-                            fillPercentage <= 25 ? 'bg-red-500' :
-                            fillPercentage <= 50 ? 'bg-yellow-500' : 'bg-green-500'
-                          }`}
-                          style={{ width: `${fillPercentage}%` }}
-                        ></div>
+                      
+                      <p className="text-sm text-muted-foreground mb-4">{item.stationName}</p>
+                      
+                      {/* Circular Progress */}
+                      <div className="flex items-center justify-center mb-4">
+                        <div className="relative w-20 h-20">
+                          <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
+                            <path
+                              className="text-gray-200"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              fill="none"
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                            <path
+                              className={fillPercentage <= 25 ? 'text-red-500' : fillPercentage <= 50 ? 'text-yellow-500' : 'text-green-500'}
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              fill="none"
+                              strokeDasharray={`${fillPercentage}, 100`}
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-lg font-bold">{fillPercentage.toFixed(0)}%</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right ml-4">
-                      <div className="text-lg font-semibold">
-                        {(item.currentStock ?? 0).toLocaleString()}L
+                      
+                      {/* Stock Info */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Current:</span>
+                          <span className="font-medium">{currentStock.toLocaleString()}L</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Capacity:</span>
+                          <span className="font-medium">{capacity.toLocaleString()}L</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Available:</span>
+                          <span className="font-medium">{(capacity - currentStock).toLocaleString()}L</span>
+                        </div>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        of {(item.capacity ?? 0).toLocaleString()}L
+                      
+                      {/* Linear Progress */}
+                      <div className="mt-4">
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              fillPercentage <= 25 ? 'bg-gradient-to-r from-red-400 to-red-500' :
+                              fillPercentage <= 50 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' : 
+                              'bg-gradient-to-r from-green-400 to-green-500'
+                            }`}
+                            style={{ width: `${fillPercentage}%` }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {fillPercentage.toFixed(1)}% full
-                      </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>

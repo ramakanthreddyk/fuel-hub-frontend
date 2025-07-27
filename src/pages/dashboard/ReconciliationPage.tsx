@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom';
 import { ReconciliationRecord } from '@/api/api-contract';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +46,7 @@ export default function ReconciliationPage() {
     variance: number;
     hasReadings: boolean;
   } | null>(null);
+  const [varianceReason, setVarianceReason] = useState<string>('');
   const { toast } = useToast();
 
   const { data: stations = [] } = useStations();
@@ -160,6 +162,7 @@ export default function ReconciliationPage() {
       
       // Set the station to reconcile and open the confirmation dialog
       setStationToReconcile(station);
+      setVarianceReason(''); // Reset variance reason
       console.log('Opening confirmation dialog');
       setConfirmDialogOpen(true);
       
@@ -421,6 +424,64 @@ export default function ReconciliationPage() {
                 </div>
               )}
               
+              {/* Backdated Warning */}
+              {new Date(selectedDate) < new Date().setHours(0,0,0,0) && (
+                <div className="p-3 rounded-md mb-4 bg-orange-50 border border-orange-200">
+                  <div className="flex items-start">
+                    <AlertTriangle className="h-5 w-5 mr-2 mt-0.5 text-orange-500" />
+                    <div>
+                      <h4 className="font-medium text-orange-800">Backdated Reconciliation</h4>
+                      <p className="text-sm text-orange-700">
+                        You are reconciling a past date ({formatDate(selectedDate)}). This will update historical reports.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Cash Entry Section */}
+              <div className="bg-blue-50 p-4 rounded-md border border-blue-200 mb-4">
+                <h4 className="font-medium text-blue-800 mb-2">Cash Reconciliation</h4>
+                <div className="space-y-2">
+                  <Label htmlFor="actualCash">Actual Cash Collected (₹)</Label>
+                  <Input
+                    id="actualCash"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    defaultValue={salesSummary.totals.revenue}
+                    className="font-mono text-right"
+                    onChange={(e) => {
+                      const newCash = Number(e.target.value) || 0;
+                      const newVariance = newCash - salesSummary.totals.revenue;
+                      setSalesSummary(prev => prev ? {
+                        ...prev,
+                        totals: { ...prev.totals, cashDeclared: newCash },
+                        variance: newVariance
+                      } : null);
+                    }}
+                  />
+                  <p className="text-xs text-blue-700">
+                    Enter the actual cash amount collected. System calculated: {formatCurrency(salesSummary.totals.revenue)}
+                  </p>
+                  
+                  {/* Variance Reason Field */}
+                  {Math.abs(salesSummary.variance) > 1.00 && (
+                    <div className="mt-3">
+                      <Label htmlFor="varianceReason">Variance Explanation (Required)</Label>
+                      <Textarea
+                        id="varianceReason"
+                        placeholder="Explain the variance (e.g., credit sales, cash shortage, etc.)"
+                        value={varianceReason}
+                        onChange={(e) => setVarianceReason(e.target.value)}
+                        rows={2}
+                        className="text-sm"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
               <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
                 <strong>Important:</strong> Finalizing this data will:
                 <ul className="list-disc pl-6 mt-1 text-sm">
@@ -439,27 +500,76 @@ export default function ReconciliationPage() {
                 // Reset state when dialog is cancelled
                 setSalesSummary(null);
                 setStationToReconcile(null);
+                setVarianceReason('');
                 setConfirmDialogOpen(false);
               }}
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Confirm button clicked');
-                if (stationToReconcile) {
-                  // Close the dialog first to prevent UI issues
-                  setConfirmDialogOpen(false);
-                  // Then trigger the reconciliation
-                  setTimeout(() => {
-                    handleTriggerReconciliation(stationToReconcile.id, stationToReconcile.name);
-                  }, 100);
+                
+                if (!stationToReconcile || !salesSummary) return;
+                
+                // Validate variance reason if needed
+                if (Math.abs(salesSummary.variance) > 1.00 && !varianceReason.trim()) {
+                  toast({
+                    title: "Variance Explanation Required",
+                    description: "Please explain the variance before finalizing.",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                
+                setConfirmDialogOpen(false);
+                setProcessingStations(prev => new Set(prev).add(stationToReconcile.id));
+                
+                try {
+                  const response = await fetch('/api/v1/reconciliation/close-with-cash', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    },
+                    body: JSON.stringify({
+                      stationId: stationToReconcile.id,
+                      date: selectedDate,
+                      reportedCashAmount: salesSummary.totals.cashDeclared,
+                      varianceReason: varianceReason || undefined
+                    })
+                  });
+                  
+                  if (response.ok) {
+                    toast({
+                      title: "Business Day Closed",
+                      description: `Daily sales for ${stationToReconcile.name} have been successfully closed.`,
+                    });
+                    // Reset state
+                    setSalesSummary(null);
+                    setStationToReconcile(null);
+                    setVarianceReason('');
+                  } else {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to close business day');
+                  }
+                } catch (error: any) {
+                  toast({
+                    title: "Error",
+                    description: error.message || 'Failed to close business day',
+                    variant: "destructive",
+                  });
+                } finally {
+                  setProcessingStations(prev => {
+                    const updated = new Set(prev);
+                    updated.delete(stationToReconcile.id);
+                    return updated;
+                  });
                 }
               }}
-              className={salesSummary && salesSummary.variance > 0 ? 'bg-red-600 hover:bg-red-700' : ''}
-              disabled={processingStations.has(stationToReconcile?.id || '')}
+              className={salesSummary && salesSummary.variance !== 0 ? 'bg-orange-600 hover:bg-orange-700' : ''}
+              disabled={processingStations.has(stationToReconcile?.id || '') || (salesSummary && Math.abs(salesSummary.variance) > 1.00 && !varianceReason.trim())}
             >
               {processingStations.has(stationToReconcile?.id || '') ? (
                 <>
