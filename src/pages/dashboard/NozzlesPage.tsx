@@ -229,8 +229,8 @@ export default function NozzlesPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto p-3 sm:p-4 space-y-4">
+        {/* Compact Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
@@ -244,38 +244,35 @@ export default function NozzlesPage() {
               )}
               <span className="text-gray-900 font-medium">Nozzles</span>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
               {selectedPump !== 'all' && pumps.length > 0 ? 
                 `Nozzles for ${pumps.find(p => p.id === selectedPump)?.name || 'Pump'}` : 
                 '🛢️ Fuel Nozzle Control'}
             </h1>
-            <p className="text-gray-600 text-lg">Precision fuel dispensing at your fingertips</p>
+            <p className="text-gray-600 text-sm truncate">Precision fuel dispensing at your fingertips</p>
           </div>
           
           <Button 
             onClick={() => navigate('/dashboard/nozzles/new')} 
-            className="group relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 transform hover:scale-105"
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-3 py-2 rounded-xl shadow-lg flex-shrink-0"
+            size="sm"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-            <Plus className="mr-2 h-5 w-5" />
-            Add Nozzle
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Add Nozzle</span>
           </Button>
         </div>
 
-        {/* Filters */}
-        <div className="bg-gray-50 rounded-3xl border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <Filter className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-800">Filter Nozzles</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Compact Filters */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search nozzles..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 rounded-xl"
+                className="pl-10 pr-3 py-2 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg text-sm"
               />
             </div>
             

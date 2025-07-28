@@ -99,55 +99,52 @@ export default function PumpsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      <div className="space-y-8 p-6">
+      <div className="space-y-4 p-3 sm:p-4">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Link to="/dashboard" className="hover:text-gray-700">Dashboard</Link>
           <span>→</span>
           <span className="text-gray-900 font-medium">Pumps</span>
         </div>
         
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-              🔧 Fuel Pump Management
-            </h1>
-            <p className="text-gray-600 text-lg">Control and monitor your fuel dispensing systems</p>
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <Fuel className="h-5 w-5 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Fuel Pump Management</h1>
+                <Button 
+                  onClick={() => navigate('/dashboard/pumps/new')} 
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-2 py-1.5 rounded-lg shadow-lg flex-shrink-0"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-gray-600 text-sm truncate">Control and monitor your fuel dispensing systems</p>
+            </div>
           </div>
-          
-          <Button 
-            onClick={() => navigate('/dashboard/pumps/new')} 
-            className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all duration-300 transform hover:scale-105"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-            <Plus className="mr-2 h-5 w-5" />
-            Add Pump
-          </Button>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-gray-200 p-6 shadow-lg">
-          <div className="flex items-center gap-3 mb-4">
-            <Filter className="h-5 w-5 text-cyan-600" />
-            <h3 className="text-lg font-semibold text-gray-800">Filter Pumps</h3>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search pumps by name or serial..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 rounded-xl"
-                />
-              </div>
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200/50 p-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search pumps..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-3 py-2 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg text-sm"
+              />
             </div>
-            <div className="sm:w-64">
+            <div className="w-32 sm:w-40">
               <StationSelector
                 value={selectedStation}
                 onChange={setSelectedStation}
                 showAll={true}
                 placeholder="All Stations"
-                className="bg-white border-gray-300 text-gray-800 rounded-xl"
+                className="text-sm h-10 border-gray-300 rounded-lg"
               />
             </div>
           </div>
