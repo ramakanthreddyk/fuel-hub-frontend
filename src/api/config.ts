@@ -2,8 +2,11 @@
 // It's used to ensure all API calls use the correct URL
 
 // The API base URL from environment variables
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  'https://fuelsync-cjerbvabbsf8bsgu.eastasia-01.azurewebsites.net';
+export const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL === 'https://aspirereach.com' 
+    ? 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net'
+    : import.meta.env.VITE_API_BASE_URL
+) || 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
 
 // If we're on the custom domain, make sure we're using the correct API URL
 if (typeof window !== 'undefined' && window.localStorage.getItem('fuelsync_custom_domain') === 'true') {
