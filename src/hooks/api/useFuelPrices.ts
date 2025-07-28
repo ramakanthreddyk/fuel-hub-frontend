@@ -38,17 +38,7 @@ export const useFuelPrices = (stationId?: string) => {
   return useQuery<FuelPrice[], Error>({
     queryKey: ['fuel-prices', stationId],
     queryFn: async (): Promise<FuelPrice[]> => {
-      // 1. Global cache for all prices (no stationId)
-      if (!stationId && allFuelPrices && allFuelPrices.length > 0) {
-        console.log('[FUEL-PRICES-HOOK] Using global cached fuel prices');
-        return allFuelPrices;
-      }
-      // 2. Per-station cache
-      if (stationId && storedFuelPrices[stationId]) {
-        console.log('[FUEL-PRICES-HOOK] Using cached fuel prices for station:', stationId);
-        return storedFuelPrices[stationId];
-      }
-      // 3. Fetch from API
+      // Always fetch from API for fresh data
       let params = '';
       if (stationId && typeof stationId === 'string') {
         params = `?stationId=${stationId}`;
@@ -88,7 +78,7 @@ export const useFuelPrices = (stationId?: string) => {
       }
       return formattedPrices;
     },
-    enabled: (!stationId && (!allFuelPrices || allFuelPrices.length === 0)) || (stationId && !storedFuelPrices[stationId]),
+    enabled: true,
     staleTime: 5 * 60 * 1000, // 5 minutes
     onError(error) {
       handleError(error, 'Failed to fetch fuel prices.');
@@ -151,9 +141,62 @@ export const useFuelPriceValidation = (stationId?: string) => {
   });
 };
 
+export const useUpdateFuelPrice = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { clearFuelPrices } = useDataStore();
+  const { handleError } = useErrorHandler();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiClient.put(`/fuel-prices/${id}`, data);
+      return response.data;
+    },
+    onSuccess: (response, variables) => {
+      clearFuelPrices();
+      queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
+      queryClient.refetchQueries({ queryKey: ['fuel-prices'] });
+      toast({
+        title: 'Success',
+        description: `Fuel price updated successfully for ${variables.data?.fuelType || 'fuel'}`,
+      });
+    },
+    onError: (error: any) => {
+      handleError(error, 'Failed to update fuel price.');
+    }
+  });
+};
+
+export const useCreateFuelPrice = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { clearFuelPrices } = useDataStore();
+  const { handleError } = useErrorHandler();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiClient.post('/fuel-prices', data);
+      return response.data;
+    },
+    onSuccess: (response, variables) => {
+      clearFuelPrices();
+      queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
+      queryClient.refetchQueries({ queryKey: ['fuel-prices'] });
+      toast({
+        title: 'Success',
+        description: `Fuel price created successfully for ${variables.fuelType}`,
+      });
+    },
+    onError: (error: any) => {
+      handleError(error, 'Failed to create fuel price.');
+    }
+  });
+};
+
 export const useDeleteFuelPrice = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { clearFuelPrices } = useDataStore();
   const { handleError } = useErrorHandler();
 
   return useMutation({
@@ -162,7 +205,9 @@ export const useDeleteFuelPrice = () => {
       return response.data;
     },
     onSuccess: () => {
+      clearFuelPrices();
       queryClient.invalidateQueries({ queryKey: ['fuel-prices'] });
+      queryClient.refetchQueries({ queryKey: ['fuel-prices'] });
       toast({
         title: 'Success',
         description: 'Fuel price deleted successfully',

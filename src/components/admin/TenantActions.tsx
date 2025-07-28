@@ -73,7 +73,7 @@ export const TenantActions: React.FC<TenantActionsProps> = ({
           <DropdownMenuContent align="end" className="w-48 bg-white border shadow-lg">
             <DropdownMenuItem onClick={handleViewDetails}>
               <Edit className="mr-2 h-4 w-4" />
-              View Details
+              View Tenant Details
             </DropdownMenuItem>
             
             <DropdownMenuSeparator />

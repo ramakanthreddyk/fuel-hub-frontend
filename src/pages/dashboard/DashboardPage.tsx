@@ -32,7 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { RefreshCw, TrendingUp, Users, Fuel, CheckCircle, Plus, BarChart3, PieChart, Activity, Clock } from 'lucide-react';
 import { formatCurrency, formatVolume } from '@/utils/formatters';
 import { useSalesSummary, useStationMetrics } from '@/hooks/useDashboard';
-import { useFuelStore } from '@/store/fuelStore';
+import { useStations } from '@/hooks/api/useStations';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
@@ -81,13 +81,14 @@ export default function DashboardPage() {
   const differencesEnabled = !!filters.stationId && !!selectedDate;
   const { data: differencesSummary, isLoading: differencesLoading, error: differencesError } = useReconciliationDifferencesSummary(filters.stationId || '', selectedDate);
 
-  // Safe access to stations from Zustand
-  const { stations = [] } = useFuelStore();
+  // Use stations API directly with refresh capability
+  const { data: stations = [], isLoading: stationsLoading, refetch: refetchStations } = useStations();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
       await Promise.all([
+        refetchStations(),
         refetchSales(),
         refetchMetrics(),
         refetchTodaysSales(),
@@ -105,14 +106,8 @@ export default function DashboardPage() {
   
   // Loading states are now handled by individual hooks with toast notifications
 
-  // Calculate summary stats
-  const filteredStations = Array.isArray(stations)
-    ? stations.filter(station => !user?.tenantId || station.tenantId === user.tenantId)
-    : [];
-  const stationsList = filteredStations.length > 0
-    ? filteredStations
-    : (Array.isArray(stationMetrics) ? stationMetrics : []);
-  const totalStations = stationsList.length;
+  // Calculate summary stats using API data
+  const totalStations = stations.length;
   const activeStations = Array.isArray(stationMetrics) 
     ? stationMetrics.filter(station => station.status === 'active').length 
     : 0;
@@ -127,7 +122,7 @@ export default function DashboardPage() {
   const lifetimeVolume = lifetimeSales?.totalVolume || 0;
 
   // Get recent stations for display
-  const recentStations = stationsList.slice(0, 4);
+  const recentStations = stations.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
