@@ -5,9 +5,11 @@
 import axios from 'axios';
 
 // Get the backend URL from environment variables or use the default API URL
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL === 'https://aspirereach.com' 
+    ? 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net'
+    : import.meta.env.VITE_API_BASE_URL
+) || 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
