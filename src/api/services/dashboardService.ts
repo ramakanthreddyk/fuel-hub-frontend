@@ -3,7 +3,8 @@
  * @file api/services/dashboardService.ts
  * @description Service for dashboard API endpoints
  */
-import apiClient, { extractData, extractArray } from '../core/apiClient';
+import { apiClient } from '../client';
+import { extractApiData as extractData, extractApiArray as extractArray } from '../client';
 import { API_URL } from '../config';
 
 export interface SalesSummary {

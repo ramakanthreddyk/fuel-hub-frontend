@@ -3,7 +3,7 @@
  * @file nozzlesService.ts
  * @description Service for nozzles API endpoints
  */
-import apiClient, { extractData, extractArray } from '../core/apiClient';
+import { apiClient, extractApiData as extractData, extractApiArray as extractArray } from '../client';
 import API_CONFIG from '../core/config';
 
 export interface Nozzle {
