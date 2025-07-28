@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { usePump } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
+import { useStation } from '@/hooks/api/useStations';
 import { FuelLoader } from '@/components/ui/FuelLoader';
 
 export default function PumpDetailPage() {
@@ -34,12 +35,20 @@ export default function PumpDetailPage() {
     error: pumpError 
   } = usePump(pumpId || '');
   
+  // Fetch station details for breadcrumb
+  const { data: station } = useStation(pump?.stationId || '');
+  
   // Fetch nozzles for this pump
   const { 
     data: nozzles, 
     isLoading: nozzlesLoading, 
     error: nozzlesError 
   } = useNozzles(pumpId);
+  
+  console.log('[PUMP-DETAIL] PumpId:', pumpId);
+  console.log('[PUMP-DETAIL] Nozzles:', nozzles);
+  console.log('[PUMP-DETAIL] Nozzles loading:', nozzlesLoading);
+  console.log('[PUMP-DETAIL] Nozzles error:', nozzlesError);
 
   // Loading state
   if (pumpLoading || nozzlesLoading) {
@@ -89,7 +98,7 @@ export default function PumpDetailPage() {
             </Link>
           </Button>
           <div className="text-sm text-muted-foreground">
-            Dashboard → Stations → <span className="font-medium text-foreground">Pumps</span>
+            Dashboard → Stations → {station?.name || 'Station'} → <span className="font-medium text-foreground">{pump.name}</span>
           </div>
         </div>
         

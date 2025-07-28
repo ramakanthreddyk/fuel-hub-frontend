@@ -85,7 +85,9 @@ export const useCreatePump = () => {
       clearPumps(newPump.stationId);
       queryClient.invalidateQueries({ queryKey: ['pumps', newPump.stationId] });
       queryClient.invalidateQueries({ queryKey: ['pumps', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['stations'] });
       queryClient.invalidateQueries({ queryKey: ['station', newPump.stationId] });
+      queryClient.refetchQueries({ queryKey: ['stations'] });
       showSuccess('Pump Created', `Pump "${newPump.name}" created successfully`);
     },
     onError: (error: any) => {

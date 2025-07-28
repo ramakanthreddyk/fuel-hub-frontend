@@ -1,10 +1,9 @@
-
 /**
  * @file pages/dashboard/PumpsPage.tsx
  * @description Redesigned pumps page with white theme and improved cards
  */
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useFuelStore } from '@/store/fuelStore';
 import { useFuelStoreSync } from '@/hooks/useFuelStoreSync';
 import { createNavigationState } from '@/utils/navigationHelper';
@@ -14,6 +13,7 @@ import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Input } from '@/components/ui/input';
 import { usePumps, useDeletePump } from '@/hooks/api/usePumps';
 import { useStations } from '@/hooks/api/useStations';
+import { useNozzles } from '@/hooks/api/useNozzles';
 import { useToast } from '@/hooks/use-toast';
 import { FuelPumpCard } from '@/components/pumps/FuelPumpCard';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -26,33 +26,26 @@ export default function PumpsPage() {
   const { toast } = useToast();
   const { refreshPumps } = useFuelStoreSync();
   
-  // Get state from Zustand store
   const { 
     selectedStationId, 
     selectStation,
     selectPump
   } = useFuelStore();
   
-  // Local state
   const [selectedStation, setSelectedStation] = useState<string | undefined>(selectedStationId || undefined);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pumpToDelete, setPumpToDelete] = useState<string | null>(null);
   
-  // Update store when URL stationId param changes
   useEffect(() => {
     if (stationId) {
       setSelectedStation(stationId);
       selectStation(stationId);
-      // Only refresh when the URL param changes
       refreshPumps(stationId);
     }
   }, [stationId, selectStation, refreshPumps]);
   
-  // Separate effect for when selectedStation changes via dropdown
   useEffect(() => {
-    // Only run this effect if there's no stationId from URL params
-    // and selectedStation exists and has changed
     if (!stationId && selectedStation) {
       selectStation(selectedStation);
     }
@@ -60,6 +53,7 @@ export default function PumpsPage() {
 
   const { data: pumps = [], isLoading } = usePumps(selectedStation);
   const { data: stations = [] } = useStations();
+  const { data: allNozzles = [] } = useNozzles();
   const deleteStationMutation = useDeletePump();
 
   const filteredPumps = pumps.filter(pump =>
@@ -106,7 +100,12 @@ export default function PumpsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="space-y-8 p-6">
-        {/* Header */}
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <Link to="/dashboard" className="hover:text-gray-700">Dashboard</Link>
+          <span>→</span>
+          <span className="text-gray-900 font-medium">Pumps</span>
+        </div>
+        
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -125,7 +124,6 @@ export default function PumpsPage() {
           </Button>
         </div>
 
-        {/* Filters */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-gray-200 p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
             <Filter className="h-5 w-5 text-cyan-600" />
@@ -155,7 +153,6 @@ export default function PumpsPage() {
           </div>
         </div>
 
-        {/* Pumps Grid */}
         {filteredPumps.length === 0 ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <EmptyState
@@ -176,23 +173,21 @@ export default function PumpsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 pb-8">
             {filteredPumps.map((pump) => {
               const stationName = stations.find(s => s.id === pump.stationId)?.name;
-              const needsAttention = (pump.nozzleCount || 0) === 0 || pump.status === 'maintenance';
+              const pumpNozzles = allNozzles.filter(n => n.pumpId === pump.id);
+              const nozzleCount = pumpNozzles.length;
+              const needsAttention = nozzleCount === 0 || pump.status === 'maintenance';
               
               return (
                 <FuelPumpCard
                   key={pump.id}
                   pump={{
                     ...pump,
-                    nozzleCount: pump.nozzleCount || 0,
+                    nozzleCount,
                     stationName
                   }}
                   onViewNozzles={(id) => {
-                    // Store the selected pump in Zustand
                     selectPump(id);
-                    navigate(
-                      `/dashboard/pumps/${id}/nozzles`, 
-                      createNavigationState('pumps')
-                    );
+                    navigate(`/dashboard/pumps/${id}/nozzles`);
                   }}
                   onDelete={handleDeletePump}
                   needsAttention={needsAttention}
@@ -202,7 +197,6 @@ export default function PumpsPage() {
           </div>
         )}
 
-        {/* Delete Confirmation Dialog */}
         <ConfirmDialog
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}

@@ -116,7 +116,7 @@ export function ModernStationCard({
           
           <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
             <Fuel className="h-3 w-3 text-purple-600 mx-auto mb-1" />
-            <div className="text-lg font-bold text-purple-900">{activePumps}/{station.pumpCount}</div>
+            <div className="text-lg font-bold text-purple-900">{activePumps}/{pumps.length || station.pumpCount}</div>
             <div className="text-[10px] text-purple-700 font-medium">Active Pumps</div>
           </div>
         </div>
@@ -152,7 +152,7 @@ export function ModernStationCard({
               
               {/* Fuel Dispensers */}
               <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-3">
-                {Array.from({ length: Math.min(station.pumpCount, 4) }, (_, i) => (
+                {Array.from({ length: Math.min(pumps.length || station.pumpCount, 4) }, (_, i) => (
                   <div key={i} className="flex flex-col items-center">
                     {/* Dispenser Body */}
                     <div className="w-6 h-12 bg-gradient-to-b from-gray-600 to-gray-800 rounded-lg shadow-lg relative">

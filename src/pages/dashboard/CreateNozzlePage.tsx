@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { usePump, usePumps } from '@/hooks/api/usePumps';
 import { useCreateNozzle } from '@/hooks/api/useNozzles';
+import { useStations } from '@/hooks/api/useStations';
 
 export default function CreateNozzlePage() {
   const navigate = useNavigate();
@@ -31,10 +32,15 @@ export default function CreateNozzlePage() {
   const [nozzleNumber, setNozzleNumber] = useState('');
   const [fuelType, setFuelType] = useState('');
   const [selectedPumpId, setSelectedPumpId] = useState(pumpId || '');
+  const [selectedStationId, setSelectedStationId] = useState(stationId || '');
   
-  // Fetch pump details and all pumps for selection
+  // Fetch data
+  const { data: stations = [], isLoading: stationsLoading } = useStations();
   const { data: pump, isLoading: pumpLoading } = usePump(selectedPumpId || '');
-  const { data: allPumps = [], isLoading: pumpsLoading } = usePumps();
+  const { data: allPumps = [], isLoading: pumpsLoading } = usePumps(selectedStationId);
+  
+  // Filter pumps by selected station
+  const stationPumps = selectedStationId ? allPumps.filter(p => p.stationId === selectedStationId) : allPumps;
   
   // Create nozzle mutation - toast handling is now in the hook
   const createNozzleMutation = useCreateNozzle();
@@ -114,7 +120,34 @@ export default function CreateNozzlePage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
-              {!pumpId && (
+              {!stationId && (
+                <div className="space-y-2">
+                  <Label htmlFor="stationSelect" className="text-sm font-medium">
+                    Select Station
+                  </Label>
+                  <Select
+                    value={selectedStationId}
+                    onValueChange={(value) => {
+                      setSelectedStationId(value);
+                      setSelectedPumpId(''); // Reset pump selection
+                    }}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a station" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stations.map((station) => (
+                        <SelectItem key={station.id} value={station.id}>
+                          {station.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              {(selectedStationId || stationId) && !pumpId && (
                 <div className="space-y-2">
                   <Label htmlFor="pumpSelect" className="text-sm font-medium">
                     Select Pump
@@ -128,7 +161,7 @@ export default function CreateNozzlePage() {
                       <SelectValue placeholder="Select a pump" />
                     </SelectTrigger>
                     <SelectContent>
-                      {allPumps.map((pump) => (
+                      {stationPumps.map((pump) => (
                         <SelectItem key={pump.id} value={pump.id}>
                           {pump.name}
                         </SelectItem>
@@ -187,7 +220,7 @@ export default function CreateNozzlePage() {
               </Button>
               <Button
                 type="submit"
-                disabled={createNozzleMutation.isPending || !selectedPumpId || !nozzleNumber || !fuelType}
+                disabled={createNozzleMutation.isPending || !selectedPumpId || !nozzleNumber || !fuelType || (!stationId && !selectedStationId)}
                 className="order-1 sm:order-2"
               >
                 {createNozzleMutation.isPending ? (

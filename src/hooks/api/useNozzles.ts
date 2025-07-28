@@ -156,6 +156,9 @@ export const useCreateNozzle = () => {
       queryClient.invalidateQueries({ queryKey: ['nozzles', variables.pumpId] });
       queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
       queryClient.invalidateQueries({ queryKey: ['pump', variables.pumpId] });
+      queryClient.invalidateQueries({ queryKey: ['pumps'] });
+      queryClient.refetchQueries({ queryKey: ['pumps'] });
+      queryClient.refetchQueries({ queryKey: ['nozzles'] });
       
       showSuccess('Nozzle Created', `Nozzle #${newNozzle.nozzleNumber} created successfully`);
     },

@@ -29,7 +29,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, TrendingUp, Users, Fuel, CheckCircle, Plus, BarChart3, PieChart, Activity, Clock } from 'lucide-react';
+import { RefreshCw, TrendingUp, Users, Fuel, CheckCircle, Plus, BarChart3, PieChart, Clock, Filter } from 'lucide-react';
 import { formatCurrency, formatVolume } from '@/utils/formatters';
 import { useSalesSummary, useStationMetrics } from '@/hooks/useDashboard';
 import { useStations } from '@/hooks/api/useStations';
@@ -37,7 +37,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { useReconciliationDifferencesSummary } from '@/hooks/useReconciliationDifferencesSummary';
-import { useDashboardStore } from '@/store/dashboardStore';
+
+// Filters
+import { SearchableStationSelector } from '@/components/filters/SearchableStationSelector';
 
 // Modern Dashboard Components
 import { ModernSalesSummaryCard } from '@/components/dashboard/ModernSalesSummaryCard';
@@ -49,20 +51,19 @@ import { ModernTopCreditorsTable } from '@/components/dashboard/ModernTopCredito
 import { ModernStationMetricsList } from '@/components/dashboard/ModernStationMetricsList';
 
 // Filters
-import { SearchableStationSelector } from '@/components/filters/SearchableStationSelector';
 
-interface DashboardFilters {
-  stationId?: string;
-  dateFrom?: string;
-  dateTo?: string;
-}
+
+
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<DashboardFilters>({});
+
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { selectedDate, setSelectedDate } = useDashboardStore();
+  const [selectedStationId, setSelectedStationId] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>('');
+
+
 
   // Use standardized hooks for metrics and sales summary
   const { data: stationMetrics, isLoading: metricsLoading, refetch: refetchMetrics } = useStationMetrics();
@@ -71,15 +72,16 @@ export default function DashboardPage() {
   const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0];
   const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().split('T')[0];
   
-  const monthlyFilters = { ...filters, dateFrom: monthStart, dateTo: monthEnd };
+  const monthlyFilters = { stationId: selectedStationId, dateFrom: monthStart, dateTo: monthEnd };
   const { data: salesSummary, isLoading: salesLoading, refetch: refetchSales } = useSalesSummary('monthly', monthlyFilters);
   
-  // For lifetime, use a very early date to get all historical data
-  const lifetimeFilters = { dateFrom: '2020-01-01', dateTo: new Date().toISOString().split('T')[0] };
+  const lifetimeFilters = { stationId: selectedStationId, dateFrom: '2020-01-01', dateTo: new Date().toISOString().split('T')[0] };
   const { data: lifetimeSales, isLoading: lifetimeLoading } = useSalesSummary('all', lifetimeFilters);
-  const { data: todaysSales, isLoading: todaysLoading, refetch: refetchTodaysSales } = useTodaysSales(selectedDate || undefined);
-  const differencesEnabled = !!filters.stationId && !!selectedDate;
-  const { data: differencesSummary, isLoading: differencesLoading, error: differencesError } = useReconciliationDifferencesSummary(filters.stationId || '', selectedDate);
+  
+  const { data: todaysSales, isLoading: todaysLoading, refetch: refetchTodaysSales } = useTodaysSales(selectedDate || undefined, selectedStationId || undefined);
+  
+
+
 
   // Use stations API directly with refresh capability
   const { data: stations = [], isLoading: stationsLoading, refetch: refetchStations } = useStations();
@@ -98,9 +100,7 @@ export default function DashboardPage() {
     }
   };
 
-  const handleFilterChange = (newFilters: DashboardFilters) => {
-    setFilters(newFilters);
-  };
+
 
   const isLoading = salesLoading || metricsLoading || todaysLoading;
   
@@ -177,131 +177,74 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
-        {/* Redesigned Compact Filters */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-sm border border-gray-200/50 p-4 sm:p-6">
-          <div className="flex items-center gap-3 mb-3 sm:mb-4">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-100 rounded-lg sm:rounded-xl flex items-center justify-center">
-              <Activity className="h-4 w-4 text-gray-600" />
-            </div>
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900">Filters</h2>
+        {/* Filtered Sales Metrics */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200/50 p-3 sm:p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="h-4 w-4 text-gray-600 flex-shrink-0" />
+            <span className="text-sm font-medium text-gray-700">Sales Data</span>
+            <div className="flex-1"></div>
+            <SearchableStationSelector
+              value={selectedStationId}
+              onChange={setSelectedStationId}
+              placeholder="All Stations"
+              className="text-sm w-40"
+            />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={e => setSelectedDate(e.target.value)}
+              className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            {(selectedStationId || selectedDate) && (
+              <button
+                onClick={() => { setSelectedStationId(''); setSelectedDate(''); }}
+                className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded"
+              >
+                Clear
+              </button>
+            )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div className="space-y-2">
-              <label className="text-xs sm:text-sm font-medium text-gray-700">Station</label>
-              <SearchableStationSelector
-                value={filters.stationId}
-                onChange={(stationId) => handleFilterChange({ ...filters, stationId })}
-                placeholder="All Stations"
-              />
+          
+          {(selectedStationId || selectedDate) && (
+            <div className="mb-4 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+              Filtered by: {selectedStationId && stations.find(s => s.id === selectedStationId)?.name} {selectedStationId && selectedDate && ' • '} {selectedDate && `Date: ${new Date(selectedDate).toLocaleDateString()}`}
             </div>
-            <div className="space-y-2">
-              <label className="text-xs sm:text-sm font-medium text-gray-700">Date</label>
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={selectedDate || ''}
-                  onChange={e => setSelectedDate(e.target.value || null)}
-                  className="flex-1 px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
-                />
-                {selectedDate && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedDate(null)}
-                    className="px-2 sm:px-3 py-2 sm:py-2.5 text-gray-600 hover:text-gray-800 text-xs sm:text-sm"
-                  >
-                    Today
-                  </Button>
-                )}
+          )}
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                <span className="text-xs font-medium text-blue-900">Total Sales</span>
+              </div>
+              <div className="text-lg font-bold text-blue-900">
+                {lifetimeLoading ? '...' : formatCurrency(lifetimeRevenue, { useLakhsCrores: true })}
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 border border-green-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Fuel className="h-4 w-4 text-green-600" />
+                <span className="text-xs font-medium text-green-900">Total Volume</span>
+              </div>
+              <div className="text-lg font-bold text-green-900">
+                {lifetimeLoading ? '...' : formatVolume(lifetimeVolume, 0, true)}
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 border border-purple-200">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle className="h-4 w-4 text-purple-600" />
+                <span className="text-xs font-medium text-purple-900">This Month</span>
+              </div>
+              <div className="text-lg font-bold text-purple-900">
+                {salesLoading ? '...' : formatCurrency(monthlyRevenue, { useLakhsCrores: true })}
               </div>
             </div>
           </div>
         </div>
+        
 
-        {/* Redesigned Compact Key Metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {/* Total Sales (Lifetime) */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-2xl sm:rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-            <div className="relative bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-                </div>
-                <div className="text-right min-w-0">
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                    {lifetimeLoading ? '...' : formatCurrency(lifetimeRevenue, { useLakhsCrores: true })}
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-600">
-                    <span className="sm:hidden">Total</span>
-                    <span className="hidden sm:inline">Total Sales</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Volume (Lifetime) */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-600 rounded-2xl sm:rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-            <div className="relative bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                  <Fuel className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
-                </div>
-                <div className="text-right min-w-0">
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                    {lifetimeLoading ? '...' : formatVolume(lifetimeVolume, 0, true)}
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-600">
-                    <span className="sm:hidden">Volume</span>
-                    <span className="hidden sm:inline">Total Volume</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Monthly Revenue */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-600 rounded-2xl sm:rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-            <div className="relative bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
-                </div>
-                <div className="text-right min-w-0">
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
-                    {salesLoading ? '...' : formatCurrency(monthlyRevenue, { useLakhsCrores: true })}
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-600">
-                    <span className="sm:hidden">Monthly</span>
-                    <span className="hidden sm:inline">This Month</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Stations */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-500 rounded-2xl sm:rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-            <div className="relative bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                  <Users className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
-                </div>
-                <div className="text-right min-w-0">
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{activeStations}</div>
-                  <div className="text-xs sm:text-sm text-gray-600">
-                    <span className="sm:hidden">Active</span>
-                    <span className="hidden sm:inline">Active Stations</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Sales Overview - Compact for Mobile */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
@@ -312,38 +255,34 @@ export default function DashboardPage() {
               </div>
               <div className="min-w-0">
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
-                  <span className="sm:hidden">{selectedDate ? 'Sales' : "Today's Sales"}</span>
-                  <span className="hidden sm:inline">
-                    {selectedDate ? `Sales for ${new Date(selectedDate).toLocaleDateString()}` : "Today's Sales Overview"}
-                  </span>
+                  <span className="sm:hidden">Today's Sales</span>
+                  <span className="hidden sm:inline">Today's Sales Overview</span>
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-600 truncate">
                   <span className="sm:hidden">Performance</span>
-                  <span className="hidden sm:inline">
-                    {selectedDate ? 'Historical sales performance' : 'Real-time sales performance'}
-                  </span>
+                  <span className="hidden sm:inline">Real-time sales performance</span>
                 </p>
               </div>
             </div>
           </div>
           <div className="p-4 sm:p-6">
-            <ModernTodaysSalesCard date={selectedDate} />
+            <ModernTodaysSalesCard />
           </div>
         </div>
 
         {/* Payment Methods Chart */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
-          <ModernPaymentMethodChart filters={filters} />
+          <ModernPaymentMethodChart filters={{ stationId: selectedStationId }} />
         </div>
 
         {/* Fuel Breakdown Chart - Full Width */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
-          <ModernFuelBreakdownChart filters={filters} date={selectedDate} />
+          <ModernFuelBreakdownChart filters={{ stationId: selectedStationId }} />
         </div>
 
         {/* Sales Trend - Modern */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-sm border border-gray-200/50 overflow-hidden">
-          <ModernSalesTrendChart filters={filters} />
+          <ModernSalesTrendChart filters={{ stationId: selectedStationId }} />
         </div>
 
         {/* Station Metrics - Modern */}
@@ -357,7 +296,7 @@ export default function DashboardPage() {
             <div className="p-4 sm:p-6 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-lg sm:rounded-xl flex items-center justify-center">
-                  <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                 </div>
                 <div className="min-w-0">
                   <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Recent Stations</h2>

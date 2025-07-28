@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useStation } from '@/hooks/api/useStations';
 import { usePumps } from '@/hooks/api/usePumps';
+import { useNozzles } from '@/hooks/api/useNozzles';
 import { RealisticPumpCard } from '@/components/pumps/RealisticPumpCard';
 
 export default function StationDetailPage() {
@@ -38,6 +39,7 @@ export default function StationDetailPage() {
   const navigate = useNavigate();
   const { data: station, isLoading, error } = useStation(stationId!);
   const { data: pumps = [] } = usePumps(stationId);
+  const { data: allNozzles = [] } = useNozzles(); // Get all nozzles to count per pump
 
   if (isLoading) {
     return (
@@ -71,8 +73,17 @@ export default function StationDetailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="space-y-8 p-4 sm:p-6 lg:p-8 pb-20">
-        {/* Enhanced Header */}
+        {/* Enhanced Header with Breadcrumbs */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 sm:p-6 border-0">
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+            <Link to="/dashboard" className="hover:text-gray-700">Dashboard</Link>
+            <span>→</span>
+            <Link to="/dashboard/stations" className="hover:text-gray-700">Stations</Link>
+            <span>→</span>
+            <span className="text-gray-900 font-medium">{station.name}</span>
+          </div>
+          
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{station.name}</h1>
@@ -166,14 +177,20 @@ export default function StationDetailPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
-                {pumps.slice(0, 6).map((pump) => (
-                  <RealisticPumpCard
-                    key={pump.id}
-                    pump={pump}
-                    onViewNozzles={(id) => navigate(`/dashboard/stations/${stationId}/pumps/${id}`)}
-                    onSettings={(id) => navigate(`/dashboard/stations/${stationId}/pumps/${id}/settings`)}
-                  />
-                ))}
+                {pumps.slice(0, 6).map((pump) => {
+                  // Count nozzles for this pump
+                  const pumpNozzles = allNozzles.filter(n => n.pumpId === pump.id);
+                  const pumpWithNozzleCount = { ...pump, nozzleCount: pumpNozzles.length };
+                  
+                  return (
+                    <RealisticPumpCard
+                      key={pump.id}
+                      pump={pumpWithNozzleCount}
+                      onViewNozzles={(id) => navigate(`/dashboard/pumps/${id}/nozzles`)}
+                      onSettings={(id) => navigate(`/dashboard/stations/${stationId}/pumps/${id}/settings`)}
+                    />
+                  );
+                })}
               </div>
             )}
           </CardContent>

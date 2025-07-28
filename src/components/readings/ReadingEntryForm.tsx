@@ -489,8 +489,8 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                       rules={{
                         required: 'Reading is required',
                         min: {
-                          value: minReading,
-                          message: `Reading must be at least ${minReading}`,
+                          value: minReading === 0 ? 0.01 : minReading + 0.01,
+                          message: `Reading must be greater than ${minReading}`,
                         },
                       }}
                       render={({ field }) => (

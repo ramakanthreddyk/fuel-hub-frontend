@@ -6,7 +6,7 @@ import { handleApiResponse } from '@/api/responseHandler';
 import { TodaysSalesSummary } from '@/api/api-contract';
 import { useDashboardStore } from '@/store/dashboardStore';
 
-export const useTodaysSales = (date?: string) => {
+export const useTodaysSales = (date?: string, stationId?: string) => {
   const { showSuccess, handleApiError, showLoader, hideLoader } = useToastNotifications();
   const { setTodaysSales, getTodaysSales, setLoading, setError, clearError } = useDashboardStore();
   
@@ -14,7 +14,7 @@ export const useTodaysSales = (date?: string) => {
   const cacheKey = `todays-sales-${queryDate}`;
   
   const query = useQuery({
-    queryKey: ['todays-sales', queryDate],
+    queryKey: ['todays-sales', queryDate, stationId],
     queryFn: async (): Promise<TodaysSalesSummary> => {
       try {
         setLoading(cacheKey, true);
@@ -24,6 +24,9 @@ export const useTodaysSales = (date?: string) => {
         const params = new URLSearchParams();
         if (date) {
           params.append('date', date);
+        }
+        if (stationId) {
+          params.append('stationId', stationId);
         }
         
         const data = await handleApiResponse(() => 
