@@ -134,7 +134,8 @@ export const reconciliationApi = {
       const formattedDate = new Date(date).toISOString().split('T')[0];
       
       const response = await apiClient.get(`/reconciliation/daily-summary?stationId=${stationId}&date=${formattedDate}`);
-      return response.data.data || [];
+      // Handle both {success: true, data: []} and direct array responses
+      return response.data.data || response.data || [];
     } catch (error: any) {
       console.error('Error fetching daily readings summary:', error);
       // If it's a 404 error, return an empty array instead of throwing
