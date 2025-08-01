@@ -26,9 +26,9 @@ export const formatCurrency = (
 
   if (useLakhsCrores && numValue >= 100000) {
     if (numValue >= 10000000) {
-      return `₹${(numValue / 10000000).toFixed(2)} Cr`;
+      return `₹${(numValue / 10000000).toFixed(2)} Crores`;
     } else if (numValue >= 100000) {
-      return `₹${(numValue / 100000).toFixed(2)} L`;
+      return `₹${(numValue / 100000).toFixed(2)} Lakhs`;
     }
   }
 

@@ -37,9 +37,9 @@ export default function SalesOverviewPage() {
   const totalTransactions = sales.length;
   const averageTransactionValue = totalTransactions > 0 ? totalSales / totalTransactions : 0;
 
-  // Fallbacks for metrics if values are unexpectedly small/large
-  const totalSalesDisplay = totalSales > 1000000 ? `₹${(totalSales / 10000000).toFixed(1)}Cr` : formatCurrency(totalSales);
-  const averageTransactionDisplay = averageTransactionValue > 100000 ? `₹${(averageTransactionValue / 1000).toFixed(1)}K` : formatCurrency(averageTransactionValue);
+  // Use consistent formatting with the updated formatCurrency function
+  const totalSalesDisplay = formatCurrency(totalSales, { useLakhsCrores: true });
+  const averageTransactionDisplay = formatCurrency(averageTransactionValue, { useLakhsCrores: true });
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

@@ -14,12 +14,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
-    "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": false,
+    /* Linting - inherits from base tsconfig.json */
 
     "baseUrl": ".",
     "paths": {

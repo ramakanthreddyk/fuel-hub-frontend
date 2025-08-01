@@ -2,7 +2,7 @@
  * @file pages/dashboard/PumpsPage.tsx
  * @description Redesigned pumps page with white theme and improved cards
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useFuelStore } from '@/store/fuelStore';
 import { useFuelStoreSync } from '@/hooks/useFuelStoreSync';
@@ -15,27 +15,34 @@ import { usePumps, useDeletePump } from '@/hooks/api/usePumps';
 import { useStations } from '@/hooks/api/useStations';
 import { useNozzles } from '@/hooks/api/useNozzles';
 import { useToast } from '@/hooks/use-toast';
-import { FuelPumpCard } from '@/components/pumps/FuelPumpCard';
+import { UnifiedPumpCard } from '@/components/pumps/UnifiedPumpCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { StationSelector } from '@/components/filters/StationSelector';
+import { usePerformanceMonitor, useDebounce } from '@/hooks/usePerformance';
 
 export default function PumpsPage() {
+  // Performance monitoring
+  usePerformanceMonitor('PumpsPage');
+
   const navigate = useNavigate();
   const { stationId } = useParams<{ stationId: string }>();
   const { toast } = useToast();
   const { refreshPumps } = useFuelStoreSync();
-  
-  const { 
-    selectedStationId, 
+
+  const {
+    selectedStationId,
     selectStation,
     selectPump
   } = useFuelStore();
-  
+
   const [selectedStation, setSelectedStation] = useState<string | undefined>(selectedStationId || undefined);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pumpToDelete, setPumpToDelete] = useState<string | null>(null);
+
+  // Debounce search query for better performance
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
   useEffect(() => {
     if (stationId) {
@@ -56,19 +63,26 @@ export default function PumpsPage() {
   const { data: allNozzles = [] } = useNozzles();
   const deleteStationMutation = useDeletePump();
 
-  const filteredPumps = pumps.filter(pump =>
-    pump.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pump.serialNumber?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Memoize filtered pumps for better performance
+  const filteredPumps = useMemo(() => {
+    if (!debouncedSearchQuery) return pumps;
 
-  const handleDeletePump = (pumpId: string) => {
+    const query = debouncedSearchQuery.toLowerCase();
+    return pumps.filter(pump =>
+      pump.name.toLowerCase().includes(query) ||
+      pump.serialNumber?.toLowerCase().includes(query)
+    );
+  }, [pumps, debouncedSearchQuery]);
+
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleDeletePump = useCallback((pumpId: string) => {
     setPumpToDelete(pumpId);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const confirmDeletePump = async () => {
+  const confirmDeletePump = useCallback(async () => {
     if (!pumpToDelete) return;
-    
+
     try {
       await deleteStationMutation.mutateAsync(pumpToDelete);
       toast({
@@ -82,9 +96,20 @@ export default function PumpsPage() {
         variant: 'destructive'
       });
     } finally {
+      setDeleteDialogOpen(false);
       setPumpToDelete(null);
     }
-  };
+  }, [pumpToDelete, deleteStationMutation, toast]);
+
+  const handleViewNozzles = useCallback((id: string) => {
+    selectPump(id);
+    navigate(`/dashboard/pumps/${id}/nozzles`);
+  }, [selectPump, navigate]);
+
+  const handleEditPump = useCallback((id: string) => {
+    // TODO: Implement edit functionality
+    console.log('Edit pump:', id);
+  }, []);
 
   if (isLoading) {
     return (
@@ -169,25 +194,27 @@ export default function PumpsPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 pb-8">
             {filteredPumps.map((pump) => {
-              const stationName = stations.find(s => s.id === pump.stationId)?.name;
+              const stationName = Array.isArray(stations) ? stations.find(s => s.id === pump.stationId)?.name : 'Unknown Station';
               const pumpNozzles = allNozzles.filter(n => n.pumpId === pump.id);
               const nozzleCount = pumpNozzles.length;
               const needsAttention = nozzleCount === 0 || pump.status === 'maintenance';
               
               return (
-                <FuelPumpCard
+                <UnifiedPumpCard
                   key={pump.id}
                   pump={{
                     ...pump,
                     nozzleCount,
                     stationName
                   }}
-                  onViewNozzles={(id) => {
-                    selectPump(id);
-                    navigate(`/dashboard/pumps/${id}/nozzles`);
+                  variant="standard"
+                  actions={{
+                    onViewNozzles: handleViewNozzles,
+                    onDelete: handleDeletePump,
+                    onEdit: handleEditPump
                   }}
-                  onDelete={handleDeletePump}
                   needsAttention={needsAttention}
+                  showStationName={true}
                 />
               );
             })}

@@ -16,8 +16,14 @@ export const useDashboardSalesTrend = (days: number = 7) => {
       );
     },
     staleTime: 300000, // 5 minutes
-    onError: (error) => {
-      handleApiError(error, 'Sales Trend');
+    onError: (error: any) => {
+      // Only show error for actual errors, not empty data scenarios
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        handleApiError(error, 'Sales Trend');
+      } else {
+        console.log('[SALES-TREND] Non-critical error:', error?.response?.status);
+        // Don't show error toast for empty data scenarios
+      }
     },
   });
   

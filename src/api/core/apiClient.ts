@@ -164,8 +164,12 @@ apiClient.interceptors.response.use(
           }
         } catch (refreshError) {
           console.error('[API-CLIENT] Token refresh failed:', refreshError);
-          // If refresh fails, redirect to login
-          window.location.href = '/login';
+          // Clear auth data instead of hard redirect
+          localStorage.removeItem('fuelsync_token');
+          localStorage.removeItem('fuelsync_user');
+
+          // Dispatch a custom event to notify AuthContext
+          window.dispatchEvent(new CustomEvent('auth-expired'));
         } finally {
           isRefreshing = false;
           refreshPromise = null;

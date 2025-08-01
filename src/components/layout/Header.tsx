@@ -17,6 +17,7 @@ import { User, LogOut, Settings, Crown, Building2, UserCheck, Zap, Menu } from '
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useNavigationStore, getSectionFromPath } from '@/store/navigationStore';
+import { QuickReadingButton } from '@/components/readings/QuickReadingButton';
 
 export interface HeaderProps {
   onMobileMenuClick?: () => void;
@@ -284,6 +285,11 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
         <div className="flex items-center gap-2 md:gap-4">
           {/* Theme Toggle */}
           <ThemeToggle />
+
+          {/* Quick Reading Button - Only for non-superadmin users */}
+          {user?.role !== 'superadmin' && (
+            <QuickReadingButton variant="compact" className="hidden md:flex" />
+          )}
 
           {/* Role Badge - responsive sizing */}
           {user?.role && (

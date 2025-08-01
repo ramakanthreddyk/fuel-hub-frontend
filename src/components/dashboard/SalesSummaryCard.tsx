@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, BadgeIndianRupee } from 'lucide-react';
 import { useSalesSummary } from '@/hooks/useDashboard';
 import { ErrorFallback } from '@/components/common/ErrorFallback';
+import { SalesEmptyState } from '@/components/ui/EmptyState';
 import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
 
 interface DashboardFilters {
@@ -18,8 +19,16 @@ interface SalesSummaryCardProps {
 export function SalesSummaryCard({ filters = {} }: SalesSummaryCardProps) {
   const { data: summary, isLoading, error, refetch } = useSalesSummary('monthly', filters);
 
-  if (error) {
+  // Check if this is an authentication error
+  const isAuthError = error?.response?.status === 401 || error?.response?.status === 403;
+
+  if (error && isAuthError) {
     return <ErrorFallback error={error} onRetry={() => refetch()} title="Sales Summary" />;
+  }
+
+  // If there's an error but it's not auth-related, or if there's no data, show empty state
+  if (error && !isAuthError) {
+    return <SalesEmptyState onRefresh={() => refetch()} />;
   }
 
   if (isLoading) {
@@ -34,6 +43,11 @@ export function SalesSummaryCard({ filters = {} }: SalesSummaryCardProps) {
         </CardContent>
       </Card>
     );
+  }
+
+  // Show empty state if no data
+  if (!summary || (summary.totalRevenue === 0 && summary.salesCount === 0)) {
+    return <SalesEmptyState onRefresh={() => refetch()} />;
   }
 
   return (

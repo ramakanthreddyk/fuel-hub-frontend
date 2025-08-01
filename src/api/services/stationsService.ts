@@ -1,32 +1,39 @@
 
 /**
  * @file api/services/stationsService.ts
- * @description Service for stations API endpoints
+ * @description Service for stations API endpoints with integration fixes
  */
-import apiClient, { extractData, extractArray } from '../core/apiClient';
+import apiClient, { extractData } from '../core/apiClient';
 import API_CONFIG from '../core/config';
+import {
+  DataTransformer,
+  ApiResponseHandler,
+  ValidationHelper,
+  type FrontendStation,
+  type BackendStation
+} from '../integration-fixes';
 
-// Types
-export interface Station {
-  id: string;
-  name: string;
-  address: string;
-  status: 'active' | 'inactive' | 'maintenance';
-  createdAt: string;
-  updatedAt?: string;
-  pumpCount?: number;
+// Types - Updated to match backend and include all required fields
+export interface Station extends FrontendStation {
+  // Additional frontend-specific fields if needed
   nozzleCount?: number;
 }
 
 export interface CreateStationRequest {
   name: string;
   address: string;
+  city: string;
+  state: string;
+  zipCode: string;
   status?: 'active' | 'inactive' | 'maintenance';
 }
 
 export interface UpdateStationRequest {
   name?: string;
   address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
   status?: 'active' | 'inactive' | 'maintenance';
 }
 
@@ -35,66 +42,146 @@ export interface UpdateStationRequest {
  */
 export const stationsService = {
   /**
-   * Get all stations
+   * Get all stations with proper data transformation
    */
-  getStations: async (includeMetrics: boolean = false): Promise<Station[]> => {
+  getStations: async (params?: {
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+    includeMetrics?: boolean;
+  }): Promise<{
+    data: Station[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> => {
     try {
-      const url = includeMetrics ? '/stations?includeMetrics=true' : '/stations';
+      const queryParams = new URLSearchParams();
+      if (params?.status) queryParams.append('status', params.status);
+      if (params?.search) queryParams.append('search', params.search);
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+      if (params?.includeMetrics) queryParams.append('includeMetrics', 'true');
+
+      const url = `/stations${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
       console.log(`[STATIONS-API] Fetching stations from ${url}`);
+
       const response = await apiClient.get(url);
-      const stations = extractArray<Station>(response, 'stations');
-      console.log(`[STATIONS-API] Successfully fetched ${stations.length} stations`);
-      return stations;
+
+      // Handle different response formats from backend
+      const result = ApiResponseHandler.handlePaginatedResponse<Station>(
+        response.data,
+        (item: BackendStation) => DataTransformer.transformStation(item)
+      );
+
+      console.log(`[STATIONS-API] Successfully fetched ${result.data.length} stations`);
+      return result;
     } catch (error) {
       console.error('[STATIONS-API] Error fetching stations:', error);
-      throw error;
+      const errorInfo = ApiResponseHandler.handleErrorResponse(error);
+      throw new Error(errorInfo.message);
     }
   },
   
   /**
-   * Get a station by ID
+   * Get a station by ID with proper data transformation
    */
   getStation: async (id: string): Promise<Station> => {
     try {
       console.log(`[STATIONS-API] Fetching station details for ID: ${id}`);
       const response = await apiClient.get(`/stations/${id}`);
-      return extractData<Station>(response);
+
+      const station = ApiResponseHandler.handleSingleResponse<Station>(
+        response.data,
+        (item: BackendStation) => DataTransformer.transformStation(item)
+      );
+
+      if (!station) {
+        throw new Error('Station not found');
+      }
+
+      return station;
     } catch (error) {
       console.error(`[STATIONS-API] Error fetching station ${id}:`, error);
-      throw error;
+      const errorInfo = ApiResponseHandler.handleErrorResponse(error);
+      throw new Error(errorInfo.message);
     }
   },
   
   /**
-   * Create a new station
+   * Create a new station with validation and data transformation
    */
   createStation: async (data: CreateStationRequest): Promise<Station> => {
     try {
+      // Validate data before sending
+      const validationErrors = ValidationHelper.validateStation(data);
+      if (validationErrors.length > 0) {
+        throw new Error(`Validation failed: ${validationErrors.join(', ')}`);
+      }
+
       console.log('[STATIONS-API] Creating station with data:', data);
-      const response = await apiClient.post('/stations', data);
-      return extractData<Station>(response);
+
+      // Transform data to backend format
+      const backendData = DataTransformer.transformStationForBackend(data);
+
+      const response = await apiClient.post('/stations', backendData);
+
+      const station = ApiResponseHandler.handleSingleResponse<Station>(
+        response.data,
+        (item: BackendStation) => DataTransformer.transformStation(item)
+      );
+
+      if (!station) {
+        throw new Error('Failed to create station');
+      }
+
+      return station;
     } catch (error) {
       console.error('[STATIONS-API] Error creating station:', error);
-      throw error;
+      const errorInfo = ApiResponseHandler.handleErrorResponse(error);
+      throw new Error(errorInfo.message);
     }
   },
   
   /**
-   * Update a station
+   * Update a station with validation and data transformation
    */
   updateStation: async (id: string, data: UpdateStationRequest): Promise<Station> => {
     try {
+      // Validate data before sending
+      const validationErrors = ValidationHelper.validateStation(data);
+      if (validationErrors.length > 0) {
+        throw new Error(`Validation failed: ${validationErrors.join(', ')}`);
+      }
+
       console.log(`[STATIONS-API] Updating station ${id} with data:`, data);
-      const response = await apiClient.put(`/stations/${id}`, data);
-      return extractData<Station>(response);
+
+      // Transform data to backend format
+      const backendData = DataTransformer.transformStationForBackend(data);
+
+      const response = await apiClient.put(`/stations/${id}`, backendData);
+
+      const station = ApiResponseHandler.handleSingleResponse<Station>(
+        response.data,
+        (item: BackendStation) => DataTransformer.transformStation(item)
+      );
+
+      if (!station) {
+        throw new Error('Failed to update station');
+      }
+
+      return station;
     } catch (error) {
       console.error(`[STATIONS-API] Error updating station ${id}:`, error);
-      throw error;
+      const errorInfo = ApiResponseHandler.handleErrorResponse(error);
+      throw new Error(errorInfo.message);
     }
   },
-  
+
   /**
-   * Delete a station
+   * Delete a station with proper error handling
    */
   deleteStation: async (id: string): Promise<void> => {
     try {
@@ -103,7 +190,38 @@ export const stationsService = {
       console.log(`[STATIONS-API] Successfully deleted station ${id}`);
     } catch (error) {
       console.error(`[STATIONS-API] Error deleting station ${id}:`, error);
-      throw error;
+      const errorInfo = ApiResponseHandler.handleErrorResponse(error);
+      throw new Error(errorInfo.message);
+    }
+  },
+
+  /**
+   * Get station metrics with proper data transformation
+   */
+  getStationMetrics: async (id: string): Promise<{
+    stationId: string;
+    todaySales: number;
+    todayTransactions: number;
+    activePumps: number;
+    totalPumps: number;
+    efficiency: number;
+  }> => {
+    try {
+      console.log(`[STATIONS-API] Fetching metrics for station ${id}`);
+      const response = await apiClient.get(`/stations/${id}/metrics`);
+
+      const metrics = ApiResponseHandler.handleSingleResponse(response.data);
+
+      if (!metrics) {
+        throw new Error('Metrics not found');
+      }
+
+      // Transform snake_case to camelCase
+      return DataTransformer.snakeToCamel(metrics);
+    } catch (error) {
+      console.error(`[STATIONS-API] Error fetching station metrics ${id}:`, error);
+      const errorInfo = ApiResponseHandler.handleErrorResponse(error);
+      throw new Error(errorInfo.message);
     }
   }
 };

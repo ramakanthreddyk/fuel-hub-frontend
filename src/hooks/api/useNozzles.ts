@@ -8,6 +8,7 @@ import { nozzlesService } from '@/api/services/nozzlesService';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useDataStore } from '@/store/dataStore';
 import { useFuelStore } from '@/store/fuelStore';
+import { useStoreSync } from '@/hooks/useStoreSync';
 
 /**
  * Hook to fetch nozzles for a pump or all nozzles
@@ -42,7 +43,7 @@ export const useNozzles = (pumpId?: string) => {
         }
         
         // For 'all' nozzles, check if we have them cached and not stale
-        if (!pumpId && allNozzles.length > 0 && !nozzlesStale) {
+        if (!pumpId && Array.isArray(allNozzles) && allNozzles.length > 0 && !nozzlesStale) {
           console.log('[NOZZLES-HOOK] Using fuelStore cached all nozzles');
           hideLoader();
           return allNozzles;
@@ -94,7 +95,7 @@ export const useNozzle = (id: string) => {
     queryKey: ['nozzle', id],
     queryFn: async () => {
       // First check fuelStore's allNozzles if not stale
-      if (allNozzles.length > 0 && !nozzlesStale) {
+      if (Array.isArray(allNozzles) && allNozzles.length > 0 && !nozzlesStale) {
         const cachedNozzle = allNozzles.find(n => n.id === id);
         if (cachedNozzle) {
           console.log('[NOZZLES-HOOK] Using fuelStore allNozzles cache for nozzle:', id);
@@ -140,29 +141,17 @@ export const useNozzle = (id: string) => {
  * @returns Mutation result for creating a nozzle
  */
 export const useCreateNozzle = () => {
-  const queryClient = useQueryClient();
-  const { showSuccess, handleApiError } = useToastNotifications();
-  const { clearNozzles } = useDataStore();
-  const { invalidateNozzles } = useFuelStore();
-  
+  const { handleApiError } = useToastNotifications();
+  const { syncAfterNozzleCRUD } = useStoreSync();
+
   return useMutation({
     mutationFn: (data: any) => nozzlesService.createNozzle(data),
-    onSuccess: (newNozzle, variables) => {
-      // Clear cached nozzles to force a refresh
-      clearNozzles(variables.pumpId); // dataStore
-      invalidateNozzles(variables.pumpId); // fuelStore
-      
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['nozzles', variables.pumpId] });
-      queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
-      queryClient.invalidateQueries({ queryKey: ['pump', variables.pumpId] });
-      queryClient.invalidateQueries({ queryKey: ['pumps'] });
-      queryClient.refetchQueries({ queryKey: ['pumps'] });
-      queryClient.refetchQueries({ queryKey: ['nozzles'] });
-      
-      showSuccess('Nozzle Created', `Nozzle #${newNozzle.nozzleNumber} created successfully`);
+    onSuccess: async (newNozzle, variables) => {
+      console.log('[CREATE-NOZZLE] Success:', newNozzle);
+      await syncAfterNozzleCRUD('create', newNozzle);
     },
     onError: (error: any) => {
+      console.error('[CREATE-NOZZLE] Error:', error);
       handleApiError(error, 'Create Nozzle');
     },
   });
@@ -173,38 +162,17 @@ export const useCreateNozzle = () => {
  * @returns Mutation result for updating a nozzle
  */
 export const useUpdateNozzle = () => {
-  const queryClient = useQueryClient();
-  const { showSuccess, handleApiError } = useToastNotifications();
-  const { clearNozzles } = useDataStore();
-  const { invalidateNozzles } = useFuelStore();
-  
+  const { handleApiError } = useToastNotifications();
+  const { syncAfterNozzleCRUD } = useStoreSync();
+
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => nozzlesService.updateNozzle(id, data),
-    onSuccess: (nozzle, { id }) => {
-      // Clear cached nozzles for this pump to force a refresh
-      if (nozzle && nozzle.pumpId) {
-        clearNozzles(nozzle.pumpId); // dataStore
-        invalidateNozzles(nozzle.pumpId); // fuelStore
-      } else {
-        // If we don't know the pump, invalidate all nozzles
-        clearNozzles(); // dataStore
-        invalidateNozzles(); // fuelStore
-      }
-      
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['nozzle', id] });
-      queryClient.invalidateQueries({ queryKey: ['nozzles'] });
-      queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
-      
-      // Also invalidate the pump that this nozzle belongs to
-      if (nozzle && nozzle.pumpId) {
-        queryClient.invalidateQueries({ queryKey: ['pump', nozzle.pumpId] });
-        queryClient.invalidateQueries({ queryKey: ['nozzles', nozzle.pumpId] });
-      }
-      
-      showSuccess('Nozzle Updated', `Nozzle #${nozzle.nozzleNumber} updated successfully`);
+    onSuccess: async (nozzle, { id }) => {
+      console.log('[UPDATE-NOZZLE] Success:', nozzle);
+      await syncAfterNozzleCRUD('update', nozzle);
     },
     onError: (error: any) => {
+      console.error('[UPDATE-NOZZLE] Error:', error);
       handleApiError(error, 'Update Nozzle');
     },
   });
@@ -215,28 +183,17 @@ export const useUpdateNozzle = () => {
  * @returns Mutation result for deleting a nozzle
  */
 export const useDeleteNozzle = () => {
-  const queryClient = useQueryClient();
-  const { showSuccess, handleApiError } = useToastNotifications();
-  const { clearNozzles } = useDataStore();
-  const { invalidateNozzles } = useFuelStore();
-  
+  const { handleApiError } = useToastNotifications();
+  const { syncAfterNozzleCRUD } = useStoreSync();
+
   return useMutation({
     mutationFn: (id: string) => nozzlesService.deleteNozzle(id),
-    onSuccess: () => {
-      // Clear all cached nozzles to force a refresh
-      clearNozzles(); // dataStore
-      invalidateNozzles(); // fuelStore
-      
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['nozzles'] });
-      queryClient.invalidateQueries({ queryKey: ['nozzles', 'all'] });
-      
-      // We don't know which pump this nozzle belonged to, so we invalidate all pumps
-      queryClient.invalidateQueries({ queryKey: ['pumps'] });
-      
-      showSuccess('Nozzle Deleted', 'Nozzle deleted successfully');
+    onSuccess: async (data, id) => {
+      console.log('[DELETE-NOZZLE] Success:', id);
+      await syncAfterNozzleCRUD('delete', { id });
     },
     onError: (error: any) => {
+      console.error('[DELETE-NOZZLE] Error:', error);
       handleApiError(error, 'Delete Nozzle');
     },
   });

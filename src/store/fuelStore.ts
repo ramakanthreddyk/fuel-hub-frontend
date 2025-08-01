@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 interface Station {
   id: string;
@@ -92,9 +91,7 @@ interface FuelStore {
   getNozzlesForPump: (pumpId: string) => Nozzle[];
 }
 
-export const useFuelStore = create<FuelStore>()(
-  persist(
-    (set, get) => ({
+export const useFuelStore = create<FuelStore>()((set, get) => ({
       // Initial state
       selectedStationId: null,
       selectedPumpId: null,
@@ -191,9 +188,4 @@ export const useFuelStore = create<FuelStore>()(
         // Return empty array if nothing found or on error
         return [];
       }
-    }),
-    {
-      name: 'fuel-store', // unique name for localStorage
-    }
-  )
-);
+    }));

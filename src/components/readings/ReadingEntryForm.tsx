@@ -116,7 +116,10 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   // Sale summary state
   const [saleSummary, setSaleSummary] = useState(null);
   const [readingWindow, setReadingWindow] = useState(null);
-  const createReading = useCreateReading();
+  const createReading = useCreateReading({
+    navigateAfterSuccess: true,
+    navigateTo: '/dashboard'
+  });
   
   useAutoLoader(createReading.isPending, 'Recording reading...');
   useAutoLoader(loadingLatestReading, 'Loading latest reading...');
@@ -194,28 +197,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
 
     const nozzleNumber = selectedNozzleData?.nozzleNumber;
     
-    createReading.mutate(readingData, {
-      onSuccess: (newReading) => {
-        showSuccess('Reading Recorded', `Successfully recorded reading ${newReading?.reading || data.reading}L${nozzleNumber ? ` for nozzle #${nozzleNumber}` : ''}`);
-
-        // Navigate back to dashboard after successful submission
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
-
-        if (latestReading?.recordedAt && newReading?.recordedAt) {
-          setReadingWindow({
-            nozzleId: newReading.nozzleId,
-            from: latestReading.recordedAt,
-            to: newReading.recordedAt,
-          });
-          refetchSales();
-        }
-      },
-      onError: (error: any) => {
-        showError('Failed to Record Reading', error.message || 'Please check your input and try again.');
-      }
-    });
+    createReading.mutate(readingData);
   };
 
   return (

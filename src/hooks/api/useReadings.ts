@@ -5,6 +5,8 @@ import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReadingsStore } from '@/store/readingsStore';
 import { useDataStore } from '@/store/dataStore';
+import { useStoreSync } from '@/hooks/useStoreSync';
+import { useNavigate } from 'react-router-dom';
 
 
 export const useReadings = () => {
@@ -35,44 +37,59 @@ export const useReading = (id: string) => {
   });
 };
 
-export const useCreateReading = () => {
+export const useCreateReading = (options?: {
+  onSuccess?: (data: any) => void;
+  onError?: (error: any) => void;
+  navigateAfterSuccess?: boolean;
+  navigateTo?: string;
+}) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { setLastCreatedReading } = useReadingsStore();
   const { showSuccess, handleApiError } = useToastNotifications();
-  
+  const { syncAfterReadingCreate } = useStoreSync();
+
   return useMutation({
     mutationFn: (data: any) => readingsService.createReading(data),
-    onSuccess: (newReading) => {
-      // Clear store data to force refetch
-      const { clearLatestReading } = useDataStore.getState();
-      if (newReading?.nozzleId) {
-        clearLatestReading(newReading.nozzleId);
-      }
-      
-      // Invalidate all related queries
-      queryClient.invalidateQueries({ queryKey: ['readings'] });
-      queryClient.invalidateQueries({ queryKey: ['nozzles'] });
-      queryClient.invalidateQueries({ queryKey: ['latest-reading'] });
-      
-      // Also invalidate specific nozzle's latest reading
-      if (newReading?.nozzleId) {
-        queryClient.invalidateQueries({ queryKey: ['latest-reading', newReading.nozzleId] });
-      }
-      
+    onSuccess: async (newReading) => {
+      console.log('[CREATE-READING] Success:', newReading);
+
+      // Sync stores and invalidate queries
+      await syncAfterReadingCreate(newReading);
+
       // Store the reading in the readings store
-      setLastCreatedReading({
-        id: newReading.id,
-        nozzleId: newReading.nozzleId,
-        nozzleNumber: newReading.nozzleNumber,
-        reading: newReading.reading,
-        fuelType: newReading.fuelType,
-        timestamp: newReading.recordedAt || newReading.createdAt
-      });
-      
-      // Toast is now handled in the service to avoid duplicates
+      if (newReading) {
+        setLastCreatedReading({
+          id: newReading.id,
+          nozzleId: newReading.nozzleId,
+          nozzleNumber: newReading.nozzleNumber,
+          reading: newReading.reading,
+          fuelType: newReading.fuelType,
+          timestamp: newReading.recordedAt || newReading.createdAt
+        });
+      }
+
+      // Call custom onSuccess if provided
+      if (options?.onSuccess) {
+        options.onSuccess(newReading);
+      }
+
+      // Navigate after success if requested
+      if (options?.navigateAfterSuccess !== false) {
+        const destination = options?.navigateTo || '/dashboard';
+        setTimeout(() => {
+          navigate(destination);
+        }, 1500);
+      }
     },
     onError: (error: any) => {
+      console.error('[CREATE-READING] Error:', error);
       handleApiError(error, 'Create Reading');
+
+      // Call custom onError if provided
+      if (options?.onError) {
+        options.onError(error);
+      }
     },
   });
 };
@@ -120,30 +137,31 @@ export const useVoidReading = () => {
 export const useLatestReading = (nozzleId: string) => {
   const { latestReadings, setLatestReading } = useDataStore();
   const { handleApiError } = useToastNotifications();
-  
+
   return useQuery({
     queryKey: ['latest-reading', nozzleId],
     queryFn: async () => {
       console.log('[READINGS-HOOK] Fetching latest reading for nozzle:', nozzleId);
-      
-      // Check if we have cached data for this nozzle
-      if (nozzleId && latestReadings[nozzleId]) {
-        console.log('[READINGS-HOOK] Using cached latest reading for nozzle:', nozzleId);
-        return latestReadings[nozzleId];
-      }
-      
+
       try {
         const reading = await readingsService.getLatestReading(nozzleId);
         console.log('[READINGS-HOOK] Latest reading API result:', reading);
-        
+
         // Store in cache if we have a reading
         if (reading && nozzleId) {
           setLatestReading(nozzleId, reading);
         }
-        
+
         return reading;
       } catch (error) {
         console.error('[READINGS-HOOK] Error fetching latest reading:', error);
+
+        // Fallback to cached data if API fails
+        if (nozzleId && latestReadings[nozzleId]) {
+          console.log('[READINGS-HOOK] Using cached latest reading as fallback for nozzle:', nozzleId);
+          return latestReadings[nozzleId];
+        }
+
         return null;
       }
     },

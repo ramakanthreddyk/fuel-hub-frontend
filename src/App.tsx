@@ -1,25 +1,28 @@
 /**
  * @file App.tsx
- * @description Main application component with updated routes
+ * @description Main application component with role-based routing
  */
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
+
+// Import context providers
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { GlobalErrorBoundary } from './components/common/GlobalErrorBoundary';
-import { Toaster } from 'react-hot-toast';
+import { useAuth } from './contexts/AuthContext';
 
-// Layout Components
-import { DashboardLayout } from './components/layout/DashboardLayout';
-import { SuperAdminLayout } from './components/layout/SuperAdminLayout';
-import { AttendantLayout } from './components/layout/AttendantLayout';
-import { ProtectedRoute as AuthProtectedRoute } from './components/auth/ProtectedRoute';
-import { ProtectedRoute } from './routes/ProtectedRoute';
-
-// Pages
+// Import pages
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
-import AttendantDashboardPage from './pages/attendant/AttendantDashboardPage';
+
+// Import layout components
+import { Sidebar } from './components/layout/Sidebar';
+import { Header } from './components/layout/Header';
+import { SuperAdminLayout } from './components/layout/SuperAdminLayout';
+import { AttendantLayout } from './components/layout/AttendantLayout';
+
+// Import dashboard pages
 import StationsPage from './pages/dashboard/StationsPage';
 import StationDetailPage from './pages/dashboard/StationDetailPage';
 import NewStationPage from './pages/dashboard/NewStationPage';
@@ -32,34 +35,25 @@ import EditPumpPage from './pages/dashboard/EditPumpPage';
 import NozzlesPage from './pages/dashboard/NozzlesPage';
 import CreateNozzlePage from './pages/dashboard/CreateNozzlePage';
 import EditNozzlePage from './pages/dashboard/EditNozzlePage';
-import FuelPricesPage from './pages/dashboard/FuelPricesPage';
-import ReadingsPage from './pages/dashboard/ReadingsPage';
-import NewReadingPage from './pages/dashboard/NewReadingPage';
-import ReadingDetailPage from './pages/dashboard/ReadingDetailPage';
-import EditReadingPage from './pages/dashboard/EditReadingPage';
-import FuelInventoryPage from './pages/dashboard/FuelInventoryPage';
-import ReportsPage from './pages/dashboard/ReportsPage';
-import AnalyticsPage from './pages/dashboard/AnalyticsPage';
-import StationComparisonPage from './pages/dashboard/StationComparisonPage';
-import StationRankingPage from './pages/dashboard/StationRankingPage';
-import UpdateInventoryPage from './pages/dashboard/UpdateInventoryPage';
-import ReportExportPage from './pages/dashboard/ReportExportPage';
-import ResetPasswordPage from './pages/dashboard/ResetPasswordPage';
-import ReconciliationPage from './pages/dashboard/ReconciliationPage';
-import SimpleReconciliationPage from './pages/dashboard/SimpleReconciliationPage';
-import ReconciliationDetailPage from './pages/dashboard/ReconciliationDetailPage';
-import UsersPage from './pages/dashboard/UsersPage';
-import SettingsPage from './pages/dashboard/SettingsPage';
-import CashReportPage from './pages/dashboard/CashReportPage';
-import CashReportsListPage from './pages/dashboard/CashReportsListPage';
-import CreditorsPage from './pages/dashboard/CreditorsPage';
-import NewCreditorPage from './pages/dashboard/NewCreditorPage';
-import CreditorDetailPage from './pages/dashboard/CreditorDetailPage';
-import NewCreditorPaymentPage from './pages/dashboard/NewCreditorPaymentPage';
-
-import SalesOverviewPage from './pages/dashboard/SalesOverviewPage';
 import SalesPage from './pages/dashboard/SalesPage';
-import DailySalesPage from './pages/dashboard/DailySalesPage';
+import SalesOverviewPage from './pages/dashboard/SalesOverviewPage';
+import ReportsPage from './pages/dashboard/ReportsPage';
+import InventoryPage from './pages/dashboard/InventoryPage';
+import SettingsPage from './pages/dashboard/SettingsPage';
+import UsersPage from './pages/dashboard/UsersPage';
+import ReconciliationPage from './pages/dashboard/ReconciliationPage';
+import ReconciliationDetailPage from './pages/dashboard/ReconciliationDetailPage';
+import ReadingsPage from './pages/dashboard/ReadingsPage';
+import SimpleReadingPage from './pages/dashboard/SimpleReadingPage';
+import FuelPricesPage from './pages/dashboard/FuelPricesPage';
+import FuelInventoryPage from './pages/dashboard/FuelInventoryPage';
+import AnalyticsPage from './pages/dashboard/AnalyticsPage';
+import { QuickReadingButton } from './components/readings/QuickReadingButton';
+
+// Attendant Pages
+import AttendantDashboard from './pages/attendant/AttendantDashboard';
+import SimpleReadingEntry from './pages/attendant/SimpleReadingEntry';
+import SimpleCashReport from './pages/attendant/SimpleCashReport';
 
 // SuperAdmin Pages
 import SuperAdminOverviewPage from './pages/superadmin/OverviewPage';
@@ -67,200 +61,222 @@ import SuperAdminTenantsPage from './pages/superadmin/TenantsPage';
 import SuperAdminUsersPage from './pages/superadmin/UsersPage';
 import SuperAdminPlansPage from './pages/superadmin/PlansPage';
 import SuperAdminAnalyticsPage from './pages/superadmin/AnalyticsPage';
-import TenantSettingsPage from './pages/superadmin/TenantSettingsPage';
-import TenantDetailsPage from './pages/superadmin/TenantDetailsPage';
 import SuperAdminSettingsPage from './pages/superadmin/SettingsPage';
 
-// Attendant Pages
-import AttendantReadingsPage from './pages/attendant/AttendantReadingsPage';
-import AttendantCashReportsPage from './pages/attendant/AttendantCashReportsPage';
-import AttendantAlertsPage from './pages/attendant/AttendantAlertsPage';
-import AttendantInventoryPage from './pages/attendant/AttendantInventoryPage';
+// Reset Password
+import ResetPasswordPage from './pages/dashboard/ResetPasswordPage';
+
+// Notifications
+import { DailyReminderToast } from './components/notifications/DailyReminderToast';
+
+// Error boundary component
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Component Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">Something went wrong</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                {this.state.error?.message || 'An unexpected error occurred'}
+              </p>
+              <div className="mt-6">
+                <button
+                  type="button"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  onClick={() => window.location.reload()}
+                >
+                  Reload page
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Safe component wrapper
+function SafeComponent({ children }: { children: React.ReactNode }) {
+  return (
+    <ErrorBoundary>
+      {children}
+    </ErrorBoundary>
+  );
+}
+
+// Router component that handles authentication logic
+function AppRouter() {
+  const { isAuthenticated, user, isLoading } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+
+  console.log('[APP-ROUTER] Auth state:', {
+    isAuthenticated,
+    user: user?.email,
+    role: user?.role,
+    isLoading,
+    hasToken: !!localStorage.getItem('fuelsync_token'),
+    hasStoredUser: !!localStorage.getItem('fuelsync_user')
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Initializing FuelSync...</p>
+          <p className="mt-2 text-sm text-gray-500">Please wait while we load your dashboard</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is authenticated, show all routes
+  if (isAuthenticated && user) {
+    return (
+      <Routes>
+        {/* SuperAdmin Routes */}
+        <Route path="/superadmin" element={<SuperAdminLayout />}>
+          <Route index element={<Navigate to="/superadmin/overview" replace />} />
+          <Route path="overview" element={<SuperAdminOverviewPage />} />
+          <Route path="tenants" element={<SuperAdminTenantsPage />} />
+          <Route path="users" element={<SuperAdminUsersPage />} />
+          <Route path="plans" element={<SuperAdminPlansPage />} />
+          <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
+          <Route path="settings" element={<SuperAdminSettingsPage />} />
+        </Route>
+
+        {/* Attendant Routes */}
+        <Route path="/attendant" element={<AttendantLayout />}>
+          <Route index element={<AttendantDashboard />} />
+          <Route path="dashboard" element={<AttendantDashboard />} />
+          <Route path="readings" element={<SimpleReadingEntry />} />
+          <Route path="cash-reports" element={<SimpleCashReport />} />
+        </Route>
+
+        {/* Dashboard Routes for Owner/Manager */}
+        <Route path="/dashboard/*" element={
+          <div className="min-h-screen bg-white">
+            <Sidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
+            <div className="lg:pl-72">
+              <Header onMobileMenuClick={() => setSidebarOpen(true)} />
+              <main className="flex-1 overflow-x-hidden bg-white">
+                <div className="w-full max-w-full">
+                  <div className="w-full min-w-0">
+                    <Routes>
+                      <Route index element={<SafeComponent><DashboardPage /></SafeComponent>} />
+                      <Route path="stations" element={<SafeComponent><StationsPage /></SafeComponent>} />
+                      <Route path="stations/new" element={<SafeComponent><NewStationPage /></SafeComponent>} />
+                      <Route path="stations/:stationId" element={<SafeComponent><StationDetailPage /></SafeComponent>} />
+                      <Route path="stations/:stationId/edit" element={<SafeComponent><EditStationPage /></SafeComponent>} />
+                      <Route path="stations/:stationId/settings" element={<SafeComponent><StationSettingsPage /></SafeComponent>} />
+                      <Route path="stations/:stationId/pumps" element={<SafeComponent><PumpsPage /></SafeComponent>} />
+                      <Route path="pumps" element={<SafeComponent><PumpsPage /></SafeComponent>} />
+                      <Route path="pumps/new" element={<SafeComponent><CreatePumpPage /></SafeComponent>} />
+                      <Route path="pumps/:pumpId" element={<SafeComponent><PumpDetailPage /></SafeComponent>} />
+                      <Route path="pumps/:pumpId/edit" element={<SafeComponent><EditPumpPage /></SafeComponent>} />
+                      <Route path="pumps/:pumpId/nozzles" element={<SafeComponent><NozzlesPage /></SafeComponent>} />
+                      <Route path="nozzles" element={<SafeComponent><NozzlesPage /></SafeComponent>} />
+                      <Route path="nozzles/new" element={<SafeComponent><CreateNozzlePage /></SafeComponent>} />
+                      <Route path="nozzles/:nozzleId/edit" element={<SafeComponent><EditNozzlePage /></SafeComponent>} />
+                      <Route path="readings" element={<SafeComponent><ReadingsPage /></SafeComponent>} />
+                      <Route path="readings/new" element={<SafeComponent><SimpleReadingPage /></SafeComponent>} />
+                      <Route path="fuel-prices" element={<SafeComponent><FuelPricesPage /></SafeComponent>} />
+                      <Route path="fuel-inventory" element={<SafeComponent><FuelInventoryPage /></SafeComponent>} />
+                      <Route path="sales" element={<SafeComponent><SalesPage /></SafeComponent>} />
+                      <Route path="sales/overview" element={<SafeComponent><SalesOverviewPage /></SafeComponent>} />
+                      <Route path="reports" element={<SafeComponent><ReportsPage /></SafeComponent>} />
+                      <Route path="analytics" element={<SafeComponent><AnalyticsPage /></SafeComponent>} />
+                      <Route path="inventory" element={<SafeComponent><InventoryPage /></SafeComponent>} />
+                      <Route path="users" element={<SafeComponent><UsersPage /></SafeComponent>} />
+                      <Route path="reconciliation" element={<SafeComponent><ReconciliationPage /></SafeComponent>} />
+                      <Route path="reconciliation/:reconciliationId" element={<SafeComponent><ReconciliationDetailPage /></SafeComponent>} />
+                      <Route path="settings" element={<SafeComponent><SettingsPage /></SafeComponent>} />
+                      <Route path="reset-password" element={<SafeComponent><ResetPasswordPage /></SafeComponent>} />
+                      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    </Routes>
+                  </div>
+                </div>
+              </main>
+
+              {/* Quick Reading Button - Floating */}
+              <QuickReadingButton variant="floating" />
+            </div>
+          </div>
+        } />
+
+        {/* Role-based default redirects */}
+        <Route path="/" element={
+          user?.role === 'superadmin' ? <Navigate to="/superadmin/overview" replace /> :
+          user?.role === 'attendant' ? <Navigate to="/attendant/dashboard" replace /> :
+          <Navigate to="/dashboard" replace />
+        } />
+        <Route path="*" element={
+          user?.role === 'superadmin' ? <Navigate to="/superadmin/overview" replace /> :
+          user?.role === 'attendant' ? <Navigate to="/attendant/dashboard" replace /> :
+          <Navigate to="/dashboard" replace />
+        } />
+      </Routes>
+    );
+  }
+
+  // If not authenticated, show public routes
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+}
 
 function App() {
-  console.log('[APP] App component mounting');
-
   return (
-    <GlobalErrorBoundary>
-      <ThemeProvider defaultTheme="light" storageKey="fuelsync-ui-theme">
+    <ErrorBoundary>
+      <ThemeProvider>
         <AuthProvider>
-          <div className="min-h-screen bg-background">
-            <Routes>
-              {/* Root Landing Route */}
-              <Route path="/" element={<LandingPage />} />
-              
-              {/* Public Routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/login/admin" element={<LoginPage />} />
-              
-              {/* Dashboard Routes - for owners, managers, superadmins */}
-              <Route element={<ProtectedRoute allowedRoles={['owner', 'manager', 'superadmin']} redirectPath="/attendant" />}>
-                <Route
-                  path="/dashboard"
-                  element={<DashboardLayout />}
-                >
-                <Route index element={<RoleDashboard />} />
-                
-                {/* Station Routes */}
-                <Route path="stations" element={<StationsPage />} />
-                <Route path="stations/new" element={<NewStationPage />} />
-                <Route path="stations/:stationId/edit" element={<EditStationPage />} />
-                <Route path="stations/:stationId/settings" element={<StationSettingsPage />} />
-                <Route path="stations/:stationId" element={<StationDetailPage />} />
-                <Route path="stations/:stationId/pumps" element={<PumpsPage />} />
-                <Route path="stations/:stationId/pumps/:pumpId" element={<PumpDetailPage />} />
-                <Route path="stations/:stationId/pumps/:pumpId/edit" element={<EditPumpPage />} />
-                <Route path="stations/:stationId/pumps/:pumpId/nozzles" element={<NozzlesPage />} />
-                <Route path="stations/:stationId/pumps/:pumpId/nozzles/new" element={<CreateNozzlePage />} />
-                <Route path="stations/:stationId/pumps/:pumpId/nozzles/:nozzleId/edit" element={<EditNozzlePage />} />
-                <Route path="stations/:stationId/pumps/:pumpId/nozzles/:nozzleId/readings/new" element={<NewReadingPage />} />
-                
-                {/* Pump Routes */}
-                <Route path="pumps" element={<PumpsPage />} />
-                <Route path="pumps/new" element={<CreatePumpPage />} />
-                <Route path="pumps/:pumpId/edit" element={<EditPumpPage />} />
-                <Route path="pumps/:pumpId" element={<PumpDetailPage />} />
-                <Route path="pumps/:pumpId/nozzles" element={<NozzlesPage />} />
-                <Route path="pumps/:pumpId/nozzles/new" element={<CreateNozzlePage />} />
-                <Route path="pumps/:pumpId/nozzles/:nozzleId/edit" element={<EditNozzlePage />} />
-                
-                {/* Nozzle Routes */}
-                <Route path="nozzles" element={<NozzlesPage />} />
-                <Route path="nozzles/new" element={<CreateNozzlePage />} />
-                <Route path="nozzles/:nozzleId" element={<NozzlesPage />} />
-                <Route path="nozzles/:nozzleId/edit" element={<EditNozzlePage />} />
-                <Route path="nozzles/:nozzleId/readings/new" element={<NewReadingPage />} />
-                
-                {/* Reading Routes */}
-                <Route path="readings" element={<ReadingsPage />} />
-                <Route path="readings/new" element={<NewReadingPage />} />
-                <Route path="readings/new/:nozzleId" element={<NewReadingPage />} />
-                <Route path="readings/:readingId" element={<ReadingDetailPage />} />
-                <Route path="readings/:readingId/edit" element={<EditReadingPage />} />
-                
-                {/* Cash Report Routes */}
-                <Route path="cash-report/new" element={<CashReportPage />} />
-                <Route path="cash-reports" element={<CashReportsListPage />} />
-                <Route path="cash-reports/:reportId" element={<CashReportPage />} />
-                
-                {/* Sales Routes */}
-                <Route path="sales" element={<SalesPage />} />
-                <Route path="sales/overview" element={<SalesOverviewPage />} />
-                <Route path="sales/daily" element={<DailySalesPage />} />
-                
-                {/* User Routes */}
-                <Route path="users" element={<UsersPage />} />
-                <Route path="users/reset-password" element={<ResetPasswordPage />} />
-                
-                {/* Creditor Routes */}
-                <Route path="creditors" element={<CreditorsPage />} />
-                <Route path="creditors/new" element={<NewCreditorPage />} />
-                <Route path="creditors/:creditorId" element={<CreditorDetailPage />} />
-                <Route path="creditors/:creditorId/payments/new" element={<NewCreditorPaymentPage />} />
-                
-                {/* Other Routes */}
-                <Route path="fuel-prices" element={<FuelPricesPage />} />
-                <Route path="fuel-inventory" element={<FuelInventoryPage />} />
-                <Route path="fuel-inventory/update" element={<UpdateInventoryPage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="reports/export" element={<ReportExportPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
-                <Route path="stations/comparison" element={<StationComparisonPage />} />
-                <Route path="stations/ranking" element={<StationRankingPage />} />
-                <Route path="reconciliation" element={<SimpleReconciliationPage />} />
-                <Route path="reconciliation/advanced" element={<ReconciliationPage />} />
-                <Route path="reconciliation/:reconciliationId" element={<ReconciliationDetailPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                </Route>
-              </Route>
-
-              {/* Attendant Routes - for attendants only */}
-              <Route element={<ProtectedRoute allowedRoles={['attendant']} redirectPath="/dashboard" />}>
-                <Route path="/attendant" element={<AttendantLayout />}>
-                  <Route index element={<AttendantDashboardPage />} />
-                  <Route path="dashboard" element={<AttendantDashboardPage />} />
-                  <Route path="readings" element={<AttendantReadingsPage />} />
-                  <Route path="cash-reports" element={<AttendantCashReportsPage />} />
-                  <Route path="alerts" element={<AttendantAlertsPage />} />
-                  <Route path="inventory" element={<AttendantInventoryPage />} />
-                </Route>
-              </Route>
-
-              {/* SuperAdmin Routes */}
-              <Route
-                path="/superadmin"
-                element={
-                  <AuthProtectedRoute allowedRoles={['superadmin']}>
-                    <SuperAdminLayout />
-                  </AuthProtectedRoute>
-                }
-              >
-                <Route index element={<Navigate to="/superadmin/overview" replace />} />
-                <Route path="overview" element={<SuperAdminOverviewPage />} />
-                <Route path="tenants" element={<SuperAdminTenantsPage />} />
-                <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
-                <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
-                <Route path="users" element={<SuperAdminUsersPage />} />
-                <Route path="plans" element={<SuperAdminPlansPage />} />
-                <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
-                <Route path="settings" element={<SuperAdminSettingsPage />} />
-              </Route>
-
-              {/* Fallback Route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-            
-            <Toaster 
+          <div className="min-h-screen">
+            <AppRouter />
+            <DailyReminderToast enabled={true} showOnMount={true} />
+            <Toaster
               position="top-right"
-              reverseOrder={false}
-              gutter={8}
+              expand={true}
+              richColors={true}
+              closeButton={true}
               toastOptions={{
                 duration: 4000,
-                success: {
-                  duration: 3000,
-                  style: {
-                    background: '#10b981',
-                    color: '#fff',
-                  },
-                  iconTheme: {
-                    primary: '#fff',
-                    secondary: '#10b981',
-                  },
-                },
-                error: {
-                  duration: 5000,
-                  style: {
-                    background: '#ef4444',
-                    color: '#fff',
-                  },
-                  iconTheme: {
-                    primary: '#fff',
-                    secondary: '#ef4444',
-                  },
+                style: {
+                  fontSize: '14px',
                 },
               }}
             />
           </div>
         </AuthProvider>
       </ThemeProvider>
-    </GlobalErrorBoundary>
+    </ErrorBoundary>
   );
-}
-
-// Component to show different dashboard based on user role
-function RoleDashboard() {
-  try {
-    const user = JSON.parse(localStorage.getItem('fuelsync_user') || '{}');
-    
-    if (user.role === 'attendant') {
-      return <Navigate to="/attendant/dashboard" replace />;
-    }
-    
-    return <DashboardPage />;
-  } catch (error) {
-    console.error('Error parsing user data:', error);
-    return <DashboardPage />;
-  }
 }
 
 export default App;

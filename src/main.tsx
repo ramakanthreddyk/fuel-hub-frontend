@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file main.tsx
  * @description Main application entry point
  */
@@ -8,6 +8,9 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
+
+// Clear old localStorage data from when stores were persisted
+import './utils/clearOldStorage';
 
 // Check if we're on the custom domain
 if (window.location.hostname === 'aspirereach.com') {

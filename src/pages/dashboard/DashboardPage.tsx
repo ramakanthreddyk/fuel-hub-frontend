@@ -37,6 +37,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { useReconciliationDifferencesSummary } from '@/hooks/useReconciliationDifferencesSummary';
+import { OnboardingDashboard } from '@/components/onboarding/OnboardingDashboard';
 
 // Filters
 import { SearchableStationSelector } from '@/components/filters/SearchableStationSelector';
@@ -107,7 +108,7 @@ export default function DashboardPage() {
   // Loading states are now handled by individual hooks with toast notifications
 
   // Calculate summary stats using API data
-  const totalStations = stations.length;
+  const totalStations = Array.isArray(stations) ? stations.length : 0;
   const activeStations = Array.isArray(stationMetrics) 
     ? stationMetrics.filter(station => station.status === 'active').length 
     : 0;
@@ -121,8 +122,8 @@ export default function DashboardPage() {
   const lifetimeRevenue = lifetimeSales?.totalRevenue || 0;
   const lifetimeVolume = lifetimeSales?.totalVolume || 0;
 
-  // Get recent stations for display
-  const recentStations = stations.slice(0, 4);
+  // Get recent stations for display (ensure stations is an array)
+  const recentStations = Array.isArray(stations) ? stations.slice(0, 4) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
@@ -177,6 +178,9 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        {/* Smart Onboarding Widget - Only shows when setup incomplete or urgent tasks */}
+        <OnboardingDashboard compact={true} showReminders={true} />
+
         {/* Filtered Sales Metrics */}
         <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200/50 p-3 sm:p-4">
           <div className="flex items-center gap-2 mb-4">

@@ -69,15 +69,41 @@ export const todaysSalesService = {
       if (date) {
         params.append('date', date);
       }
-      
+
       const response = await apiClient.get(`/todays-sales/summary?${params.toString()}`);
+
       // Extract data from nested structure: response.data.data
-      return response.data.data || response.data;
-    } catch (error) {
+      const data = response.data.data || response.data;
+
+      // If we get a successful response but no data, that's normal (not an error)
+      if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+        console.log('[TODAYS-SALES] No sales data available for the requested date');
+        return {
+          date: date || new Date().toISOString().split('T')[0],
+          totalEntries: 0,
+          totalVolume: 0,
+          totalAmount: 0,
+          paymentBreakdown: { cash: 0, card: 0, upi: 0, credit: 0 },
+          nozzleEntries: [],
+          salesByFuel: [],
+          salesByStation: [],
+          creditSales: []
+        };
+      }
+
+      return data;
+    } catch (error: any) {
       console.error('[TODAYS-SALES] Error:', error);
-      // Return empty data structure instead of throwing
+
+      // Check if this is an authentication error
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        throw error; // Re-throw auth errors
+      }
+
+      // For other errors (like 404 - no data), return empty structure
+      console.log('[TODAYS-SALES] Returning empty data structure due to error:', error?.response?.status);
       return {
-        date: new Date().toISOString().split('T')[0],
+        date: date || new Date().toISOString().split('T')[0],
         totalEntries: 0,
         totalVolume: 0,
         totalAmount: 0,

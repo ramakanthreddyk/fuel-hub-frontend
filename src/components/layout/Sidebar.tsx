@@ -24,7 +24,8 @@ import {
   Factory,
   Wrench,
   Database,
-  Calculator
+  Calculator,
+  Gauge
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -75,6 +76,7 @@ const navigation: NavItem[] = [
     roles: ['owner', 'manager', 'superadmin'],
     children: [
       { name: 'Readings', href: '/dashboard/readings', icon: Database, roles: ['owner', 'manager', 'superadmin'] },
+      { name: 'Quick Record', href: '/dashboard/readings/new', icon: Gauge, roles: ['owner', 'manager', 'attendant'] },
       { name: 'Fuel Prices', href: '/dashboard/fuel-prices', icon: BadgeIndianRupee, roles: ['owner', 'manager'] },
       { name: 'Inventory', href: '/dashboard/fuel-inventory', icon: ClipboardList, roles: ['owner', 'manager'] },
     ],

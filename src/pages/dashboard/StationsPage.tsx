@@ -33,10 +33,10 @@ export default function StationsPage() {
   useAutoLoader(isLoading, 'Loading stations...');
   useAutoLoader(deleteStationMutation.isPending, 'Deleting station...');
 
-  const filteredStations = stations.filter(station =>
+  const filteredStations = Array.isArray(stations) ? stations.filter(station =>
     station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     station.address.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   const handleDeleteStation = (stationId: string) => {
     setStationToDelete(stationId);

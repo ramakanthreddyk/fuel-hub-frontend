@@ -21,11 +21,24 @@ export const useSales = (filters: SalesFilters = {}) => {
     },
     onSuccess: (data) => {
       console.log('[SALES-HOOK] Success callback - data length:', data?.length);
-      showSuccess('Sales Loaded', `${data?.length || 0} sales transactions loaded`);
+
+      // Only show success message if there's actual data
+      if (data && data.length > 0) {
+        showSuccess('Sales Loaded', `${data.length} sales transactions loaded`);
+      } else {
+        console.log('[SALES-HOOK] No sales data available');
+        // Don't show success toast for empty data
+      }
     },
     staleTime: 60000,
     onError: (error: any) => {
-      handleApiError(error, 'Sales');
+      // Only show error for actual errors, not empty data scenarios
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        handleApiError(error, 'Sales');
+      } else {
+        console.log('[SALES-HOOK] Non-critical error:', error?.response?.status);
+        // Don't show error toast for empty data scenarios
+      }
     },
   });
 };

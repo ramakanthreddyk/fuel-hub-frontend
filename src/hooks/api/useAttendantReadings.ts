@@ -5,6 +5,8 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient, { extractData } from '@/api/core/apiClient';
+import { useStoreSync } from '@/hooks/useStoreSync';
+import { useToastNotifications } from '@/hooks/useToastNotifications';
 
 // Types
 export interface CreateReadingRequest {
@@ -51,20 +53,21 @@ export const useCanCreateReading = (nozzleId?: string) => {
  */
 export const useCreateAttendantReading = () => {
   const queryClient = useQueryClient();
-  
+  const { syncAfterReadingCreate } = useStoreSync();
+  const { handleApiError } = useToastNotifications();
+
   return useMutation({
     mutationFn: async (data: CreateReadingRequest) => {
       const response = await apiClient.post('nozzle-readings', data);
       return extractData<NozzleReading>(response);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['can-create-reading'] });
-      queryClient.invalidateQueries({ queryKey: ['latest-reading'] });
-      // Toast is handled in the component for better context
+    onSuccess: async (newReading) => {
+      console.log('[CREATE-ATTENDANT-READING] Success:', newReading);
+      await syncAfterReadingCreate(newReading);
     },
     onError: (error: any) => {
-      console.error('Failed to create reading:', error);
-      // Toast is handled in the component for better error context
+      console.error('[CREATE-ATTENDANT-READING] Error:', error);
+      handleApiError(error, 'Create Reading');
     },
   });
 };

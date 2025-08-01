@@ -27,6 +27,8 @@ export default function NozzlesPage() {
   const [searchParams] = useSearchParams();
   const { pumpId } = useParams<{ pumpId: string }>();
   const { showSuccess, showError } = useToastNotifications();
+
+  console.log('NozzlesPage - pumpId:', pumpId);
   const queryClient = useQueryClient();
   const { refreshNozzles } = useFuelStoreSync();
   
@@ -125,7 +127,12 @@ export default function NozzlesPage() {
   const [nozzleToDelete, setNozzleToDelete] = useState<string | null>(null);
 
   // Get nozzles based on selected pump - error handling is in the hook
+  console.log('NozzlesPage - selectedPump:', selectedPump);
+  console.log('NozzlesPage - using pumpId for useNozzles:', selectedPump !== 'all' ? selectedPump : undefined);
   const { data: nozzles = [], isLoading } = useNozzles(selectedPump !== 'all' ? selectedPump : undefined);
+
+  console.log('NozzlesPage - nozzles data:', nozzles);
+  console.log('NozzlesPage - isLoading:', isLoading);
   
   // Use a local state for cached nozzles instead of calling store during render
   const [cachedNozzles, setCachedNozzles] = useState<any[]>([]);
@@ -379,23 +386,22 @@ export default function NozzlesPage() {
                     const nozzleData = filteredNozzles.find(n => n.id === nozzleId);
                     const pump = pumps.find(p => p.id === nozzleData?.pumpId);
                     const stationId = pump?.stationId;
-                    
+
                     // Update the store with all three values
                     if (stationId) selectStation(stationId);
                     if (nozzleData?.pumpId) selectPump(nozzleData.pumpId);
                     selectNozzle(nozzleId);
-                    
-                    // Navigate to the new reading page with proper path parameters
-                    navigate(
-                      `/dashboard/stations/${stationId}/pumps/${nozzleData?.pumpId}/nozzles/${nozzleId}/readings/new`, 
-                      createNavigationState('nozzles', {
+
+                    // Navigate to simple readings page with nozzle pre-selected
+                    navigate('/dashboard/readings/new', {
+                      state: {
                         preselected: {
                           stationId: stationId,
                           pumpId: nozzleData?.pumpId,
                           nozzleId: nozzleId
                         }
-                      })
-                    );
+                      }
+                    });
                   }}
                 />
               );

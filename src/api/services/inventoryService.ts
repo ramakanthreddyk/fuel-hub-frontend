@@ -142,14 +142,18 @@ export const inventoryService = {
       };
       
       const response = await apiClient.post('/inventory/update', payload);
+      console.log('[INVENTORY-API] Update response:', response.data);
       return response.data?.success === true || response.status === 200;
-        console.log('[INVENTORY-API] Legacy update response:', response.data);
-        return true;
-      } catch (error) {
+    } catch (error) {
       console.error('[INVENTORY-API] Error updating inventory:', error);
       return false;
     }
   }
 };
+
+// Export individual functions for convenience
+export const updateInventory = inventoryService.updateInventory;
+export const getFuelInventory = inventoryService.getFuelInventory;
+export const getInventorySummary = inventoryService.getInventorySummary;
 
 export default inventoryService;

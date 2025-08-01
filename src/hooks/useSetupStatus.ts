@@ -14,9 +14,26 @@ export const useSetupStatus = () => {
   return useQuery({
     queryKey: ['setup-status'],
     queryFn: async (): Promise<SetupStatusDTO> => {
-      return contractClient.get<SetupStatusDTO>('/setup-status');
+      try {
+        console.log('[SETUP-STATUS] Fetching setup status...');
+        const result = await contractClient.get<SetupStatusDTO>('/setup-status');
+        console.log('[SETUP-STATUS] Setup status result:', result);
+        return result;
+      } catch (error) {
+        console.error('[SETUP-STATUS] Error fetching setup status:', error);
+        // Return default status on error
+        return {
+          hasStation: false,
+          hasPump: false,
+          hasNozzle: false,
+          hasFuelPrice: false,
+          completed: false
+        };
+      }
     },
-    refetchInterval: 5000, // Refetch every 5 seconds to keep status updated
-    staleTime: 0, // Always consider data stale for real-time updates
+    refetchInterval: 30000, // Refetch every 30 seconds (less aggressive)
+    staleTime: 10000, // 10 seconds stale time
+    retry: 3,
+    retryDelay: 1000,
   });
 };

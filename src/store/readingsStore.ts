@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 interface ReadingsState {
   // Last created reading info
@@ -26,9 +25,7 @@ interface ReadingsState {
   resetLastCreatedReading: () => void;
 }
 
-export const useReadingsStore = create<ReadingsState>()(
-  persist(
-    (set) => ({
+export const useReadingsStore = create<ReadingsState>()((set) => ({
       // Initial state
       lastCreatedReading: {
         id: null,
@@ -62,9 +59,4 @@ export const useReadingsStore = create<ReadingsState>()(
           timestamp: null
         }
       }),
-    }),
-    {
-      name: 'readings-store', // unique name for localStorage
-    }
-  )
-);
+    }));

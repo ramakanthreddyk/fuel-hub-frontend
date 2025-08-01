@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation } from '@tanstack/react-query';
-import apiClient from '@/api/core/apiClient';
+import { useCreateStation } from '@/hooks/api/useStations';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function NewStationPage() {
@@ -21,35 +20,21 @@ export default function NewStationPage() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
 
-  const createStationMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiClient.post('/stations', {
-        name,
-        address,
-        phone,
-        email,
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Success',
-        description: 'Station created successfully',
-      });
-      navigate('/dashboard/stations');
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to create station',
-        variant: 'destructive',
-      });
-    }
-  });
+  const createStationMutation = useCreateStation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    createStationMutation.mutate();
+    createStationMutation.mutate({
+      name,
+      address,
+      city: '', // Add default values
+      state: '',
+      zipCode: ''
+    }, {
+      onSuccess: () => {
+        navigate('/dashboard/stations');
+      }
+    });
   };
 
   return (

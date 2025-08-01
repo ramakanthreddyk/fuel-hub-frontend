@@ -44,9 +44,9 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
   // Format Y-axis values to show in millions/lakhs
   const formatYAxisValue = (value: number) => {
     if (value >= 10000000) {
-      return `${(value / 10000000).toFixed(1)}Cr`;
+      return `${(value / 10000000).toFixed(1)} Crores`;
     } else if (value >= 100000) {
-      return `${(value / 100000).toFixed(1)}L`;
+      return `${(value / 100000).toFixed(1)} Lakhs`;
     } else if (value >= 1000) {
       return `${(value / 1000).toFixed(1)}K`;
     }

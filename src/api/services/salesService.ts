@@ -91,9 +91,28 @@ export const salesService = {
       
       console.log(`[SALES-API] Successfully fetched ${salesArray.length} sales`);
       return salesArray;
-    } catch (error) {
+    } catch (error: any) {
       console.error('[SALES-API] Error fetching sales:', error);
-      throw error;
+
+      // If it's an auth error, re-throw it
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        throw error;
+      }
+
+      // For other errors (like 404 - no data), return empty array
+      if (error?.response?.status === 404) {
+        console.log('[SALES-API] No sales data found, returning empty array');
+        return [];
+      }
+
+      // For network errors or server errors, still throw
+      if (!error?.response || error?.response?.status >= 500) {
+        throw error;
+      }
+
+      // For other client errors, return empty array
+      console.log('[SALES-API] Client error, returning empty array:', error?.response?.status);
+      return [];
     }
   }
 };

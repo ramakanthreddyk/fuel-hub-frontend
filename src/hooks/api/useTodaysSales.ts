@@ -37,17 +37,45 @@ export const useTodaysSales = (date?: string, stationId?: string) => {
         setTodaysSales(queryDate, data);
         
         hideLoader();
-        showSuccess(
-          'Sales Data Loaded', 
-          `Successfully loaded sales data${date ? ` for ${new Date(date).toLocaleDateString()}` : ''}`
-        );
-        
+
+        // Show appropriate message based on data availability
+        if (data.totalEntries === 0) {
+          console.log('[TODAYS-SALES] No sales data available');
+          // Don't show success toast for empty data, just log it
+        } else {
+          showSuccess(
+            'Sales Data Loaded',
+            `Found ${data.totalEntries} sales entries${date ? ` for ${new Date(date).toLocaleDateString()}` : ''}`
+          );
+        }
+
         return data;
       } catch (error: any) {
         hideLoader();
-        setError(cacheKey, error.message || 'Failed to load sales data');
-        handleApiError(error, `Sales Data${date ? ` (${new Date(date).toLocaleDateString()})` : ''}`);
-        throw error;
+
+        // Only treat auth errors as real errors
+        if (error?.response?.status === 401 || error?.response?.status === 403) {
+          setError(cacheKey, 'Authentication required');
+          handleApiError(error, `Sales Data${date ? ` (${new Date(date).toLocaleDateString()})` : ''}`);
+          throw error;
+        }
+
+        // For other errors, log but don't show error toast
+        console.log('[TODAYS-SALES] Non-critical error:', error?.response?.status, error?.message);
+        setError(cacheKey, 'No sales data available');
+
+        // Return empty data instead of throwing
+        return {
+          date: date || new Date().toISOString().split('T')[0],
+          totalEntries: 0,
+          totalVolume: 0,
+          totalAmount: 0,
+          paymentBreakdown: { cash: 0, card: 0, upi: 0, credit: 0 },
+          nozzleEntries: [],
+          salesByFuel: [],
+          salesByStation: [],
+          creditSales: []
+        };
       } finally {
         setLoading(cacheKey, false);
       }

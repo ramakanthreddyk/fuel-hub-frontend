@@ -13,18 +13,19 @@ export const useStations = (includeMetrics: boolean = false) => {
     queryKey: ['stations', includeMetrics],
     queryFn: async () => {
       // Don't use cache if metrics are requested
-      if (!includeMetrics && storedStations.length > 0) {
+      if (!includeMetrics && Array.isArray(storedStations) && storedStations.length > 0) {
         console.log('[STATIONS-HOOK] Using cached stations');
         return storedStations;
       }
       
-      const stations = await stationsService.getStations(includeMetrics);
-      
+      const response = await stationsService.getStations({ includeMetrics });
+      const stations = response.data || [];
+
       // Store in cache only if no metrics requested
       if (!includeMetrics) {
         setStations(stations);
       }
-      
+
       return stations;
     },
     staleTime: includeMetrics ? 60 * 1000 : 5 * 60 * 1000, // 1 min for metrics, 5 min for basic
@@ -74,7 +75,11 @@ export const useCreateStation = () => {
     },
     onSuccess: (newStation) => {
       clearStations();
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['stations'] });
+      queryClient.invalidateQueries({ queryKey: ['setup-status'] });
+      queryClient.invalidateQueries({ queryKey: ['onboarding'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       showSuccess('Station Created', `Station "${newStation.name}" created successfully`);
     },
     onError: (error: any) => {

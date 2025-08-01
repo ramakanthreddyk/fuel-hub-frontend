@@ -3,9 +3,8 @@
  * @file api/services/dashboardService.ts
  * @description Service for dashboard API endpoints
  */
-import { apiClient } from '../client';
-import { extractApiData as extractData, extractApiArray as extractArray } from '../client';
-import { API_URL } from '../config';
+import apiClient, { extractData, extractArray } from '../core/apiClient';
+import API_CONFIG from '../core/config';
 
 export interface SalesSummary {
   totalRevenue: number;
@@ -112,7 +111,7 @@ export const dashboardService = {
         console.error('[DASHBOARD-API] Inner error fetching sales summary:', innerError);
         // If that fails, try a direct axios call with the full URL
         const axios = (await import('axios')).default;
-        const directResponse = await axios.get(`${API_URL}/dashboard/sales-summary?${params.toString()}`);
+        const directResponse = await axios.get(`${API_CONFIG.BASE_URL}/dashboard/sales-summary?${params.toString()}`);
         const data = directResponse.data;
         
         // Map the response to the expected format
@@ -220,7 +219,7 @@ export const dashboardService = {
       } catch (innerError) {
         // If that fails, try a direct axios call with the full URL
         const axios = (await import('axios')).default;
-        const directResponse = await axios.get(`${API_URL}/dashboard/station-metrics`);
+        const directResponse = await axios.get(`${API_CONFIG.BASE_URL}/dashboard/station-metrics`);
         return Array.isArray(directResponse.data) ? directResponse.data : [];
       }
     } catch (error) {

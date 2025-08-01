@@ -65,7 +65,7 @@ export const attendantReadingsService = {
   submitCashReport: async (data: CreateCashReportRequest): Promise<CashReport> => {
     try {
       console.log('[ATTENDANT-READINGS] Submitting cash report:', data);
-      const response = await apiClient.post('/cash-reports', data);
+      const response = await apiClient.post('/attendant/cash-report', data);
       return extractApiData<CashReport>(response);
     } catch (error) {
       console.error('[ATTENDANT-READINGS] Error submitting cash report:', error);

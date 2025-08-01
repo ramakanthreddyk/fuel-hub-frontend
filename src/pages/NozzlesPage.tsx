@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EnhancedNozzleCard } from '@/components/nozzles/EnhancedNozzleCard';
 import { ArrowLeft, Fuel, Activity, AlertTriangle, Plus, Gauge } from 'lucide-react';
+import { apiClient } from '@/api/client';
 
 interface Nozzle {
   id: string;
@@ -31,9 +32,8 @@ const NozzlesPage = () => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`/api/pumps/${pumpId}/nozzles`);
-        if (!res.ok) throw new Error('Failed to fetch nozzles');
-        const data = await res.json();
+        const response = await apiClient.get(`/pumps/${pumpId}/nozzles`);
+        const data = response.data;
         
         if (Array.isArray(data)) {
           setNozzles(data);

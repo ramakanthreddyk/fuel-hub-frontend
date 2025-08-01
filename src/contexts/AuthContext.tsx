@@ -37,6 +37,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -45,11 +46,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Initialize auth state on mount
   useEffect(() => {
+    if (initialized) return;
+
     const initializeAuth = async () => {
       try {
+        console.log('[AUTH-CONTEXT] Initializing auth...');
         const token = localStorage.getItem('fuelsync_token');
         const storedUser = localStorage.getItem('fuelsync_user');
-        
+
         if (token && storedUser) {
           const parsedUser = JSON.parse(storedUser);
           if (parsedUser.role && ['superadmin', 'owner', 'manager', 'attendant'].includes(parsedUser.role)) {
@@ -60,6 +64,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             localStorage.removeItem('fuelsync_token');
             localStorage.removeItem('fuelsync_user');
           }
+        } else {
+          console.log('[AUTH-CONTEXT] No stored credentials found');
         }
       } catch (error) {
         console.error('[AUTH-CONTEXT] Error initializing auth:', error);
@@ -68,13 +74,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(null);
       } finally {
         setIsLoading(false);
+        setInitialized(true);
       }
     };
 
-    // Small delay to prevent immediate execution
-    const timer = setTimeout(initializeAuth, 200);
-    return () => clearTimeout(timer);
-  }, []);
+    // Listen for auth expiration events from API client
+    const handleAuthExpired = () => {
+      console.log('[AUTH-CONTEXT] Auth expired event received');
+      setUser(null);
+      setIsLoading(false);
+      setInitialized(true);
+    };
+
+    window.addEventListener('auth-expired', handleAuthExpired);
+
+    // Initialize immediately, no delay needed
+    initializeAuth();
+
+    return () => {
+      window.removeEventListener('auth-expired', handleAuthExpired);
+    };
+  }, [initialized]);
 
   const login = async (email: string, password: string, isAdminLogin = false) => {
     try {
@@ -103,22 +123,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(authUser as User);
       console.log('[AUTH-CONTEXT] Login successful:', authUser);
       
-      // Delay navigation to prevent immediate page refresh
-      setTimeout(() => {
-        const currentPath = location.pathname;
-        
-        if (authUser.role === 'superadmin') {
-          // Only navigate if not already on superadmin route
-          if (!currentPath.startsWith('/superadmin')) {
-            navigate('/superadmin/overview', { replace: true });
-          }
-        } else {
-          // Only navigate if not already on dashboard route
-          if (!currentPath.startsWith('/dashboard')) {
-            navigate('/dashboard', { replace: true });
-          }
-        }
-      }, 500); // Increased delay to prevent refresh
+      // Let App.tsx handle navigation based on user role
+      console.log('[AUTH-CONTEXT] User authenticated, letting App.tsx handle navigation');
     } catch (error: any) {
       console.error('[AUTH-CONTEXT] Login error:', error);
       throw new Error(error.response?.data?.message || error.message || 'Login failed');

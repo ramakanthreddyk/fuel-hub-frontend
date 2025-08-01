@@ -1,28 +1,40 @@
 
 /**
  * @file ReconciliationPage.tsx
- * @description Comprehensive reconciliation management page utilizing all backend features
+ * @description IMPROVED Daily Reconciliation - Simple "System vs Reality" comparison
+ *
+ * FEATURES:
+ * - Clear side-by-side comparison of system vs user data
+ * - Support for backdated day closures
+ * - Color-coded differences (Green/Yellow/Red)
+ * - One-click day closure
+ * - Analytics integration
  */
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, CheckCircle, AlertTriangle, Eye, Play, TrendingUp, AlertCircle } from 'lucide-react';
-import { FuelLoader } from '@/components/ui/FuelLoader';
-import { useStations } from '@/hooks/api/useStations';
-import { useReconciliationHistory, useCreateReconciliation, useDailyReadingsSummary } from '@/hooks/useReconciliation';
-import { reconciliationApi } from '@/api/reconciliation';
-import { useReconciliationDiffs, useDiscrepancySummary } from '@/hooks/api/useReconciliationDiff';
-import { formatCurrency, formatDate } from '@/utils/formatters';
-import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
-import { ReconciliationRecord } from '@/api/api-contract';
+import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Calculator,
+  Banknote,
+  CreditCard,
+  Smartphone,
+  CheckCircle,
+  AlertCircle,
+  Calendar,
+  TrendingUp,
+  Clock,
+  AlertTriangle
+} from 'lucide-react';
+import { FuelLoader } from '@/components/ui/FuelLoader';
+import { useStations } from '@/hooks/api/useStations';
+import { formatCurrency, formatDate } from '@/utils/formatters';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,19 +46,73 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+// Interfaces for improved reconciliation
+interface ReconciliationSummary {
+  date: string;
+  stationId: string;
+  stationName: string;
+  systemCalculated: {
+    totalRevenue: number;
+    cashSales: number;
+    cardSales: number;
+    upiSales: number;
+    creditSales: number;
+    totalVolume: number;
+    fuelBreakdown: {
+      petrol: { volume: number; revenue: number };
+      diesel: { volume: number; revenue: number };
+      cng?: { volume: number; revenue: number };
+      lpg?: { volume: number; revenue: number };
+    };
+  };
+  userEntered: {
+    cashCollected: number;
+    cardCollected: number;
+    upiCollected: number;
+    totalCollected: number;
+  };
+  differences: {
+    cashDifference: number;
+    cardDifference: number;
+    upiDifference: number;
+    totalDifference: number;
+  };
+  isReconciled: boolean;
+  reconciledBy?: string;
+  reconciledAt?: Date;
+  canCloseBackdated?: boolean;
+}
+
+interface ReconciliationDashboard {
+  today: string;
+  stations: Array<{
+    id: string;
+    name: string;
+    hasData: boolean;
+    isReconciled: boolean;
+    totalDifference: number;
+    systemTotal: number;
+    userTotal: number;
+    canCloseBackdated?: boolean;
+    error?: string;
+  }>;
+  summary: {
+    totalStations: number;
+    reconciledToday: number;
+    pendingReconciliation: number;
+    totalDifferences: number;
+  };
+}
+
 export default function ReconciliationPage() {
-  const [selectedStation, setSelectedStation] = useState<string>('all');
+  const [selectedStation, setSelectedStation] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [processingStations, setProcessingStations] = useState<Set<string>>(new Set());
+  const [reconciliationSummary, setReconciliationSummary] = useState<ReconciliationSummary | null>(null);
+  const [dashboard, setDashboard] = useState<ReconciliationDashboard | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [closingDay, setClosingDay] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [stationToReconcile, setStationToReconcile] = useState<{id: string, name: string} | null>(null);
-  const [salesSummary, setSalesSummary] = useState<{
-    readings: any[];
-    totals: { volume: number; revenue: number; cashDeclared: number };
-    variance: number;
-    hasReadings: boolean;
-  } | null>(null);
-  const [varianceReason, setVarianceReason] = useState<string>('');
+  const [notes, setNotes] = useState('');
   const { toast } = useToast();
 
   const { data: stations = [] } = useStations();

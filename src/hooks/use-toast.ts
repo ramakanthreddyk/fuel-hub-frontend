@@ -4,30 +4,46 @@ import { toast as sonnerToast } from 'sonner';
 export interface ToastOptions {
   title?: string;
   description?: string;
-  variant?: 'default' | 'destructive' | 'success';
+  variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info';
+  duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 // Simple toast hook that works with sonner
 export function useToast() {
   return {
     toast: (options: ToastOptions) => {
-      const { title = '', description = '', variant = 'default' } = options;
-      
+      const {
+        title = '',
+        description = '',
+        variant = 'default',
+        duration,
+        action
+      } = options;
+
+      const toastOptions = {
+        description,
+        duration,
+        action: action ? {
+          label: action.label,
+          onClick: action.onClick,
+        } : undefined,
+      };
+
       switch (variant) {
         case 'destructive':
-          sonnerToast.error(title || 'Error', {
-            description,
-          });
-          break;
+          return sonnerToast.error(title || 'Error', toastOptions);
         case 'success':
-          sonnerToast.success(title || 'Success', {
-            description,
-          });
-          break;
+          return sonnerToast.success(title || 'Success', toastOptions);
+        case 'warning':
+          return sonnerToast.warning(title || 'Warning', toastOptions);
+        case 'info':
+          return sonnerToast.info(title || 'Info', toastOptions);
         default:
-          sonnerToast.info(title || 'Info', {
-            description,
-          });
+          return sonnerToast(title || 'Notification', toastOptions);
       }
     },
   };
@@ -35,22 +51,33 @@ export function useToast() {
 
 // Export a direct toast function for convenience
 export const toast = (options: ToastOptions) => {
-  const { title = '', description = '', variant = 'default' } = options;
-  
+  const {
+    title = '',
+    description = '',
+    variant = 'default',
+    duration,
+    action
+  } = options;
+
+  const toastOptions = {
+    description,
+    duration,
+    action: action ? {
+      label: action.label,
+      onClick: action.onClick,
+    } : undefined,
+  };
+
   switch (variant) {
     case 'destructive':
-      sonnerToast.error(title || 'Error', {
-        description,
-      });
-      break;
+      return sonnerToast.error(title || 'Error', toastOptions);
     case 'success':
-      sonnerToast.success(title || 'Success', {
-        description,
-      });
-      break;
+      return sonnerToast.success(title || 'Success', toastOptions);
+    case 'warning':
+      return sonnerToast.warning(title || 'Warning', toastOptions);
+    case 'info':
+      return sonnerToast.info(title || 'Info', toastOptions);
     default:
-      sonnerToast.info(title || 'Info', {
-        description,
-      });
+      return sonnerToast(title || 'Notification', toastOptions);
   }
 };

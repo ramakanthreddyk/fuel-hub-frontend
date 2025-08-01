@@ -40,6 +40,9 @@ export default function LandingPage() {
     users: 0
   });
 
+  // Temporarily disable auto-redirect to fix infinite loop
+  // TODO: Re-enable once all routes are properly set up
+  /*
   useEffect(() => {
     if (isAuthenticated && user) {
       if (user.role === 'superadmin') {
@@ -50,7 +53,8 @@ export default function LandingPage() {
         navigate('/dashboard', { replace: true });
       }
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user]);
+  */
 
   // Animation sequence
   useEffect(() => {

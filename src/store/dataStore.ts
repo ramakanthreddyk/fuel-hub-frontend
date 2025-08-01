@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 interface DataStore {
   // Fuel Prices
@@ -35,9 +34,7 @@ interface DataStore {
   clearAllData: () => void;
 }
 
-export const useDataStore = create<DataStore>()(
-  persist(
-    (set) => ({
+export const useDataStore = create<DataStore>()((set) => ({
       // Initial state
       fuelPrices: {},
       allFuelPrices: [],
@@ -61,9 +58,9 @@ export const useDataStore = create<DataStore>()(
           pumps: { ...state.pumps, [stationId]: pumps } 
         })),
       
-      setNozzles: (pumpId, nozzles) => 
-        set((state) => ({ 
-          nozzles: { ...state.nozzles, [pumpId]: nozzles } 
+      setNozzles: (pumpId, nozzles) =>
+        set((state) => ({
+          nozzles: { ...state.nozzles, [pumpId]: nozzles }
         })),
       
       setLatestReading: (nozzleId, reading) => 
@@ -110,9 +107,4 @@ export const useDataStore = create<DataStore>()(
         nozzles: {},
         latestReadings: {}
       }),
-    }),
-    {
-      name: 'fuelsync-data-store',
-    }
-  )
-);
+    }));

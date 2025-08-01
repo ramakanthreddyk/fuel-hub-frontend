@@ -17,7 +17,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
 
 const navigation = [
-  { name: 'Overview', href: '/superadmin', icon: Home, end: true },
+  { name: 'Overview', href: '/superadmin/overview', icon: Home, end: true },
   { name: 'Analytics', href: '/superadmin/analytics', icon: BarChart3 },
   { name: 'Tenants', href: '/superadmin/tenants', icon: Building2 },
   { name: 'Plans', href: '/superadmin/plans', icon: Package },
