@@ -49,12 +49,33 @@ export const nozzlesService = {
         // Ensure status is one of the allowed values
         const status = (nozzle.status || 'active') as 'active' | 'inactive' | 'maintenance';
         
+        // Ensure lastReading is properly handled - new nozzles should have undefined/null lastReading
+        // Convert string 'null' to actual null, and handle numeric values properly
+        let lastReading = nozzle.lastReading !== undefined ? nozzle.lastReading : nozzle.last_reading;
+
+        // Handle string 'null' from database
+        if (lastReading === 'null' || lastReading === null) {
+          lastReading = undefined;
+        }
+
+        // Convert to number if it's a valid numeric string
+        if (typeof lastReading === 'string' && lastReading.trim() !== '') {
+          const numericValue = parseFloat(lastReading);
+          if (!isNaN(numericValue)) {
+            lastReading = numericValue;
+          } else {
+            lastReading = undefined;
+          }
+        }
+
+        console.log(`[NOZZLES-SERVICE] Nozzle ${nozzle.id} (${nozzle.nozzleNumber || nozzle.nozzle_number}) lastReading:`, lastReading);
+
         return {
           ...nozzle,
           id: nozzle.id,
           pumpId: nozzle.pumpId || nozzle.pump_id,
           pumpName: nozzle.pumpName || nozzle.pump_name,
-          lastReading: nozzle.lastReading || nozzle.last_reading,
+          lastReading: lastReading,
           nozzleNumber: nozzle.nozzleNumber || nozzle.nozzle_number,
           fuelType: fuelType,
           status: status,

@@ -5,13 +5,14 @@
  * @see docs/API_INTEGRATION_GUIDE.md - API integration patterns
  * @see docs/journeys/OWNER.md - Owner journey for user management
  */
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UserPlus, Users, Edit, Trash2, Key } from 'lucide-react';
+import { UserPlus, Users, Edit, Trash2, Key, Mail, MapPin } from 'lucide-react';
+import { useMobileFormatters, getResponsiveTextSize, getResponsiveIconSize, getResponsivePadding } from '@/utils/mobileFormatters';
 import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +30,7 @@ export default function UsersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const { isMobile } = useMobileFormatters();
 
   // Use the new API hooks
   const { data: users, isLoading, error } = useUsers();
@@ -135,27 +137,37 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground">Manage users and their roles within the tenant</p>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline">
-            <Link to="/dashboard/users/reset-password">
-              <Key className="mr-2 h-4 w-4" />
-              Reset Passwords
-            </Link>
-          </Button>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Create User
+    <div className="min-h-screen bg-gray-50/50 p-3 sm:p-4 lg:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-3 sm:p-4 lg:p-6">
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm">
+                <Users className={`${getResponsiveIconSize('base')} text-white`} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className={`${getResponsiveTextSize('3xl')} font-bold text-gray-900 truncate`}>Team Management</h1>
+                <p className={`${getResponsiveTextSize('base')} text-gray-600`}>Manage users and their permissions</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button asChild variant="outline" className={`${getResponsiveTextSize('sm')} w-full sm:w-auto`}>
+                <Link to="/dashboard/users/reset-password">
+                  <Key className={`${getResponsiveIconSize('xs')} mr-2`} />
+                  <span className="hidden xs:inline">Reset Passwords</span>
+                  <span className="xs:hidden">Reset</span>
+                </Link>
               </Button>
-            </DialogTrigger>
-          <DialogContent>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className={`${getResponsiveTextSize('sm')} w-full sm:w-auto`}>
+                    <UserPlus className={`${getResponsiveIconSize('xs')} mr-2`} />
+                    <span className="hidden xs:inline">Create User</span>
+                    <span className="xs:hidden">Create</span>
+                  </Button>
+                </DialogTrigger>
+            <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New User</DialogTitle>
               <DialogDescription>
@@ -169,25 +181,102 @@ export default function UsersPage() {
             />
           </DialogContent>
         </Dialog>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Users
-          </CardTitle>
-          <CardDescription>
-            Manage user accounts and roles
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <Card>
+          <CardHeader className={getResponsivePadding('base')}>
+            <CardTitle className="flex items-center gap-2">
+              <Users className={getResponsiveIconSize('sm')} />
+              <span className={getResponsiveTextSize('lg')}>Users</span>
+            </CardTitle>
+            <CardDescription className={getResponsiveTextSize('base')}>
+              Manage user accounts and roles
+            </CardDescription>
+          </CardHeader>
+          <CardContent className={getResponsivePadding('base')}>
           {isLoading ? (
             <div className="flex justify-center py-8">
               <FuelLoader size="md" text="Loading users..." />
             </div>
+          ) : isMobile ? (
+            // Mobile: Card layout
+            <div className="space-y-3">
+              {users?.map((user) => (
+                <Card key={user.id} className="border border-gray-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className={`${getResponsiveTextSize('base')} font-semibold truncate`}>
+                            {user.name}
+                          </h3>
+                          <Badge variant="secondary" className="text-xs">
+                            {user.role}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Mail className={getResponsiveIconSize('xs')} />
+                            <span className={`${getResponsiveTextSize('sm')} truncate`}>
+                              {user.email}
+                            </span>
+                          </div>
+                          {user.stationName && (
+                            <div className="flex items-center gap-2 text-gray-600">
+                              <MapPin className={getResponsiveIconSize('xs')} />
+                              <span className={`${getResponsiveTextSize('sm')} truncate`}>
+                                {user.stationName}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-1 ml-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsEditDialogOpen(true);
+                          }}
+                          className="p-2"
+                        >
+                          <Edit className={getResponsiveIconSize('xs')} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsResetPasswordDialogOpen(true);
+                          }}
+                          className="p-2"
+                        >
+                          <Key className={getResponsiveIconSize('xs')} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="text-red-600 hover:text-red-700 p-2"
+                        >
+                          <Trash2 className={getResponsiveIconSize('xs')} />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {users?.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No users found. Create your first user to get started.
+                </div>
+              )}
+            </div>
           ) : (
+            // Desktop: Table layout
             <Table>
               <TableHeader>
                 <TableRow>
@@ -300,6 +389,7 @@ export default function UsersPage() {
         onConfirm={confirmDeleteUser}
         onCancel={() => setUserIdToDelete(null)}
       />
+    </div>
     </div>
   );
 }

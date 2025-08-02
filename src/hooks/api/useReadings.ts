@@ -69,6 +69,11 @@ export const useCreateReading = (options?: {
         });
       }
 
+      // Show success toast
+      const reading = newReading?.reading || 'N/A';
+      const nozzleNumber = newReading?.nozzleNumber || 'N/A';
+      showSuccess('Reading Recorded', `Successfully recorded ${reading}L for nozzle #${nozzleNumber}`);
+
       // Call custom onSuccess if provided
       if (options?.onSuccess) {
         options.onSuccess(newReading);
@@ -141,28 +146,67 @@ export const useLatestReading = (nozzleId: string) => {
   return useQuery({
     queryKey: ['latest-reading', nozzleId],
     queryFn: async () => {
-      console.log('[READINGS-HOOK] Fetching latest reading for nozzle:', nozzleId);
+      // Don't fetch if no nozzleId provided
+      if (!nozzleId) {
+        console.log('[READINGS-HOOK] No nozzleId provided, skipping fetch');
+        return null;
+      }
+
+      console.log('[READINGS-HOOK] 🔍 Fetching latest reading for nozzle:', nozzleId);
+      console.log('[READINGS-HOOK] 🔍 Current cache state:', Object.keys(latestReadings).map(id => `${id}: ${latestReadings[id]?.reading || 'null'}`));
+
+      // Clear any cached data for this nozzle to prevent contamination
+      setLatestReading(nozzleId, null);
 
       try {
         const reading = await readingsService.getLatestReading(nozzleId);
-        console.log('[READINGS-HOOK] Latest reading API result:', reading);
+        console.log('[READINGS-HOOK] 📊 Latest reading API result for nozzle', nozzleId, ':', reading);
+
+        // Validate that the reading actually belongs to the requested nozzle
+        if (reading && reading.nozzleId && reading.nozzleId !== nozzleId) {
+          console.error('[READINGS-HOOK] ❌ CACHE CONTAMINATION DETECTED!');
+          console.error('[READINGS-HOOK] Requested nozzle:', nozzleId);
+          console.error('[READINGS-HOOK] Received reading for nozzle:', reading.nozzleId);
+          console.error('[READINGS-HOOK] Reading value:', reading.reading);
+          console.error('[READINGS-HOOK] This indicates a backend query or cache issue');
+
+          // Don't cache contaminated data - return null for this nozzle
+          setLatestReading(nozzleId, null);
+          console.log('[READINGS-HOOK] 🔧 Returning null due to contamination');
+          return null;
+        }
 
         // Store in cache if we have a reading
         if (reading && nozzleId) {
+          console.log('[READINGS-HOOK] ✅ Valid reading for nozzle', nozzleId, ':', reading.reading + 'L');
+          console.log('[READINGS-HOOK] ✅ Reading belongs to correct nozzle:', reading.nozzleId === nozzleId);
           setLatestReading(nozzleId, reading);
+        } else if (nozzleId) {
+          // Clear cache for nozzles with no readings (new nozzles)
+          console.log('[READINGS-HOOK] ✅ No reading found for nozzle, this is correct for new nozzles:', nozzleId);
+          setLatestReading(nozzleId, null);
         }
 
+        console.log('[READINGS-HOOK] 🎯 Final result for nozzle', nozzleId, ':', reading ? reading.reading + 'L' : 'No reading');
         return reading;
-      } catch (error) {
-        console.error('[READINGS-HOOK] Error fetching latest reading:', error);
+      } catch (error: any) {
+        console.error('[READINGS-HOOK] Error fetching latest reading for nozzle', nozzleId, ':', error);
 
-        // Fallback to cached data if API fails
-        if (nozzleId && latestReadings[nozzleId]) {
-          console.log('[READINGS-HOOK] Using cached latest reading as fallback for nozzle:', nozzleId);
-          return latestReadings[nozzleId];
+        // For 404 errors (no readings found), this is expected for new nozzles
+        if (error?.response?.status === 404 || error?.status === 404) {
+          console.log('[READINGS-HOOK] 404 error - nozzle has no readings yet:', nozzleId);
+          if (nozzleId) {
+            setLatestReading(nozzleId, null);
+          }
+          return null;
         }
 
-        return null;
+        // For other errors, don't use cached data as it might be from a different nozzle
+        // This ensures we don't mix readings between nozzles
+        console.log('[READINGS-HOOK] Not using cached data to prevent nozzle reading mixing');
+
+        // Re-throw error for proper error handling in UI
+        throw error;
       }
     },
     enabled: !!nozzleId,

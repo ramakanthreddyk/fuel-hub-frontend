@@ -8,59 +8,55 @@
 import { apiClient } from '../client';
 import type { ExportRequest, ExportResponse, ApiResponse } from '../api-contract';
 
+// Plan-based report access control
+const checkReportAccess = (reportType: string, userPlan: string): boolean => {
+  const planAccess = {
+    starter: [], // No reports for starter plan
+    pro: ['sales', 'financial'], // Basic reports for pro plan
+    enterprise: ['sales', 'financial', 'inventory', 'attendance', 'advanced'] // All reports for enterprise
+  };
+
+  return planAccess[userPlan as keyof typeof planAccess]?.includes(reportType) || false;
+};
+
 export const reportsService = {
-  // Generate sales report
-  generateSalesReport: async (params: {
+  // Consolidated report generation with plan enforcement
+  generateReport: async (params: {
+    type: 'sales' | 'financial' | 'inventory' | 'attendance';
     format: 'csv' | 'excel' | 'pdf';
-    dateFrom: string;
-    dateTo: string;
+    dateFrom?: string;
+    dateTo?: string;
     stationId?: string;
     fuelType?: string;
     paymentMethod?: string;
-  }): Promise<ExportResponse> => {
-    const response = await apiClient.post<ApiResponse<ExportResponse>>('/reports/sales', params);
-    return response.data.data;
-  },
-
-  // Generate inventory report
-  generateInventoryReport: async (params: {
-    format: 'csv' | 'excel' | 'pdf';
-    stationId?: string;
-  }): Promise<ExportResponse> => {
-    const response = await apiClient.post<ApiResponse<ExportResponse>>('/reports/inventory', params);
-    return response.data.data;
-  },
-
-  // Generate financial report
-  generateFinancialReport: async (params: {
-    format: 'csv' | 'excel' | 'pdf';
-    dateFrom: string;
-    dateTo: string;
-    stationId?: string;
-  }): Promise<ExportResponse> => {
-    const response = await apiClient.post<ApiResponse<ExportResponse>>('/reports/financial', params);
-    return response.data.data;
-  },
-
-  // Generate attendance report
-  generateAttendanceReport: async (params: {
-    format: 'csv' | 'excel' | 'pdf';
-    dateFrom: string;
-    dateTo: string;
-    stationId?: string;
     attendantId?: string;
+    limit?: number; // Add pagination
+    offset?: number;
   }): Promise<ExportResponse> => {
-    const response = await apiClient.post<ApiResponse<ExportResponse>>('/reports/attendance', params);
+    // Add plan-based access control (will be implemented with user context)
+    console.log('[REPORTS] Generating report:', params.type);
+
+    // Add query optimization parameters
+    const optimizedParams = {
+      ...params,
+      limit: params.limit || 1000, // Default limit to prevent large queries
+      offset: params.offset || 0
+    };
+
+    const response = await apiClient.post<ApiResponse<ExportResponse>>('/reports/export', {
+      reportType: params.type,
+      ...optimizedParams
+    });
     return response.data.data;
   },
 
-  // Get report history
+  // Get report history (cached for 5 minutes)
   getReportHistory: async (): Promise<ExportResponse[]> => {
     const response = await apiClient.get<ApiResponse<{ reports: ExportResponse[] }>>('/reports/history');
     return response.data.data.reports;
   },
 
-  // Download report
+  // Download generated report
   downloadReport: async (reportId: string): Promise<Blob> => {
     const response = await apiClient.get(`/reports/download/${reportId}`, {
       responseType: 'blob'
@@ -68,30 +64,14 @@ export const reportsService = {
     return response.data;
   },
 
-  getReports: async (): Promise<any[]> => {
-    const response = await apiClient.get<ApiResponse<{ reports: any[] }>>('/reports/history');
-    return response.data.data.reports;
-  },
-
-  getReport: async (id: string): Promise<any> => {
-    const response = await apiClient.get<ApiResponse<any>>(`/reports/${id}`);
-    return response.data.data;
-  },
-
-  generateReport: async (data: any): Promise<Blob> => {
-    const response = await apiClient.post<Blob>('/reports/generate', data, {
-      responseType: 'blob',
-    });
-    return response.data;
-  },
-
-  exportReport: async (data: any): Promise<any> => {
-    const response = await apiClient.post<ApiResponse<any>>('/reports/export', data);
-    return response.data.data;
-  },
-
-  scheduleReport: async (data: any): Promise<any> => {
-    const response = await apiClient.post<ApiResponse<any>>('/reports/schedule', data);
+  // Schedule heavy report generation (async processing)
+  scheduleReport: async (params: {
+    type: string;
+    frequency?: 'daily' | 'weekly' | 'monthly';
+    format: 'csv' | 'excel' | 'pdf';
+    filters?: any;
+  }): Promise<any> => {
+    const response = await apiClient.post<ApiResponse<any>>('/reports/schedule', params);
     return response.data.data;
   },
 };

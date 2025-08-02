@@ -146,13 +146,8 @@ export const readingsService = {
       const response = await apiClient.post(API_CONFIG.endpoints.readings.base, data);
       const result = extractData<Reading>(response);
       console.log('[READINGS-API] Reading created successfully:', result);
-      
-      // Show success toast here instead of in the hook to avoid duplicates
-      import('react-hot-toast').then(({ default: toast }) => {
-        const reading = result?.reading || 'N/A';
-        const nozzleNumber = result?.nozzleNumber || result?.nozzle_number || 'N/A';
-        toast.success(`Reading Recorded: Successfully recorded reading ${reading}L for nozzle #${nozzleNumber}`);
-      });
+
+      // Toast notification is handled by the calling hook to avoid duplicates
       
       return result;
     } catch (error) {
@@ -205,9 +200,14 @@ export const readingsService = {
       // Try direct API call first
       // Use limit=1 to get only the most recent reading as per OpenAPI spec
       let readings = [];
+      const apiUrl = `${API_CONFIG.endpoints.readings.base}?nozzleId=${nozzleId}&limit=1`;
+
+      console.log('[READINGS-API] 🔍 Fetching latest reading for nozzle:', nozzleId);
+      console.log('[READINGS-API] 🔍 API URL:', apiUrl);
+
       try {
-        const response = await apiClient.get(`${API_CONFIG.endpoints.readings.base}?nozzleId=${nozzleId}&limit=1`, { headers });
-        console.log('[READINGS-API] Latest reading response:', response.data);
+        const response = await apiClient.get(apiUrl, { headers });
+        console.log('[READINGS-API] 📊 Latest reading response for nozzle', nozzleId, ':', response.data);
         
         // Handle different response formats
         if (response.data?.data?.readings) {
@@ -257,12 +257,24 @@ export const readingsService = {
       
       // Make sure we have readings before trying to access them
       if (!readings || readings.length === 0) {
-        console.log(`[READINGS-API] No readings found for nozzle ${nozzleId} after processing`);
+        console.log(`[READINGS-API] ✅ No readings found for nozzle ${nozzleId} after processing (correct for new nozzles)`);
         return null;
       }
-      
+
       // Normalize property names to handle both camelCase and snake_case
       const reading = readings[0];
+      console.log(`[READINGS-API] 📊 Processing reading for nozzle ${nozzleId}:`, reading);
+
+      // Validate that the reading belongs to the requested nozzle
+      const readingNozzleId = reading.nozzleId || reading.nozzle_id;
+      if (readingNozzleId && readingNozzleId !== nozzleId) {
+        console.error('[READINGS-API] ❌ BACKEND RETURNED WRONG NOZZLE DATA!');
+        console.error('[READINGS-API] Requested nozzle:', nozzleId);
+        console.error('[READINGS-API] Received nozzle:', readingNozzleId);
+        console.error('[READINGS-API] Reading value:', reading.reading);
+        console.error('[READINGS-API] This indicates a backend query filtering bug!');
+        return null; // Don't return contaminated data
+      }
       
       // Ensure paymentMethod is one of the allowed values
       const paymentMethod = (reading.paymentMethod || reading.payment_method || 'cash') as 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
@@ -289,7 +301,15 @@ export const readingsService = {
         volume: reading.volume !== undefined ? reading.volume : (reading.reading - (reading.previousReading || 0))
       };
       
-      console.log(`[READINGS-API] Successfully fetched latest reading for nozzle ${nozzleId}:`, normalizedReading.reading);
+      // Final validation of normalized reading
+      if (normalizedReading.nozzleId !== nozzleId) {
+        console.error('[READINGS-API] ❌ FINAL VALIDATION FAILED!');
+        console.error('[READINGS-API] Normalized reading nozzleId:', normalizedReading.nozzleId);
+        console.error('[READINGS-API] Expected nozzleId:', nozzleId);
+        return null;
+      }
+
+      console.log(`[READINGS-API] ✅ Successfully fetched and validated latest reading for nozzle ${nozzleId}: ${normalizedReading.reading}L`);
       return normalizedReading;
     } catch (error) {
       console.error(`[READINGS-API] Error fetching latest reading for nozzle ${nozzleId}:`, error);

@@ -13,8 +13,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useStations } from '@/hooks/api/useStations';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
-import { useCreateReading, useReadings } from '@/hooks/api/useReadings';
+import { useCreateReading, useLatestReading } from '@/hooks/api/useReadings';
 import { Fuel, Gauge, MapPin, Loader2 } from 'lucide-react';
+import {
+  useMobileFormatters,
+  getResponsiveTextSize,
+  getResponsiveIconSize,
+  getResponsivePadding
+} from '@/utils/mobileFormatters';
 import { toast } from 'sonner';
 
 interface QuickReadingModalProps {
@@ -33,6 +39,7 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
   const [nozzleId, setNozzleId] = useState(preselected?.nozzleId || '');
   const [reading, setReading] = useState('');
   const [notes, setNotes] = useState('');
+  const { formatCurrency: formatCurrencyMobile, isMobile } = useMobileFormatters();
 
   // Fetch data
   const { data: stations = [], isLoading: stationsLoading, error: stationsError } = useStations();
@@ -41,12 +48,7 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
   const createReadingMutation = useCreateReading();
 
   // Fetch last reading for the selected nozzle
-  const { data: readings = [] } = useReadings({
-    nozzleId: nozzleId || undefined,
-    limit: 1,
-    sortBy: 'recordedAt',
-    sortOrder: 'desc'
-  });
+  const { data: lastReading, isLoading: lastReadingLoading } = useLatestReading(nozzleId || '');
 
   // Update preselected values when they change
   useEffect(() => {
@@ -98,12 +100,9 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
   const selectedPump = pumps.find(p => p.id === pumpId);
   const selectedNozzle = nozzles.find(n => n.id === nozzleId);
 
-  // Get last reading
-  const lastReading = readings.length > 0 ? readings[0] : null;
-
   // Debug logging
   console.log('[QUICK-READING] State:', { stationId, pumpId, nozzleId, stations: stations.length, pumps: pumps.length, nozzles: nozzles.length });
-
+  console.log('[QUICK-READING] Last reading for nozzle', nozzleId, ':', lastReading);
   // Handlers for selection changes
   const handleStationChange = (value: string) => {
     console.log('[QUICK-READING] Station changed to:', value);
@@ -156,216 +155,222 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
         recordedAt: new Date().toISOString()
       });
 
-      toast.success('Reading recorded successfully!');
+      // Toast notification is handled by the mutation hook to avoid duplicates
       onOpenChange(false);
     } catch (error) {
       console.error('Error creating reading:', error);
-      toast.error('Failed to record reading. Please try again.');
+      // Error toast is handled by the mutation hook to avoid duplicates
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Gauge className="h-5 w-5 text-blue-600" />
-            Quick Reading Entry
-          </DialogTitle>
-        </DialogHeader>
-
-        {/* Error handling */}
-        {stationsError && (
-          <div className="text-red-600 text-sm p-3 bg-red-50 rounded-lg border border-red-200">
-            Failed to load stations. Please refresh and try again.
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Station Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="station">Station *</Label>
-            <Select value={stationId} onValueChange={handleStationChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select station" />
-              </SelectTrigger>
-              <SelectContent>
-                {stations.map((station) => (
-                  <SelectItem key={station.id} value={station.id}>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      {station.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {stations.length === 0 && (
-              <div className="text-sm text-gray-500">No stations available</div>
-            )}
-          </div>
-
-          {/* Pump Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="pump">Pump *</Label>
-            <Select value={pumpId} onValueChange={handlePumpChange} disabled={!stationId}>
-              <SelectTrigger>
-                <SelectValue placeholder={!stationId ? "Select station first" : "Select pump"} />
-              </SelectTrigger>
-              <SelectContent>
-                {pumps.map((pump) => (
-                  <SelectItem key={pump.id} value={pump.id}>
-                    <div className="flex items-center gap-2">
-                      <Fuel className="h-4 w-4" />
-                      {pump.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {stationId && pumps.length === 0 && (
-              <div className="text-sm text-gray-500">No pumps available for this station</div>
-            )}
-          </div>
-
-          {/* Nozzle Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="nozzle">Nozzle *</Label>
-            <Select value={nozzleId} onValueChange={handleNozzleChange} disabled={!pumpId}>
-              <SelectTrigger>
-                <SelectValue placeholder={!pumpId ? "Select pump first" : "Select nozzle"} />
-              </SelectTrigger>
-              <SelectContent>
-                {nozzles.map((nozzle) => (
-                  <SelectItem key={nozzle.id} value={nozzle.id}>
-                    <div className="flex items-center gap-2">
-                      <Gauge className="h-4 w-4" />
-                      Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {pumpId && nozzles.length === 0 && (
-              <div className="text-sm text-gray-500">No nozzles available for this pump</div>
-            )}
-          </div>
-
-          {/* Current Selection Summary */}
-          {selectedStation && selectedPump && selectedNozzle && (
-            <Card className="bg-blue-50 border-blue-200">
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  <div>
-                    <div className="font-medium text-blue-900 mb-1">Recording for:</div>
-                    <div className="text-blue-700 font-medium">
-                      {selectedStation.name} → {selectedPump.name} → Nozzle {selectedNozzle.nozzleNumber}
-                    </div>
-                    <div className="text-blue-600 text-sm">
-                      Fuel Type: {selectedNozzle.fuelType}
-                    </div>
-                  </div>
-
-                  {/* Previous Reading Display */}
-                  <div className="border-t border-blue-200 pt-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-blue-900 text-sm">Previous Reading:</div>
-                        {lastReading ? (
-                          <div className="text-lg font-bold text-blue-800">
-                            {lastReading.reading.toLocaleString()} L
-                          </div>
-                        ) : (
-                          <div className="text-blue-600 text-sm">No previous reading found</div>
-                        )}
-                      </div>
-                      {lastReading && (
-                        <div className="text-right">
-                          <div className="text-xs text-blue-600">Recorded:</div>
-                          <div className="text-xs text-blue-700">
-                            {new Date(lastReading.recordedAt).toLocaleDateString()}
-                          </div>
-                          <div className="text-xs text-blue-700">
-                            {new Date(lastReading.recordedAt).toLocaleTimeString()}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Reading Input */}
-          <div className="space-y-2">
-            <Label htmlFor="reading">Current Reading (Liters) *</Label>
-            <div className="space-y-2">
-              <Input
-                id="reading"
-                type="number"
-                step="0.01"
-                min={lastReading ? lastReading.reading : 0}
-                value={reading}
-                onChange={(e) => setReading(e.target.value)}
-                placeholder={lastReading ? `Enter reading (min: ${lastReading.reading}L)` : "Enter current meter reading"}
-                className="text-lg font-mono"
-              />
-
-              {/* Show difference from previous reading */}
-              {reading && lastReading && !isNaN(parseFloat(reading)) && (
-                <div className="text-sm">
-                  {parseFloat(reading) >= lastReading.reading ? (
-                    <div className="text-green-600 flex items-center gap-1">
-                      <span>↗</span>
-                      <span>
-                        Increase: {(parseFloat(reading) - lastReading.reading).toLocaleString()}L
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-red-600 flex items-center gap-1">
-                      <span>⚠</span>
-                      <span>
-                        Reading cannot be less than previous ({lastReading.reading}L)
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
+      <DialogContent className="sm:max-w-md max-h-[95vh] overflow-y-auto p-0">
+        {/* Compact Header */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+              <Gauge className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className={`${getResponsiveTextSize('lg')} font-bold`}>
+                <span className="hidden sm:inline">Quick Reading Entry</span>
+                <span className="sm:hidden">Add Reading</span>
+              </h2>
+              <p className="text-xs text-white/80">Record fuel pump reading</p>
             </div>
           </div>
+        </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
-            <Input
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Any additional notes..."
-            />
-          </div>
+        {/* Form Content */}
+        <div className="p-4 space-y-4">
+          {/* Error handling */}
+          {stationsError && (
+            <div className="text-red-600 text-xs p-2 bg-red-50 rounded border border-red-200">
+              Failed to load stations. Please refresh and try again.
+            </div>
+          )}
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={createReadingMutation.isLoading || !stationId || !pumpId || !nozzleId || !reading}
-            >
-              {createReadingMutation.isLoading && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Compact Selection Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Station Selection */}
+              <div className="space-y-1">
+                <Label htmlFor="station" className="text-xs font-medium text-gray-700">Station *</Label>
+                <Select value={stationId} onValueChange={handleStationChange}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Select station" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stations.map((station) => (
+                      <SelectItem key={station.id} value={station.id}>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-3 w-3" />
+                          <span className="truncate">{station.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {stations.length === 0 && (
+                  <div className="text-xs text-gray-500">No stations available</div>
+                )}
+              </div>
+
+              {/* Pump Selection */}
+              <div className="space-y-1">
+                <Label htmlFor="pump" className="text-xs font-medium text-gray-700">Pump *</Label>
+                <Select value={pumpId} onValueChange={handlePumpChange} disabled={!stationId}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder={!stationId ? "Select station first" : "Select pump"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pumps.map((pump) => (
+                      <SelectItem key={pump.id} value={pump.id}>
+                        <div className="flex items-center gap-2">
+                          <Fuel className="h-3 w-3" />
+                          <span className="truncate">{pump.name}</span>
+                    </div>
+                  </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                {stationId && pumps.length === 0 && (
+                  <div className="text-xs text-gray-500">No pumps available for this station</div>
+                )}
+              </div>
+            </div>
+
+            {/* Nozzle Selection - Full Width */}
+            <div className="space-y-1">
+              <Label htmlFor="nozzle" className="text-xs font-medium text-gray-700">Nozzle *</Label>
+              <Select value={nozzleId} onValueChange={handleNozzleChange} disabled={!pumpId}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder={!pumpId ? "Select pump first" : "Select nozzle"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {nozzles.map((nozzle) => (
+                    <SelectItem key={nozzle.id} value={nozzle.id}>
+                      <div className="flex items-center gap-2">
+                        <Gauge className="h-3 w-3" />
+                        <span className="truncate">Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {pumpId && nozzles.length === 0 && (
+                <div className="text-xs text-gray-500">No nozzles available for this pump</div>
               )}
-              Record Reading
-            </Button>
-          </div>
-        </form>
+            </div>
+
+            {/* Compact Selection Summary */}
+            {selectedStation && selectedPump && selectedNozzle && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-medium text-blue-900">Recording for:</div>
+                      <div className="text-sm font-semibold text-blue-700 truncate">
+                        {selectedStation.name} • {selectedPump.name} • N{selectedNozzle.nozzleNumber}
+                      </div>
+                      <div className="text-xs text-blue-600">
+                        {selectedNozzle.fuelType}
+                      </div>
+                    </div>
+                    {lastReading && (
+                      <div className="text-right">
+                        <div className="text-xs text-blue-600">Last:</div>
+                        <div className="text-sm font-bold text-blue-800">
+                          {isMobile ? formatCurrencyMobile(lastReading.reading) : lastReading.reading.toLocaleString()}L
+                        </div>
+                        <div className="text-xs text-blue-600">
+                          {new Date(lastReading.recordedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {!lastReading && (
+                    <div className="text-xs text-blue-600 text-center">No previous reading found</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Reading Input */}
+            <div className="space-y-2">
+              <Label htmlFor="reading" className="text-xs font-medium text-gray-700">Current Reading (Liters) *</Label>
+              <div className="space-y-2">
+                <Input
+                  id="reading"
+                  type="number"
+                  step="0.01"
+                  min={lastReading ? lastReading.reading : 0}
+                  value={reading}
+                  onChange={(e) => setReading(e.target.value)}
+                  placeholder={lastReading ? `Min: ${lastReading.reading}L` : "Enter reading"}
+                  className="text-base font-mono h-10"
+                />
+
+                {/* Show difference from previous reading */}
+                {reading && lastReading && !isNaN(parseFloat(reading)) && (
+                  <div className="text-xs">
+                    {parseFloat(reading) >= lastReading.reading ? (
+                      <div className="text-green-600 flex items-center gap-1">
+                        <span>↗</span>
+                        <span>
+                          +{(parseFloat(reading) - lastReading.reading).toLocaleString()}L
+                      </span>
+                    </div>
+                    ) : (
+                      <div className="text-red-600 flex items-center gap-1">
+                        <span>⚠</span>
+                        <span>
+                          Cannot be less than {lastReading.reading}L
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-1">
+              <Label htmlFor="notes" className="text-xs font-medium text-gray-700">Notes (Optional)</Label>
+              <Input
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Any additional notes..."
+                className="text-sm h-9"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="flex-1 text-sm h-9"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createReadingMutation.isPending || !stationId || !pumpId || !nozzleId || !reading}
+                className="flex-1 text-sm h-9"
+              >
+                {createReadingMutation.isPending && (
+                  <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                )}
+                <span className="hidden sm:inline">Record Reading</span>
+                <span className="sm:hidden">Record</span>
+              </Button>
+            </div>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

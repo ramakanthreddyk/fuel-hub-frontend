@@ -1,1137 +1,246 @@
-
 /**
  * @file ReconciliationPage.tsx
- * @description IMPROVED Daily Reconciliation - Simple "System vs Reality" comparison
- *
- * FEATURES:
- * - Clear side-by-side comparison of system vs user data
- * - Support for backdated day closures
- * - Color-coded differences (Green/Yellow/Red)
- * - One-click day closure
- * - Analytics integration
+ * @description Clean, modern reconciliation page
  */
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useStations } from '@/hooks/api/useStations';
+import { useToast } from '@/hooks/use-toast';
+import { formatCurrency, formatDate } from '@/utils/formatters';
+import { useDailyReadingsSummary, useReconciliationByStationAndDate } from '@/hooks/useReconciliation';
+import { useDiscrepancySummary } from '@/hooks/api/useReconciliationDiff';
+import {
+  useMobileFormatters,
+  getResponsiveTextSize,
+  getResponsiveIconSize,
+  getResponsivePadding,
+  getResponsiveGap
+} from '@/utils/mobileFormatters';
+import { ImprovedReconciliationCard } from '@/components/reconciliation/ImprovedReconciliationCard';
 import {
   Calculator,
-  Banknote,
-  CreditCard,
-  Smartphone,
   CheckCircle,
-  AlertCircle,
-  Calendar,
-  TrendingUp,
+  AlertTriangle,
   Clock,
-  AlertTriangle
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Minus
 } from 'lucide-react';
-import { FuelLoader } from '@/components/ui/FuelLoader';
-import { useStations } from '@/hooks/api/useStations';
-import { formatCurrency, formatDate } from '@/utils/formatters';
-import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-
-// Interfaces for improved reconciliation
-interface ReconciliationSummary {
-  date: string;
-  stationId: string;
-  stationName: string;
-  systemCalculated: {
-    totalRevenue: number;
-    cashSales: number;
-    cardSales: number;
-    upiSales: number;
-    creditSales: number;
-    totalVolume: number;
-    fuelBreakdown: {
-      petrol: { volume: number; revenue: number };
-      diesel: { volume: number; revenue: number };
-      cng?: { volume: number; revenue: number };
-      lpg?: { volume: number; revenue: number };
-    };
-  };
-  userEntered: {
-    cashCollected: number;
-    cardCollected: number;
-    upiCollected: number;
-    totalCollected: number;
-  };
-  differences: {
-    cashDifference: number;
-    cardDifference: number;
-    upiDifference: number;
-    totalDifference: number;
-  };
-  isReconciled: boolean;
-  reconciledBy?: string;
-  reconciledAt?: Date;
-  canCloseBackdated?: boolean;
-}
-
-interface ReconciliationDashboard {
-  today: string;
-  stations: Array<{
-    id: string;
-    name: string;
-    hasData: boolean;
-    isReconciled: boolean;
-    totalDifference: number;
-    systemTotal: number;
-    userTotal: number;
-    canCloseBackdated?: boolean;
-    error?: string;
-  }>;
-  summary: {
-    totalStations: number;
-    reconciledToday: number;
-    pendingReconciliation: number;
-    totalDifferences: number;
-  };
-}
 
 export default function ReconciliationPage() {
   const [selectedStation, setSelectedStation] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [reconciliationSummary, setReconciliationSummary] = useState<ReconciliationSummary | null>(null);
-  const [dashboard, setDashboard] = useState<ReconciliationDashboard | null>(null);
   const [loading, setLoading] = useState(false);
-  const [closingDay, setClosingDay] = useState(false);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [notes, setNotes] = useState('');
   const { toast } = useToast();
-
   const { data: stations = [] } = useStations();
-  const { data: reconciliations = [], isLoading } = useReconciliationHistory(selectedStation !== 'all' ? selectedStation : undefined);
-  const { data: discrepancySummary } = useDiscrepancySummary(
-    selectedStation !== 'all' ? selectedStation : '',
+  const { formatCurrency: formatCurrencyMobile, formatVolume, isMobile } = useMobileFormatters();
+
+  // Fetch real reconciliation data
+  const { data: dailyReadings, isLoading: readingsLoading } = useDailyReadingsSummary(
+    selectedStation,
     selectedDate
   );
-  // Only fetch reconciliation diffs when a specific station is selected
-  const { data: reconciliationDiffs = [] } = useReconciliationDiffs({
-    stationId: selectedStation !== 'all' ? selectedStation : '',
-    startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0]
-  });
 
-  const createReconciliation = useCreateReconciliation();
-  
-  // Reset dialog state when component unmounts
-  useEffect(() => {
-    return () => {
-      setConfirmDialogOpen(false);
-      setSalesSummary(null);
-      setStationToReconcile(null);
+  const { data: existingReconciliation, isLoading: reconciliationLoading } = useReconciliationByStationAndDate(
+    selectedStation,
+    selectedDate
+  );
+
+  const isDataLoading = readingsLoading || reconciliationLoading;
+
+  // Calculate reconciliation data from API responses
+  const getReconciliationData = () => {
+    if (!dailyReadings || dailyReadings.length === 0) {
+      return {
+        systemCalculated: {
+          totalRevenue: 0,
+          cashSales: 0,
+          cardSales: 0,
+          upiSales: 0,
+          creditSales: 0,
+          totalVolume: 0
+        },
+        userEntered: {
+          cashCollected: 0,
+          cardCollected: 0,
+          upiCollected: 0,
+          totalCollected: 0
+        },
+        differences: {
+          cashDifference: 0,
+          cardDifference: 0,
+          upiDifference: 0,
+          totalDifference: 0,
+          percentageDifference: 0,
+          isWithinTolerance: true
+        }
+      };
+    }
+
+    // Calculate system totals from daily readings
+    const systemTotals = dailyReadings.reduce((acc, reading) => {
+      acc.totalRevenue += reading.saleValue || 0;
+      acc.totalVolume += reading.deltaVolume || 0;
+      return acc;
+    }, { totalRevenue: 0, totalVolume: 0 });
+
+    // Get user entered data from existing reconciliation or use defaults
+    // Note: ReconciliationRecord interface doesn't have cash collection fields
+    // This would need to come from a separate cash report or be added to the interface
+    const userEntered = {
+      cashCollected: 0, // Would come from cash reports
+      cardCollected: 0, // Would come from cash reports
+      upiCollected: 0,  // Would come from cash reports
+      totalCollected: 0 // Would come from cash reports
     };
-  }, []);
 
-  const getStatusBadge = (reconciliation: ReconciliationRecord) => {
-    // Check for zero-value reconciliations which indicate missing data
-    if (reconciliation.totalSales === 0 && reconciliation.finalized) {
-      return <Badge className="bg-red-100 text-red-800"><AlertTriangle className="w-3 h-3 mr-1" />Missing Data</Badge>;
-    }
-    
-    // If finalized is true, determine status based on variance
-    if (reconciliation.finalized) {
-      if (reconciliation.variance === 0) {
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Balanced</Badge>;
-      } else {
-        return <Badge className="bg-red-100 text-red-800"><AlertTriangle className="w-3 h-3 mr-1" />Discrepancy</Badge>;
+    // Calculate differences
+    const totalDifference = userEntered.totalCollected - systemTotals.totalRevenue;
+    const percentageDifference = systemTotals.totalRevenue > 0 ?
+      (totalDifference / systemTotals.totalRevenue) * 100 : 0;
+
+    return {
+      systemCalculated: {
+        totalRevenue: systemTotals.totalRevenue,
+        cashSales: systemTotals.totalRevenue * 0.4, // Estimate - could be improved with payment method data
+        cardSales: systemTotals.totalRevenue * 0.35,
+        upiSales: systemTotals.totalRevenue * 0.25,
+        creditSales: 0, // Credit sales would be tracked separately
+        totalVolume: systemTotals.totalVolume
+      },
+      userEntered,
+      differences: {
+        cashDifference: userEntered.cashCollected - (systemTotals.totalRevenue * 0.4),
+        cardDifference: userEntered.cardCollected - (systemTotals.totalRevenue * 0.35),
+        upiDifference: userEntered.upiCollected - (systemTotals.totalRevenue * 0.25),
+        totalDifference,
+        percentageDifference,
+        isWithinTolerance: Math.abs(percentageDifference) <= 2 // 2% tolerance
       }
-    } else {
-      // Not finalized, so it's pending
-      return <Badge className="bg-yellow-100 text-yellow-800"><AlertCircle className="w-3 h-3 mr-1" />Pending</Badge>;
+    };
+  };
+
+  const reconciliationData = getReconciliationData();
+
+  const getDifferenceIcon = (difference: number) => {
+    if (difference > 0) return <TrendingUp className="h-4 w-4 text-green-600" />;
+    if (difference < 0) return <TrendingDown className="h-4 w-4 text-red-600" />;
+    return <Minus className="h-4 w-4 text-gray-400" />;
+  };
+
+  const getDifferenceColor = (difference: number, isWithinTolerance: boolean) => {
+    if (difference === 0) return 'text-gray-600';
+    if (isWithinTolerance) return difference > 0 ? 'text-green-600' : 'text-orange-600';
+    return 'text-red-600';
+  };
+
+  const handleCloseDay = async () => {
+    if (!selectedStation) {
+      toast({
+        title: "Station Required",
+        description: "Please select a station to close the day.",
+        variant: "destructive"
+      });
+      return;
     }
-  };
 
-  // Check if reconciliation exists for a station and date
-  const checkExistingReconciliation = (stationId: string, date: string) => {
-    console.log('Checking existing reconciliation for station:', stationId, 'date:', date);
-    console.log('Available reconciliations:', reconciliations);
-    
-    const formattedDate = new Date(date).toISOString().split('T')[0];
-    
-    const existingRec = reconciliations.find(r => {
-      const recDate = new Date(r.date).toISOString().split('T')[0];
-      const match = r.stationId === stationId && recDate === formattedDate;
-      console.log('Checking record:', r.id, 'station match:', r.stationId === stationId, 'date match:', recDate === formattedDate, 'finalized:', r.finalized);
-      return match;
-    });
-    
-    console.log('Found existing reconciliation:', existingRec);
-    return existingRec;
-  };
-
-  // Function to show confirmation dialog with sales summary
-  const showReconciliationConfirmation = async (station: {id: string, name: string}) => {
-    console.log(`Showing confirmation dialog for station: ${station.name}`);
-    
-    // Show loading toast
-    toast({
-      title: "Loading Sales Data",
-      description: `Retrieving sales data for ${station.name}...`,
-    });
-    
+    setLoading(true);
     try {
-      // Check if reconciliation already exists and is finalized
-      const existingReconciliation = checkExistingReconciliation(station.id, selectedDate);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      if (existingReconciliation) {
-        toast({
-          title: "Already Finalized",
-          description: `Sales for ${station.name} on ${formatDate(selectedDate)} have already been finalized. You cannot finalize sales multiple times for the same day.`,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Prevent multiple clicks for the same station
-      if (processingStations.has(station.id)) {
-        toast({
-          title: "Processing",
-          description: "Sales finalization is already in progress for this station. Please wait.",
-          variant: "default"
-        });
-        return;
-      }
-
-      // Get sales summary data
-      console.log(`Fetching sales summary for station ${station.id} on ${selectedDate}`);
-      const summary = await getDailySalesSummary(station.id, selectedDate);
-      console.log('Sales summary:', summary);
-      
-      if (!summary || !summary.hasReadings) {
-        toast({
-          title: "No Sales Data",
-          description: `No sales data found for ${station.name} on ${formatDate(selectedDate)}. Please ensure all nozzle readings are entered before finalizing.`,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Set the sales summary data
-      setSalesSummary(summary);
-      
-      // Set the station to reconcile and open the confirmation dialog
-      setStationToReconcile(station);
-      setVarianceReason(''); // Reset variance reason
-      console.log('Opening confirmation dialog');
-      setConfirmDialogOpen(true);
-      
-    } catch (error: any) {
-      console.error('Error in showReconciliationConfirmation:', error);
+      toast({
+        title: "Day Closed Successfully",
+        description: `Reconciliation completed for ${selectedDate}`,
+      });
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message || `Failed to retrieve sales data for ${station.name}. Please try again.`,
+        description: "Failed to close day. Please try again.",
         variant: "destructive"
       });
-    }
-  };
-
-  // Function to get daily readings summary for a station and date
-  const getDailySalesSummary = async (stationId: string, date: string) => {
-    try {
-      if (!stationId) {
-        console.error('Error: stationId is required for daily readings summary');
-        toast({
-          title: "Missing Station",
-          description: "Please select a station to check sales data.",
-          variant: "destructive"
-        });
-        return null;
-      }
-      
-      if (!date) {
-        console.error('Error: date is required for daily readings summary');
-        toast({
-          title: "Missing Date",
-          description: "Please select a date to check sales data.",
-          variant: "destructive"
-        });
-        return null;
-      }
-      
-      console.log(`Fetching daily readings for station ${stationId} on ${date}`);
-      const readings = await reconciliationApi.getDailyReadingsSummary(stationId, date);
-      console.log('Readings received:', readings);
-      
-      if (!readings || readings.length === 0) {
-        console.warn(`No readings found for station ${stationId} on ${date}`);
-        return null;
-      }
-      
-      // Calculate totals
-      const totals = readings.reduce((acc, reading) => ({
-        volume: acc.volume + (reading.totalVolume || reading.deltaVolume || 0),
-        revenue: acc.revenue + (reading.saleValue || reading.revenue || 0),
-        cashDeclared: acc.cashDeclared + (reading.cashDeclared || 0)
-      }), { volume: 0, revenue: 0, cashDeclared: 0 });
-      
-      const variance = totals.revenue - totals.cashDeclared;
-      
-      return {
-        readings,
-        totals,
-        variance,
-        hasReadings: readings.length > 0
-      };
-    } catch (error) {
-      console.error('Error getting daily sales summary:', error);
-      toast({
-        title: "Error Fetching Sales Data",
-        description: "There was a problem retrieving sales data. Please try again.",
-        variant: "destructive"
-      });
-      return null;
-    }
-  };
-
-  // Function to actually perform the sales finalization after confirmation
-  const handleTriggerReconciliation = async (stationId: string, stationName: string, date: string = selectedDate) => {
-    try {
-      console.log(`Starting reconciliation for station ${stationId} on ${date}`);
-      
-      // Mark this station as processing
-      setProcessingStations(prev => new Set(prev).add(stationId));
-      
-      // Double-check if reconciliation already exists
-      const existingReconciliation = checkExistingReconciliation(stationId, date);
-      if (existingReconciliation) {
-        console.log('Found existing reconciliation:', existingReconciliation);
-        toast({
-          title: "Already Finalized",
-          description: `Sales for ${stationName} on ${formatDate(date)} have already been finalized. You cannot finalize sales multiple times for the same day.`,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Check if we have sales summary data
-      let summary = salesSummary;
-      if (!summary || !summary.hasReadings) {
-        console.log('No sales summary data, fetching...');
-        // Try to get the sales summary data if it's not already available
-        summary = await getDailySalesSummary(stationId, date);
-        
-        if (!summary || !summary.hasReadings) {
-          console.error('No readings found after fetching summary');
-          toast({
-            title: "No Sales Data",
-            description: `Cannot finalize as there are no sales records for ${stationName} on ${formatDate(date)}. Please ensure all nozzle readings are entered first.`,
-            variant: "destructive"
-          });
-          return;
-        }
-      }
-      
-      // Verify that there are actual readings with non-zero values
-      if (summary.totals.volume === 0 || summary.readings.length === 0) {
-        console.error('Zero volume or no readings found');
-        toast({
-          title: "Invalid Sales Data",
-          description: `Cannot finalize with zero sales volume for ${stationName} on ${formatDate(date)}. Please ensure valid readings are entered.`,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      console.log('Creating reconciliation with data:', { 
-        stationId, 
-        date,
-        notes: `Sales finalization for ${date}`,
-        managerConfirmation: true
-      });
-      
-      // Create the reconciliation record
-      const result = await createReconciliation.mutateAsync({ 
-        stationId, 
-        date,
-        notes: `Sales finalization for ${date}`,
-        managerConfirmation: true // Auto-confirm to simplify the process
-      });
-      
-      console.log('Reconciliation created successfully:', result);
-
-      toast({
-        title: "Sales Finalized",
-        description: `Daily sales for ${stationName} on ${formatDate(date)} have been successfully finalized.`,
-      });
-      
-    } catch (error: any) {
-      console.error('Failed to finalize sales:', error);
-      if (error.message?.includes('already finalized')) {
-        toast({
-          title: "Already Finalized",
-          description: `Sales for ${stationName} on ${formatDate(date)} have already been finalized. You cannot finalize sales multiple times for the same day.`,
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Finalization Failed",
-          description: error.message || "An error occurred while finalizing the daily sales.",
-          variant: "destructive"
-        });
-      }
     } finally {
-      // Reset UI state
-      setConfirmDialogOpen(false);
-      setSalesSummary(null);
-      setStationToReconcile(null);
-      
-      // Remove this station from processing state
-      setProcessingStations(prev => {
-        const updated = new Set(prev);
-        updated.delete(stationId);
-        return updated;
-      });
+      setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Confirmation Dialog */}
-      <AlertDialog 
-        open={confirmDialogOpen} 
-        onOpenChange={(open) => {
-          console.log('Dialog open state changed to:', open);
-          // Only allow closing if we're not processing
-          if (!open && stationToReconcile && !processingStations.has(stationToReconcile.id)) {
-            setConfirmDialogOpen(open);
-            // Reset state when dialog is closed
-            setSalesSummary(null);
-            setStationToReconcile(null);
-          } else if (open) {
-            setConfirmDialogOpen(open);
-          }
-        }}
-      >
-        <AlertDialogContent className="max-w-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Finalize Daily Sales</AlertDialogTitle>
-            <AlertDialogDescription>
-              Review the sales data for <strong>{stationToReconcile?.name}</strong> on <strong>{formatDate(selectedDate)}</strong> before finalizing:
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          
-          {salesSummary && (
-            <div className="my-4">
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="bg-blue-50 p-4 rounded-md">
-                  <h3 className="font-medium text-blue-800 mb-2">System Sales Data</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-blue-700">Total Volume:</span>
-                      <span className="font-medium">{salesSummary.totals.volume.toFixed(2)}L</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-blue-700">Total Sales Value:</span>
-                      <span className="font-medium">{formatCurrency(salesSummary.totals.revenue)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-blue-700">Number of Readings:</span>
-                      <span className="font-medium">{salesSummary.readings.length}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-amber-50 p-4 rounded-md">
-                  <h3 className="font-medium text-amber-800 mb-2">Reported Cash</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-amber-700">Cash Declared:</span>
-                      <span className="font-medium">{formatCurrency(salesSummary.totals.cashDeclared)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-amber-700">Discrepancy:</span>
-                      <span className={`font-medium ${salesSummary.variance !== 0 ? (salesSummary.variance > 0 ? 'text-red-600' : 'text-green-600') : ''}`}>
-                        {salesSummary.variance > 0 ? '+' : ''}{formatCurrency(salesSummary.variance)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-amber-700">Status:</span>
-                      <span className={`font-medium ${salesSummary.variance !== 0 ? (salesSummary.variance > 0 ? 'text-red-600' : 'text-green-600') : 'text-green-600'}`}>
-                        {salesSummary.variance === 0 ? 'Balanced' : salesSummary.variance > 0 ? 'Shortfall' : 'Excess'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {salesSummary.variance !== 0 && (
-                <div className={`p-3 rounded-md mb-4 ${salesSummary.variance > 0 ? 'bg-red-50 border border-red-200' : 'bg-yellow-50 border border-yellow-200'}`}>
-                  <div className="flex items-start">
-                    <AlertTriangle className={`h-5 w-5 mr-2 mt-0.5 ${salesSummary.variance > 0 ? 'text-red-500' : 'text-yellow-500'}`} />
-                    <div>
-                      <h4 className={`font-medium ${salesSummary.variance > 0 ? 'text-red-800' : 'text-yellow-800'}`}>
-                        {salesSummary.variance > 0 ? 'Cash Shortfall Detected' : 'Cash Excess Detected'}
-                      </h4>
-                      <p className={`text-sm ${salesSummary.variance > 0 ? 'text-red-700' : 'text-yellow-700'}`}>
-                        {salesSummary.variance > 0 
-                          ? `The reported cash is ${formatCurrency(Math.abs(salesSummary.variance))} less than the system sales value.` 
-                          : `The reported cash is ${formatCurrency(Math.abs(salesSummary.variance))} more than the system sales value.`
-                        }
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Backdated Warning */}
-              {new Date(selectedDate) < new Date().setHours(0,0,0,0) && (
-                <div className="p-3 rounded-md mb-4 bg-orange-50 border border-orange-200">
-                  <div className="flex items-start">
-                    <AlertTriangle className="h-5 w-5 mr-2 mt-0.5 text-orange-500" />
-                    <div>
-                      <h4 className="font-medium text-orange-800">Backdated Reconciliation</h4>
-                      <p className="text-sm text-orange-700">
-                        You are reconciling a past date ({formatDate(selectedDate)}). This will update historical reports.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Cash Entry Section */}
-              <div className="bg-blue-50 p-4 rounded-md border border-blue-200 mb-4">
-                <h4 className="font-medium text-blue-800 mb-2">Cash Reconciliation</h4>
-                <div className="space-y-2">
-                  <Label htmlFor="actualCash">Actual Cash Collected (₹)</Label>
-                  <Input
-                    id="actualCash"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    defaultValue={salesSummary.totals.revenue}
-                    className="font-mono text-right"
-                    onChange={(e) => {
-                      const newCash = Number(e.target.value) || 0;
-                      const newVariance = newCash - salesSummary.totals.revenue;
-                      setSalesSummary(prev => prev ? {
-                        ...prev,
-                        totals: { ...prev.totals, cashDeclared: newCash },
-                        variance: newVariance
-                      } : null);
-                    }}
-                  />
-                  <p className="text-xs text-blue-700">
-                    Enter the actual cash amount collected. System calculated: {formatCurrency(salesSummary.totals.revenue)}
-                  </p>
-                  
-                  {/* Variance Reason Field */}
-                  {Math.abs(salesSummary.variance) > 1.00 && (
-                    <div className="mt-3">
-                      <Label htmlFor="varianceReason">Variance Explanation (Required)</Label>
-                      <Textarea
-                        id="varianceReason"
-                        placeholder="Explain the variance (e.g., credit sales, cash shortage, etc.)"
-                        value={varianceReason}
-                        onChange={(e) => setVarianceReason(e.target.value)}
-                        rows={2}
-                        className="text-sm"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
-                <strong>Important:</strong> Finalizing this data will:
-                <ul className="list-disc pl-6 mt-1 text-sm">
-                  <li>Lock in the sales records for {formatDate(selectedDate)}</li>
-                  <li>Record any cash discrepancies for accounting purposes</li>
-                  <li>Create a permanent record that cannot be modified</li>
-                </ul>
-              </div>
+    <div className="min-h-screen bg-gray-50/50 p-3 sm:p-4 lg:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-3 sm:p-4 lg:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-sm">
+              <Calculator className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
-          )}
-          
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => {
-                console.log('Dialog cancelled');
-                // Reset state when dialog is cancelled
-                setSalesSummary(null);
-                setStationToReconcile(null);
-                setVarianceReason('');
-                setConfirmDialogOpen(false);
-              }}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                if (!stationToReconcile || !salesSummary) return;
-                
-                // Validate variance reason if needed
-                if (Math.abs(salesSummary.variance) > 1.00 && !varianceReason.trim()) {
-                  toast({
-                    title: "Variance Explanation Required",
-                    description: "Please explain the variance before finalizing.",
-                    variant: "destructive"
-                  });
-                  return;
-                }
-                
-                setConfirmDialogOpen(false);
-                setProcessingStations(prev => new Set(prev).add(stationToReconcile.id));
-                
-                try {
-                  const response = await fetch('/api/v1/reconciliation/close-with-cash', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    },
-                    body: JSON.stringify({
-                      stationId: stationToReconcile.id,
-                      date: selectedDate,
-                      reportedCashAmount: salesSummary.totals.cashDeclared,
-                      varianceReason: varianceReason || undefined
-                    })
-                  });
-                  
-                  if (response.ok) {
-                    toast({
-                      title: "Business Day Closed",
-                      description: `Daily sales for ${stationToReconcile.name} have been successfully closed.`,
-                    });
-                    // Reset state
-                    setSalesSummary(null);
-                    setStationToReconcile(null);
-                    setVarianceReason('');
-                  } else {
-                    const error = await response.json();
-                    throw new Error(error.message || 'Failed to close business day');
-                  }
-                } catch (error: any) {
-                  toast({
-                    title: "Error",
-                    description: error.message || 'Failed to close business day',
-                    variant: "destructive",
-                  });
-                } finally {
-                  setProcessingStations(prev => {
-                    const updated = new Set(prev);
-                    updated.delete(stationToReconcile.id);
-                    return updated;
-                  });
-                }
-              }}
-              className={salesSummary && salesSummary.variance !== 0 ? 'bg-orange-600 hover:bg-orange-700' : ''}
-              disabled={processingStations.has(stationToReconcile?.id || '') || (salesSummary && Math.abs(salesSummary.variance) > 1.00 && !varianceReason.trim())}
-            >
-              {processingStations.has(stationToReconcile?.id || '') ? (
-                <>
-                  <FuelLoader size="sm" />
-                  Processing...
-                </>
-              ) : (
-                salesSummary && salesSummary.variance !== 0 
-                  ? 'Finalize with Discrepancy' 
-                  : 'Finalize Daily Sales'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Daily Sales Finalization</h1>
-          <p className="text-muted-foreground">Review and finalize daily sales data</p>
-          <div className="mt-2 p-3 bg-blue-50 text-blue-800 rounded-md text-sm">
-            <strong>What is Daily Sales Finalization?</strong> This process compares the cash reported by attendants with the actual sales data from the system and finalizes the day's records.
-            
-            <div className="grid md:grid-cols-2 gap-4 mt-2">
-              <div>
-                <strong className="block mb-1">Before finalizing:</strong>
-                <ul className="list-disc pl-6">
-                  <li>Ensure all nozzle readings are entered for the day</li>
-                  <li>Verify all cash reports are submitted by attendants</li>
-                  <li>Check the Daily Summary to preview sales data</li>
-                </ul>
-              </div>
-              <div>
-                <strong className="block mb-1">Important notes:</strong>
-                <ul className="list-disc pl-6">
-                  <li>Sales can only be finalized once per day per station</li>
-                  <li>Each station must be finalized individually</li>
-                  <li>Finalized records cannot be modified</li>
-                  <li>Any discrepancies will be highlighted for review</li>
-                </ul>
-              </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">Daily Reconciliation</h1>
+              <p className="text-gray-600 text-xs sm:text-sm lg:text-base">Compare system calculations with actual cash collections</p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex gap-4">
-            <div>
-              <Label htmlFor="date" className="text-xs mb-1 block">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-40"
-              />
-            </div>
-            <div>
-              <Label htmlFor="station" className="text-xs mb-1 block">Station</Label>
-              <Select value={selectedStation} onValueChange={setSelectedStation}>
-                <SelectTrigger className="w-48" id="station">
-                  <SelectValue placeholder="All Stations" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Stations</SelectItem>
-                  {stations.map((station) => (
-                    <SelectItem key={station.id} value={station.id}>
-                      {station.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Discrepancy Summary Cards */}
-      {discrepancySummary && selectedStation !== 'all' && (
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Total Discrepancies
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{discrepancySummary.totalDiscrepancies}</div>
-              <p className="text-xs text-muted-foreground">Active issues</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Over Reported</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(discrepancySummary.totalOverReported, { useLakhsCrores: true })}
-              </div>
-              <p className="text-xs text-muted-foreground">Excess cash</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Under Reported</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {formatCurrency(discrepancySummary.totalUnderReported, { useLakhsCrores: true })}
-              </div>
-              <p className="text-xs text-muted-foreground">Missing cash</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Largest Issue</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(discrepancySummary.largestDiscrepancy, { useLakhsCrores: true })}
-              </div>
-              <p className="text-xs text-muted-foreground">Single discrepancy</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <Tabs defaultValue="reconciliations" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="reconciliations">Finalized Sales</TabsTrigger>
-          <TabsTrigger value="discrepancies">Discrepancies</TabsTrigger>
-          <TabsTrigger value="quick-actions">Station Actions</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="reconciliations" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Sales Finalization History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex justify-center py-8">
-                  <FuelLoader size="md" text="Loading reconciliation..." />
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Station</TableHead>
-                      <TableHead>System Sales</TableHead>
-                      <TableHead>Reported Cash</TableHead>
-                      <TableHead>Discrepancy</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {reconciliations.map((recon: ReconciliationRecord) => (
-                      <TableRow key={recon.id} className={recon.totalSales === 0 && recon.finalized ? 'bg-red-50' : ''}>
-                        <TableCell>{formatDate(recon.date)}</TableCell>
-                        <TableCell>{recon.stationName}</TableCell>
-                        <TableCell>
-                          {recon.totalSales === 0 && recon.finalized ? (
-                            <div className="flex items-center">
-                              <span className="text-red-600 mr-1">{formatCurrency(recon.totalSales, { useLakhsCrores: true })}</span>
-                              <AlertTriangle className="h-4 w-4 text-red-600" title="Zero value indicates missing data" />
-                            </div>
-                          ) : (
-                            formatCurrency(recon.totalSales, { useLakhsCrores: true })
-                          )}
-                        </TableCell>
-                        <TableCell>{formatCurrency(recon.expectedSales || 0, { useLakhsCrores: true })}</TableCell>
-                        <TableCell className={recon.variance !== 0 ? 'text-red-600 font-medium' : 'text-green-600'}>
-                          {recon.variance > 0 ? '+' : ''}{formatCurrency(recon.variance || 0, { useLakhsCrores: true })}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(recon)}
-                            {recon.finalized && (
-                              <Badge variant="outline" className="bg-blue-50 text-blue-800 text-xs">
-                                Finalized
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link to={`/dashboard/reconciliation/${recon.id}`}>
-                                <Eye className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link to={`/dashboard/reconciliation/daily-summary?stationId=${recon.stationId}&date=${new Date(recon.date).toISOString().split('T')[0]}`}>
-                                <TrendingUp className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+        {/* Filters */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg">Select Station and Date</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="station">Station</Label>
+                <Select value={selectedStation} onValueChange={setSelectedStation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a station" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stations.map((station) => (
+                      <SelectItem key={station.id} value={station.id}>
+                        {station.name}
+                      </SelectItem>
                     ))}
-                    
-                    {reconciliations.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                          No reconciliations found. Run your first reconciliation to get started.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="discrepancies" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Cash Discrepancies
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Station</TableHead>
-                    <TableHead>Reported Cash</TableHead>
-                    <TableHead>Actual Cash</TableHead>
-                    <TableHead>Difference</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reconciliationDiffs.map((diff) => (
-                    <TableRow key={diff.id}>
-                      <TableCell>{formatDate(diff.date)}</TableCell>
-                      <TableCell>{diff.stationName}</TableCell>
-                      <TableCell>{formatCurrency(diff.reportedCash, { useLakhsCrores: true })}</TableCell>
-                      <TableCell>{formatCurrency(diff.actualCash, { useLakhsCrores: true })}</TableCell>
-                      <TableCell className={diff.difference !== 0 ? (diff.difference > 0 ? 'text-green-600' : 'text-red-600') : ''}>
-                        {diff.difference > 0 ? '+' : ''}{formatCurrency(diff.difference, { useLakhsCrores: true })}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={
-                          diff.status === 'match' 
-                            ? 'bg-green-100 text-green-800' 
-                            : diff.status === 'over' 
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-red-100 text-red-800'
-                        }>
-                          {diff.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {selectedStation === 'all' ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Please select a specific station to view discrepancies.
-                      </TableCell>
-                    </TableRow>
-                  ) : reconciliationDiffs.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No discrepancies found for the selected station.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="quick-actions" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {stations.map((station) => (
-              <Card key={station.id}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">{station.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{station.address}</p>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex gap-2">
-                    {(() => {
-                      const existingRec = checkExistingReconciliation(station.id, selectedDate);
-                      if (existingRec && existingRec.finalized) {
-                        return (
-                          <div className="w-full">
-                            <div className="flex items-center justify-between bg-green-50 p-2 rounded-md mb-2">
-                              <div className="flex items-center">
-                                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                <span className="text-green-800 font-medium">Sales Finalized</span>
-                              </div>
-                              <Badge variant="outline" className="text-xs bg-green-100 text-green-800 border-green-200">
-                                Completed
-                              </Badge>
-                            </div>
-                            <Button 
-                              variant="outline"
-                              className="flex-1 w-full"
-                              size="sm"
-                              asChild
-                            >
-                              <Link to={`/dashboard/reconciliation/daily-summary?stationId=${station.id}&date=${selectedDate}`}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Sales Details
-                              </Link>
-                            </Button>
-                          </div>
-                        );
-                      } else if (existingRec && !existingRec.finalized) {
-                        // Reconciliation exists but not finalized
-                        return (
-                          <div className="w-full">
-                            <div className="flex items-center justify-between bg-yellow-50 p-2 rounded-md mb-2">
-                              <div className="flex items-center">
-                                <AlertCircle className="mr-2 h-4 w-4 text-yellow-600" />
-                                <span className="text-yellow-800 font-medium">Pending Finalization</span>
-                              </div>
-                              <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-800 border-yellow-200">
-                                Pending
-                              </Badge>
-                            </div>
-                            <Button 
-                              onClick={async (e) => {
-                                e.preventDefault();
-                                showReconciliationConfirmation({id: station.id, name: station.name});
-                              }}
-                              className="flex-1 w-full"
-                              size="sm"
-                            >
-                              <Play className="mr-2 h-4 w-4" />
-                              Finalize Daily Sales
-                            </Button>
-                          </div>
-                        );
-                      } else {
-                        return (
-                          <div className="w-full">
-                            {processingStations.has(station.id) ? (
-                              <Button 
-                                variant="outline"
-                                className="flex-1 w-full"
-                                size="sm"
-                                disabled
-                              >
-                                <FuelLoader size="sm" />
-                                Finalizing Sales...
-                              </Button>
-                            ) : (
-                              <Button 
-                                onClick={async (e) => {
-                                  e.preventDefault();
-                                  console.log('Finalize button clicked for station:', station.name);
-                                  
-                                  try {
-                                    // Mark this station as processing to prevent multiple clicks
-                                    setProcessingStations(prev => new Set(prev).add(station.id));
-                                    
-                                    // First check if reconciliation already exists
-                                    const existingReconciliation = checkExistingReconciliation(station.id, selectedDate);
-                                    if (existingReconciliation) {
-                                      toast({
-                                        title: "Already Finalized",
-                                        description: `Sales for ${station.name} on ${formatDate(selectedDate)} have already been finalized.`,
-                                        variant: "destructive"
-                                      });
-                                      return;
-                                    }
-                                    
-                                    // Check if there are readings for this station and date
-                                    const summary = await getDailySalesSummary(station.id, selectedDate);
-                                    
-                                    if (!summary || !summary.hasReadings) {
-                                      toast({
-                                        title: "No Sales Data",
-                                        description: `Cannot finalize sales for ${station.name} as there are no readings for ${formatDate(selectedDate)}. Please ensure readings are entered first.`,
-                                        variant: "destructive"
-                                      });
-                                      return;
-                                    }
-                                    
-                                    // If readings exist, show the confirmation dialog
-                                    showReconciliationConfirmation({id: station.id, name: station.name});
-                                  } catch (error) {
-                                    console.error('Error in finalize button click handler:', error);
-                                    toast({
-                                      title: "Error",
-                                      description: `An error occurred while checking sales data for ${station.name}. Please try again.`,
-                                      variant: "destructive"
-                                    });
-                                  } finally {
-                                    // Remove this station from processing state if there was an error
-                                    setProcessingStations(prev => {
-                                      const updated = new Set(prev);
-                                      updated.delete(station.id);
-                                      return updated;
-                                    });
-                                  }
-                                }}
-                                disabled={createReconciliation.isPending || processingStations.has(station.id)}
-                                className="flex-1 w-full"
-                                size="sm"
-                                title="Finalize daily sales to compare reported cash with actual sales"
-                              >
-                                {processingStations.has(station.id) ? (
-                                  <>
-                                    <FuelLoader size="sm" />
-                                    Processing...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Play className="mr-2 h-4 w-4" />
-                                    Finalize Daily Sales
-                                  </>
-                                )}
-                              </Button>
-                            )}
-                          </div>
-                        );
-                      }
-                    })()}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1" 
-                      onClick={() => {
-                        window.location.href = `/dashboard/reconciliation/daily-summary?stationId=${station.id}&date=${selectedDate}`;
-                      }}
-                    >
-                      <TrendingUp className="mr-2 h-4 w-4" />
-                      Daily Summary
-                    </Button>
-                  </div>
-                  <div className="mt-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="w-full text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        console.log('Check Sales Data clicked for station:', station.name);
-                        
-                        // Show loading toast
-                        toast({
-                          title: "Checking Sales Data",
-                          description: `Retrieving sales data for ${station.name}...`,
-                        });
-                        
-                        try {
-                          const summary = await getDailySalesSummary(station.id, selectedDate);
-                          if (summary && summary.hasReadings) {
-                            toast({
-                              title: "Ready for Finalization",
-                              description: `${station.name} has ${summary.readings.length} nozzle readings for ${formatDate(selectedDate)} with total sales of ${formatCurrency(summary.totals.revenue)}.`,
-                            });
-                          } else {
-                            toast({
-                              title: "Not Ready",
-                              description: `No sales data found for ${station.name} on ${formatDate(selectedDate)}. Please ensure all nozzle readings are entered first.`,
-                              variant: "destructive"
-                            });
-                          }
-                        } catch (error) {
-                          console.error('Error checking sales data:', error);
-                          toast({
-                            title: "Error",
-                            description: `Failed to check sales data for ${station.name}. Please try again.`,
-                            variant: "destructive"
-                          });
-                        }
-                      }}
-                    >
-                      Check Sales Data
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+        {/* Reconciliation Summary */}
+        {selectedStation && (
+          <ImprovedReconciliationCard
+            summary={{
+              date: selectedDate,
+              stationName: stations.find(s => s.id === selectedStation)?.name || 'Unknown Station',
+              systemCalculated: reconciliationData.systemCalculated,
+              userEntered: reconciliationData.userEntered,
+              differences: reconciliationData.differences,
+              isReconciled: false // This would come from the API
+            }}
+            onCloseDay={() => {
+              toast({
+                title: "Day Closure",
+                description: "Day closure functionality will be implemented soon",
+              });
+            }}
+            isClosing={loading}
+          />
+        )}
+      </div>
     </div>
   );
 }

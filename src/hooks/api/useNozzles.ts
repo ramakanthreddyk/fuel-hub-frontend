@@ -58,13 +58,22 @@ export const useNozzles = (pumpId?: string) => {
         
         // If no cache or stale, fetch from API
         const nozzles = await nozzlesService.getNozzles(pumpId);
-        
+
+        console.log('[NOZZLES-HOOK] Fetched nozzles from API:', nozzles);
+
+        // Ensure each nozzle has proper isolation - log their lastReading values
+        nozzles.forEach(nozzle => {
+          console.log(`[NOZZLES-HOOK] Nozzle ${nozzle.id} (#${nozzle.nozzleNumber}) lastReading:`, nozzle.lastReading);
+        });
+
         // Store in both caches
         if (pumpId) {
           setNozzles(pumpId, nozzles); // dataStore
           setFuelStoreNozzles(pumpId, nozzles); // fuelStore
+          console.log('[NOZZLES-HOOK] Stored nozzles for pump in cache:', pumpId);
         } else {
           setAllNozzles(nozzles); // Store all nozzles in fuelStore
+          console.log('[NOZZLES-HOOK] Stored all nozzles in cache');
         }
         
         hideLoader();
@@ -75,8 +84,10 @@ export const useNozzles = (pumpId?: string) => {
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds - shorter for better real-time updates
     retry: 2,
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnMount: true, // Always refetch on mount
 
   });
 };
@@ -145,13 +156,28 @@ export const useCreateNozzle = () => {
   const { syncAfterNozzleCRUD } = useStoreSync();
 
   return useMutation({
-    mutationFn: (data: any) => nozzlesService.createNozzle(data),
+    mutationFn: (data: any) => {
+      console.log('[CREATE-NOZZLE] Creating nozzle with data:', data);
+      return nozzlesService.createNozzle(data);
+    },
     onSuccess: async (newNozzle, variables) => {
-      console.log('[CREATE-NOZZLE] Success:', newNozzle);
-      await syncAfterNozzleCRUD('create', newNozzle);
+      console.log('[CREATE-NOZZLE] Success - New nozzle created:', newNozzle);
+      console.log('[CREATE-NOZZLE] Original variables:', variables);
+
+      // Ensure we have the pump ID for proper cache invalidation
+      const nozzleWithPumpId = {
+        ...newNozzle,
+        pumpId: newNozzle.pumpId || variables.pumpId,
+        // Ensure new nozzles don't have stale lastReading data
+        lastReading: undefined,
+        last_reading: undefined
+      };
+
+      console.log('[CREATE-NOZZLE] Triggering sync with nozzle data:', nozzleWithPumpId);
+      await syncAfterNozzleCRUD('create', nozzleWithPumpId);
     },
     onError: (error: any) => {
-      console.error('[CREATE-NOZZLE] Error:', error);
+      console.error('[CREATE-NOZZLE] Error creating nozzle:', error);
       handleApiError(error, 'Create Nozzle');
     },
   });

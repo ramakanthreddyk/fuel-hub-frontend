@@ -7,6 +7,39 @@ import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll, afterAll, vi } from 'vitest';
 
+// Mock Node.js process object for browser environment
+Object.defineProperty(globalThis, 'process', {
+  value: {
+    env: {},
+    nextTick: vi.fn((cb) => setTimeout(cb, 0)),
+    cwd: vi.fn(() => '/'),
+    platform: 'browser',
+    version: 'v18.0.0',
+    versions: { node: '18.0.0' },
+    emit: vi.fn(),
+    on: vi.fn(),
+    once: vi.fn(),
+    off: vi.fn(),
+    removeListener: vi.fn(),
+    removeAllListeners: vi.fn(),
+    listeners: vi.fn(() => []),
+    listenerCount: vi.fn(() => 0),
+    stdout: { write: vi.fn() },
+    stderr: { write: vi.fn() },
+    stdin: { read: vi.fn() },
+    uptime: vi.fn(() => 100),
+    memoryUsage: vi.fn(() => ({
+      rss: 1000000,
+      heapTotal: 1000000,
+      heapUsed: 500000,
+      external: 100000,
+      arrayBuffers: 50000
+    }))
+  },
+  writable: true,
+  configurable: true
+});
+
 // Mock IntersectionObserver
 global.IntersectionObserver = vi.fn().mockImplementation((callback) => ({
   observe: vi.fn(),

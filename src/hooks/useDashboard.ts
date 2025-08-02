@@ -19,7 +19,9 @@ export const useSalesSummary = (range: string = 'monthly', filters: DashboardFil
     queryKey: ['sales-summary', range, filters],
     queryFn: () => dashboardService.getSalesSummary(range, filters),
     retry: 1,
-    staleTime: 60000, // 1 minute
+    staleTime: 30000, // 30 seconds for real-time updates
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000, // Auto-refresh every minute
   });
 };
 
@@ -28,7 +30,9 @@ export const usePaymentMethodBreakdown = (filters: DashboardFilters = {}) => {
     queryKey: ['payment-methods', filters],
     queryFn: () => dashboardService.getPaymentMethodBreakdown(filters),
     retry: 1,
-    staleTime: 60000,
+    staleTime: 30000, // 30 seconds
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000, // Auto-refresh every minute
   });
 };
 
@@ -37,7 +41,9 @@ export const useFuelTypeBreakdown = (filters: DashboardFilters = {}) => {
     queryKey: ['fuel-breakdown', filters],
     queryFn: () => dashboardService.getFuelTypeBreakdown(filters),
     retry: 1,
-    staleTime: 60000,
+    staleTime: 30000, // 30 seconds
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000, // Auto-refresh every minute
   });
 };
 

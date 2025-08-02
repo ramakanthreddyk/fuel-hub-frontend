@@ -41,10 +41,78 @@ export const useReportExport = () => {
   });
 };
 
+export interface Report {
+  id: string;
+  name: string;
+  type: 'sales' | 'inventory' | 'financial' | 'attendance';
+  format: 'pdf' | 'excel' | 'csv';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  dateRange: {
+    start: string;
+    end: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  downloadUrl?: string;
+}
+
+/**
+ * Hook to fetch all reports
+ */
+export const useReports = () => {
+  const { handleApiError } = useToastNotifications();
+
+  return useQuery({
+    queryKey: ['reports'],
+    queryFn: async (): Promise<Report[]> => {
+      try {
+        const response = await apiClient.get('/reports');
+        return response.data?.data || response.data || [];
+      } catch (error) {
+        handleApiError(error, 'Load Reports');
+        // Return empty array on error to prevent crashes
+        return [];
+      }
+    },
+    staleTime: 30000, // 30 seconds
+    retry: 2
+  });
+};
+
+/**
+ * Hook to download a report
+ */
+export const useDownloadReport = () => {
+  const { showSuccess, handleApiError } = useToastNotifications();
+
+  return useMutation({
+    mutationFn: async (reportId: string): Promise<Blob> => {
+      const response = await apiClient.get(`/reports/${reportId}/download`, {
+        responseType: 'blob'
+      });
+      return response.data;
+    },
+    onSuccess: (blob, reportId) => {
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `report-${reportId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      showSuccess('Download Started', 'Your report download has started');
+    },
+    onError: (error: any) => {
+      handleApiError(error, 'Download Report');
+    }
+  });
+};
+
 export const useExportReport = useReportExport;
 export const useGenerateReport = useReportExport; // Alias for backward compatibility
-export const useDownloadReport = useReportExport; // Another alias for backward compatibility
-export const useReports = useReportExport; // Another alias for backward compatibility
 
 export const useScheduleReport = () => {
   const queryClient = useQueryClient();

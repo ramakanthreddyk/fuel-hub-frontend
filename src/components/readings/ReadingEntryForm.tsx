@@ -104,7 +104,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const { data: stations = [] } = useStations();
   const { data: pumps = [] } = usePumps(selectedStation);
   const { data: nozzles = [] } = useNozzles(selectedPump);
-  const { data: latestReading, isLoading: loadingLatestReading } = useLatestReading(selectedNozzle);
+  const { data: latestReading, isLoading: loadingLatestReading, refetch: refetchLatestReading } = useLatestReading(selectedNozzle);
   const { data: canCreateReading, isLoading: loadingCanCreate } = useCanCreateReading(selectedNozzle);
   const { data: fuelPrices = [], isLoading: loadingPrices } = useFuelPrices(selectedStation);
   const { data: creditors = [] } = useQuery({
@@ -180,10 +180,25 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   // Check if we can create reading - allow submission if loading or if canCreate is true/undefined
   const canSubmit = loadingCanCreate || !canCreateReading || canCreateReading?.canCreate !== false;
   const hasMissingPrices = !loadingCanCreate && canCreateReading?.canCreate === false && canCreateReading?.missingPrice;
-  
-  // Also check if form has required fields filled
+
+  // Enhanced reading validation
   const formValues = form.watch();
-  const hasRequiredFields = formValues.stationId && formValues.pumpId && formValues.nozzleId && formValues.reading > minReading;
+  const currentReading = Number(formValues.reading) || 0;
+  const previousReading = minReading;
+  const calculatedVolume = currentReading - previousReading;
+  const hasNoPreviousReading = !latestReading || previousReading === 0;
+
+  // Check for various reading scenarios
+  const isNegativeVolume = calculatedVolume < 0 && !hasNoPreviousReading;
+  const isZeroVolume = calculatedVolume === 0 && !hasNoPreviousReading;
+  const isLargeVolume = calculatedVolume > 5000; // More than 5000L might be unusual
+  const isMeterReset = isNegativeVolume && currentReading > 0 && currentReading < 10000; // Likely meter reset
+  const isFirstReading = hasNoPreviousReading && currentReading > 0;
+
+  // Basic required fields validation
+  const hasRequiredFields = formValues.stationId && formValues.pumpId && formValues.nozzleId && currentReading > 0;
+
+  // Allow submission for meter resets but warn user
   const finalCanSubmit = canSubmit && hasRequiredFields;
 
   const onSubmit = async (data: ReadingFormData) => {
@@ -286,6 +301,49 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                   </Alert>
                 )}
 
+                {/* Reading Validation Warnings */}
+                {selectedNozzle && currentReading > 0 && (
+                  <>
+                    {isFirstReading && (
+                      <Alert className="border-green-200 bg-green-50">
+                        <AlertTriangle className="h-4 w-4 text-green-600" />
+                        <AlertDescription className="text-green-800">
+                          <strong>First Reading:</strong> This is the first reading for this nozzle.
+                          The system will record {currentReading}L as the volume sold.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {isMeterReset && (
+                      <Alert className="border-blue-200 bg-blue-50">
+                        <AlertTriangle className="h-4 w-4 text-blue-600" />
+                        <AlertDescription className="text-blue-800">
+                          <strong>Meter Reset Detected:</strong> Current reading ({currentReading}L) is less than previous reading ({previousReading}L).
+                          The system will treat this as a meter reset and calculate volume as {currentReading}L.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {isZeroVolume && !isMeterReset && !isFirstReading && (
+                      <Alert className="border-yellow-200 bg-yellow-50">
+                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                        <AlertDescription className="text-yellow-800">
+                          <strong>Zero Volume:</strong> This reading is the same as the previous reading. No fuel will be recorded as sold.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {isLargeVolume && !isMeterReset && !isFirstReading && (
+                      <Alert className="border-orange-200 bg-orange-50">
+                        <AlertTriangle className="h-4 w-4 text-orange-600" />
+                        <AlertDescription className="text-orange-800">
+                          <strong>Large Volume Warning:</strong> This reading indicates {calculatedVolume.toFixed(2)}L of fuel sold, which is unusually large. Please verify the reading is correct.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </>
+                )}
+
                 {/* Selection Section */}
                 <div className="space-y-6">
                   <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
@@ -376,8 +434,26 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                           <Select 
                             value={field.value} 
                             onValueChange={(value) => {
+                              console.log('[READING-FORM] Nozzle selection changed to:', value);
+
+                              // Find the selected nozzle data to log its details
+                              const selectedNozzleData = nozzles.find(n => n.id === value);
+                              console.log('[READING-FORM] Selected nozzle data:', selectedNozzleData);
+
                               field.onChange(value);
                               setSelectedNozzle(value);
+
+                              // Clear any cached reading data for the previous nozzle to prevent mixing
+                              // This ensures we get fresh data for the newly selected nozzle
+                              if (refetchLatestReading) {
+                                console.log('[READING-FORM] 🔄 Refetching latest reading for new nozzle:', value);
+                                console.log('[READING-FORM] 🔄 Previous nozzle was:', selectedNozzle);
+
+                                // Force refetch to get fresh data and avoid cache contamination
+                                setTimeout(() => {
+                                  refetchLatestReading();
+                                }, 100); // Small delay to ensure state is updated
+                              }
                             }}
                             disabled={!selectedPump || !!initialValues.current.nozzleId}
                           >

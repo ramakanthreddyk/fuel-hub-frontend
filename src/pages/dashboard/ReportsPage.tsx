@@ -34,10 +34,10 @@ export default function ReportsPage() {
   const { toast } = useToast();
   
   // Fetch reports
-  const { 
-    data: reports = [], 
-    isLoading: reportsLoading, 
-    refetch: refetchReports 
+  const {
+    data: reports = [],
+    isLoading: reportsLoading,
+    refetch: refetchReports
   } = useReports();
   
   // Fetch stations for filtering
@@ -71,12 +71,11 @@ export default function ReportsPage() {
 
   const onSubmit = (data: any) => {
     generateReport.mutate({
-      name: data.name,
-      type: data.type,
+      reportType: data.type,
       format: data.format,
       dateRange: {
-        start: new Date(data.startDate).toISOString(),
-        end: new Date(data.endDate).toISOString()
+        startDate: new Date(data.startDate).toISOString(),
+        endDate: new Date(data.endDate).toISOString()
       },
       filters:
         data.stationId && data.stationId !== 'all'
@@ -86,9 +85,10 @@ export default function ReportsPage() {
       onSuccess: () => {
         setIsDialogOpen(false);
         form.reset();
+        refetchReports(); // Refresh the reports list
         toast({
           title: "Report Generated",
-          description: "Your report has been generated and downloaded.",
+          description: "Your report has been generated successfully.",
         });
       },
       onError: (error) => {
@@ -149,22 +149,29 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Reports</h1>
-          <p className="text-muted-foreground text-sm md:text-base">
-            Generate and download reports for your business
-          </p>
-        </div>
-        <div className="flex gap-2">
+    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-sm">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Reports Center</h1>
+                <p className="text-gray-600 text-sm sm:text-base">Generate, schedule, and manage business reports</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
           <ScheduleReportForm />
           <ExportReportForm />
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm">
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                Generate Report
+              <Button size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                <FileSpreadsheet className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Generate Report</span>
+                <span className="xs:hidden">Generate</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -316,15 +323,19 @@ export default function ReportsPage() {
               </Form>
             </DialogContent>
           </Dialog>
-          
-          <Button 
-            onClick={handleRefresh} 
-            disabled={isRefreshing} 
-            variant="outline" 
+          </div>
+        </div>
+
+        <Button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            variant="outline"
             size="sm"
+            className="text-xs sm:text-sm px-2 sm:px-3"
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            <RefreshCw className={`mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden xs:inline">Refresh</span>
+            <span className="xs:hidden">↻</span>
           </Button>
         </div>
       </div>
@@ -339,7 +350,7 @@ export default function ReportsPage() {
               <p className="text-muted-foreground text-center mb-4">
                 Generate your first report to get started
               </p>
-              <Button onClick={() => setIsDialogOpen(true)}>
+              <Button onClick={() => setIsDialogOpen(true)} className="text-sm sm:text-base">
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Generate Report
               </Button>
@@ -349,38 +360,40 @@ export default function ReportsPage() {
           reports.map((report) => (
             <Card key={report.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     {getReportIcon(report.type)}
-                    <div>
-                      <CardTitle>{report.name}</CardTitle>
-                      <CardDescription>
-                        {report.dateRange ? 
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-sm sm:text-base truncate">{report.name}</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">
+                        {report.dateRange ?
                           `${new Date(report.dateRange.start).toLocaleDateString()} - ${new Date(report.dateRange.end).toLocaleDateString()}` :
                           'Date range not available'
                         }
                       </CardDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     {getFormatIcon(report.format)}
                     {getStatusIcon(report.status)}
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     Created: {new Date(report.createdAt).toLocaleString()}
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleDownload(report.id)}
                     disabled={report.status !== 'completed' || downloadReport.isPending}
+                    className="text-xs sm:text-sm px-2 sm:px-3 w-full sm:w-auto"
                   >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download
+                    <Download className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden xs:inline">Download</span>
+                    <span className="xs:hidden">↓</span>
                   </Button>
                 </div>
               </CardContent>

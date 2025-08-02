@@ -22,6 +22,8 @@ interface DataStore {
   // Latest Readings
   latestReadings: Record<string, any>; // nozzleId -> reading
   setLatestReading: (nozzleId: string, reading: any) => void;
+  clearLatestReading: (nozzleId: string) => void;
+  clearAllLatestReadings: () => void;
   
   // Clear specific data
   clearFuelPrices: (stationId?: string) => void;
@@ -63,10 +65,27 @@ export const useDataStore = create<DataStore>()((set) => ({
           nozzles: { ...state.nozzles, [pumpId]: nozzles }
         })),
       
-      setLatestReading: (nozzleId, reading) => 
-        set((state) => ({ 
-          latestReadings: { ...state.latestReadings, [nozzleId]: reading } 
-        })),
+      setLatestReading: (nozzleId, reading) =>
+        set((state) => {
+          console.log(`[DATA-STORE] Setting latest reading for nozzle ${nozzleId}:`, reading);
+          return {
+            latestReadings: { ...state.latestReadings, [nozzleId]: reading }
+          };
+        }),
+
+      clearLatestReading: (nozzleId) =>
+        set((state) => {
+          console.log('[DATA-STORE] Clearing latest reading cache for nozzle:', nozzleId);
+          const newReadings = { ...state.latestReadings };
+          delete newReadings[nozzleId];
+          return { latestReadings: newReadings };
+        }),
+
+      clearAllLatestReadings: () =>
+        set(() => {
+          console.log('[DATA-STORE] Clearing all latest readings cache');
+          return { latestReadings: {} };
+        }),
       
       // Clear functions
       clearFuelPrices: (stationId) => 

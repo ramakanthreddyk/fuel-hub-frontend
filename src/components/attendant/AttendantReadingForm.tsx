@@ -94,19 +94,12 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
       onSuccess: () => {
         // Reset form
         setReadingValue("");
-        toast({
-          title: "Reading Recorded",
-          description: `Successfully recorded reading ${readingValue}L`,
-          variant: "success",
-        });
+        // Toast notification is handled by the mutation hook to avoid duplicates
         if (onSuccess) onSuccess();
       },
       onError: (error: any) => {
-        toast({
-          title: "Failed to Record Reading",
-          description: error.message || "Please try again.",
-          variant: "destructive",
-        });
+        // Error toast is handled by the mutation hook to avoid duplicates
+        console.error('Reading creation failed:', error);
       }
     });
   };

@@ -7,13 +7,21 @@ import { DateRangePicker, DateRange } from '@/components/filters/DateRangePicker
 import { useSales } from '@/hooks/api/useSales';
 import { SalesFilters } from '@/api/services/salesService';
 import { useDataStore } from '@/store/dataStore';
-import { BadgeIndianRupee, TrendingUp, CreditCard, Users, Download, Filter, BarChart3, Fuel } from 'lucide-react';
+import { BadgeIndianRupee, TrendingUp, CreditCard, Users, Download, Filter, BarChart3, Fuel, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, formatVolume, formatSafeNumber } from '@/utils/formatters';
+import {
+  useMobileFormatters,
+  getResponsiveTextSize,
+  getResponsiveIconSize,
+  getResponsivePadding,
+  getResponsiveGap
+} from '@/utils/mobileFormatters';
 
 export default function SalesPage() {
   const [selectedStation, setSelectedStation] = useState<string | undefined>();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const { isMobile } = useMobileFormatters();
   
   const filters: SalesFilters = {
     stationId: selectedStation,
@@ -47,17 +55,20 @@ export default function SalesPage() {
   const postedSales = sales.filter(sale => sale.status === 'posted');
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-            Sales Management
-          </h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            View and analyze all sales transactions across stations
-          </p>
+    <div className={`min-h-screen bg-gray-50/50 ${getResponsivePadding('base')}`}>
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-3 sm:p-4 lg:p-6">
+          <div className="flex items-center gap-3">
+            <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-sm`}>
+              <Target className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-white`} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className={`${getResponsiveTextSize('2xl')} font-bold text-gray-900 truncate`}>Sales Management</h1>
+              <p className={`text-gray-600 ${getResponsiveTextSize('sm')} mt-1`}>View and analyze all sales transactions across stations</p>
+            </div>
+          </div>
         </div>
-      </div>
 
       {/* Filters */}
       <Card className="bg-gradient-to-r from-blue-50 via-white to-green-50 border-2 border-blue-200/50 shadow-lg">
@@ -188,6 +199,7 @@ export default function SalesPage() {
           <SalesTable sales={sales} isLoading={isLoading} />
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

@@ -1,12 +1,19 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useReading, useUpdateReading } from '@/hooks/api/useReadings';
 import { useToast } from '@/hooks/use-toast';
+import {
+  useMobileFormatters,
+  getResponsiveTextSize,
+  getResponsiveIconSize,
+  getResponsivePadding,
+  getResponsiveGap
+} from '@/utils/mobileFormatters';
 
 export default function EditReadingPage() {
   const { readingId } = useParams<{ readingId: string }>();

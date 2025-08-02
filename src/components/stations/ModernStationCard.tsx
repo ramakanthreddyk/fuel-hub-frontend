@@ -8,8 +8,9 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, MapPin, TrendingUp, Fuel, Activity, Trash2, Eye, Zap } from 'lucide-react';
+import { MapPin, TrendingUp, Fuel, Trash2, Eye, Zap } from 'lucide-react';
 import { formatCurrency, formatNumber } from '@/utils/formatters';
+import { useMobileFormatters } from '@/utils/mobileFormatters';
 
 interface ModernStationCardProps {
   station: {
@@ -29,9 +30,9 @@ interface ModernStationCardProps {
   activePumps?: number;
 }
 
-export function ModernStationCard({ 
-  station, 
-  onView, 
+export function ModernStationCard({
+  station,
+  onView,
   onDelete,
   fuelPrices = [],
   pumps = [],
@@ -39,6 +40,7 @@ export function ModernStationCard({
   todayTransactions = 0,
   activePumps = 0
 }: ModernStationCardProps) {
+  const { formatCurrency: formatCurrencyMobile, formatCount, isMobile } = useMobileFormatters();
   
   const getStatusConfig = () => {
     switch (station.status) {
@@ -105,30 +107,32 @@ export function ModernStationCard({
         </div>
       </div>
 
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <div className="text-center p-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
             <TrendingUp className="h-3 w-3 text-blue-600 mx-auto mb-1" />
-            <div className="text-lg font-bold text-blue-900">{formatNumber(todayTransactions)}</div>
+            <div className="text-sm sm:text-lg font-bold text-blue-900">
+              {isMobile ? formatCount(todayTransactions) : formatNumber(todayTransactions)}
+            </div>
             <div className="text-[10px] text-blue-700 font-medium">Sales Today</div>
           </div>
-          
+
           <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
             <Fuel className="h-3 w-3 text-purple-600 mx-auto mb-1" />
-            <div className="text-lg font-bold text-purple-900">{activePumps}/{pumps.length || station.pumpCount}</div>
+            <div className="text-sm sm:text-lg font-bold text-purple-900">{activePumps}/{pumps.length || station.pumpCount}</div>
             <div className="text-[10px] text-purple-700 font-medium">Active Pumps</div>
           </div>
         </div>
 
         {/* Revenue Section */}
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-3 sm:p-5 border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-semibold text-gray-700">Today's Revenue</div>
-            <Zap className="h-4 w-4 text-gray-500" />
+            <div className="text-xs sm:text-sm font-semibold text-gray-700">Today's Revenue</div>
+            <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
           </div>
-          <div className="text-3xl font-bold text-gray-900">
-            {todaySales > 0 ? formatCurrency(todaySales, { maximumFractionDigits: 0 }) : '₹0'}
+          <div className="text-xl sm:text-3xl font-bold text-gray-900">
+            {todaySales > 0 ? (isMobile ? formatCurrencyMobile(todaySales) : formatCurrency(todaySales, { maximumFractionDigits: 0 })) : '₹0'}
           </div>
         </div>
 
@@ -191,21 +195,22 @@ export function ModernStationCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-2 sm:gap-3 pt-2">
           <Button
             onClick={() => onView(station.id)}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 sm:py-3 text-sm sm:text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
-            <Eye className="mr-2 h-5 w-5" />
-            View Station Details
+            <Eye className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">View Station Details</span>
+            <span className="sm:hidden">View Details</span>
           </Button>
-          
+
           <Button
             onClick={() => onDelete(station.id)}
             variant="outline"
-            className="px-4 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl transition-all duration-300 transform hover:scale-105"
+            className="px-3 sm:px-4 py-2 sm:py-3 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl transition-all duration-300 transform hover:scale-105"
           >
-            <Trash2 className="h-5 w-5" />
+            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </div>
       </CardContent>

@@ -12,13 +12,15 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext';
 
 // Import pages
-import LandingPage from './pages/LandingPage';
+import ModernLandingPage from './pages/ModernLandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 
-// Import layout components
-import { Sidebar } from './components/layout/Sidebar';
-import { Header } from './components/layout/Header';
+// Import modern layout components
+import { SmartLayout } from './components/layout/ModernLayout';
+
+// Import test utility for debugging
+import './utils/testNozzleHierarchy';
 import { SuperAdminLayout } from './components/layout/SuperAdminLayout';
 import { AttendantLayout } from './components/layout/AttendantLayout';
 
@@ -45,9 +47,11 @@ import ReconciliationPage from './pages/dashboard/ReconciliationPage';
 import ReconciliationDetailPage from './pages/dashboard/ReconciliationDetailPage';
 import ReadingsPage from './pages/dashboard/ReadingsPage';
 import SimpleReadingPage from './pages/dashboard/SimpleReadingPage';
+import ReadingDetailPage from './pages/dashboard/ReadingDetailPage';
 import FuelPricesPage from './pages/dashboard/FuelPricesPage';
 import FuelInventoryPage from './pages/dashboard/FuelInventoryPage';
 import AnalyticsPage from './pages/dashboard/AnalyticsPage';
+import CreditorsPage from './pages/dashboard/CreditorsPage';
 import { QuickReadingButton } from './components/readings/QuickReadingButton';
 
 // Attendant Pages
@@ -178,53 +182,42 @@ function AppRouter() {
 
         {/* Dashboard Routes for Owner/Manager */}
         <Route path="/dashboard/*" element={
-          <div className="min-h-screen bg-white">
-            <Sidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
-            <div className="lg:pl-72">
-              <Header onMobileMenuClick={() => setSidebarOpen(true)} />
-              <main className="flex-1 overflow-x-hidden bg-white">
-                <div className="w-full max-w-full">
-                  <div className="w-full min-w-0">
-                    <Routes>
-                      <Route index element={<SafeComponent><DashboardPage /></SafeComponent>} />
-                      <Route path="stations" element={<SafeComponent><StationsPage /></SafeComponent>} />
-                      <Route path="stations/new" element={<SafeComponent><NewStationPage /></SafeComponent>} />
-                      <Route path="stations/:stationId" element={<SafeComponent><StationDetailPage /></SafeComponent>} />
-                      <Route path="stations/:stationId/edit" element={<SafeComponent><EditStationPage /></SafeComponent>} />
-                      <Route path="stations/:stationId/settings" element={<SafeComponent><StationSettingsPage /></SafeComponent>} />
-                      <Route path="stations/:stationId/pumps" element={<SafeComponent><PumpsPage /></SafeComponent>} />
-                      <Route path="pumps" element={<SafeComponent><PumpsPage /></SafeComponent>} />
-                      <Route path="pumps/new" element={<SafeComponent><CreatePumpPage /></SafeComponent>} />
-                      <Route path="pumps/:pumpId" element={<SafeComponent><PumpDetailPage /></SafeComponent>} />
-                      <Route path="pumps/:pumpId/edit" element={<SafeComponent><EditPumpPage /></SafeComponent>} />
-                      <Route path="pumps/:pumpId/nozzles" element={<SafeComponent><NozzlesPage /></SafeComponent>} />
-                      <Route path="nozzles" element={<SafeComponent><NozzlesPage /></SafeComponent>} />
-                      <Route path="nozzles/new" element={<SafeComponent><CreateNozzlePage /></SafeComponent>} />
-                      <Route path="nozzles/:nozzleId/edit" element={<SafeComponent><EditNozzlePage /></SafeComponent>} />
-                      <Route path="readings" element={<SafeComponent><ReadingsPage /></SafeComponent>} />
-                      <Route path="readings/new" element={<SafeComponent><SimpleReadingPage /></SafeComponent>} />
-                      <Route path="fuel-prices" element={<SafeComponent><FuelPricesPage /></SafeComponent>} />
-                      <Route path="fuel-inventory" element={<SafeComponent><FuelInventoryPage /></SafeComponent>} />
-                      <Route path="sales" element={<SafeComponent><SalesPage /></SafeComponent>} />
-                      <Route path="sales/overview" element={<SafeComponent><SalesOverviewPage /></SafeComponent>} />
-                      <Route path="reports" element={<SafeComponent><ReportsPage /></SafeComponent>} />
-                      <Route path="analytics" element={<SafeComponent><AnalyticsPage /></SafeComponent>} />
-                      <Route path="inventory" element={<SafeComponent><InventoryPage /></SafeComponent>} />
-                      <Route path="users" element={<SafeComponent><UsersPage /></SafeComponent>} />
-                      <Route path="reconciliation" element={<SafeComponent><ReconciliationPage /></SafeComponent>} />
-                      <Route path="reconciliation/:reconciliationId" element={<SafeComponent><ReconciliationDetailPage /></SafeComponent>} />
-                      <Route path="settings" element={<SafeComponent><SettingsPage /></SafeComponent>} />
-                      <Route path="reset-password" element={<SafeComponent><ResetPasswordPage /></SafeComponent>} />
-                      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                    </Routes>
-                  </div>
-                </div>
-              </main>
-
-              {/* Quick Reading Button - Floating */}
-              <QuickReadingButton variant="floating" />
-            </div>
-          </div>
+          <SmartLayout>
+            <Routes>
+              <Route index element={<SafeComponent><DashboardPage /></SafeComponent>} />
+              <Route path="stations" element={<SafeComponent><StationsPage /></SafeComponent>} />
+              <Route path="stations/new" element={<SafeComponent><NewStationPage /></SafeComponent>} />
+              <Route path="stations/:stationId" element={<SafeComponent><StationDetailPage /></SafeComponent>} />
+              <Route path="stations/:stationId/edit" element={<SafeComponent><EditStationPage /></SafeComponent>} />
+              <Route path="stations/:stationId/settings" element={<SafeComponent><StationSettingsPage /></SafeComponent>} />
+              <Route path="stations/:stationId/pumps" element={<SafeComponent><PumpsPage /></SafeComponent>} />
+              <Route path="pumps" element={<SafeComponent><PumpsPage /></SafeComponent>} />
+              <Route path="pumps/new" element={<SafeComponent><CreatePumpPage /></SafeComponent>} />
+              <Route path="pumps/:pumpId" element={<SafeComponent><PumpDetailPage /></SafeComponent>} />
+              <Route path="pumps/:pumpId/edit" element={<SafeComponent><EditPumpPage /></SafeComponent>} />
+              <Route path="pumps/:pumpId/nozzles" element={<SafeComponent><NozzlesPage /></SafeComponent>} />
+              <Route path="nozzles" element={<SafeComponent><NozzlesPage /></SafeComponent>} />
+              <Route path="nozzles/new" element={<SafeComponent><CreateNozzlePage /></SafeComponent>} />
+              <Route path="nozzles/:nozzleId/edit" element={<SafeComponent><EditNozzlePage /></SafeComponent>} />
+              <Route path="readings" element={<SafeComponent><ReadingsPage /></SafeComponent>} />
+              <Route path="readings/new" element={<SafeComponent><SimpleReadingPage /></SafeComponent>} />
+              <Route path="readings/:readingId" element={<SafeComponent><ReadingDetailPage /></SafeComponent>} />
+              <Route path="fuel-prices" element={<SafeComponent><FuelPricesPage /></SafeComponent>} />
+              <Route path="fuel-inventory" element={<SafeComponent><FuelInventoryPage /></SafeComponent>} />
+              <Route path="sales" element={<SafeComponent><SalesPage /></SafeComponent>} />
+              <Route path="sales/overview" element={<SafeComponent><SalesOverviewPage /></SafeComponent>} />
+              <Route path="reports" element={<SafeComponent><ReportsPage /></SafeComponent>} />
+              <Route path="analytics" element={<SafeComponent><AnalyticsPage /></SafeComponent>} />
+              <Route path="inventory" element={<SafeComponent><InventoryPage /></SafeComponent>} />
+              <Route path="creditors" element={<SafeComponent><CreditorsPage /></SafeComponent>} />
+              <Route path="users" element={<SafeComponent><UsersPage /></SafeComponent>} />
+              <Route path="reconciliation" element={<SafeComponent><ReconciliationPage /></SafeComponent>} />
+              <Route path="reconciliation/:reconciliationId" element={<SafeComponent><ReconciliationDetailPage /></SafeComponent>} />
+              <Route path="settings" element={<SafeComponent><SettingsPage /></SafeComponent>} />
+              <Route path="reset-password" element={<SafeComponent><ResetPasswordPage /></SafeComponent>} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </SmartLayout>
         } />
 
         {/* Role-based default redirects */}
@@ -245,7 +238,7 @@ function AppRouter() {
   // If not authenticated, show public routes
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<ModernLandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

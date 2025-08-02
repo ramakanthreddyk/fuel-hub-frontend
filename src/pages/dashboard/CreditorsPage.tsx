@@ -6,12 +6,19 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Users, Search, AlertCircle } from 'lucide-react';
+import { Plus, Users, Search, AlertCircle, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCreditors } from '@/hooks/api/useCreditors';
 import { CreditorCard } from '@/components/creditors/CreditorCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  useMobileFormatters,
+  getResponsiveTextSize,
+  getResponsiveIconSize,
+  getResponsivePadding,
+  getResponsiveGap
+} from '@/utils/mobileFormatters';
 
 export default function CreditorsPage() {
   const navigate = useNavigate();
@@ -50,19 +57,27 @@ export default function CreditorsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Credit Management</h1>
-          <p className="text-muted-foreground">Manage customer credit accounts and payments</p>
+    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-sm">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Credit Management</h1>
+                <p className="text-gray-600 text-sm sm:text-base">Manage customer credit accounts and payments</p>
+              </div>
+            </div>
+
+            <Button onClick={() => navigate('/dashboard/creditors/new')}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Creditor
+            </Button>
+          </div>
         </div>
-        
-        <Button onClick={() => navigate('/dashboard/creditors/new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Creditor
-        </Button>
-      </div>
 
       {/* Error State */}
       {isError && (
@@ -130,6 +145,7 @@ export default function CreditorsPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

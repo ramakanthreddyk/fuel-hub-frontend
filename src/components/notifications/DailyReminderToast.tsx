@@ -4,11 +4,9 @@
  */
 
 import React, { useEffect } from 'react';
-import { toast } from 'sonner';
-import { Bell, Clock, AlertTriangle } from 'lucide-react';
 import { useDailyReminders } from '@/hooks/useOnboarding';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSmartNotifications } from '@/hooks/useSmartNotifications';
 
 interface DailyReminderToastProps {
   enabled?: boolean;
@@ -19,99 +17,72 @@ export function DailyReminderToast({
   enabled = true,
   showOnMount = true
 }: DailyReminderToastProps) {
-  const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const { data: reminders, isLoading } = useDailyReminders();
+  const { showNotifications } = useSmartNotifications();
 
   useEffect(() => {
     // Only show reminders if user is authenticated and logged in
     if (!enabled || isLoading || !reminders || !showOnMount || !isAuthenticated || !user) return;
 
-    // Show urgent reminders immediately
-    const urgentReminders = reminders.filter(r => 
-      !r.completed && (r.priority === 'urgent' || r.priority === 'high')
-    );
+    // Ensure reminders is an array
+    const reminderArray = Array.isArray(reminders) ? reminders : [];
 
-    urgentReminders.forEach((reminder, index) => {
-      // Stagger the toasts slightly
-      setTimeout(() => {
-        const icon = reminder.priority === 'urgent' 
-          ? <AlertTriangle className="h-4 w-4 text-red-500" />
-          : reminder.priority === 'high'
-          ? <Bell className="h-4 w-4 text-orange-500" />
-          : <Clock className="h-4 w-4 text-blue-500" />;
+    if (reminderArray.length === 0) return;
 
-        toast(reminder.title, {
-          description: reminder.message,
-          icon,
-          duration: reminder.priority === 'urgent' ? 10000 : 6000,
-          action: reminder.route ? {
-            label: 'Go',
-            onClick: () => navigate(reminder.route!)
-          } : undefined,
-          className: reminder.priority === 'urgent' 
-            ? 'border-red-200 bg-red-50' 
-            : reminder.priority === 'high'
-            ? 'border-orange-200 bg-orange-50'
-            : 'border-blue-200 bg-blue-50'
-        });
-      }, index * 1000); // 1 second delay between toasts
-    });
+    // Convert reminders to smart notifications
+    const smartNotifications = reminderArray
+      .filter(r => !r.completed)
+      .map(reminder => ({
+        id: reminder.id,
+        type: reminder.priority === 'urgent' ? 'error' as const :
+              reminder.priority === 'high' ? 'warning' as const : 'info' as const,
+        title: reminder.title,
+        message: reminder.message,
+        priority: reminder.priority as 'low' | 'medium' | 'high' | 'urgent',
+        category: reminder.type === 'reconciliation' ? 'reconciliation' as const :
+                 reminder.type === 'reading_entry' ? 'readings' as const : 'general' as const,
+        actionUrl: reminder.route,
+        actionLabel: 'Go',
+        dismissible: true,
+        consolidateWith: reminder.type === 'reconciliation' ? ['weekly-reconciliation', 'daily-reconciliation'] : undefined
+      }));
 
-    // Show a general reminder for daily tasks after urgent ones
-    if (urgentReminders.length === 0) {
-      const dailyTasks = reminders.filter(r => !r.completed);
-      if (dailyTasks.length > 0) {
-        setTimeout(() => {
-          toast('Daily Tasks', {
-            description: `You have ${dailyTasks.length} task${dailyTasks.length > 1 ? 's' : ''} for today.`,
-            icon: <Bell className="h-4 w-4 text-blue-500" />,
-            duration: 4000,
-            action: {
-              label: 'View',
-              onClick: () => navigate('/dashboard')
-            }
-          });
-        }, urgentReminders.length * 1000 + 2000);
-      }
-    }
-  }, [reminders, isLoading, enabled, showOnMount, navigate, isAuthenticated, user]);
+    // Show notifications using smart system
+    showNotifications(smartNotifications);
+  }, [reminders, isLoading, enabled, showOnMount, isAuthenticated, user, showNotifications]);
 
   // This component doesn't render anything visible
   return null;
 }
 
 /**
- * Hook to manually trigger reminder toasts
+ * Hook to manually trigger reminder notifications using smart system
  */
 export function useReminderToasts() {
-  const navigate = useNavigate();
   const { data: reminders } = useDailyReminders();
+  const { showNotification, showNotifications } = useSmartNotifications();
 
   const showUrgentReminders = () => {
     if (!reminders) return;
 
-    const urgentReminders = reminders.filter(r => 
+    const urgentReminders = reminders.filter(r =>
       !r.completed && (r.priority === 'urgent' || r.priority === 'high')
     );
 
-    urgentReminders.forEach((reminder, index) => {
-      setTimeout(() => {
-        const icon = reminder.priority === 'urgent' 
-          ? <AlertTriangle className="h-4 w-4 text-red-500" />
-          : <Bell className="h-4 w-4 text-orange-500" />;
+    const smartNotifications = urgentReminders.map(reminder => ({
+      id: `urgent_${reminder.id}`,
+      type: reminder.priority === 'urgent' ? 'error' as const : 'warning' as const,
+      title: reminder.title,
+      message: reminder.message,
+      priority: reminder.priority as 'urgent' | 'high',
+      category: 'general' as const,
+      actionUrl: reminder.route,
+      actionLabel: 'Go',
+      dismissible: true
+    }));
 
-        toast(reminder.title, {
-          description: reminder.message,
-          icon,
-          duration: 8000,
-          action: reminder.route ? {
-            label: 'Go',
-            onClick: () => navigate(reminder.route!)
-          } : undefined
-        });
-      }, index * 500);
-    });
+    showNotifications(smartNotifications);
   };
 
   const showDailyTasksSummary = () => {
@@ -119,45 +90,56 @@ export function useReminderToasts() {
 
     const pendingTasks = reminders.filter(r => !r.completed);
     if (pendingTasks.length === 0) {
-      toast.success('All caught up!', {
-        description: 'You have no pending tasks for today.',
-        icon: <Bell className="h-4 w-4 text-green-500" />
+      showNotification({
+        id: 'all_caught_up',
+        type: 'success',
+        title: 'All caught up!',
+        message: 'You have no pending tasks for today.',
+        priority: 'low',
+        category: 'general',
+        dismissible: true
       });
       return;
     }
 
-    toast('Daily Tasks Summary', {
-      description: `${pendingTasks.length} task${pendingTasks.length > 1 ? 's' : ''} remaining for today.`,
-      icon: <Clock className="h-4 w-4 text-blue-500" />,
-      duration: 6000,
-      action: {
-        label: 'View All',
-        onClick: () => navigate('/dashboard')
-      }
+    showNotification({
+      id: 'daily_tasks_summary',
+      type: 'info',
+      title: 'Daily Tasks Summary',
+      message: `${pendingTasks.length} task${pendingTasks.length > 1 ? 's' : ''} remaining for today.`,
+      priority: 'medium',
+      category: 'general',
+      actionUrl: '/dashboard',
+      actionLabel: 'View All',
+      dismissible: true
     });
   };
 
   const showReadingReminder = () => {
-    toast('Reading Reminder', {
-      description: 'Don\'t forget to enter today\'s nozzle readings for accurate sales tracking.',
-      icon: <Bell className="h-4 w-4 text-blue-500" />,
-      duration: 6000,
-      action: {
-        label: 'Enter Readings',
-        onClick: () => navigate('/dashboard/readings/new')
-      }
+    showNotification({
+      id: 'reading_reminder',
+      type: 'info',
+      title: 'Reading Reminder',
+      message: 'Don\'t forget to enter today\'s nozzle readings for accurate sales tracking.',
+      priority: 'medium',
+      category: 'readings',
+      actionUrl: '/dashboard/readings/new',
+      actionLabel: 'Enter Readings',
+      dismissible: true
     });
   };
 
   const showReconciliationReminder = () => {
-    toast('Reconciliation Due', {
-      description: 'It\'s time for your weekly reconciliation. Review cash and sales data.',
-      icon: <AlertTriangle className="h-4 w-4 text-orange-500" />,
-      duration: 8000,
-      action: {
-        label: 'Start Reconciliation',
-        onClick: () => navigate('/dashboard/reconciliation')
-      }
+    showNotification({
+      id: 'reconciliation_reminder',
+      type: 'warning',
+      title: 'Reconciliation Due',
+      message: 'It\'s time for your weekly reconciliation. Review cash and sales data.',
+      priority: 'high',
+      category: 'reconciliation',
+      actionUrl: '/dashboard/reconciliation',
+      actionLabel: 'Start Reconciliation',
+      dismissible: true
     });
   };
 

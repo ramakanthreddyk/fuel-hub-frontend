@@ -7,6 +7,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { readingsService } from '@/api/contract/readings.service';
 import { toast } from '@/hooks/use-toast';
+import { invalidateReadingQueries } from '@/utils/queryInvalidation';
 import type { CreateReadingRequest } from '@/api/api-contract';
 
 export const useContractReadings = (params?: {
@@ -42,14 +43,14 @@ export const useCreateContractReading = () => {
   return useMutation({
     mutationFn: (data: CreateReadingRequest) => readingsService.createReading(data),
     onSuccess: (newReading) => {
-      // Invalidate readings for the nozzle
+      // Use comprehensive invalidation for dashboard updates
+      invalidateReadingQueries(queryClient);
+
+      // Contract-specific queries
       queryClient.invalidateQueries({ queryKey: ['contract-readings'] });
       queryClient.invalidateQueries({ queryKey: ['contract-latest-reading', newReading.nozzleId] });
       queryClient.invalidateQueries({ queryKey: ['contract-can-create-reading', newReading.nozzleId] });
-      // Also invalidate sales and dashboard data
-      queryClient.invalidateQueries({ queryKey: ['sales'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      
+
       toast({
         title: "Success",
         description: "Reading recorded successfully",

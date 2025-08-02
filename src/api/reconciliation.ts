@@ -196,15 +196,20 @@ export const reconciliationApi = {
   // Get reconciliation by station and date
   getReconciliationByStationAndDate: async (stationId: string, date: string): Promise<ReconciliationRecord | null> => {
     try {
-      const response = await apiClient.get(`/reconciliation/${stationId}/${date}`);
+      const params = new URLSearchParams();
+      params.append('stationId', stationId);
+      params.append('date', date);
+
+      const response = await apiClient.get(`/reconciliation/summary?${params.toString()}`);
       return response.data.data;
     } catch (error: any) {
       // If it's a 404 error, return null instead of throwing
       if (error.response && error.response.status === 404) {
-        console.log('Found existing reconciliation: undefined');
+        console.log('No existing reconciliation found');
         return null;
       }
-      throw error;
+      console.error('Error fetching reconciliation by station and date:', error);
+      return null;
     }
   },
 

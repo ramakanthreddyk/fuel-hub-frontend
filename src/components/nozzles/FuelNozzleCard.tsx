@@ -255,8 +255,10 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
 
 // Component to display the latest reading for a nozzle
 function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
-  const { data: latestReading, isLoading, error } = useLatestReading(nozzleId);
-  
+  const { data: latestReading, isLoading, error, isError } = useLatestReading(nozzleId);
+
+  console.log(`[LastReadingDisplay] Nozzle ${nozzleId}:`, { latestReading, isLoading, error, isError });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-6">
@@ -264,39 +266,43 @@ function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
       </div>
     );
   }
-  
-  if (error) {
-    console.error('Error fetching reading:', error);
+
+  // Handle error cases - this might be a new nozzle with no readings
+  if (error || isError) {
+    console.log(`[LastReadingDisplay] Error for nozzle ${nozzleId}:`, error);
+    // For new nozzles, this is expected
     return (
-      <div className="text-lg font-bold text-gray-900">
-        Error loading
-      </div>
-    );
-  }
-  
-  // Check if we have a reading from the API
-  if (!latestReading || latestReading.reading === undefined || latestReading.reading === null) {
-    return (
-      <div className="text-lg font-bold text-gray-900">
+      <div className="text-lg font-bold text-gray-500">
         No readings yet
       </div>
     );
   }
-  
-  // Ensure reading is a number
-  const readingValue = typeof latestReading.reading === 'number' 
-    ? latestReading.reading 
-    : parseFloat(latestReading.reading);
-  
-  // Handle NaN case
-  if (isNaN(readingValue)) {
+
+  // Check if we have a reading from the API
+  if (!latestReading || latestReading.reading === undefined || latestReading.reading === null) {
+    console.log(`[LastReadingDisplay] No reading data for nozzle ${nozzleId}`);
     return (
-      <div className="text-lg font-bold text-gray-900">
-        Invalid reading
+      <div className="text-lg font-bold text-gray-500">
+        No readings yet
       </div>
     );
   }
-  
+
+  // Ensure reading is a number
+  const readingValue = typeof latestReading.reading === 'number'
+    ? latestReading.reading
+    : parseFloat(latestReading.reading);
+
+  // Handle NaN case
+  if (isNaN(readingValue)) {
+    console.log(`[LastReadingDisplay] Invalid reading value for nozzle ${nozzleId}:`, latestReading.reading);
+    return (
+      <div className="text-lg font-bold text-gray-500">
+        No readings yet
+      </div>
+    );
+  }
+
   // Format the reading with proper number formatting
   return (
     <div className="text-lg font-bold text-gray-900">

@@ -3,6 +3,7 @@ import { readingsApi, CreateReadingRequest } from '@/api/readings';
 import { useFuelStore } from '@/store/fuelStore';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { invalidateReadingQueries } from '@/utils/queryInvalidation';
 
 // Brief overview for reconciliation differences summary UI
 // This hook and UI section help users understand discrepancies between expected and actual readings for each nozzle on a given station and date.
@@ -43,13 +44,9 @@ export const useCreateReading = () => {
     mutationFn: readingsApi.createReading,
     onSuccess: (data) => {
       console.log('[READINGS] Reading created successfully:', data);
-      queryClient.invalidateQueries({ queryKey: ['readings'] });
-      queryClient.invalidateQueries({ queryKey: ['sales'] });
-      queryClient.invalidateQueries({ queryKey: ['nozzles'] });
-      toast({
-        title: "Success",
-        description: "Reading recorded successfully. Sale auto-generated.",
-      });
+      // Use comprehensive invalidation for dashboard updates
+      invalidateReadingQueries(queryClient);
+      // Toast notification is handled by the main reading hook to avoid duplicates
     },
     onError: (error: any) => {
       console.error('[READINGS] Error creating reading:', error);

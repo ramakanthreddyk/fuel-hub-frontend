@@ -16,53 +16,67 @@ export const useEnhancedDashboard = (params?: {
 }) => {
   const range = params?.range || 'daily';
 
-  // Sales summary
+  // Sales summary - reduced cache time for real-time updates
   const salesSummary = useQuery({
     queryKey: ['dashboard-sales-summary', params],
     queryFn: () => dashboardService.getSalesSummary({ range, ...params }),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // 30 seconds for real-time updates
+    refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000, // Auto-refresh every minute
   });
 
   // Payment methods breakdown
   const paymentMethods = useQuery({
     queryKey: ['dashboard-payment-methods', params?.stationId],
     queryFn: () => dashboardService.getPaymentMethods(params?.stationId),
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 60 * 1000, // 1 minute
+    refetchOnWindowFocus: true,
+    refetchInterval: 2 * 60 * 1000, // Auto-refresh every 2 minutes
   });
 
   // Fuel type analytics
   const fuelAnalytics = useQuery({
     queryKey: ['dashboard-fuel-analytics', params],
     queryFn: () => dashboardService.getFuelTypeAnalytics(params),
-    staleTime: 10 * 60 * 1000,
+    staleTime: 60 * 1000, // 1 minute
+    refetchOnWindowFocus: true,
+    refetchInterval: 2 * 60 * 1000, // Auto-refresh every 2 minutes
   });
 
   // Station performance
   const stationPerformance = useQuery({
     queryKey: ['dashboard-station-performance', params],
     queryFn: () => dashboardService.getStationPerformance(params),
-    staleTime: 15 * 60 * 1000, // 15 minutes
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnWindowFocus: true,
+    refetchInterval: 3 * 60 * 1000, // Auto-refresh every 3 minutes
   });
 
   // Top stations
   const topStations = useQuery({
     queryKey: ['dashboard-top-stations'],
     queryFn: () => dashboardService.getTopStations(5),
-    staleTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
+    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
   });
 
-  // Recent activities
+  // Recent activities - most important for real-time updates
   const recentActivities = useQuery({
     queryKey: ['dashboard-recent-activities'],
     queryFn: () => dashboardService.getRecentActivities(10),
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 15 * 1000, // 15 seconds for real-time updates
+    refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000, // Auto-refresh every 30 seconds
   });
 
   // Alerts summary
   const alertsSummary = useQuery({
     queryKey: ['dashboard-alerts-summary'],
     queryFn: () => dashboardService.getAlertsSummary(),
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000, // Auto-refresh every minute
   });
 
   return {

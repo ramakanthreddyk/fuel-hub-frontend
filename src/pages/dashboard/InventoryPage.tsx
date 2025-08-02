@@ -4,10 +4,19 @@ import { InventoryTable } from '@/components/fuel-deliveries/InventoryTable';
 import { useState } from 'react';
 import { updateInventory } from '@/api/services/inventoryService';
 import { useAutoLoader } from '@/hooks/useAutoLoader';
+import {
+  useMobileFormatters,
+  getResponsiveTextSize,
+  getResponsiveIconSize,
+  getResponsivePadding,
+  getResponsiveGap
+} from '@/utils/mobileFormatters';
+import { Database } from 'lucide-react';
 
 export default function InventoryPage() {
   const { data: inventory = [], isLoading } = useFuelInventory();
-  
+  const { isMobile } = useMobileFormatters();
+
   useAutoLoader(isLoading, 'Loading inventory...');
 
   // Form state
@@ -41,11 +50,19 @@ export default function InventoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="space-y-6 p-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Fuel Inventory</h1>
-          <p className="text-slate-600">Monitor current fuel stock levels across all stations</p>
+    <div className={`min-h-screen bg-gray-50/50 ${getResponsivePadding('base')}`}>
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-3 sm:p-4 lg:p-6">
+          <div className="flex items-center gap-3">
+            <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm`}>
+              <Database className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-white`} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className={`${getResponsiveTextSize('2xl')} font-bold text-gray-900 truncate`}>Fuel Inventory</h1>
+              <p className={`text-gray-600 ${getResponsiveTextSize('sm')} mt-1`}>Monitor current fuel stock levels across all stations</p>
+            </div>
+          </div>
         </div>
 
         {/* Inventory Update Form */}

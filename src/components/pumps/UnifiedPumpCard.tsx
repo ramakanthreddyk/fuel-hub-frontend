@@ -34,6 +34,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useMobileFormatters } from '@/utils/mobileFormatters';
 
 // Unified pump interface
 export interface PumpData {
@@ -149,6 +150,8 @@ export const UnifiedPumpCard = memo(function UnifiedPumpCard({
   showStationName = false,
   className,
 }: UnifiedPumpCardProps) {
+  const { isMobile } = useMobileFormatters();
+
   // Memoize expensive calculations
   const statusConfig = useMemo(() => getStatusConfig(pump.status), [pump.status]);
   const cardVariant = useMemo(() => getCardVariant(pump.id), [pump.id]);
@@ -287,25 +290,29 @@ export const UnifiedPumpCard = memo(function UnifiedPumpCard({
         hasAttention && "border-amber-200 bg-amber-50/30",
         className
       )}>
-        <CardContent className="p-4">
+        <CardContent className={isMobile ? "p-3" : "p-4"}>
           {/* Header Row */}
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Fuel className="h-4 w-4 text-blue-600" />
+              <div className={`bg-blue-50 rounded-lg ${isMobile ? 'p-1.5' : 'p-2'}`}>
+                <Fuel className={`text-blue-600 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-gray-900 truncate">{pump.name}</h3>
+                <h3 className={`font-semibold text-gray-900 truncate ${isMobile ? 'text-sm' : 'text-base'}`}>
+                  {pump.name}
+                </h3>
                 {pump.serialNumber && (
-                  <p className="text-xs text-gray-500 truncate">Serial: {pump.serialNumber}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {isMobile ? pump.serialNumber : `Serial: ${pump.serialNumber}`}
+                  </p>
                 )}
                 {showStationName && pump.stationName && (
                   <p className="text-xs text-blue-600 truncate">{pump.stationName}</p>
                 )}
               </div>
             </div>
-            <Badge className={cn("text-xs", statusConfig.badge.className)}>
-              {pump.status}
+            <Badge className={cn("text-xs flex-shrink-0 ml-2", statusConfig.badge.className)}>
+              {isMobile ? pump.status.charAt(0).toUpperCase() : pump.status}
             </Badge>
           </div>
 

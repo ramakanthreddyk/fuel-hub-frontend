@@ -1,15 +1,22 @@
 
 import { NavLink } from 'react-router-dom';
-import { 
-  BarChart3, 
-  Building2, 
-  Users, 
+import {
+  BarChart3,
+  Building2,
+  Users,
   Home,
   Package,
   Crown,
   Menu,
   X,
-  Settings
+  Settings,
+  // Enhanced professional icons
+  LayoutDashboard,
+  LineChart,
+  Briefcase,
+  Shield,
+  UserCheck,
+  Cog
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,12 +24,12 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
 
 const navigation = [
-  { name: 'Overview', href: '/superadmin/overview', icon: Home, end: true },
-  { name: 'Analytics', href: '/superadmin/analytics', icon: BarChart3 },
-  { name: 'Tenants', href: '/superadmin/tenants', icon: Building2 },
-  { name: 'Plans', href: '/superadmin/plans', icon: Package },
-  { name: 'Admin Users', href: '/superadmin/users', icon: Users },
-  { name: 'Settings', href: '/superadmin/settings', icon: Settings },
+  { name: 'Overview', href: '/superadmin/overview', icon: LayoutDashboard, end: true },
+  { name: 'Analytics', href: '/superadmin/analytics', icon: LineChart },
+  { name: 'Tenants', href: '/superadmin/tenants', icon: Briefcase },
+  { name: 'Plans', href: '/superadmin/plans', icon: Shield },
+  { name: 'Admin Users', href: '/superadmin/users', icon: UserCheck },
+  { name: 'Settings', href: '/superadmin/settings', icon: Cog },
 ];
 
 export function SuperAdminSidebar() {

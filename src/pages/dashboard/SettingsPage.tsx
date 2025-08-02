@@ -1,12 +1,20 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Settings, User, Shield, Mail, Calendar, MapPin } from 'lucide-react';
+import { Settings, User, Shield, Mail, Calendar, MapPin, Cog } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChangePasswordForm } from '@/components/settings/ChangePasswordForm';
+import {
+  useMobileFormatters,
+  getResponsiveTextSize,
+  getResponsiveIconSize,
+  getResponsivePadding,
+  getResponsiveGap
+} from '@/utils/mobileFormatters';
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { formatCurrency, isMobile } = useMobileFormatters();
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -19,12 +27,13 @@ export default function SettingsPage() {
   };
 
   const getRoleIcon = (role: string) => {
+    const iconSize = isMobile ? "w-3 h-3 mr-1" : "w-4 h-4 mr-1";
     switch (role) {
-      case 'superadmin': return <Shield className="w-4 h-4 mr-1" />;
-      case 'owner': return <Shield className="w-4 h-4 mr-1" />;
-      case 'manager': return <User className="w-4 h-4 mr-1" />;
-      case 'attendant': return <User className="w-4 h-4 mr-1" />;
-      default: return <User className="w-4 h-4 mr-1" />;
+      case 'superadmin': return <Shield className={iconSize} />;
+      case 'owner': return <Shield className={iconSize} />;
+      case 'manager': return <User className={iconSize} />;
+      case 'attendant': return <User className={iconSize} />;
+      default: return <User className={iconSize} />;
     }
   };
 
@@ -37,16 +46,22 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Settings className="h-8 w-8" />
-          Settings
-        </h1>
-        <p className="text-muted-foreground">Manage your account settings and preferences</p>
-      </div>
+    <div className={`min-h-screen bg-gray-50/50 ${getResponsivePadding('base')}`}>
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-3 sm:p-4 lg:p-6">
+          <div className="flex items-center gap-3">
+            <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm`}>
+              <Cog className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-white`} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className={`${getResponsiveTextSize('2xl')} font-bold text-gray-900 truncate`}>Account Settings</h1>
+              <p className={`text-gray-600 ${getResponsiveTextSize('sm')} mt-1`}>Manage your account settings and preferences</p>
+            </div>
+          </div>
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         {/* User Profile */}
         <Card>
           <CardHeader>
@@ -143,6 +158,7 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

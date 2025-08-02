@@ -107,7 +107,12 @@ class OnboardingService {
     try {
       // Call the authenticated backend endpoint
       const response = await apiClient.get('/onboarding/reminders');
-      return response.data || [];
+
+      // Handle the backend response format: { success: true, data: [...] }
+      const reminders = response.data?.data || response.data || [];
+
+      // Ensure we return an array
+      return Array.isArray(reminders) ? reminders : [];
     } catch (error) {
       console.error('Error fetching daily reminders:', error);
       // Return empty array if not authenticated or error occurs

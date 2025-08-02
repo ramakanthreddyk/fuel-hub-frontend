@@ -64,6 +64,13 @@ export const useCreateAttendantReading = () => {
     onSuccess: async (newReading) => {
       console.log('[CREATE-ATTENDANT-READING] Success:', newReading);
       await syncAfterReadingCreate(newReading);
+
+      // Show success toast
+      const reading = newReading?.reading || 'N/A';
+      const nozzleNumber = newReading?.nozzleNumber || 'N/A';
+      import('sonner').then(({ toast }) => {
+        toast.success(`Reading Recorded: Successfully recorded ${reading}L for nozzle #${nozzleNumber}`);
+      });
     },
     onError: (error: any) => {
       console.error('[CREATE-ATTENDANT-READING] Error:', error);
@@ -84,6 +91,20 @@ export const useLatestNozzleReading = (nozzleId?: string) => {
       return readings && readings.length > 0 ? readings[0] : null;
     },
     enabled: !!nozzleId,
+    staleTime: 30000,
+  });
+};
+
+/**
+ * Hook to get attendant readings (recent readings for attendant dashboard)
+ */
+export const useAttendantReadings = () => {
+  return useQuery({
+    queryKey: ['attendant-readings'],
+    queryFn: async () => {
+      const response = await apiClient.get('nozzle-readings?limit=10&sortBy=recordedAt&sortOrder=desc');
+      return extractData<NozzleReading[]>(response) || [];
+    },
     staleTime: 30000,
   });
 };
