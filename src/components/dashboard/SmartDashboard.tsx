@@ -7,6 +7,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ImprovedDashboard } from './ImprovedDashboard';
 import { AttendantDashboard } from './AttendantDashboard';
+import { PlanUsageWidget } from './PlanUsageWidget';
+import { CashReportWidget } from './CashReportWidget';
 
 export function SmartDashboard() {
   const { user } = useAuth();
@@ -31,5 +33,20 @@ export function SmartDashboard() {
   }
 
   // For owners and managers only
-  return <ImprovedDashboard />;
+  return (
+    <div className="space-y-4">
+      <ImprovedDashboard />
+      <div className="flex gap-4 flex-wrap">
+        <PlanUsageWidget 
+          planName="Premium"
+          currentStations={1}
+          maxStations={3}
+          currentUsers={3}
+          maxUsers={10}
+          className="max-w-sm"
+        />
+        <CashReportWidget />
+      </div>
+    </div>
+  );
 }

@@ -118,7 +118,8 @@ export const stationsService = {
       // Validate data before sending
       const validationErrors = ValidationHelper.validateStation(data);
       if (validationErrors.length > 0) {
-        throw new Error(`Validation failed: ${validationErrors.join(', ')}`);
+        const errorMessage = `Please fix the following errors:\n• ${validationErrors.join('\n• ')}`;
+        throw new Error(errorMessage);
       }
 
       console.log('[STATIONS-API] Creating station with data:', data);

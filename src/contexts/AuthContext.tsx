@@ -38,6 +38,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -80,7 +81,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Listen for auth expiration events from API client
     const handleAuthExpired = () => {
+      if (sessionExpired) return; // Prevent multiple expiry notifications
       console.log('[AUTH-CONTEXT] Auth expired event received');
+      setSessionExpired(true);
       setUser(null);
       setIsLoading(false);
       setInitialized(true);

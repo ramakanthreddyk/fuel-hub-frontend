@@ -404,24 +404,6 @@ export class ValidationHelper {
       errors.push('Station name is required');
     }
     
-    if (!station.address?.trim()) {
-      errors.push('Address is required');
-    }
-    
-    if (!station.city?.trim()) {
-      errors.push('City is required');
-    }
-    
-    if (!station.state?.trim()) {
-      errors.push('State is required');
-    }
-    
-    if (!station.zipCode?.trim()) {
-      errors.push('ZIP code is required');
-    } else if (!/^\d{6}$/.test(station.zipCode)) {
-      errors.push('ZIP code must be 6 digits');
-    }
-    
     return errors;
   }
 

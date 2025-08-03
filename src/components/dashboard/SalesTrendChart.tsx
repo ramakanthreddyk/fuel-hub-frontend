@@ -31,11 +31,16 @@ export function SalesTrendChart({ filters = {} }: SalesTrendChartProps) {
     );
   }
 
-  const chartData = trend.map(item => ({
-    date: format(new Date(item.date), 'MM/dd'),
-    amount: item.amount,
-    volume: item.volume,
-  }));
+  const chartData = trend.map(item => {
+    const date = new Date(item.date);
+    const isValidDate = !isNaN(date.getTime());
+    
+    return {
+      date: isValidDate ? format(date, 'MM/dd') : 'Invalid',
+      amount: item.amount || 0,
+      volume: item.volume || 0,
+    };
+  }).filter(item => item.date !== 'Invalid');
 
   const chartConfig = {
     amount: { label: 'Sales (₹)', color: '#8b5cf6' },

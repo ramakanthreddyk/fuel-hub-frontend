@@ -53,6 +53,20 @@ export const tenantsApi = {
     return apiClient.put(`/tenants/${tenantId}/status`, { status }).then(response => response.data);
   },
 
+  updateTenantPlan: (tenantId: string, planId: string): Promise<Tenant> => {
+    console.log('[FRONTEND-API] Making plan update request:', { tenantId, planId });
+    console.log('[FRONTEND-API] Request URL:', `/superadmin/tenants/${tenantId}/plan`);
+    return apiClient.patch(`/superadmin/tenants/${tenantId}/plan`, { planId })
+      .then(response => {
+        console.log('[FRONTEND-API] Plan update success:', response.data);
+        return response.data;
+      })
+      .catch(error => {
+        console.error('[FRONTEND-API] Plan update error:', error);
+        throw error;
+      });
+  },
+
   deleteTenant: (tenantId: string): Promise<void> => {
     return apiClient.delete(`/tenants/${tenantId}`);
   }

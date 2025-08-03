@@ -55,6 +55,7 @@ import CreditorsPage from './pages/dashboard/CreditorsPage';
 import NewCreditorPage from './pages/dashboard/NewCreditorPage';
 import CreditorDetailPage from './pages/dashboard/CreditorDetailPage';
 import NewCreditorPaymentPage from './pages/dashboard/NewCreditorPaymentPage';
+import CashReportPage from './pages/dashboard/CashReportPage';
 import { QuickReadingButton } from './components/readings/QuickReadingButton';
 
 // Attendant Pages
@@ -65,6 +66,8 @@ import SimpleCashReport from './pages/attendant/SimpleCashReport';
 // SuperAdmin Pages
 import SuperAdminOverviewPage from './pages/superadmin/OverviewPage';
 import SuperAdminTenantsPage from './pages/superadmin/TenantsPage';
+import TenantDetailsPage from './pages/superadmin/TenantDetailsPage';
+import TenantSettingsPage from './pages/superadmin/TenantSettingsPage';
 import SuperAdminUsersPage from './pages/superadmin/UsersPage';
 import SuperAdminPlansPage from './pages/superadmin/PlansPage';
 import SuperAdminAnalyticsPage from './pages/superadmin/AnalyticsPage';
@@ -169,6 +172,8 @@ function AppRouter() {
           <Route index element={<Navigate to="/superadmin/overview" replace />} />
           <Route path="overview" element={<SuperAdminOverviewPage />} />
           <Route path="tenants" element={<SuperAdminTenantsPage />} />
+          <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
+          <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
           <Route path="users" element={<SuperAdminUsersPage />} />
           <Route path="plans" element={<SuperAdminPlansPage />} />
           <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
@@ -216,6 +221,7 @@ function AppRouter() {
               <Route path="creditors/new" element={<SafeComponent><NewCreditorPage /></SafeComponent>} />
               <Route path="creditors/:creditorId" element={<SafeComponent><CreditorDetailPage /></SafeComponent>} />
               <Route path="creditors/:creditorId/payments/new" element={<SafeComponent><NewCreditorPaymentPage /></SafeComponent>} />
+              <Route path="cash-reports/new" element={<SafeComponent><CashReportPage /></SafeComponent>} />
               <Route path="users" element={<SafeComponent><UsersPage /></SafeComponent>} />
               <Route path="reconciliation" element={<SafeComponent><ReconciliationPage /></SafeComponent>} />
               <Route path="reconciliation/:reconciliationId" element={<SafeComponent><ReconciliationDetailPage /></SafeComponent>} />

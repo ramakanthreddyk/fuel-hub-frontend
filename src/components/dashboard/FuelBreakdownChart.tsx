@@ -30,11 +30,20 @@ export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
     );
   }
 
-  const chartData = breakdown.map(item => ({
-    fuelType: item.fuelType,
-    volume: item.volume,
-    amount: item.amount,
-  }));
+  // Use sample data if no real data is available
+  const chartData = breakdown && breakdown.length > 0 
+    ? breakdown.map(item => ({
+        fuelType: item.fuelType || 'Unknown',
+        volume: item.volume || 0,
+        amount: item.amount || 0,
+      }))
+    : [
+        { fuelType: 'Petrol', volume: 1250, amount: 125000 },
+        { fuelType: 'Diesel', volume: 2100, amount: 189000 },
+        { fuelType: 'CNG', volume: 800, amount: 48000 }
+      ];
+
+  const hasRealData = breakdown && breakdown.length > 0;
 
   const chartConfig = {
     volume: { label: 'Volume (L)', color: '#3b82f6' },
@@ -44,7 +53,10 @@ export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
   return (
     <Card className="bg-gradient-to-br from-white to-green-50 border-green-200 w-full">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm sm:text-base lg:text-lg text-green-700">Fuel Sales by Type</CardTitle>
+        <CardTitle className="text-sm sm:text-base lg:text-lg text-green-700">
+          Fuel Sales by Type
+          {!hasRealData && <span className="text-xs text-gray-500 ml-2">(Sample Data)</span>}
+        </CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
         <div className="w-full overflow-hidden">

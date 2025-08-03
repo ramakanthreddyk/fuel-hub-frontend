@@ -20,14 +20,14 @@ import { useMobileFormatters, getResponsiveTextSize, getResponsivePadding } from
 export default function AnalyticsPage() {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month'>('today');
-  const [selectedStationId, setSelectedStationId] = useState<string>('all');
+
   const [viewMode, setViewMode] = useState<'smart' | 'detailed'>('smart');
   
   const { data: todaysSales, isLoading, refetch } = useTodaysSales(selectedDate);
   const { data: stationRanking, isLoading: rankingLoading } = useStationRanking(selectedPeriod);
   const { data: stations = [] } = useStations();
   const { data: fuelPerformance, isLoading: fuelLoading } = useFuelPerformance(
-    selectedStationId === 'all' ? (stations.length > 0 ? stations[0].id : '') : selectedStationId
+    stations.length > 0 ? stations[0].id : ''
   );
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -113,47 +113,7 @@ export default function AnalyticsPage() {
           <SmartAnalyticsDashboard />
         ) : (
           <>
-            {/* Smart Filters for Detailed View */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200/50 p-3 sm:p-4">
-              <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                <h3 className={`${getResponsiveTextSize('base')} font-semibold text-gray-900`}>
-                  Filters & Controls
-                </h3>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  {/* Period Filter */}
-                  <div className="flex gap-1">
-                    {(['today', 'week', 'month'] as const).map((period) => (
-                      <Button
-                        key={period}
-                        variant={selectedPeriod === period ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setSelectedPeriod(period)}
-                        className={`${isMobile ? 'text-xs px-2' : 'text-sm'} ${
-                          selectedPeriod === period ? 'bg-blue-600 text-white' : ''
-                        }`}
-                      >
-                        {period === 'today' ? 'Today' : period === 'week' ? 'Week' : 'Month'}
-                      </Button>
-                    ))}
-                  </div>
 
-                  {/* Station Filter */}
-                  <Select value={selectedStationId} onValueChange={setSelectedStationId}>
-                    <SelectTrigger className={`${isMobile ? 'w-full text-sm' : 'w-40'}`}>
-                      <SelectValue placeholder="All Stations" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Stations</SelectItem>
-                      {stations.map((station) => (
-                        <SelectItem key={station.id} value={station.id}>
-                          {station.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
 
             {/* Key Metrics */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
@@ -422,31 +382,12 @@ export default function AnalyticsPage() {
               <TabsContent value="fuel" className="space-y-6">
                 <Card className="bg-white border-0 shadow-sm">
                   <CardHeader>
-                    <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center justify-between'}`}>
-                      <CardTitle className={`${getResponsiveTextSize('lg')} truncate`}>
-                        {isMobile ? 'Fuel Analytics' : 'Fuel Performance Analytics'}
-                      </CardTitle>
-                      <Select value={selectedStationId} onValueChange={setSelectedStationId}>
-                        <SelectTrigger className={`${isMobile ? 'w-full' : 'w-64'}`}>
-                          <SelectValue placeholder={isMobile ? "Select station" : "Select a station"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {stations.map((station) => (
-                            <SelectItem key={station.id} value={station.id}>
-                              {station.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <CardTitle className={`${getResponsiveTextSize('lg')} truncate`}>
+                      {isMobile ? 'Fuel Analytics' : 'Fuel Performance Analytics'}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {!selectedStationId ? (
-                      <div className="text-center py-8">
-                        <Fuel className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">Please select a station to view fuel performance</p>
-                      </div>
-                    ) : fuelLoading ? (
+                    {fuelLoading ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                         <p className="text-gray-500 mt-2">Loading fuel performance...</p>
@@ -478,35 +419,35 @@ export default function AnalyticsPage() {
                         </div>
                         <div className="max-h-96 overflow-y-auto">
                           <div className="space-y-2">
-                            {fuelPerformance.slice(0, 10).map((transaction: any) => (
-                              <div key={transaction.id || Math.random()} className={`${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
+                            {fuelPerformance.map((fuelData: any) => (
+                              <div key={`${fuelData.stationId}-${fuelData.fuelType}` || Math.random()} className={`${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
                                 <div className="flex justify-between items-start">
                                   <div className="min-w-0 flex-1">
                                     <h4 className={`${getResponsiveTextSize('sm')} font-medium text-gray-900 truncate`}>
-                                      {transaction.station_name || 'Unknown Station'}
+                                      {fuelData.stationName || 'Unknown Station'}
                                     </h4>
                                     <p className={`${getResponsiveTextSize('xs')} text-gray-600 uppercase truncate`}>
-                                      {transaction.fuel_type}
+                                      {fuelData.fuelType}
                                     </p>
                                     <p className={`${getResponsiveTextSize('xs')} text-gray-500 truncate`}>
                                       {isMobile
-                                        ? `${new Date(transaction.recorded_at).toLocaleDateString('en-GB')} - ${transaction.payment_method}`
-                                        : `${new Date(transaction.recorded_at).toLocaleDateString()} - ${transaction.payment_method}`
+                                        ? `${fuelData.salesCount} sales • ${fuelData.growth > 0 ? '+' : ''}${fuelData.growth.toFixed(1)}% growth`
+                                        : `${fuelData.salesCount} transactions • Growth: ${fuelData.growth > 0 ? '+' : ''}${fuelData.growth.toFixed(1)}%`
                                       }
                                     </p>
                                   </div>
                                   <div className="text-right flex-shrink-0 ml-2">
                                     <p className={`${getResponsiveTextSize('sm')} font-medium text-gray-900`}>
                                       {isMobile
-                                        ? formatCurrencyMobile(parseFloat(transaction.amount))
-                                        : formatCurrency(parseFloat(transaction.amount))
+                                        ? formatCurrencyMobile(fuelData.revenue || 0)
+                                        : formatCurrency(fuelData.revenue || 0)
                                       }
                                     </p>
                                     <p className={`${getResponsiveTextSize('xs')} text-gray-600`}>
-                                      {parseFloat(transaction.volume).toFixed(isMobile ? 1 : 2)} L
+                                      {(fuelData.volume || 0).toFixed(isMobile ? 1 : 2)} L
                                     </p>
                                     <p className={`${getResponsiveTextSize('xs')} text-gray-500`}>
-                                      ₹{parseFloat(transaction.fuel_price).toFixed(isMobile ? 1 : 2)}/L
+                                      ₹{(fuelData.averagePrice || 0).toFixed(isMobile ? 1 : 2)}/L
                                     </p>
                                   </div>
                                 </div>
