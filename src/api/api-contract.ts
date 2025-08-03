@@ -301,26 +301,35 @@ export interface CreateReadingRequest {
 
 export interface CashReport {
   id: string;
-  date: string;
-  openingBalance: number;
-  closingBalance: number;
-  totalSales: number;
-  cashReceived: number;
-  expensesPaid: number;
-  attendantId: string;
-  stationId: string;
   tenantId: string;
+  stationId: string;
+  stationName?: string;
+  userId: string;
+  userName?: string;
+  date: string;
+  shift: 'morning' | 'afternoon' | 'night';
+  cashAmount: number;
+  cardAmount: number;
+  upiAmount: number;
+  creditAmount: number;
+  totalAmount: number;
+  notes?: string;
+  status: 'submitted' | 'approved' | 'rejected';
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateCashReportRequest {
-  date: string;
-  openingBalance: number;
-  closingBalance: number;
-  totalSales: number;
-  cashReceived: number;
-  expensesPaid: number;
+  stationId: string;
+  cashAmount: number;
+  cardAmount?: number;
+  upiAmount?: number;
+  creditAmount?: number;
+  creditorId?: string;
+  shift: 'morning' | 'afternoon' | 'night';
+  notes?: string;
+  date?: string;
+  reportDate?: string;
 }
 
 export interface Tenant {
@@ -468,6 +477,41 @@ export interface SuperAdminSummary {
   recentTenants: any[];
   alerts: any[];
   tenantsByPlan: any[];
+}
+
+// Attendant-specific types
+export interface AttendantStation {
+  id: string;
+  name: string;
+  address: string;
+  status: 'active' | 'inactive' | 'maintenance';
+}
+
+export interface AttendantPump {
+  id: string;
+  stationId: string;
+  name: string;
+  status: 'active' | 'inactive' | 'maintenance';
+}
+
+export interface AttendantNozzle {
+  id: string;
+  pumpId: string;
+  stationId: string;
+  name: string;
+  fuelType: string;
+  status: 'active' | 'inactive' | 'maintenance';
+}
+
+export interface AlertSummary {
+  total: number;
+  unread: number;
+  byType: {
+    info: number;
+    warning: number;
+    error: number;
+    success: number;
+  };
 }
 
 export interface SuperAdminAnalytics {

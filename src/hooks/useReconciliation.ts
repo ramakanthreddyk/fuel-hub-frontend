@@ -4,13 +4,18 @@ import { reconciliationApi } from '@/api/reconciliation';
 import { CreateReconciliationRequest } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
 
-export const useDailyReadingsSummary = (stationId: string, date: string) => {
+export const useReconciliationSummary = (stationId: string, date: string) => {
   return useQuery({
-    queryKey: ['reconciliation', 'daily-summary', stationId, date],
-    queryFn: () => reconciliationApi.getDailyReadingsSummary(stationId, date),
+    queryKey: ['reconciliation', 'summary', stationId, date],
+    queryFn: () => reconciliationApi.getReconciliationSummary(stationId, date),
     enabled: !!stationId && !!date,
     staleTime: 60000, // 1 minute
   });
+};
+
+// Keep the old function for backward compatibility
+export const useDailyReadingsSummary = (stationId: string, date: string) => {
+  return useReconciliationSummary(stationId, date);
 };
 
 export const useCreateReconciliation = () => {

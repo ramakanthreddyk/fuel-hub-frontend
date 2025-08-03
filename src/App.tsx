@@ -56,7 +56,11 @@ import NewCreditorPage from './pages/dashboard/NewCreditorPage';
 import CreditorDetailPage from './pages/dashboard/CreditorDetailPage';
 import NewCreditorPaymentPage from './pages/dashboard/NewCreditorPaymentPage';
 import CashReportPage from './pages/dashboard/CashReportPage';
+import SimpleCashReportSubmission from './pages/dashboard/SimpleCashReportSubmission';
+import TestCashReportPage from './pages/dashboard/TestCashReportPage';
+import CashReportsListPage from './pages/dashboard/CashReportsListPage';
 import { QuickReadingButton } from './components/readings/QuickReadingButton';
+import { CashReportTest } from './components/test/CashReportTest';
 
 // Attendant Pages
 import AttendantDashboard from './pages/attendant/AttendantDashboard';
@@ -221,7 +225,10 @@ function AppRouter() {
               <Route path="creditors/new" element={<SafeComponent><NewCreditorPage /></SafeComponent>} />
               <Route path="creditors/:creditorId" element={<SafeComponent><CreditorDetailPage /></SafeComponent>} />
               <Route path="creditors/:creditorId/payments/new" element={<SafeComponent><NewCreditorPaymentPage /></SafeComponent>} />
+              <Route path="cash-reports" element={<SafeComponent><CashReportsListPage /></SafeComponent>} />
               <Route path="cash-reports/new" element={<SafeComponent><CashReportPage /></SafeComponent>} />
+              <Route path="cash-reports/simple" element={<SafeComponent><SimpleCashReportSubmission /></SafeComponent>} />
+              <Route path="cash-reports/test" element={<SafeComponent><TestCashReportPage /></SafeComponent>} />
               <Route path="users" element={<SafeComponent><UsersPage /></SafeComponent>} />
               <Route path="reconciliation" element={<SafeComponent><ReconciliationPage /></SafeComponent>} />
               <Route path="reconciliation/:reconciliationId" element={<SafeComponent><ReconciliationDetailPage /></SafeComponent>} />

@@ -20,7 +20,7 @@ import {
   getResponsiveGap
 } from '@/utils/mobileFormatters';
 
-export default function CreditorsPage() {
+function CreditorsPage() {
   const navigate = useNavigate();
   const { data: creditors = [], isLoading, isError, error } = useCreditors();
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,6 +32,7 @@ export default function CreditorsPage() {
     phone: creditor.contact_number || creditor.phoneNumber || creditor.phone,
     creditLimit: Number(creditor.credit_limit || creditor.creditLimit || 0),
     currentBalance: Number(creditor.balance || creditor.currentBalance || creditor.outstandingAmount || 0),
+    creditUtilization: Number(creditor.creditUtilization || creditor.credit_utilization || 0),
     status: creditor.status === 'active' ? 'active' : 'inactive',
     stationName: creditor.station_name || creditor.stationName
   });
@@ -149,3 +150,5 @@ export default function CreditorsPage() {
     </div>
   );
 }
+
+export default CreditorsPage;

@@ -21,12 +21,7 @@ export const getReconciliationRecords = async (params: {
 /**
  * Get reconciliation summary
  */
-export const getReconciliationSummary = async (params: {
-  stationId?: string;
-  date?: string;
-}): Promise<ReconciliationSummary> => {
-  return contractClient.get<ReconciliationSummary>('/reconciliation/summary', params);
-};
+
 
 /**
  * Create reconciliation record
@@ -122,28 +117,61 @@ export const getDailyReconciliationStatus = async (params: {
  * Reconciliation API object that combines all reconciliation functions
  */
 export const reconciliationApi = {
-  // Get daily readings summary for reconciliation
-  getDailyReadingsSummary: async (stationId: string, date: string): Promise<DailyReadingSummary[]> => {
-    try {
-      if (!stationId || !date) {
-        console.error('Error: stationId and date are required for daily readings summary');
-        throw new Error('Station ID and date are required for daily readings summary');
+  // Get reconciliation summary for a station and date
+  getReconciliationSummary: async (stationId: string, date: string) => {
+    if (!stationId || !date) {
+      throw new Error('Station ID and date are required for reconciliation summary');
+    }
+    
+    // Ensure the date is properly formatted (YYYY-MM-DD)
+    const formattedDate = new Date(date).toISOString().split('T')[0];
+    const baseUrl = 'http://localhost:3003/api/v1';
+    const url = `${baseUrl}/reconciliation/summary?stationId=${stationId}&date=${formattedDate}`;
+    
+    // Get auth token
+    const token = localStorage.getItem('fuelsync_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    // Add tenant context
+    const storedUser = localStorage.getItem('fuelsync_user');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        if (user.tenantId) {
+          headers['x-tenant-id'] = user.tenantId;
+        }
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
       }
-      
-      // Ensure the date is properly formatted (YYYY-MM-DD)
-      const formattedDate = new Date(date).toISOString().split('T')[0];
-      
-      const response = await apiClient.get(`/reconciliation/daily-summary?stationId=${stationId}&date=${formattedDate}`);
-      // Handle both {success: true, data: []} and direct array responses
-      return response.data.data || response.data || [];
-    } catch (error: any) {
-      console.error('Error fetching daily readings summary:', error);
-      // If it's a 404 error, return an empty array instead of throwing
-      if (error.response && error.response.status === 404) {
-        console.log('No reconciliation found, returning empty array');
-        return [];
+    }
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
       }
-      throw new Error(`Failed to fetch sales data: ${error.message || 'Unknown error'}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Handle different response formats
+    if (data && data.success && data.data) {
+      return data.data;
+    } else if (data && typeof data === 'object') {
+      return data;
+    } else {
+      return null;
     }
   },
 
@@ -221,7 +249,6 @@ export const reconciliationApi = {
   
   // Add the existing functions
   getReconciliationRecords,
-  getReconciliationSummary,
   createReconciliationRecord,
   updateReconciliationRecord,
   deleteReconciliationRecord,

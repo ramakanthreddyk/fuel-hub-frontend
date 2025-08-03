@@ -88,7 +88,8 @@ const navigation: NavItem[] = [
     roles: ['owner', 'manager', 'superadmin'],
     children: [
       { name: 'Sales Overview', href: '/dashboard/sales/overview', icon: BarChart3, roles: ['owner', 'manager', 'superadmin'] },
-      { name: 'Cash Reports', href: '/dashboard/cash-reports', icon: FileText, roles: ['owner', 'manager', 'superadmin'] },
+      { name: 'Submit Cash Report', href: '/dashboard/cash-reports/simple', icon: FileText, roles: ['owner', 'manager', 'attendant'] },
+      { name: 'View Cash Reports', href: '/dashboard/cash-reports', icon: ClipboardList, roles: ['owner', 'manager', 'superadmin'] },
       { name: 'Creditors', href: '/dashboard/creditors', icon: Users, roles: ['owner', 'manager'] },
     ],
   },

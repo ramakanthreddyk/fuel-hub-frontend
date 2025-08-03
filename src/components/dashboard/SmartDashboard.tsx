@@ -9,6 +9,8 @@ import { ImprovedDashboard } from './ImprovedDashboard';
 import { AttendantDashboard } from './AttendantDashboard';
 import { PlanUsageWidget } from './PlanUsageWidget';
 import { CashReportWidget } from './CashReportWidget';
+import { QuickActions } from './QuickActions';
+import { FloatingActionButton } from '@/components/ui/FloatingActionButton';
 
 export function SmartDashboard() {
   const { user } = useAuth();
@@ -34,19 +36,23 @@ export function SmartDashboard() {
 
   // For owners and managers only
   return (
-    <div className="space-y-4">
-      <ImprovedDashboard />
-      <div className="flex gap-4 flex-wrap">
-        <PlanUsageWidget 
-          planName="Premium"
-          currentStations={1}
-          maxStations={3}
-          currentUsers={3}
-          maxUsers={10}
-          className="max-w-sm"
-        />
-        <CashReportWidget />
+    <>
+      <div className="space-y-4">
+        <QuickActions />
+        <ImprovedDashboard />
+        <div className="flex gap-4 flex-wrap">
+          <PlanUsageWidget 
+            planName="Premium"
+            currentStations={1}
+            maxStations={3}
+            currentUsers={3}
+            maxUsers={10}
+            className="max-w-sm"
+          />
+          <CashReportWidget />
+        </div>
       </div>
-    </div>
+      <FloatingActionButton />
+    </>
   );
 }

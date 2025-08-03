@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { useStations } from '@/hooks/api/useStations';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { useDailyReadingsSummary, useReconciliationByStationAndDate } from '@/hooks/useReconciliation';
+import { useDailyReadingsSummary, useReconciliationByStationAndDate, useReconciliationSummary } from '@/hooks/useReconciliation';
 import { useDiscrepancySummary } from '@/hooks/api/useReconciliationDiff';
 import {
   useMobileFormatters,
@@ -41,92 +41,37 @@ export default function ReconciliationPage() {
   const { data: stations = [] } = useStations();
   const { formatCurrency: formatCurrencyMobile, formatVolume, isMobile } = useMobileFormatters();
 
-  // Fetch real reconciliation data
-  const { data: dailyReadings, isLoading: readingsLoading } = useDailyReadingsSummary(
+  // Fetch reconciliation summary data
+  const { data: reconciliationSummary, isLoading: summaryLoading } = useReconciliationSummary(
     selectedStation,
     selectedDate
   );
 
-  const { data: existingReconciliation, isLoading: reconciliationLoading } = useReconciliationByStationAndDate(
-    selectedStation,
-    selectedDate
-  );
+  const isDataLoading = summaryLoading;
 
-  const isDataLoading = readingsLoading || reconciliationLoading;
-
-  // Calculate reconciliation data from API responses
-  const getReconciliationData = () => {
-    if (!dailyReadings || dailyReadings.length === 0) {
-      return {
-        systemCalculated: {
-          totalRevenue: 0,
-          cashSales: 0,
-          cardSales: 0,
-          upiSales: 0,
-          creditSales: 0,
-          totalVolume: 0
-        },
-        userEntered: {
-          cashCollected: 0,
-          cardCollected: 0,
-          upiCollected: 0,
-          totalCollected: 0
-        },
-        differences: {
-          cashDifference: 0,
-          cardDifference: 0,
-          upiDifference: 0,
-          totalDifference: 0,
-          percentageDifference: 0,
-          isWithinTolerance: true
-        }
-      };
+  // Use reconciliation summary data directly from API with proper defaults
+  const reconciliationData = {
+    systemCalculated: reconciliationSummary?.systemCalculated || {
+      totalRevenue: 0,
+      cashSales: 0,
+      cardSales: 0,
+      upiSales: 0,
+      creditSales: 0,
+      totalVolume: 0
+    },
+    userEntered: reconciliationSummary?.userEntered || {
+      cashCollected: 0,
+      cardCollected: 0,
+      upiCollected: 0,
+      totalCollected: 0
+    },
+    differences: reconciliationSummary?.differences || {
+      cashDifference: 0,
+      cardDifference: 0,
+      upiDifference: 0,
+      totalDifference: 0
     }
-
-    // Calculate system totals from daily readings
-    const systemTotals = dailyReadings.reduce((acc, reading) => {
-      acc.totalRevenue += reading.saleValue || 0;
-      acc.totalVolume += reading.deltaVolume || 0;
-      return acc;
-    }, { totalRevenue: 0, totalVolume: 0 });
-
-    // Get user entered data from existing reconciliation or use defaults
-    // Note: ReconciliationRecord interface doesn't have cash collection fields
-    // This would need to come from a separate cash report or be added to the interface
-    const userEntered = {
-      cashCollected: 0, // Would come from cash reports
-      cardCollected: 0, // Would come from cash reports
-      upiCollected: 0,  // Would come from cash reports
-      totalCollected: 0 // Would come from cash reports
-    };
-
-    // Calculate differences
-    const totalDifference = userEntered.totalCollected - systemTotals.totalRevenue;
-    const percentageDifference = systemTotals.totalRevenue > 0 ?
-      (totalDifference / systemTotals.totalRevenue) * 100 : 0;
-
-    return {
-      systemCalculated: {
-        totalRevenue: systemTotals.totalRevenue,
-        cashSales: systemTotals.totalRevenue * 0.4, // Estimate - could be improved with payment method data
-        cardSales: systemTotals.totalRevenue * 0.35,
-        upiSales: systemTotals.totalRevenue * 0.25,
-        creditSales: 0, // Credit sales would be tracked separately
-        totalVolume: systemTotals.totalVolume
-      },
-      userEntered,
-      differences: {
-        cashDifference: userEntered.cashCollected - (systemTotals.totalRevenue * 0.4),
-        cardDifference: userEntered.cardCollected - (systemTotals.totalRevenue * 0.35),
-        upiDifference: userEntered.upiCollected - (systemTotals.totalRevenue * 0.25),
-        totalDifference,
-        percentageDifference,
-        isWithinTolerance: Math.abs(percentageDifference) <= 2 // 2% tolerance
-      }
-    };
   };
-
-  const reconciliationData = getReconciliationData();
 
   const getDifferenceIcon = (difference: number) => {
     if (difference > 0) return <TrendingUp className="h-4 w-4 text-green-600" />;
@@ -225,11 +170,11 @@ export default function ReconciliationPage() {
           <ImprovedReconciliationCard
             summary={{
               date: selectedDate,
-              stationName: stations.find(s => s.id === selectedStation)?.name || 'Unknown Station',
+              stationName: reconciliationSummary?.stationName || stations.find(s => s.id === selectedStation)?.name || 'Unknown Station',
               systemCalculated: reconciliationData.systemCalculated,
               userEntered: reconciliationData.userEntered,
               differences: reconciliationData.differences,
-              isReconciled: false // This would come from the API
+              isReconciled: reconciliationSummary?.isReconciled || false
             }}
             onCloseDay={() => {
               toast({

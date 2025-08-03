@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useAttendantStations, useSubmitCashReport } from "@/hooks/api/useAttendant";
+import { useCreditors } from "@/hooks/api/useCreditors";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,9 +20,12 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
   const [cashAmount, setCashAmount] = useState<string>("");
   const [cardAmount, setCardAmount] = useState<string>("");
   const [upiAmount, setUpiAmount] = useState<string>("");
+  const [creditAmount, setCreditAmount] = useState<string>("");
+  const [creditorId, setCreditorId] = useState<string>("");
   const [shift, setShift] = useState<"morning" | "afternoon" | "night">("morning");
 
   const { data: stations = [], isLoading: stationsLoading } = useAttendantStations();
+  const { data: creditors = [] } = useCreditors();
   const submitCashReport = useSubmitCashReport();
 
   // Handle form submission
@@ -39,6 +43,7 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
     const cashValue = parseFloat(cashAmount);
     const cardValue = cardAmount ? parseFloat(cardAmount) : 0;
     const upiValue = upiAmount ? parseFloat(upiAmount) : 0;
+    const creditValue = creditAmount ? parseFloat(creditAmount) : 0;
     
     if (isNaN(cashValue) || cashValue < 0) {
       toast({
@@ -50,10 +55,20 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
     }
     
     if ((cardAmount && (isNaN(cardValue) || cardValue < 0)) || 
-        (upiAmount && (isNaN(upiValue) || upiValue < 0))) {
+        (upiAmount && (isNaN(upiValue) || upiValue < 0)) ||
+        (creditAmount && (isNaN(creditValue) || creditValue < 0))) {
       toast({
         title: "Invalid Amount",
-        description: "Please enter valid card and UPI amounts.",
+        description: "Please enter valid amounts.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (creditValue > 0 && !creditorId) {
+      toast({
+        title: "Missing Creditor",
+        description: "Please select a creditor for credit amount.",
         variant: "destructive",
       });
       return;
@@ -64,11 +79,13 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
       cashAmount: cashValue,
       cardAmount: cardAmount ? cardValue : undefined,
       upiAmount: upiAmount ? upiValue : undefined,
+      creditAmount: creditValue > 0 ? creditValue : undefined,
+      creditorId: creditValue > 0 ? creditorId : undefined,
       reportDate: new Date().toISOString(),
       shift
     }, {
       onSuccess: () => {
-        const totalAmount = cashValue + cardValue + upiValue;
+        const totalAmount = cashValue + cardValue + upiValue + creditValue;
         toast({
           title: "Cash Report Submitted",
           description: `Successfully submitted ${shift} shift report for ₹${totalAmount.toFixed(2)}`,
@@ -78,6 +95,8 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
         setCashAmount("");
         setCardAmount("");
         setUpiAmount("");
+        setCreditAmount("");
+        setCreditorId("");
       },
       onError: (error: any) => {
         const errorMessage = error.response?.data?.message || 
@@ -171,6 +190,37 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
             placeholder="Enter UPI amount"
           />
         </div>
+
+        {/* Credit Amount */}
+        <div className="space-y-2">
+          <Label htmlFor="credit">Credit Amount</Label>
+          <Input
+            id="credit"
+            type="number"
+            value={creditAmount}
+            onChange={(e) => setCreditAmount(e.target.value)}
+            placeholder="Enter credit amount"
+          />
+        </div>
+
+        {/* Creditor Selection */}
+        {creditAmount && parseFloat(creditAmount) > 0 && (
+          <div className="space-y-2">
+            <Label htmlFor="creditor">Creditor</Label>
+            <Select value={creditorId} onValueChange={setCreditorId}>
+              <SelectTrigger id="creditor">
+                <SelectValue placeholder="Select creditor" />
+              </SelectTrigger>
+              <SelectContent>
+                {creditors.map(creditor => (
+                  <SelectItem key={creditor.id} value={creditor.id}>
+                    {creditor.party_name || creditor.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </CardContent>
       <CardFooter>
         <Button 

@@ -24,6 +24,7 @@ interface CreditorCardProps {
     phone?: string;
     creditLimit: number;
     currentBalance: number;
+    creditUtilization?: number;
     status: 'active' | 'inactive';
     stationName?: string;
   };
@@ -34,7 +35,7 @@ interface CreditorCardProps {
 export function CreditorCard({ creditor, onViewDetails, onAddPayment }: CreditorCardProps) {
   const isOverLimit = creditor.currentBalance > creditor.creditLimit;
   const isNearLimit = creditor.currentBalance > creditor.creditLimit * 0.8;
-  const utilizationPercent = creditor.creditLimit > 0 ? (creditor.currentBalance / creditor.creditLimit) * 100 : 0;
+  const utilizationPercent = creditor.creditUtilization || (creditor.creditLimit > 0 ? (creditor.currentBalance / creditor.creditLimit) * 100 : 0);
   
   const getStatusColor = () => {
     if (creditor.status === 'inactive' || isOverLimit) return 'destructive';

@@ -13,9 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useStations } from '@/hooks/api/useStations';
 import {
   useAttendantStations,
-  useCreateCashReport,
   useAttendantCreditors,
 } from '@/hooks/api/useAttendant';
+import { useCreateCashReport } from '@/hooks/api/useCashReports';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ArrowLeft, DollarSign, CreditCard, Users } from 'lucide-react';
@@ -117,10 +117,9 @@ export default function CashReportPage() {
       cardAmount,
       upiAmount,
       creditAmount,
-      creditorId: creditAmount > 0 ? selectedCreditorId : undefined,
-      reportDate: today,
       shift,
-      notes: notes.trim() || undefined
+      notes: notes.trim() || undefined,
+      date: today
     };
     
     try {
