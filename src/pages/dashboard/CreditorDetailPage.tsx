@@ -44,6 +44,7 @@ export default function CreditorDetailPage() {
     address: creditor.address,
     creditLimit: Number(creditor.creditLimit || creditor.credit_limit || 0),
     currentBalance: Number(creditor.balance || creditor.currentBalance || 0),
+    creditUtilization: Number(creditor.creditUtilization || creditor.credit_utilization || 0),
     status: creditor.status === 'active' ? 'active' : 'inactive',
     stationName: creditor.stationName || creditor.station_name,
     createdAt: creditor.createdAt || creditor.created_at
@@ -51,9 +52,8 @@ export default function CreditorDetailPage() {
 
   const isOverLimit = normalizedCreditor.currentBalance > normalizedCreditor.creditLimit;
   const isNearLimit = normalizedCreditor.currentBalance > normalizedCreditor.creditLimit * 0.8;
-  const utilizationPercent = normalizedCreditor.creditLimit > 0 
-    ? (normalizedCreditor.currentBalance / normalizedCreditor.creditLimit) * 100 
-    : 0;
+  const utilizationPercent = normalizedCreditor.creditUtilization || 
+    (normalizedCreditor.creditLimit > 0 ? (normalizedCreditor.currentBalance / normalizedCreditor.creditLimit) * 100 : 0);
 
   return (
     <div className="container mx-auto p-6 space-y-6">

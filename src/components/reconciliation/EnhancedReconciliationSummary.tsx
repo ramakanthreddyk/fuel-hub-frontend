@@ -43,12 +43,14 @@ interface ReconciliationSummary {
     cashCollected: number;
     cardCollected: number;
     upiCollected: number;
+    creditGiven?: number;
     totalCollected: number;
   };
   differences: {
     cashDifference: number;
     cardDifference: number;
     upiDifference: number;
+    creditDifference?: number;
     totalDifference: number;
     percentageDifference: number;
     isWithinTolerance: boolean;
@@ -177,7 +179,7 @@ export function EnhancedReconciliationSummary({
           <CardTitle>Payment Method Differences</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Cash Difference */}
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
@@ -209,6 +211,17 @@ export function EnhancedReconciliationSummary({
                 </p>
               </div>
               {getDifferenceIcon(summary.differences.upiDifference)}
+            </div>
+
+            {/* Credit Difference */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Credit</p>
+                <p className={`text-lg font-bold ${getDifferenceColor(summary.differences.creditDifference || 0, summary.differences.isWithinTolerance)}`}>
+                  {formatCurrency(Math.abs(summary.differences.creditDifference || 0))}
+                </p>
+              </div>
+              {getDifferenceIcon(summary.differences.creditDifference || 0)}
             </div>
 
             {/* Total Difference */}

@@ -50,12 +50,14 @@ interface ReconciliationSummary {
     cashCollected: number;
     cardCollected: number;
     upiCollected: number;
+    creditGiven?: number;
     totalCollected: number;
   };
   differences: {
     cashDifference: number;
     cardDifference: number;
     upiDifference: number;
+    creditDifference?: number;
     totalDifference: number;
   };
   isReconciled: boolean;
@@ -180,10 +182,20 @@ export function ImprovedReconciliationCard({ summary, onCloseDay, isClosing = fa
                   <span className="font-bold text-sm">{formatCurrencyMobile(systemCalculated.upiSales)}</span>
                 </div>
 
+                {systemCalculated.creditSales > 0 && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Receipt className="h-3 w-3 text-orange-600" />
+                      <span className="text-xs">Credit</span>
+                    </div>
+                    <span className="font-bold text-sm">{formatCurrencyMobile(systemCalculated.creditSales)}</span>
+                  </div>
+                )}
+
                 <Separator />
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-sm text-blue-800">Total</span>
-                  <span className="font-bold text-lg text-blue-800">{formatCurrencyMobile(systemNonCreditTotal)}</span>
+                  <span className="font-bold text-lg text-blue-800">{formatCurrencyMobile(systemCalculated.totalRevenue)}</span>
                 </div>
               </div>
             </CardContent>
@@ -227,6 +239,16 @@ export function ImprovedReconciliationCard({ summary, onCloseDay, isClosing = fa
                   <span className="font-bold text-sm">{formatCurrencyMobile(userEntered.upiCollected)}</span>
                 </div>
 
+                {(userEntered.creditGiven || 0) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Receipt className="h-3 w-3 text-orange-600" />
+                      <span className="text-xs">Credit</span>
+                    </div>
+                    <span className="font-bold text-sm">{formatCurrencyMobile(userEntered.creditGiven || 0)}</span>
+                  </div>
+                )}
+
                 <Separator />
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-sm text-green-800">Total</span>
@@ -251,6 +273,22 @@ export function ImprovedReconciliationCard({ summary, onCloseDay, isClosing = fa
             </div>
 
             <div className="grid grid-cols-2 gap-3">
+              {differences.creditDifference !== undefined && (
+                <div className="col-span-2">
+                  <div className={`p-3 rounded-lg border ${getDifferenceBgColor(differences.creditDifference)}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1">
+                        <Receipt className="h-3 w-3 text-orange-600" />
+                        <span className="text-xs font-medium">Credit</span>
+                      </div>
+                      {getDifferenceIcon(differences.creditDifference)}
+                    </div>
+                    <p className={`font-bold text-sm ${getDifferenceColor(differences.creditDifference)}`}>
+                      {differences.creditDifference >= 0 ? '+' : ''}{formatCurrencyMobile(differences.creditDifference)}
+                    </p>
+                  </div>
+                </div>
+              )}
               <div className={`p-3 rounded-lg border ${getDifferenceBgColor(differences.cashDifference)}`}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1">
@@ -289,6 +327,21 @@ export function ImprovedReconciliationCard({ summary, onCloseDay, isClosing = fa
                   {differences.upiDifference >= 0 ? '+' : ''}{formatCurrencyMobile(differences.upiDifference)}
                 </p>
               </div>
+
+              {differences.creditDifference !== undefined && (
+                <div className={`p-3 rounded-lg border ${getDifferenceBgColor(differences.creditDifference)}`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-1">
+                      <Receipt className="h-3 w-3 text-orange-600" />
+                      <span className="text-xs font-medium">Credit</span>
+                    </div>
+                    {getDifferenceIcon(differences.creditDifference)}
+                  </div>
+                  <p className={`font-bold text-sm ${getDifferenceColor(differences.creditDifference)}`}>
+                    {differences.creditDifference >= 0 ? '+' : ''}{formatCurrencyMobile(differences.creditDifference)}
+                  </p>
+                </div>
+              )}
 
               <div className={`p-3 rounded-lg border-2 ${getDifferenceBgColor(differences.totalDifference)} border-orange-300`}>
                 <div className="flex items-center justify-between mb-1">
@@ -409,17 +462,20 @@ export function ImprovedReconciliationCard({ summary, onCloseDay, isClosing = fa
                 </span>
                 <span className="font-mono">{formatCurrencyMobile(systemCalculated.upiSales)}</span>
               </div>
-              <Separator />
-              <div className="flex justify-between font-semibold">
-                <span>Total (excl. credit):</span>
-                <span className="font-mono">{formatCurrencyMobile(systemNonCreditTotal)}</span>
-              </div>
               {systemCalculated.creditSales > 0 && (
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Credit Sales:</span>
+                <div className="flex justify-between">
+                  <span className="flex items-center gap-1">
+                    <Receipt className="h-3 w-3" />
+                    Credit Sales:
+                  </span>
                   <span className="font-mono">{formatCurrencyMobile(systemCalculated.creditSales)}</span>
                 </div>
               )}
+              <Separator />
+              <div className="flex justify-between font-semibold">
+                <span>Total Revenue:</span>
+                <span className="font-mono">{formatCurrencyMobile(systemCalculated.totalRevenue)}</span>
+              </div>
             </div>
           </div>
 
@@ -451,6 +507,15 @@ export function ImprovedReconciliationCard({ summary, onCloseDay, isClosing = fa
                 </span>
                 <span className="font-mono">{formatCurrencyMobile(userEntered.upiCollected)}</span>
               </div>
+              {(userEntered.creditGiven || 0) > 0 && (
+                <div className="flex justify-between">
+                  <span className="flex items-center gap-1">
+                    <Receipt className="h-3 w-3" />
+                    Credit Given:
+                  </span>
+                  <span className="font-mono">{formatCurrencyMobile(userEntered.creditGiven || 0)}</span>
+                </div>
+              )}
               <Separator />
               <div className="flex justify-between font-semibold">
                 <span>Total Collected:</span>
@@ -493,6 +558,17 @@ export function ImprovedReconciliationCard({ summary, onCloseDay, isClosing = fa
                   {differences.upiDifference >= 0 ? '+' : ''}{formatCurrencyMobile(differences.upiDifference)}
                 </span>
               </div>
+              {differences.creditDifference !== undefined && (
+                <div className="flex justify-between items-center">
+                  <span className="flex items-center gap-1">
+                    {getDifferenceIcon(differences.creditDifference)}
+                    Credit:
+                  </span>
+                  <span className={`font-mono ${getDifferenceColor(differences.creditDifference)}`}>
+                    {differences.creditDifference >= 0 ? '+' : ''}{formatCurrencyMobile(differences.creditDifference)}
+                  </span>
+                </div>
+              )}
               <Separator />
               <div className="flex justify-between items-center font-semibold">
                 <span className="flex items-center gap-1">

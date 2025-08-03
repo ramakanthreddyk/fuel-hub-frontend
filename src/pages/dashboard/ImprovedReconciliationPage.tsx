@@ -70,12 +70,14 @@ interface ReconciliationSummary {
     cashCollected: number;
     cardCollected: number;
     upiCollected: number;
+    creditGiven?: number;
     totalCollected: number;
   };
   differences: {
     cashDifference: number;
     cardDifference: number;
     upiDifference: number;
+    creditDifference?: number;
     totalDifference: number;
   };
   isReconciled: boolean;
@@ -431,18 +433,22 @@ export default function ImprovedReconciliationPage() {
                     <span className="font-mono">{formatCurrency(reconciliationSummary.systemCalculated.upiSales)}</span>
                   </div>
                   <Separator />
-                  <div className="flex justify-between font-semibold">
-                    <span>Total (excl. credit):</span>
-                    <span className="font-mono">
-                      {formatCurrency(reconciliationSummary.systemCalculated.totalRevenue - reconciliationSummary.systemCalculated.creditSales)}
-                    </span>
-                  </div>
                   {reconciliationSummary.systemCalculated.creditSales > 0 && (
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Credit Sales:</span>
+                    <div className="flex justify-between">
+                      <span className="flex items-center gap-1">
+                        <CreditCard className="h-3 w-3" />
+                        Credit Sales:
+                      </span>
                       <span className="font-mono">{formatCurrency(reconciliationSummary.systemCalculated.creditSales)}</span>
                     </div>
                   )}
+                  <Separator />
+                  <div className="flex justify-between font-semibold">
+                    <span>Total Revenue:</span>
+                    <span className="font-mono">
+                      {formatCurrency(reconciliationSummary.systemCalculated.totalRevenue)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -474,6 +480,15 @@ export default function ImprovedReconciliationPage() {
                     </span>
                     <span className="font-mono">{formatCurrency(reconciliationSummary.userEntered.upiCollected)}</span>
                   </div>
+                  {(reconciliationSummary.userEntered.creditGiven || 0) > 0 && (
+                    <div className="flex justify-between">
+                      <span className="flex items-center gap-1">
+                        <CreditCard className="h-3 w-3" />
+                        Credit Given:
+                      </span>
+                      <span className="font-mono">{formatCurrency(reconciliationSummary.userEntered.creditGiven || 0)}</span>
+                    </div>
+                  )}
                   <Separator />
                   <div className="flex justify-between font-semibold">
                     <span>Total Collected:</span>
@@ -516,6 +531,17 @@ export default function ImprovedReconciliationPage() {
                       {reconciliationSummary.differences.upiDifference >= 0 ? '+' : ''}{formatCurrency(reconciliationSummary.differences.upiDifference)}
                     </span>
                   </div>
+                  {reconciliationSummary.differences.creditDifference !== undefined && (
+                    <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-1">
+                        {getDifferenceIcon(reconciliationSummary.differences.creditDifference)}
+                        Credit:
+                      </span>
+                      <span className={`font-mono ${getDifferenceColor(reconciliationSummary.differences.creditDifference)}`}>
+                        {reconciliationSummary.differences.creditDifference >= 0 ? '+' : ''}{formatCurrency(reconciliationSummary.differences.creditDifference)}
+                      </span>
+                    </div>
+                  )}
                   <Separator />
                   <div className="flex justify-between items-center font-semibold">
                     <span className="flex items-center gap-1">
@@ -534,8 +560,9 @@ export default function ImprovedReconciliationPage() {
             <div className="bg-blue-50 p-4 rounded-lg">
               <h4 className="font-semibold text-sm text-blue-800 mb-2">How to Read This:</h4>
               <ul className="text-xs text-blue-700 space-y-1">
-                <li>• <strong>System Calculated:</strong> Sales amounts from nozzle readings and fuel prices</li>
-                <li>• <strong>Cash Collected:</strong> Actual amounts reported by attendants</li>
+                <li>• <strong>System Calculated:</strong> Sales amounts from nozzle readings and fuel prices (includes credit sales)</li>
+                <li>• <strong>Cash Collected:</strong> Actual amounts reported by attendants (includes credit given)</li>
+                <li>• <strong>Credit:</strong> Fuel given on credit to customers - included in total reconciliation</li>
                 <li>• <strong>Differences:</strong> Collected - System (positive = excess, negative = shortage)</li>
                 <li>• <strong>Green:</strong> Perfect match (±₹1), <strong>Yellow:</strong> Small difference (±₹100), <strong>Red:</strong> Large difference</li>
               </ul>

@@ -56,9 +56,7 @@ export default function NewCreditorPaymentPage() {
         creditorId,
         amount,
         paymentMethod,
-        referenceNumber: referenceNumber || undefined,
-
-
+        referenceNumber: referenceNumber || undefined
       });
       
       toast({
@@ -120,7 +118,7 @@ export default function NewCreditorPaymentPage() {
             <div className="p-4 bg-gray-50 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Outstanding Amount:</span>
-                <span className="text-xl font-bold text-red-600">{formatCurrency(creditor.outstandingAmount || 0)}</span>
+                <span className="text-xl font-bold text-red-600">{formatCurrency(creditor.balance || creditor.currentBalance || 0)}</span>
               </div>
             </div>
             

@@ -38,7 +38,8 @@ export const useCreditor = (id?: string) => {
     queryKey: ['creditor', id],
     queryFn: () => creditorsService.getCreditor(id || ''),
     enabled: !!id,
-    staleTime: 60000,
+    staleTime: 0, // Force fresh data
+    cacheTime: 0, // Don't cache
     onError: (error: any) => {
       handleApiError(error, 'Fetch Creditor');
     },

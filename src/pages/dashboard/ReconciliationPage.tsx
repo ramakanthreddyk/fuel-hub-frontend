@@ -63,12 +63,14 @@ export default function ReconciliationPage() {
       cashCollected: 0,
       cardCollected: 0,
       upiCollected: 0,
+      creditGiven: 0,
       totalCollected: 0
     },
     differences: reconciliationSummary?.differences || {
       cashDifference: 0,
       cardDifference: 0,
       upiDifference: 0,
+      creditDifference: 0,
       totalDifference: 0
     }
   };

@@ -15,6 +15,7 @@ interface CashVsSystemComparisonProps {
     cashCollected: number;
     cardCollected: number;
     upiCollected: number;
+    creditGiven?: number;
     totalCollected: number;
   };
   date: string;
@@ -30,7 +31,8 @@ export function CashVsSystemComparison({
   const cashDiff = userReported.cashCollected - systemSales.cashSales;
   const cardDiff = userReported.cardCollected - systemSales.cardSales;
   const upiDiff = userReported.upiCollected - systemSales.upiSales;
-  const totalDiff = userReported.totalCollected - (systemSales.totalRevenue - systemSales.creditSales);
+  const creditDiff = (userReported.creditGiven || 0) - systemSales.creditSales;
+  const totalDiff = userReported.totalCollected - systemSales.totalRevenue;
 
   const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
   
@@ -53,7 +55,7 @@ export function CashVsSystemComparison({
         <p className="text-gray-600">{stationName} - {date}</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Cash Comparison */}
         <Card>
           <CardHeader className="pb-3">
@@ -146,6 +148,37 @@ export function CashVsSystemComparison({
             </div>
           </CardContent>
         </Card>
+
+        {/* Credit Comparison */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5" />
+              Credit
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">System Sales:</span>
+              <span className="font-medium">{formatCurrency(systemSales.creditSales)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">User Reported:</span>
+              <span className="font-medium">{formatCurrency(userReported.creditGiven || 0)}</span>
+            </div>
+            <div className="border-t pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Difference:</span>
+                <div className="flex items-center gap-2">
+                  {getDifferenceIcon(creditDiff)}
+                  <Badge className={getDifferenceColor(creditDiff)}>
+                    {creditDiff >= 0 ? '+' : ''}{formatCurrency(creditDiff)}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Summary Card */}
@@ -159,8 +192,8 @@ export function CashVsSystemComparison({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-600 mb-1">System Total (excl. credit):</p>
-              <p className="text-xl font-bold">{formatCurrency(systemSales.totalRevenue - systemSales.creditSales)}</p>
+              <p className="text-sm text-gray-600 mb-1">System Total Revenue:</p>
+              <p className="text-xl font-bold">{formatCurrency(systemSales.totalRevenue)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">User Reported Total:</p>
@@ -191,10 +224,10 @@ export function CashVsSystemComparison({
           </div>
 
           {/* Credit Sales Info */}
-          {systemSales.creditSales > 0 && (
+          {(systemSales.creditSales > 0 || (userReported.creditGiven || 0) > 0) && (
             <div className="bg-blue-50 p-3 rounded-lg">
               <p className="text-sm text-blue-800">
-                <strong>Note:</strong> Credit sales of {formatCurrency(systemSales.creditSales)} are excluded from cash reconciliation as they don't involve immediate cash collection.
+                <strong>Note:</strong> Credit given of {formatCurrency(userReported.creditGiven || 0)} is included in total reconciliation. Credit sales represent fuel given on credit to customers.
               </p>
             </div>
           )}
