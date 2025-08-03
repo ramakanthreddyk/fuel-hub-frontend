@@ -141,7 +141,7 @@ export default function PlansPage() {
               Create Plan
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create Plan</DialogTitle>
               <DialogDescription>
@@ -241,7 +241,7 @@ export default function PlansPage() {
       </Card>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Plan</DialogTitle>
             <DialogDescription>

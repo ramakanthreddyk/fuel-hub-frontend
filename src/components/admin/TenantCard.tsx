@@ -17,12 +17,17 @@ interface TenantCardProps {
 
 export function TenantCard({ tenant, onUpdateStatus, onDelete, onView }: TenantCardProps) {
   const navigate = useNavigate();
-  console.log('TenantCard - tenant ID:', tenant.id, 'tenant name:', tenant.name);
+  console.log('TenantCard - Full tenant object:', tenant);
+  console.log('TenantCard - Plan name:', tenant.plan?.name);
+  console.log('TenantCard - Usage data:', tenant.usage);
+  console.log('TenantCard - createdAt:', tenant.createdAt, 'type:', typeof tenant.createdAt);
   
-  const getPlanColor = (planName: string) => {
-    if (planName.toLowerCase().includes('basic')) return 'bg-blue-100 text-blue-800 border-blue-200';
-    if (planName.toLowerCase().includes('premium')) return 'bg-purple-100 text-purple-800 border-purple-200';
-    if (planName.toLowerCase().includes('enterprise')) return 'bg-orange-100 text-orange-800 border-orange-200';
+  const getPlanColor = (planName: string | undefined) => {
+    if (!planName) return 'bg-gray-100 text-gray-800 border-gray-200';
+    const lowerName = planName.toLowerCase();
+    if (lowerName.includes('basic') || lowerName.includes('regular')) return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (lowerName.includes('premium')) return 'bg-purple-100 text-purple-800 border-purple-200';
+    if (lowerName.includes('enterprise')) return 'bg-orange-100 text-orange-800 border-orange-200';
     return 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
@@ -69,20 +74,20 @@ export function TenantCard({ tenant, onUpdateStatus, onDelete, onView }: TenantC
               </div>
             </div>
           </CardTitle>
-          <Badge className={`${getPlanColor(tenant.planName)} border font-semibold text-xs px-3 py-1 flex-shrink-0`}>
-            {tenant.planName}
+          <Badge className={`${getPlanColor(tenant.plan?.name)} border font-semibold text-xs px-3 py-1 flex-shrink-0`}>
+            {tenant.plan?.name || 'No Plan'}
           </Badge>
         </div>
         <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-2 flex items-center gap-1 text-gray-500">
           <Calendar className="h-3 w-3" />
-          <span>Created {formatDate(tenant.createdAt)}</span>
+          <span>Created {tenant.createdAt ? formatDate(tenant.createdAt) : 'Unknown'}</span>
         </CardDescription>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <TenantStats 
-          stationCount={tenant.stationCount || 0}
-          userCount={tenant.userCount || 0}
+        <TenantStats
+          stationCount={tenant.usage?.currentStations || 0}
+          userCount={tenant.usage?.totalUsers || 0}
         />
         
         {/* Action Buttons */}

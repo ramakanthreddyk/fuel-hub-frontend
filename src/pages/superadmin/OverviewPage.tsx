@@ -1,18 +1,31 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { superAdminApi } from '@/api/superadmin';
 
 export default function SuperAdminOverviewPage() {
   const navigate = useNavigate();
 
-  // Mock data for demonstration
+  // Get real data from API
+  const { data: analytics, isLoading } = useQuery({
+    queryKey: ['superadmin-analytics'],
+    queryFn: superAdminApi.getAnalytics
+  });
+
+  const { data: plans } = useQuery({
+    queryKey: ['admin-plans'],
+    queryFn: superAdminApi.getPlans
+  });
+
+  // Use real data or fallback to defaults
   const summary = {
-    tenantCount: 12,
-    activeTenantCount: 10,
-    adminCount: 3,
-    planCount: 4,
-    totalRevenue: 2450000,
-    activeUsers: 156,
-    systemHealth: 98.5
+    tenantCount: analytics?.systemStats?.totalTenants || 0,
+    activeTenantCount: analytics?.systemStats?.activeTenants || 0,
+    adminCount: 3, // This would need a separate API call
+    planCount: plans?.length || 0,
+    totalRevenue: analytics?.planDistribution?.reduce((sum, plan) => sum + plan.monthlyRevenue, 0) || 0,
+    activeUsers: analytics?.systemStats?.totalUsers || 0,
+    systemHealth: 98.5 // This would be calculated from system metrics
   };
 
   const handleQuickAction = (action: string) => {
@@ -31,6 +44,21 @@ export default function SuperAdminOverviewPage() {
         break;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="bg-gray-200 h-24 rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -200,27 +228,27 @@ export default function SuperAdminOverviewPage() {
         </h2>
         <p className="text-gray-600 mb-4">Latest tenant and system activities</p>
         <div className="space-y-4">
-          <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-            <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">New tenant "ABC Fuel Station" registered</p>
-              <p className="text-xs text-gray-500">2 hours ago</p>
+          {analytics?.activitySummary?.recentActivities && analytics.activitySummary.recentActivities.length > 0 ? (
+            analytics.activitySummary.recentActivities.map((activity: any, index: number) => (
+              <div key={index} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                <div className={`h-2 w-2 rounded-full ${
+                  activity.type === 'tenant_created' ? 'bg-green-500' :
+                  activity.type === 'plan_upgraded' ? 'bg-blue-500' :
+                  activity.type === 'user_login' ? 'bg-purple-500' :
+                  'bg-gray-500'
+                }`}></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{activity.description}</p>
+                  <p className="text-xs text-gray-500">{activity.timeAgo}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-sm">No recent activity</p>
+              <p className="text-xs mt-1">Activity will appear here as tenants use the platform</p>
             </div>
-          </div>
-          <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-            <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">System backup completed successfully</p>
-              <p className="text-xs text-gray-500">6 hours ago</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-            <div className="h-2 w-2 bg-purple-500 rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Premium plan updated with new features</p>
-              <p className="text-xs text-gray-500">1 day ago</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 

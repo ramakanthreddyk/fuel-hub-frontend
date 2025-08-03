@@ -10,7 +10,7 @@ export { fuelPricesService } from './fuel-prices.service';
 export { creditorsService } from './creditors.service';
 export { dashboardService } from './dashboardService';
 export { alertsService } from './alerts.service';
-export { reportsService } from './reportsService';
+export { reportsService } from './reports.service';
 export { dailySalesService } from './dailySalesService';
 export { salesService } from './salesService';
 export { inventoryService } from './inventoryService';

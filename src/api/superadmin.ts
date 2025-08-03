@@ -14,41 +14,48 @@ import {
 // Main SuperAdmin API object
 export const superAdminApi = {
   // Tenant Management
-  getTenants: (): Promise<Tenant[]> => apiClient.get('/admin/tenants').then(response => extractApiData(response) || []),
+  getTenants: (): Promise<Tenant[]> => apiClient.get('/superadmin/tenants').then(response => {
+    const data = extractApiData(response);
+    return data?.tenants || [];
+  }),
   createTenant: (data: CreateTenantRequest): Promise<Tenant> =>
-    apiClient.post('/admin/tenants', data).then(response => extractApiData(response)),
+    apiClient.post('/superadmin/tenants', data).then(response => extractApiData(response)),
   getTenant: (id: string): Promise<Tenant> =>
-    apiClient.get(`/admin/tenants/${id}`).then(response => extractApiData(response)),
+    apiClient.get(`/superadmin/tenants/${id}`).then(response => extractApiData(response)),
   updateTenant: (id: string, data: Partial<Tenant>): Promise<Tenant> =>
-    apiClient.put(`/admin/tenants/${id}`, data).then(response => extractApiData(response)),
+    apiClient.put(`/superadmin/tenants/${id}`, data).then(response => extractApiData(response)),
   updateTenantStatus: (id: string, status: string): Promise<Tenant> =>
-    apiClient.put(`/admin/tenants/${id}/status`, { status }).then(response => extractApiData(response)),
+    apiClient.patch(`/superadmin/tenants/${id}/status`, { status }).then(response => extractApiData(response)),
   deleteTenant: (id: string): Promise<void> =>
-    apiClient.delete(`/admin/tenants/${id}`),
+    apiClient.delete(`/superadmin/tenants/${id}`),
 
   // Plan Management
-  getPlans: (): Promise<Plan[]> => apiClient.get('/admin/plans').then(response => extractApiData(response) || []),
+  getPlans: (): Promise<Plan[]> => apiClient.get('/superadmin/plans').then(response => {
+    const data = extractApiData(response);
+    return data?.plans || [];
+  }),
   createPlan: (data: CreatePlanRequest): Promise<Plan> =>
-    apiClient.post('/admin/plans', data).then(response => extractApiData(response)),
+    apiClient.post('/superadmin/plans', data).then(response => extractApiData(response)),
   updatePlan: (id: string, data: Partial<Plan>): Promise<Plan> =>
-    apiClient.put(`/admin/plans/${id}`, data).then(response => extractApiData(response)),
+    apiClient.put(`/superadmin/plans/${id}`, data).then(response => extractApiData(response)),
   deletePlan: (id: string): Promise<void> =>
-    apiClient.delete(`/admin/plans/${id}`),
+    apiClient.delete(`/superadmin/plans/${id}`),
 
   // Admin User Management
-  getAdminUsers: (): Promise<AdminUser[]> => apiClient.get('/admin/users').then(response => extractApiData(response) || []),
+  getAdminUsers: (): Promise<{ tenantUsers: any[], adminUsers: AdminUser[], totalUsers: number }> =>
+    apiClient.get('/superadmin/users').then(response => extractApiData(response) || { tenantUsers: [], adminUsers: [], totalUsers: 0 }),
   createAdminUser: (data: CreateSuperAdminRequest): Promise<AdminUser> =>
-    apiClient.post('/admin/users', data).then(response => extractApiData(response)),
+    apiClient.post('/superadmin/users', data).then(response => extractApiData(response)),
   updateAdminUser: (id: string, data: Partial<AdminUser>): Promise<AdminUser> =>
-    apiClient.put(`/admin/users/${id}`, data).then(response => extractApiData(response)),
+    apiClient.put(`/superadmin/users/${id}`, data).then(response => extractApiData(response)),
   deleteAdminUser: (id: string): Promise<void> =>
-    apiClient.delete(`/admin/users/${id}`),
+    apiClient.delete(`/superadmin/users/${id}`),
   resetAdminPassword: (id: string, passwordData: any): Promise<void> =>
-    apiClient.post(`/admin/users/${id}/reset-password`, passwordData),
+    apiClient.post(`/superadmin/users/${id}/reset-password`, passwordData),
 
   // Analytics and Summary
   getSummary: (): Promise<SuperAdminSummary> => {
-    return apiClient.get('/admin/dashboard').then(response => {
+    return apiClient.get('/superadmin/analytics/usage').then(response => {
       const data = extractApiData<SuperAdminSummary>(response);
       return {
         totalTenants: data.totalTenants || 0,
@@ -68,59 +75,11 @@ export const superAdminApi = {
       };
     });
   },
-  getAnalytics: (): Promise<SuperAdminAnalytics> => {
-    return apiClient.get('/analytics/superadmin').then(response => {
+  getAnalytics: (): Promise<any> => {
+    return apiClient.get('/superadmin/analytics/usage').then(response => {
       const data = extractApiData<any>(response);
-      return {
-        // Core metrics
-        tenantCount: data.totalTenants || data.tenantCount || 0,
-        activeTenantCount: data.activeTenants || data.activeTenantCount || 0,
-        totalUsers: data.totalUsers || 0,
-        totalStations: data.totalStations || 0,
-        signupsThisMonth: data.signupsThisMonth || 0,
-        tenantsByPlan: data.tenantsByPlan || [],
-        recentTenants: data.recentTenants || [],
-        
-        // Overview section
-        overview: {
-          totalTenants: data.totalTenants || data.tenantCount || 0,
-          totalRevenue: data.totalRevenue || 0,
-          totalStations: data.totalStations || 0,
-          growth: typeof data.monthlyGrowth === 'number' ? data.monthlyGrowth : 0
-        },
-        
-        // Tenant metrics
-        tenantMetrics: {
-          activeTenants: data.activeTenants || data.activeTenantCount || 0,
-          trialTenants: data.trialTenants || 0,
-          suspendedTenants: data.suspendedTenants || 0,
-          monthlyGrowth: typeof data.monthlyGrowth === 'number' ? data.monthlyGrowth : 0
-        },
-        
-        // Revenue metrics
-        revenueMetrics: {
-          mrr: data.mrr || 0,
-          arr: data.arr || 0,
-          churnRate: data.churnRate || 0,
-          averageRevenuePerTenant: data.averageRevenuePerTenant || 0
-        },
-        
-        // Usage metrics
-        usageMetrics: {
-          totalUsers: data.totalUsers || 0,
-          totalStations: data.totalStations || 0,
-          totalTransactions: data.totalTransactions || 0,
-          averageStationsPerTenant: data.averageStationsPerTenant || 0
-        },
-        
-        // Additional properties for backward compatibility
-        totalTenants: data.totalTenants || data.tenantCount || 0,
-        activeTenants: data.activeTenants || data.activeTenantCount || 0,
-        totalRevenue: data.totalRevenue || 0,
-        salesVolume: data.salesVolume,
-        monthlyGrowth: Array.isArray(data.monthlyGrowth) ? data.monthlyGrowth : [],
-        topTenants: data.topTenants || []
-      };
+      // Return the actual backend structure without transformation
+      return data;
     });
   }
 };

@@ -13,12 +13,15 @@ import { useAuth } from '../contexts/AuthContext';
  * Hook for managing onboarding status
  */
 export function useOnboardingStatus() {
+  const { isAuthenticated, user } = useAuth();
+
   return useQuery({
     queryKey: ['onboarding', 'status'],
     queryFn: () => onboardingService.getOnboardingStatus(),
     staleTime: 30 * 1000, // 30 seconds - shorter for better responsiveness
     refetchOnWindowFocus: true,
     refetchInterval: 60 * 1000, // Refetch every minute
+    enabled: isAuthenticated && !!user && user.role !== 'superadmin', // Exclude SuperAdmin users
   });
 }
 
@@ -34,7 +37,7 @@ export function useDailyReminders() {
     queryFn: () => onboardingService.getDailyReminders(),
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
-    enabled: isAuthenticated && !!user, // Only fetch when authenticated
+    enabled: isAuthenticated && !!user && user.role !== 'superadmin', // Exclude SuperAdmin users
   });
 
   const completeReminder = useMutation({

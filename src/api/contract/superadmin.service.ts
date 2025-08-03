@@ -19,77 +19,77 @@ import type {
 export class SuperAdminService {
   /**
    * Get dashboard summary
-   * GET /admin/dashboard
+   * GET /superadmin/analytics/usage
    */
   async getDashboardSummary(): Promise<SuperAdminSummary> {
-    return contractClient.get<SuperAdminSummary>('/admin/dashboard');
+    return contractClient.get<SuperAdminSummary>('/superadmin/analytics/usage');
   }
 
   // Tenant Management
   /**
    * List all tenants
-   * GET /admin/tenants
+   * GET /superadmin/tenants
    */
   async getTenants(): Promise<Tenant[]> {
-    return contractClient.getArray<Tenant>('/admin/tenants', 'tenants');
+    return contractClient.getArray<Tenant>('/superadmin/tenants', 'tenants');
   }
 
   /**
    * Get tenant details
-   * GET /admin/tenants/{tenantId}
+   * GET /superadmin/tenants/{tenantId}
    */
   async getTenant(tenantId: string): Promise<Tenant> {
-    return contractClient.get<Tenant>(`/admin/tenants/${tenantId}`);
+    return contractClient.get<Tenant>(`/superadmin/tenants/${tenantId}`);
   }
 
   /**
    * Create new tenant
-   * POST /admin/tenants
+   * POST /superadmin/tenants
    */
   async createTenant(data: CreateTenantRequest): Promise<Tenant> {
-    return contractClient.post<Tenant>('/admin/tenants', data);
+    return contractClient.post<Tenant>('/superadmin/tenants', data);
   }
 
   /**
    * Update tenant status
-   * PATCH /admin/tenants/{tenantId}/status
+   * PATCH /superadmin/tenants/{tenantId}/status
    */
   async updateTenantStatus(tenantId: string, status: 'active' | 'suspended' | 'cancelled'): Promise<void> {
-    return contractClient.patch<void>(`/admin/tenants/${tenantId}/status`, { status });
+    return contractClient.patch<void>(`/superadmin/tenants/${tenantId}/status`, { status });
   }
 
   // Plan Management
   /**
    * List all plans
-   * GET /admin/plans
+   * GET /superadmin/plans
    */
   async getPlans(): Promise<Plan[]> {
-    return contractClient.getArray<Plan>('/admin/plans', 'plans');
+    return contractClient.getArray<Plan>('/superadmin/plans', 'plans');
   }
 
   /**
    * Create new plan
-   * POST /admin/plans
+   * POST /superadmin/plans
    */
   async createPlan(data: CreatePlanRequest): Promise<Plan> {
-    return contractClient.post<Plan>('/admin/plans', data);
+    return contractClient.post<Plan>('/superadmin/plans', data);
   }
 
   // Admin User Management
   /**
    * List admin users
-   * GET /admin/users
+   * GET /superadmin/users
    */
   async getAdminUsers(): Promise<AdminUser[]> {
-    return contractClient.getArray<AdminUser>('/admin/users', 'users');
+    return contractClient.getArray<AdminUser>('/superadmin/users', 'users');
   }
 
   /**
    * Create admin user
-   * POST /admin/users
+   * POST /superadmin/users
    */
   async createAdminUser(data: CreateSuperAdminRequest): Promise<AdminUser> {
-    return contractClient.post<AdminUser>('/admin/users', data);
+    return contractClient.post<AdminUser>('/superadmin/users', data);
   }
 }
 

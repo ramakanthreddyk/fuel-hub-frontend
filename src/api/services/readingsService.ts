@@ -5,6 +5,7 @@
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
 import API_CONFIG from '../core/config';
+import { parseReadingsResponse, parseReading } from '@/utils/dataParser';
 
 // Types
 export interface Reading {
@@ -80,23 +81,16 @@ export const readingsService = {
     try {
       console.log('[READINGS-API] Fetching readings');
       const response = await apiClient.get(API_CONFIG.endpoints.readings.base);
-      
-      // Handle different response formats
-      let readings = [];
-      if (response.data?.data?.readings) {
-        readings = response.data.data.readings;
-      } else if (response.data?.readings) {
-        readings = response.data.readings;
-      } else if (Array.isArray(response.data)) {
-        readings = response.data;
-      } else if (response.data?.data && Array.isArray(response.data.data)) {
-        readings = response.data.data;
-      } else if (response.data?.success && response.data?.data?.readings) {
-        // Handle the specific format we're seeing in the response
-        readings = response.data.data.readings;
-      }
-      
-      console.log(`[READINGS-API] Successfully fetched ${readings.length} readings, raw response:`, response.data);
+
+      console.log('[READINGS-API] Raw response before parsing:', response.data);
+
+      // Parse the complex data format from backend
+      const parsedResponse = parseReadingsResponse(response.data);
+      const readings = parsedResponse.data?.readings || [];
+
+      console.log(`[READINGS-API] Successfully fetched and parsed ${readings.length} readings`);
+      console.log('[READINGS-API] First parsed reading:', readings[0]);
+
       return readings;
     } catch (error) {
       console.error('[READINGS-API] Error fetching readings:', error);
@@ -208,20 +202,11 @@ export const readingsService = {
       try {
         const response = await apiClient.get(apiUrl, { headers });
         console.log('[READINGS-API] 📊 Latest reading response for nozzle', nozzleId, ':', response.data);
-        
-        // Handle different response formats
-        if (response.data?.data?.readings) {
-          readings = response.data.data.readings;
-        } else if (response.data?.readings) {
-          readings = response.data.readings;
-        } else if (Array.isArray(response.data)) {
-          readings = response.data;
-        } else if (response.data?.data && Array.isArray(response.data.data)) {
-          readings = response.data.data;
-        } else if (response.data?.success && response.data?.data?.readings) {
-          readings = response.data.data.readings;
-        }
-        
+
+        // Parse the complex data format from backend
+        const parsedResponse = parseReadingsResponse(response.data);
+        readings = parsedResponse.data?.readings || [];
+
         if (readings.length === 0) {
           console.log(`[READINGS-API] No readings found for nozzle ${nozzleId}`);
           return null;
@@ -231,7 +216,10 @@ export const readingsService = {
         // Try fallback method
         try {
           const allReadingsResponse = await apiClient.get(API_CONFIG.endpoints.readings.base);
-          const allReadings = extractArray<Reading>(allReadingsResponse, 'readings');
+
+          // Parse the complex data format from backend
+          const parsedAllResponse = parseReadingsResponse(allReadingsResponse.data);
+          const allReadings = parsedAllResponse.data?.readings || [];
           const filteredReadings = allReadings.filter(r => r.nozzleId === nozzleId || r.nozzle_id === nozzleId);
           
           if (filteredReadings.length === 0) {
@@ -279,11 +267,11 @@ export const readingsService = {
       // Ensure paymentMethod is one of the allowed values
       const paymentMethod = (reading.paymentMethod || reading.payment_method || 'cash') as 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
       
+      // Data parser already handled complex number format conversion
+      // Just ensure backward compatibility for property names
       const normalizedReading = {
         ...reading,
-        id: reading.id,
         nozzleId: reading.nozzleId || reading.nozzle_id,
-        reading: typeof reading.reading === 'number' ? reading.reading : parseFloat(reading.reading),
         nozzleNumber: reading.nozzleNumber || reading.nozzle_number,
         previousReading: reading.previousReading || reading.previous_reading,
         recordedAt: reading.recordedAt || reading.recorded_at,

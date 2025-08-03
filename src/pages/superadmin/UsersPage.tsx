@@ -36,14 +36,16 @@ export default function UsersPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Use SuperAdmin API for getting admin users
+  // Use SuperAdmin API for getting all users
   const { data: usersResponse, isLoading } = useQuery({
     queryKey: ['superadmin-users'],
     queryFn: () => superAdminApi.getAdminUsers(),
   });
 
-  // Ensure users is always an array
-  const users = Array.isArray(usersResponse) ? usersResponse : [];
+  // Extract users from the new response structure
+  const tenantUsers = usersResponse?.tenantUsers || [];
+  const adminUsers = usersResponse?.adminUsers || [];
+  const totalUsers = usersResponse?.totalUsers || 0;
 
   const { mutateAsync: createUser } = useMutation({
     mutationFn: (data: CreateSuperAdminRequest) => superAdminApi.createAdminUser(data),
@@ -208,12 +210,12 @@ export default function UsersPage() {
                   <TableCell colSpan={5} className="text-center">Loading admin users...</TableCell>
                 </TableRow>
               )}
-              {!isLoading && users.length === 0 && (
+              {!isLoading && adminUsers.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">No admin users found.</TableCell>
                 </TableRow>
               )}
-              {!isLoading && users.map((user) => (
+              {!isLoading && adminUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>

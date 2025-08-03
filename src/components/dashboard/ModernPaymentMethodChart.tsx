@@ -35,10 +35,26 @@ export function ModernPaymentMethodChart({ filters = {}, date }: ModernPaymentMe
   
   // Use appropriate data source based on whether date is selected
   const paymentMethods = date && todaysSales ? [
-    { paymentMethod: 'cash', amount: todaysSales.paymentBreakdown.cash, percentage: ((todaysSales.paymentBreakdown.cash / todaysSales.totalAmount) * 100).toFixed(1) },
-    { paymentMethod: 'card', amount: todaysSales.paymentBreakdown.card, percentage: ((todaysSales.paymentBreakdown.card / todaysSales.totalAmount) * 100).toFixed(1) },
-    { paymentMethod: 'upi', amount: todaysSales.paymentBreakdown.upi, percentage: ((todaysSales.paymentBreakdown.upi / todaysSales.totalAmount) * 100).toFixed(1) },
-    { paymentMethod: 'credit', amount: todaysSales.paymentBreakdown.credit, percentage: ((todaysSales.paymentBreakdown.credit / todaysSales.totalAmount) * 100).toFixed(1) }
+    {
+      paymentMethod: 'cash',
+      amount: todaysSales.paymentBreakdown.cash,
+      percentage: todaysSales.totalAmount > 0 ? parseFloat(((todaysSales.paymentBreakdown.cash / todaysSales.totalAmount) * 100).toFixed(1)) : 0
+    },
+    {
+      paymentMethod: 'card',
+      amount: todaysSales.paymentBreakdown.card,
+      percentage: todaysSales.totalAmount > 0 ? parseFloat(((todaysSales.paymentBreakdown.card / todaysSales.totalAmount) * 100).toFixed(1)) : 0
+    },
+    {
+      paymentMethod: 'upi',
+      amount: todaysSales.paymentBreakdown.upi,
+      percentage: todaysSales.totalAmount > 0 ? parseFloat(((todaysSales.paymentBreakdown.upi / todaysSales.totalAmount) * 100).toFixed(1)) : 0
+    },
+    {
+      paymentMethod: 'credit',
+      amount: todaysSales.paymentBreakdown.credit,
+      percentage: todaysSales.totalAmount > 0 ? parseFloat(((todaysSales.paymentBreakdown.credit / todaysSales.totalAmount) * 100).toFixed(1)) : 0
+    }
   ].filter(item => item.amount > 0) : dashboardPayments;
   
   // Data is already formatted from the dashboard endpoint
@@ -89,9 +105,9 @@ export function ModernPaymentMethodChart({ filters = {}, date }: ModernPaymentMe
           <CreditCard className="h-5 w-5 text-blue-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Payment Methods</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Today's Payment Methods</h3>
           <p className="text-sm text-gray-600">
-            {date ? `Payment breakdown for ${new Date(date).toLocaleDateString()}` : "Today's payment breakdown"}
+            {date ? `Payment breakdown for ${new Date(date).toLocaleDateString()}` : "Today's payment breakdown (not lifetime totals)"}
           </p>
         </div>
       </div>

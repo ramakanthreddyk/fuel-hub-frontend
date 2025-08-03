@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { CreateTenantRequest } from '@/api/api-contract';
 import { superAdminApi } from '@/api/superadmin';
 import { useToast } from '@/hooks/use-toast';
+import { useApiErrorHandler } from '@/hooks/useSessionHandler';
 import { SuperAdminErrorBoundary } from '@/components/admin/SuperAdminErrorBoundary';
 import { TenantForm } from '@/components/admin/TenantForm';
 import { TenantCard } from '@/components/admin/TenantCard';
@@ -17,15 +18,23 @@ import { TenantCard } from '@/components/admin/TenantCard';
 export default function SuperAdminTenantsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const navigate = useNavigate();
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { handleApiError } = useApiErrorHandler();
 
   const { data: tenants, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-tenants'],
     queryFn: superAdminApi.getTenants,
     retry: 2
   });
+
+  // Handle API errors including session expiration
+  useEffect(() => {
+    if (error) {
+      handleApiError(error);
+    }
+  }, [error, handleApiError]);
 
   const { data: plans = [] } = useQuery({
     queryKey: ['admin-plans'],

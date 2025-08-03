@@ -1,6 +1,7 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { NozzleReading, CreateReadingRequest, ApiResponse } from './api-contract';
+import { parseReadingsResponse, parseReading } from '@/utils/dataParser';
 
 export const readingsApi = {
   // Create new reading
@@ -33,7 +34,10 @@ export const readingsApi = {
       }
       
       const response = await apiClient.get(`/nozzle-readings?nozzleId=${nozzleId}&limit=1`);
-      const readings = extractApiArray<NozzleReading>(response, 'readings');
+
+      // Parse the complex data format from backend
+      const parsedResponse = parseReadingsResponse(response.data);
+      const readings = parsedResponse.data?.readings || [];
 
       if (readings.length === 0) return null;
 

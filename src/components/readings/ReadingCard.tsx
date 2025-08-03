@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Gauge, Clock, Eye, Droplets, Fuel, DollarSign } from 'lucide-react';
 import { formatDateTime, formatCurrency } from '@/utils/formatters';
+import { formatDisplayDateTime, debugDateValue } from '@/utils/dateHelpers';
 import { cn } from '@/lib/utils';
 import {
   useMobileFormatters,
@@ -150,7 +151,7 @@ export function ReadingCard({ reading, onView }: ReadingCardProps) {
                   Date
                 </div>
                 <div className="text-xs text-gray-700">
-                  {new Date(reading.recordedAt).toLocaleDateString()}
+                  {formatDisplayDateTime(reading.recordedAt)}
                 </div>
               </div>
             </div>
@@ -236,7 +237,7 @@ export function ReadingCard({ reading, onView }: ReadingCardProps) {
                   Date
                 </div>
                 <div className="text-xs text-gray-700">
-                  {formatDateTime(reading.recordedAt)}
+                  {formatDisplayDateTime(reading.recordedAt)}
                 </div>
               </div>
             </div>

@@ -3,7 +3,7 @@
  * @description Daily reminder toast notifications for important tasks
  */
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDailyReminders } from '@/hooks/useOnboarding';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSmartNotifications } from '@/hooks/useSmartNotifications';
@@ -22,8 +22,8 @@ export function DailyReminderToast({
   const { showNotifications } = useSmartNotifications();
 
   useEffect(() => {
-    // Only show reminders if user is authenticated and logged in
-    if (!enabled || isLoading || !reminders || !showOnMount || !isAuthenticated || !user) return;
+    // Only show reminders if user is authenticated and logged in (exclude SuperAdmin)
+    if (!enabled || isLoading || !reminders || !showOnMount || !isAuthenticated || !user || user.role === 'superadmin') return;
 
     // Ensure reminders is an array
     const reminderArray = Array.isArray(reminders) ? reminders : [];

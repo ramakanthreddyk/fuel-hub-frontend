@@ -48,6 +48,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ModernSalesTrendChart } from './ModernSalesTrendChart';
 import { ModernFuelBreakdownChart } from './ModernFuelBreakdownChart';
 import { ModernPaymentMethodChart } from './ModernPaymentMethodChart';
+import { PlanUsageWidget } from '@/components/plan/PlanUsageWidget';
+
+// Onboarding Component
+import { OnboardingDashboard } from '../onboarding/OnboardingDashboard';
 
 interface QuickActionProps {
   icon: React.ElementType;
@@ -143,6 +147,9 @@ export function ImprovedDashboard() {
   const { data: yesterdaysSales, isLoading: yesterdayLoading } = useTodaysSales(yesterday);
   const { data: stations, isLoading: stationsLoading } = useStations();
   const { data: reminders } = useDailyReminders();
+
+  // Calculate readings count (using total entries as proxy for readings)
+  const todaysReadingsCount = todaysSales?.totalEntries || 0;
 
   // Calculate metrics
   const totalRevenue = todaysSales?.totalAmount || 0;
@@ -258,6 +265,9 @@ export function ImprovedDashboard() {
         )}
       </div>
 
+      {/* Onboarding Dashboard - Shows when setup is incomplete */}
+      <OnboardingDashboard />
+
       {/* Key Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricCard
@@ -269,7 +279,7 @@ export function ImprovedDashboard() {
           color="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600"
         />
         <MetricCard
-          title="Fuel Sold"
+          title="Today's Fuel Sold"
           value={`${totalVolume.toLocaleString()}L`}
           change={volumeChange.change}
           changeType={volumeChange.type}
@@ -277,7 +287,7 @@ export function ImprovedDashboard() {
           color="bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600"
         />
         <MetricCard
-          title="Transactions"
+          title="Today's Transactions"
           value={totalTransactions.toString()}
           change={transactionChange.change}
           changeType={transactionChange.type}
@@ -314,9 +324,10 @@ export function ImprovedDashboard() {
 
       {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="plan">Plan</TabsTrigger>
           <TabsTrigger value="alerts">Alerts</TabsTrigger>
         </TabsList>
         
@@ -391,23 +402,25 @@ export function ImprovedDashboard() {
               {todaysSales?.salesByStation && todaysSales.salesByStation.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {todaysSales.salesByStation.slice(0, 6).map((station: any, index: number) => (
-                    <div key={station.stationId || index} className="p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200 hover:shadow-md transition-shadow">
+                    <div key={station.station_id || index} className="p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200 hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <div className="flex items-center justify-center w-6 h-6 bg-orange-600 text-white rounded-full text-xs font-bold">
                             {index + 1}
                           </div>
-                          <h3 className="font-semibold text-orange-900 text-sm truncate">{station.stationName}</h3>
+                          <h3 className="font-semibold text-orange-900 text-sm truncate">
+                            {station.station_name || `Station ${station.station_id || index + 1}`}
+                          </h3>
                         </div>
                         <Badge variant="secondary" className="text-xs">
-                          {station.entriesCount} txns
+                          Today's Sales
                         </Badge>
                       </div>
                       <p className="text-lg font-bold text-orange-900 mb-1">
-                        ₹{(station.totalAmount || 0).toLocaleString()}
+                        ₹{(station.total_amount || 0).toLocaleString()}
                       </p>
                       <p className="text-xs text-orange-600">
-                        {station.nozzlesActive} active nozzles
+                        {(station.total_volume || 0).toLocaleString()}L fuel sold
                       </p>
                     </div>
                   ))}
@@ -555,6 +568,10 @@ export function ImprovedDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="plan" className="space-y-4 mt-6">
+          <PlanUsageWidget />
         </TabsContent>
 
         <TabsContent value="alerts" className="space-y-4 mt-6">

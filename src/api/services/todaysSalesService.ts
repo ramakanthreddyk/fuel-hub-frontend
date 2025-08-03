@@ -1,4 +1,5 @@
 import { apiClient } from '../client';
+import { parseTodaysSalesResponse } from '@/utils/dataParser';
 
 export interface TodaysSalesNozzleEntry {
   nozzleId: string;
@@ -72,8 +73,13 @@ export const todaysSalesService = {
 
       const response = await apiClient.get(`/todays-sales/summary?${params.toString()}`);
 
-      // Extract data from nested structure: response.data.data
-      const data = response.data.data || response.data;
+      console.log('[TODAYS-SALES] Raw response before parsing:', response.data);
+
+      // Parse the complex data format from backend
+      const parsedResponse = parseTodaysSalesResponse(response.data);
+      const data = parsedResponse.data;
+
+      console.log('[TODAYS-SALES] Parsed response:', data);
 
       // If we get a successful response but no data, that's normal (not an error)
       if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {

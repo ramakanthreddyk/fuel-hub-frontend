@@ -78,8 +78,26 @@ export const formatDate = (
   } = {}
 ): string => {
   if (!date) return '';
-  
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+  let dateObj: Date;
+  try {
+    dateObj = typeof date === 'string' ? new Date(date) : date;
+
+    // Check if dateObj is actually a Date object
+    if (!(dateObj instanceof Date)) {
+      console.warn('formatDate: Invalid date object received:', date);
+      return 'Invalid date';
+    }
+
+    // Check if the date is invalid
+    if (isNaN(dateObj.getTime())) {
+      console.warn('formatDate: Invalid date value:', date);
+      return 'Invalid date';
+    }
+  } catch (error) {
+    console.warn('formatDate: Error processing date:', date, error);
+    return 'Invalid date';
+  }
   
   const {
     dateStyle = 'medium',

@@ -326,13 +326,41 @@ export interface CreateCashReportRequest {
 export interface Tenant {
   id: string;
   name: string;
-  email: string;
-  phone: string;
-  address: string;
-  planId: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  planId?: string;
   status: 'active' | 'inactive' | 'suspended';
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+  plan?: {
+    id: string;
+    name: string;
+    maxStations: number;
+    priceMonthly: number;
+  };
+  usage?: {
+    currentStations: number;
+    totalUsers: number;
+    userBreakdown: {
+      owners: number;
+      managers: number;
+      attendants: number;
+    };
+    reports: {
+      today: number;
+      thisMonth: number;
+    };
+  };
+  lastActivity?: string;
+  planLimits?: {
+    tierName: string;
+    reportsEnabled: boolean;
+    maxRecords: number;
+    maxDaily: number;
+    formats: string[];
+    features: string[];
+  };
 }
 
 export interface CreateTenantRequest {

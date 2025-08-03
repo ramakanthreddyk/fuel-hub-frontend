@@ -17,6 +17,19 @@ export function SmartDashboard() {
     return <AttendantDashboard />;
   }
 
-  // For owners, managers, and superadmins
+  // SuperAdmin users should not access tenant-specific dashboards
+  if (user?.role === 'superadmin') {
+    return (
+      <div className="p-6 text-center">
+        <h2 className="text-xl font-semibold mb-2">SuperAdmin Dashboard</h2>
+        <p className="text-gray-600 mb-4">Please use the SuperAdmin interface to manage the platform.</p>
+        <a href="/superadmin/overview" className="text-blue-600 hover:underline">
+          Go to SuperAdmin Dashboard →
+        </a>
+      </div>
+    );
+  }
+
+  // For owners and managers only
   return <ImprovedDashboard />;
 }
