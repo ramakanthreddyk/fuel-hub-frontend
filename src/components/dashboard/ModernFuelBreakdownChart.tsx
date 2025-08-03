@@ -47,7 +47,11 @@ export function ModernFuelBreakdownChart({ filters = {}, date }: ModernFuelBreak
     );
   }
 
-  const getFuelIcon = (fuelType: string) => {
+  const getFuelIcon = (fuelType: string | null | undefined) => {
+    if (!fuelType) {
+      return { icon: Fuel, color: 'bg-gray-500', textColor: 'text-gray-700' };
+    }
+    
     switch (fuelType.toLowerCase()) {
       case 'petrol':
       case 'gasoline':
@@ -78,7 +82,7 @@ export function ModernFuelBreakdownChart({ filters = {}, date }: ModernFuelBreak
 
       {/* Fuel Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {fuelBreakdown.map((item, index) => {
+        {fuelBreakdown.filter(item => item.fuelType).map((item, index) => {
           const { icon: IconComponent, color, textColor } = getFuelIcon(item.fuelType);
           const total = fuelBreakdown.reduce((sum, fuel) => sum + fuel.amount, 0);
           const percentage = total > 0 ? ((item.amount / total) * 100) : 0;
@@ -98,7 +102,7 @@ export function ModernFuelBreakdownChart({ filters = {}, date }: ModernFuelBreak
                 <div className="space-y-3">
                   <div>
                     <div className="text-sm font-medium text-gray-600 mb-1">
-                      {item.fuelType}
+                      {item.fuelType || 'Unknown'}
                     </div>
                     <div className="text-lg font-bold text-gray-900">
                       {formatCurrency(item.amount, { maximumFractionDigits: 0 })}

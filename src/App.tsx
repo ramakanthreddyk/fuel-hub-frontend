@@ -52,6 +52,9 @@ import FuelPricesPage from './pages/dashboard/FuelPricesPage';
 import FuelInventoryPage from './pages/dashboard/FuelInventoryPage';
 import AnalyticsPage from './pages/dashboard/AnalyticsPage';
 import CreditorsPage from './pages/dashboard/CreditorsPage';
+import NewCreditorPage from './pages/dashboard/NewCreditorPage';
+import CreditorDetailPage from './pages/dashboard/CreditorDetailPage';
+import NewCreditorPaymentPage from './pages/dashboard/NewCreditorPaymentPage';
 import { QuickReadingButton } from './components/readings/QuickReadingButton';
 
 // Attendant Pages
@@ -210,6 +213,9 @@ function AppRouter() {
               <Route path="analytics" element={<SafeComponent><AnalyticsPage /></SafeComponent>} />
               <Route path="inventory" element={<SafeComponent><InventoryPage /></SafeComponent>} />
               <Route path="creditors" element={<SafeComponent><CreditorsPage /></SafeComponent>} />
+              <Route path="creditors/new" element={<SafeComponent><NewCreditorPage /></SafeComponent>} />
+              <Route path="creditors/:creditorId" element={<SafeComponent><CreditorDetailPage /></SafeComponent>} />
+              <Route path="creditors/:creditorId/payments/new" element={<SafeComponent><NewCreditorPaymentPage /></SafeComponent>} />
               <Route path="users" element={<SafeComponent><UsersPage /></SafeComponent>} />
               <Route path="reconciliation" element={<SafeComponent><ReconciliationPage /></SafeComponent>} />
               <Route path="reconciliation/:reconciliationId" element={<SafeComponent><ReconciliationDetailPage /></SafeComponent>} />
