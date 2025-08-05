@@ -25,14 +25,52 @@ export function ModernFuelBreakdownChart({ filters = {}, date }: ModernFuelBreak
   
   const isLoading = date ? todaysLoading : dashboardLoading;
   
+  // Debug logging
+  console.log('[FUEL-BREAKDOWN] todaysSales:', todaysSales);
+  console.log('[FUEL-BREAKDOWN] dashboardFuel:', dashboardFuel);
+  console.log('[FUEL-BREAKDOWN] date:', date);
+
   // Use appropriate data source based on whether date is selected
-  const fuelBreakdown = date && todaysSales ? 
-    todaysSales.salesByFuel.map(fuel => ({
-      fuelType: fuel.fuel_type,
-      amount: fuel.total_amount,
-      volume: fuel.total_volume,
-      percentage: ((fuel.total_amount / todaysSales.totalAmount) * 100).toFixed(1)
-    })) : dashboardFuel;
+  let fuelBreakdown = [];
+  
+  if (date && todaysSales) {
+    // Use today's sales data when date is specified
+    if (todaysSales.salesByFuel && todaysSales.salesByFuel.length > 0) {
+      fuelBreakdown = todaysSales.salesByFuel.map(fuel => ({
+        fuelType: fuel.fuelType || fuel.fuel_type,
+        amount: fuel.totalAmount || fuel.total_amount,
+        volume: fuel.totalVolume || fuel.total_volume,
+        percentage: todaysSales.totalAmount > 0 ? (((fuel.totalAmount || fuel.total_amount) / todaysSales.totalAmount) * 100).toFixed(1) : '0'
+      }));
+    } else if (todaysSales.totalVolume > 0) {
+      // Fallback: create a generic fuel entry if we have volume but no breakdown
+      fuelBreakdown = [{
+        fuelType: 'Mixed Fuel',
+        amount: todaysSales.totalAmount,
+        volume: todaysSales.totalVolume,
+        percentage: '100'
+      }];
+    }
+  } else {
+    // Always use today's sales data instead of dashboard fuel breakdown
+    if (todaysSales && todaysSales.salesByFuel && todaysSales.salesByFuel.length > 0) {
+      fuelBreakdown = todaysSales.salesByFuel.map(fuel => ({
+        fuelType: fuel.fuelType || fuel.fuel_type,
+        amount: fuel.totalAmount || fuel.total_amount,
+        volume: fuel.totalVolume || fuel.total_volume,
+        percentage: todaysSales.totalAmount > 0 ? (((fuel.totalAmount || fuel.total_amount) / todaysSales.totalAmount) * 100).toFixed(1) : '0'
+      }));
+    } else {
+      fuelBreakdown = dashboardFuel || [];
+    }
+  }
+
+  console.log('[FUEL-BREAKDOWN] fuelBreakdown:', fuelBreakdown);
+
+  // Check if we have any data
+  const hasData = fuelBreakdown && fuelBreakdown.length > 0 && fuelBreakdown.some(item => item.amount > 0);
+  console.log('[FUEL-BREAKDOWN] hasData:', hasData);
+  console.log('[FUEL-BREAKDOWN] final fuelBreakdown:', fuelBreakdown);
 
   if (isLoading) {
     return (
@@ -81,8 +119,17 @@ export function ModernFuelBreakdownChart({ filters = {}, date }: ModernFuelBreak
       </div>
 
       {/* Fuel Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {fuelBreakdown.filter(item => item.fuelType).map((item, index) => {
+      {!hasData ? (
+        <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+          <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">No Fuel Sales Data</h3>
+          <p className="text-gray-600">
+            {date ? `No fuel sales recorded for ${new Date(date).toLocaleDateString()}` : 'No fuel sales data available for today'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {fuelBreakdown.filter(item => item.fuelType && item.amount > 0).map((item, index) => {
           const { icon: IconComponent, color, textColor } = getFuelIcon(item.fuelType);
           const total = fuelBreakdown.reduce((sum, fuel) => sum + fuel.amount, 0);
           const percentage = total > 0 ? ((item.amount / total) * 100) : 0;
@@ -128,7 +175,8 @@ export function ModernFuelBreakdownChart({ filters = {}, date }: ModernFuelBreak
             </Card>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,6 +20,7 @@ import { usePumps } from '@/hooks/api/usePumps';
 import { useNozzles } from '@/hooks/api/useNozzles';
 import { useStations } from '@/hooks/api/useStations';
 import { useSalesSummary } from '@/hooks/useDashboard';
+import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { useReadingsStore } from '@/store/readingsStore';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -56,9 +57,14 @@ export default function ReadingsPage() {
   useAutoLoader(nozzlesLoading, 'Loading nozzles...');
   useAutoLoader(stationsLoading, 'Loading stations...');
   
+  // Calculate today string for API calls
+  const today = new Date().toDateString();
+  
   // Use sales summary API instead of calculating from readings
   const { data: salesSummary } = useSalesSummary('all');
+  const { data: todaysSalesData } = useTodaysSales(today);
   console.log('[READINGS-PAGE] Sales summary data:', salesSummary);
+  console.log('[READINGS-PAGE] Todays sales data:', todaysSalesData);
   const totalRevenue = salesSummary?.totalRevenue || 0;
   
   // Debug log to check readings data
@@ -157,13 +163,17 @@ export default function ReadingsPage() {
   // Filter readings based on selected filter and pump
   const filteredReadings = readingsWithAmount.filter(reading => {
     let dateMatch = true;
-    if (filter === 'today') {
-      const today = new Date().toDateString();
+    
+    // Skip readings with null dates
+    if (!reading.recordedAt || reading.recordedAt === null) {
+      dateMatch = false;
+    } else if (filter === 'today') {
       dateMatch = new Date(reading.recordedAt).toDateString() === today;
     } else if (filter === 'week') {
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       dateMatch = new Date(reading.recordedAt) >= weekAgo;
     }
+    
     const pumpMatch = selectedPumpId === 'all' || reading.pumpId === selectedPumpId;
     return dateMatch && pumpMatch;
   });
@@ -191,8 +201,22 @@ export default function ReadingsPage() {
 
   // Calculate stats
   const totalReadings = enrichedReadings.length;
-  const todayReadings = enrichedReadings.filter(r => new Date(r.recordedAt).toDateString() === new Date().toDateString()).length;
-  const weekReadings = enrichedReadings.filter(r => new Date(r.recordedAt) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  
+  console.log('[READINGS-PAGE] Debug info:');
+  console.log('[READINGS-PAGE] Today string:', today);
+  console.log('[READINGS-PAGE] Sample readings recordedAt:', enrichedReadings.slice(0, 3).map(r => ({ id: r.id, recordedAt: r.recordedAt, type: typeof r.recordedAt })));
+  
+  // Use today's sales data for accurate counts instead of filtering invalid dates
+  const todayReadings = todaysSalesData?.totalEntries || 0;
+  const weekReadings = enrichedReadings.filter(r => {
+    if (!r.recordedAt || r.recordedAt === null) {
+      return false;
+    }
+    return new Date(r.recordedAt) >= weekAgo;
+  }).length;
+  
+  console.log('[READINGS-PAGE] Final counts - Total:', totalReadings, 'Today:', todayReadings, 'Week:', weekReadings);
   
   // Debug the revenue calculation
   console.log('[READINGS-PAGE] Revenue calculation debug:');

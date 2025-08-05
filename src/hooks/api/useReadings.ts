@@ -24,6 +24,8 @@ export const useReadings = () => {
       handleApiError(error, 'Readings');
     },
     staleTime: 30000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     retry: 2,
   });
 };

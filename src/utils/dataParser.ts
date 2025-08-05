@@ -129,8 +129,8 @@ export function parseReading(reading: any): any {
     volume: parseComplexNumber(reading.volume),
     amount: parseComplexNumber(reading.amount),
     
-    // Parse date fields
-    recordedAt: parseDate(reading.recordedAt) || new Date().toISOString(),
+    // Parse date fields - don't default to current date for invalid dates
+    recordedAt: parseDate(reading.recordedAt),
     createdAt: parseDate(reading.createdAt),
     updatedAt: parseDate(reading.updatedAt),
     

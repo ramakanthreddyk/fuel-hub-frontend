@@ -15,8 +15,12 @@ export const useDashboardFuelBreakdown = () => {
         apiClient.get('/dashboard/fuel-breakdown')
       );
     },
-    staleTime: 300000, // 5 minutes
+    staleTime: 30000, // 30 seconds
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: 2,
     onError: (error) => {
+      console.error('Fuel breakdown error:', error);
       handleApiError(error, 'Fuel Breakdown');
     },
   });

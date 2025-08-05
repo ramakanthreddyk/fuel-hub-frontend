@@ -80,7 +80,9 @@ export const useTodaysSales = (date?: string, stationId?: string) => {
         setLoading(cacheKey, false);
       }
     },
-    staleTime: 300000, // 5 minutes
+    staleTime: 30000, // 30 seconds - reduced for fresher data
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     // Check cache first
     initialData: () => getTodaysSales(queryDate) || undefined,
   });
