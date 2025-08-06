@@ -50,9 +50,9 @@ export function AttendantSidebar() {
   
   const isActive = (href: string) => {
     if (href === '/attendant') {
-      return location.pathname === '/attendant' || location.pathname === '/attendant/';
+      return location.pathname === '/attendant' || location.pathname === '/attendant/' || location.pathname === '/attendant/dashboard';
     }
-    return location.pathname === href;
+    return location.pathname.startsWith(href);
   };
 
   return (

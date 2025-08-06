@@ -7,12 +7,21 @@ import { useAttendantStations, useAttendantAlerts } from '@/hooks/api/useAttenda
 import { AttendantDashboardStats } from './AttendantDashboardStats';
 import { AttendantAlerts } from './AttendantAlerts';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { attendantApi } from '@/api/attendant';
 
 export function AttendantDashboard() {
   const [selectedStationId, setSelectedStationId] = useState<string>('');
   
   const { data: stations = [], isLoading: stationsLoading } = useAttendantStations();
   const { data: alerts = [] } = useAttendantAlerts(selectedStationId, true);
+  
+  // Fetch today's summary
+  const { data: todaysSummary, isLoading: summaryLoading } = useQuery({
+    queryKey: ['attendant-todays-summary'],
+    queryFn: attendantApi.getTodaysSummary,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
 
   // Set default station if not selected
   useEffect(() => {
@@ -21,15 +30,19 @@ export function AttendantDashboard() {
     }
   }, [stations, stationsLoading, selectedStationId]);
 
-  // Stats data
+  // Stats data from API
   const stats = {
-    todayReadings: 0, // This would come from API in a real app
-    petrolDispensed: 0,
-    dieselDispensed: 0,
-    alertsCount: alerts.length
+    todayReadings: todaysSummary?.summary?.reportsCount || 0,
+    petrolDispensed: 0, // This would come from readings API
+    dieselDispensed: 0, // This would come from readings API
+    alertsCount: alerts.length,
+    totalCash: todaysSummary?.summary?.totalCash || 0,
+    totalCard: todaysSummary?.summary?.totalCard || 0,
+    totalUpi: todaysSummary?.summary?.totalUpi || 0,
+    totalCollected: todaysSummary?.summary?.totalCollected || 0
   };
 
-  if (stationsLoading) {
+  if (stationsLoading || summaryLoading) {
     return (
       <div className="container mx-auto py-6">
         <div className="animate-pulse space-y-6">
@@ -58,6 +71,38 @@ export function AttendantDashboard() {
 
       {/* Stats Grid */}
       <AttendantDashboardStats {...stats} />
+      
+      {/* Today's Summary */}
+      {todaysSummary && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Today's Cash Collection Summary</CardTitle>
+            <CardDescription>
+              {format(new Date(), 'EEEE, MMMM d, yyyy')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">₹{stats.totalCash.toFixed(2)}</div>
+                <p className="text-sm text-muted-foreground">Cash</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">₹{stats.totalCard.toFixed(2)}</div>
+                <p className="text-sm text-muted-foreground">Card</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">₹{stats.totalUpi.toFixed(2)}</div>
+                <p className="text-sm text-muted-foreground">UPI</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">₹{stats.totalCollected.toFixed(2)}</div>
+                <p className="text-sm text-muted-foreground">Total</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

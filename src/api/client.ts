@@ -62,6 +62,17 @@ apiClient.interceptors.response.use(
       message: error.response?.data?.message || error.message
     });
     
+    // Handle authentication errors
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Clear stored auth data
+      localStorage.removeItem('fuelsync_token');
+      localStorage.removeItem('fuelsync_user');
+      
+      // Redirect to login
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+    
     return Promise.reject(error);
   }
 );

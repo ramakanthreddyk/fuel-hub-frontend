@@ -148,6 +148,13 @@ export const attendantApi = {
     await apiClient.put(`/attendant/alerts/${alertId}/acknowledge`);
   },
 
+  // Get today's summary
+  getTodaysSummary: async () => {
+    devLog('Fetching today\'s summary');
+    const response = await apiClient.get('/attendant/todays-summary');
+    return extractApiData(response);
+  },
+
   // End of API methods
 };
 

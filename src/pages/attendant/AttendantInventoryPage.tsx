@@ -72,7 +72,7 @@ export default function AttendantInventoryPage() {
                   <CardTitle className="capitalize">{item.fuelType}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold mb-2">{item.currentStock.toFixed(2)} L</div>
+                  <div className="text-3xl font-bold mb-2">{(item.currentStock || 0).toFixed(2)} L</div>
                   <div className="text-sm text-muted-foreground">
                     Status: <span className={`font-medium ${getStatusColor(item.status)}`}>{item.status}</span>
                   </div>

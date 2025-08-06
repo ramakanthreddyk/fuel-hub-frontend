@@ -71,11 +71,11 @@ export default function AttendantDashboard() {
   }, []);
 
   const handleAddReading = () => {
-    navigate('/attendant/add-reading');
+    navigate('/attendant/readings');
   };
 
   const handleReportCash = () => {
-    navigate('/attendant/report-cash');
+    navigate('/attendant/cash-reports');
   };
 
   if (loading) {

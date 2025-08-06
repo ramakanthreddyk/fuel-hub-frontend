@@ -66,6 +66,8 @@ import { CashReportTest } from './components/test/CashReportTest';
 import AttendantDashboard from './pages/attendant/AttendantDashboard';
 import SimpleReadingEntry from './pages/attendant/SimpleReadingEntry';
 import SimpleCashReport from './pages/attendant/SimpleCashReport';
+import AttendantAlertsPage from './pages/attendant/AttendantAlertsPage';
+import AttendantInventoryPage from './pages/attendant/AttendantInventoryPage';
 
 // SuperAdmin Pages
 import SuperAdminOverviewPage from './pages/superadmin/OverviewPage';
@@ -190,6 +192,8 @@ function AppRouter() {
           <Route path="dashboard" element={<AttendantDashboard />} />
           <Route path="readings" element={<SimpleReadingEntry />} />
           <Route path="cash-reports" element={<SimpleCashReport />} />
+          <Route path="alerts" element={<SafeComponent><AttendantAlertsPage /></SafeComponent>} />
+          <Route path="inventory" element={<SafeComponent><AttendantInventoryPage /></SafeComponent>} />
         </Route>
 
         {/* Dashboard Routes for Owner/Manager */}

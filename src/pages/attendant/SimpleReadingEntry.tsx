@@ -4,7 +4,7 @@
  * 
  * ATTENDANT WORKFLOW:
  * 1. Select nozzle (big buttons with pictures)
- * 2. Enter amount (big number pad)
+ * 2. Enter nozzle reading (big number pad)
  * 3. Submit (big green button)
  * 4. Done!
  */
@@ -18,7 +18,8 @@ import {
   Fuel, 
   CheckCircle,
   Calculator,
-  AlertCircle
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,27 +35,53 @@ interface Nozzle {
   pumpName: string;
 }
 
+interface Reading {
+  id: string;
+  nozzleId: string;
+  nozzleName: string;
+  pumpName: string;
+  stationName: string;
+  volume: number;
+  fuelType: string;
+  fuelPrice: number;
+  amount: number;
+  recordedAt: string;
+}
+
 export default function SimpleReadingEntry() {
   const [nozzles, setNozzles] = useState<Nozzle[]>([]);
   const [selectedNozzle, setSelectedNozzle] = useState<Nozzle | null>(null);
-  const [amount, setAmount] = useState('');
+  const [reading, setReading] = useState('');
+  const [recentReadings, setRecentReadings] = useState<Reading[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Fetch available nozzles
-  const fetchNozzles = async () => {
+  // Fetch available nozzles and recent readings
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/attendant/nozzles');
-      setNozzles(response.data.data);
+      const [nozzlesRes, readingsRes] = await Promise.all([
+        apiClient.get('/attendant/nozzles'),
+        apiClient.get('/attendant/readings')
+      ]);
+      
+      const nozzlesData = nozzlesRes.data?.data?.nozzles || nozzlesRes.data?.nozzles || nozzlesRes.data?.data || [];
+      setNozzles(Array.isArray(nozzlesData) ? nozzlesData : []);
+      
+      const readingsData = readingsRes.data?.data?.readings || readingsRes.data?.readings || [];
+      console.log('Readings API response:', readingsRes.data);
+      console.log('Parsed readings data:', readingsData);
+      setRecentReadings(Array.isArray(readingsData) ? readingsData : []);
     } catch (error) {
-      console.error('Error fetching nozzles:', error);
+      console.error('Error fetching data:', error);
+      setNozzles([]);
+      setRecentReadings([]);
       toast({
         title: "Error",
-        description: "Failed to load nozzles",
+        description: "Failed to load data",
         variant: "destructive"
       });
     } finally {
@@ -63,30 +90,25 @@ export default function SimpleReadingEntry() {
   };
 
   useEffect(() => {
-    fetchNozzles();
+    fetchData();
   }, []);
-
-  // Calculate volume from amount
-  const calculateVolume = (amount: number, price: number) => {
-    return amount / price;
-  };
 
   // Submit reading
   const handleSubmit = async () => {
-    if (!selectedNozzle || !amount) {
+    if (!selectedNozzle || !reading) {
       toast({
         title: "Missing Information",
-        description: "Please select a nozzle and enter amount",
+        description: "Please select a nozzle and enter reading",
         variant: "destructive"
       });
       return;
     }
 
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum <= 0) {
+    const readingNum = parseFloat(reading);
+    if (isNaN(readingNum) || readingNum < 0) {
       toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid amount",
+        title: "Invalid Reading",
+        description: "Please enter a valid reading value",
         variant: "destructive"
       });
       return;
@@ -95,26 +117,24 @@ export default function SimpleReadingEntry() {
     try {
       setSubmitting(true);
       
-      const volume = calculateVolume(amountNum, selectedNozzle.currentPrice);
-      
-      await apiClient.post('/readings', {
+      await apiClient.post('/attendant/readings', {
         nozzleId: selectedNozzle.id,
-        endReading: 0, // Will be calculated by backend
-        volume: volume,
-        amount: amountNum,
-        paymentMethod: 'cash', // Default for attendant entry
-        customerType: 'retail'
+        reading: readingNum,
+        recordedAt: new Date().toISOString()
       });
 
       toast({
         title: "Success!",
-        description: `Reading added: ${formatCurrency(amountNum)}`,
+        description: `Reading recorded: ${readingNum}L`,
         variant: "default"
       });
 
+      // Refresh data to show new reading
+      await fetchData();
+      
       // Reset form
       setSelectedNozzle(null);
-      setAmount('');
+      setReading('');
       
       // Go back to dashboard
       navigate('/attendant');
@@ -131,22 +151,22 @@ export default function SimpleReadingEntry() {
     }
   };
 
-  // Number pad for amount entry
+  // Number pad for reading entry
   const NumberPad = () => {
-    const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '00'];
+    const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '00', '.'];
     
     const handleNumberClick = (num: string) => {
-      if (amount.length < 6) { // Limit to reasonable amount
-        setAmount(prev => prev + num);
+      if (reading.length < 8) { // Limit to reasonable reading
+        setReading(prev => prev + num);
       }
     };
 
     const handleClear = () => {
-      setAmount('');
+      setReading('');
     };
 
     const handleBackspace = () => {
-      setAmount(prev => prev.slice(0, -1));
+      setReading(prev => prev.slice(0, -1));
     };
 
     return (
@@ -202,9 +222,45 @@ export default function SimpleReadingEntry() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold">Add Reading</h1>
-          <p className="text-gray-600">Select nozzle and enter amount</p>
+          <p className="text-gray-600">Select nozzle and enter meter reading</p>
         </div>
       </div>
+
+      {/* Recent Readings */}
+      {recentReadings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Recent Readings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {recentReadings.slice(0, 5).map((reading) => (
+                <div key={reading.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Fuel className="h-4 w-4 text-gray-600" />
+                      <span className="font-medium">{reading.nozzleName}</span>
+                      <span className="text-sm text-gray-500">• {reading.fuelType.toUpperCase()}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {formatCurrency(reading.amount)} • {reading.volume.toFixed(2)}L
+                    </p>
+                  </div>
+                  <div className="text-right text-sm text-gray-500">
+                    {new Date(reading.recordedAt).toLocaleTimeString('en-IN', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Step 1: Select Nozzle */}
       <Card>
@@ -216,7 +272,7 @@ export default function SimpleReadingEntry() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {nozzles.map((nozzle) => (
+            {Array.isArray(nozzles) && nozzles.length > 0 ? nozzles.map((nozzle) => (
               <Button
                 key={nozzle.id}
                 variant={selectedNozzle?.id === nozzle.id ? "default" : "outline"}
@@ -232,7 +288,15 @@ export default function SimpleReadingEntry() {
                   <div className="font-medium">{formatCurrency(nozzle.currentPrice)}/L</div>
                 </div>
               </Button>
-            ))}
+            )) : (
+              <div className="col-span-2 text-center py-8 text-gray-500">
+                <Fuel className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No nozzles available</p>
+                <Button variant="outline" onClick={fetchData} className="mt-2">
+                  Retry
+                </Button>
+              </div>
+            )}
           </div>
           
           {selectedNozzle && (
@@ -249,25 +313,25 @@ export default function SimpleReadingEntry() {
         </CardContent>
       </Card>
 
-      {/* Step 2: Enter Amount */}
+      {/* Step 2: Enter Reading */}
       {selectedNozzle && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calculator className="h-5 w-5" />
-              Step 2: Enter Amount
+              Step 2: Enter Reading
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Amount Display */}
+            {/* Reading Display */}
             <div className="text-center">
-              <Label className="text-lg font-medium">Amount (₹)</Label>
+              <Label className="text-lg font-medium">Nozzle Reading (L)</Label>
               <div className="text-4xl font-bold text-blue-600 mt-2 mb-4">
-                {amount ? formatCurrency(parseFloat(amount)) : '₹0'}
+                {reading ? `${parseFloat(reading).toLocaleString()}L` : '0L'}
               </div>
-              {amount && selectedNozzle && (
+              {reading && selectedNozzle && (
                 <p className="text-gray-600">
-                  ≈ {calculateVolume(parseFloat(amount), selectedNozzle.currentPrice).toFixed(2)} liters
+                  Enter the current meter reading from the nozzle
                 </p>
               )}
             </div>
@@ -280,9 +344,10 @@ export default function SimpleReadingEntry() {
               <p className="text-sm text-gray-500 mb-2">Or type manually:</p>
               <Input
                 type="number"
-                placeholder="Enter amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                step="0.01"
+                placeholder="Enter nozzle reading"
+                value={reading}
+                onChange={(e) => setReading(e.target.value)}
                 className="text-center text-xl font-semibold max-w-xs mx-auto"
               />
             </div>
@@ -291,14 +356,13 @@ export default function SimpleReadingEntry() {
       )}
 
       {/* Submit Button */}
-      {selectedNozzle && amount && (
+      {selectedNozzle && reading && (
         <Card className="bg-green-50 border-green-200">
           <CardContent className="p-6 text-center">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-green-800">Ready to Submit</h3>
               <p className="text-green-700">
-                {selectedNozzle.name} • {formatCurrency(parseFloat(amount))} • 
-                {calculateVolume(parseFloat(amount), selectedNozzle.currentPrice).toFixed(2)}L
+                {selectedNozzle.name} • Reading: {parseFloat(reading).toLocaleString()}L
               </p>
             </div>
             
@@ -333,9 +397,9 @@ export default function SimpleReadingEntry() {
               <h4 className="font-medium text-blue-800">💡 Tips:</h4>
               <ul className="text-sm text-blue-700 mt-1 space-y-1">
                 <li>• Select the nozzle you used to dispense fuel</li>
-                <li>• Enter the total amount customer paid</li>
-                <li>• Volume will be calculated automatically</li>
-                <li>• Double-check before submitting</li>
+                <li>• Enter the current meter reading from the nozzle</li>
+                <li>• System will calculate volume and amount</li>
+                <li>• Check recent readings above for reference</li>
               </ul>
             </div>
           </div>

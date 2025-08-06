@@ -22,8 +22,10 @@ import {
   CheckCircle,
   Calculator,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
+  Users
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '@/utils/formatters';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -47,7 +49,12 @@ export default function SimpleCashReport() {
   const [cashAmount, setCashAmount] = useState('');
   const [cardAmount, setCardAmount] = useState('');
   const [upiAmount, setUpiAmount] = useState('');
-  const [activeInput, setActiveInput] = useState<'cash' | 'card' | 'upi'>('cash');
+  const [creditAmount, setCreditAmount] = useState('');
+  const [selectedCreditor, setSelectedCreditor] = useState('');
+  const [creditors, setCreditors] = useState<any[]>([]);
+  const [stations, setStations] = useState<any[]>([]);
+  const [selectedStation, setSelectedStation] = useState('');
+  const [activeInput, setActiveInput] = useState<'cash' | 'card' | 'upi' | 'credit'>('cash');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { user } = useAuth();
@@ -81,7 +88,25 @@ export default function SimpleCashReport() {
   };
 
   useEffect(() => {
-    fetchTodaysSales();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [stationsRes, creditorsRes] = await Promise.all([
+          apiClient.get('/attendant/stations'),
+          apiClient.get('/attendant/creditors')
+        ]);
+        setStations(stationsRes.data.data.stations || []);
+        setCreditors(creditorsRes.data.data.creditors || []);
+        if (stationsRes.data.data.stations?.length > 0) {
+          setSelectedStation(stationsRes.data.data.stations[0].id);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   // Submit cash report
@@ -90,10 +115,21 @@ export default function SimpleCashReport() {
     const card = parseFloat(cardAmount) || 0;
     const upi = parseFloat(upiAmount) || 0;
 
-    if (cash + card + upi <= 0) {
+    const credit = parseFloat(creditAmount) || 0;
+
+    if (cash + card + upi + credit <= 0) {
       toast({
         title: "Invalid Amount",
         description: "Please enter at least one amount",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (credit > 0 && !selectedCreditor) {
+      toast({
+        title: "Creditor Required",
+        description: "Please select a creditor for credit amount",
         variant: "destructive"
       });
       return;
@@ -103,16 +139,18 @@ export default function SimpleCashReport() {
       setSubmitting(true);
       
       await apiClient.post('/attendant/cash-report', {
-        stationId: 'default-station', // TODO: Get actual station ID
+        stationId: selectedStation,
         cashAmount: cash,
         cardAmount: card,
         upiAmount: upi,
+        creditAmount: credit,
+        creditorId: credit > 0 ? selectedCreditor : undefined,
         notes: 'Reported by attendant'
       });
 
       toast({
         title: "Success!",
-        description: `Cash report submitted: ${formatCurrency(cash + card + upi)}`,
+        description: `Cash report submitted: ${formatCurrency(cash + card + upi + credit)}`,
         variant: "default"
       });
 
@@ -137,27 +175,31 @@ export default function SimpleCashReport() {
     
     const handleNumberClick = (num: string) => {
       const currentAmount = activeInput === 'cash' ? cashAmount : 
-                           activeInput === 'card' ? cardAmount : upiAmount;
+                           activeInput === 'card' ? cardAmount : 
+                           activeInput === 'upi' ? upiAmount : creditAmount;
       
       if (currentAmount.length < 7) { // Limit to reasonable amount
         const newAmount = currentAmount + num;
         
         if (activeInput === 'cash') setCashAmount(newAmount);
         else if (activeInput === 'card') setCardAmount(newAmount);
-        else setUpiAmount(newAmount);
+        else if (activeInput === 'upi') setUpiAmount(newAmount);
+        else if (activeInput === 'credit') setCreditAmount(newAmount);
       }
     };
 
     const handleClear = () => {
       if (activeInput === 'cash') setCashAmount('');
       else if (activeInput === 'card') setCardAmount('');
-      else setUpiAmount('');
+      else if (activeInput === 'upi') setUpiAmount('');
+      else if (activeInput === 'credit') setCreditAmount('');
     };
 
     const handleBackspace = () => {
       if (activeInput === 'cash') setCashAmount(prev => prev.slice(0, -1));
       else if (activeInput === 'card') setCardAmount(prev => prev.slice(0, -1));
-      else setUpiAmount(prev => prev.slice(0, -1));
+      else if (activeInput === 'upi') setUpiAmount(prev => prev.slice(0, -1));
+      else if (activeInput === 'credit') setCreditAmount(prev => prev.slice(0, -1));
     };
 
     return (
@@ -205,6 +247,7 @@ export default function SimpleCashReport() {
   }
 
   const totalCollected = (parseFloat(cashAmount) || 0) + (parseFloat(cardAmount) || 0) + (parseFloat(upiAmount) || 0);
+  const totalWithCredit = totalCollected + (parseFloat(creditAmount) || 0);
   const difference = totalCollected - (salesData?.totalSales || 0);
 
   return (
@@ -275,6 +318,14 @@ export default function SimpleCashReport() {
               <Smartphone className="h-4 w-4 mr-2" />
               UPI
             </Button>
+            <Button
+              variant={activeInput === 'credit' ? "default" : "outline"}
+              className="flex-1"
+              onClick={() => setActiveInput('credit')}
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Credit
+            </Button>
           </div>
 
           {/* Amount Display */}
@@ -283,9 +334,29 @@ export default function SimpleCashReport() {
             <div className="text-4xl font-bold text-green-600 mt-2 mb-4">
               {activeInput === 'cash' ? (cashAmount ? formatCurrency(parseFloat(cashAmount)) : '₹0') :
                activeInput === 'card' ? (cardAmount ? formatCurrency(parseFloat(cardAmount)) : '₹0') :
-               (upiAmount ? formatCurrency(parseFloat(upiAmount)) : '₹0')}
+               activeInput === 'upi' ? (upiAmount ? formatCurrency(parseFloat(upiAmount)) : '₹0') :
+               (creditAmount ? formatCurrency(parseFloat(creditAmount)) : '₹0')}
             </div>
           </div>
+
+          {/* Creditor Selection for Credit */}
+          {activeInput === 'credit' && (
+            <div className="max-w-xs mx-auto mb-4">
+              <Label className="text-sm font-medium mb-2 block">Select Creditor</Label>
+              <Select value={selectedCreditor} onValueChange={setSelectedCreditor}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose creditor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {creditors.map((creditor) => (
+                    <SelectItem key={creditor.id} value={creditor.id}>
+                      {creditor.partyName || creditor.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Number Pad */}
           <NumberPad />
@@ -296,11 +367,14 @@ export default function SimpleCashReport() {
             <Input
               type="number"
               placeholder={`Enter ${activeInput} amount`}
-              value={activeInput === 'cash' ? cashAmount : activeInput === 'card' ? cardAmount : upiAmount}
+              value={activeInput === 'cash' ? cashAmount : 
+                     activeInput === 'card' ? cardAmount : 
+                     activeInput === 'upi' ? upiAmount : creditAmount}
               onChange={(e) => {
                 if (activeInput === 'cash') setCashAmount(e.target.value);
                 else if (activeInput === 'card') setCardAmount(e.target.value);
-                else setUpiAmount(e.target.value);
+                else if (activeInput === 'upi') setUpiAmount(e.target.value);
+                else if (activeInput === 'credit') setCreditAmount(e.target.value);
               }}
               className="text-center text-xl font-semibold max-w-xs mx-auto"
             />
@@ -309,7 +383,7 @@ export default function SimpleCashReport() {
       </Card>
 
       {/* Summary */}
-      {(cashAmount || cardAmount || upiAmount) && (
+      {(cashAmount || cardAmount || upiAmount || creditAmount) && (
         <Card className="bg-gray-50">
           <CardContent className="p-4">
             <h3 className="font-semibold mb-3">Summary</h3>
@@ -330,6 +404,12 @@ export default function SimpleCashReport() {
                 <div className="flex justify-between">
                   <span>UPI:</span>
                   <span className="font-medium">{formatCurrency(parseFloat(upiAmount))}</span>
+                </div>
+              )}
+              {creditAmount && (
+                <div className="flex justify-between">
+                  <span>Credit Given:</span>
+                  <span className="font-medium">{formatCurrency(parseFloat(creditAmount))}</span>
                 </div>
               )}
               <hr />
@@ -355,13 +435,13 @@ export default function SimpleCashReport() {
       )}
 
       {/* Submit Button */}
-      {totalCollected > 0 && (
+      {totalWithCredit > 0 && (
         <Card className="bg-green-50 border-green-200">
           <CardContent className="p-6 text-center">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-green-800">Ready to Submit</h3>
               <p className="text-green-700">
-                Total: {formatCurrency(totalCollected)}
+                Total: {formatCurrency(totalWithCredit)}
               </p>
             </div>
             
@@ -398,6 +478,7 @@ export default function SimpleCashReport() {
                 <li>• Count all cash received from customers</li>
                 <li>• Include card payments if you handled them</li>
                 <li>• Include UPI payments if you handled them</li>
+                <li>• Enter credit given to customers</li>
                 <li>• Small differences are normal</li>
               </ul>
             </div>
