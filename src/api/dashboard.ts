@@ -17,52 +17,78 @@ interface DashboardFilters {
 
 export const dashboardApi = {
   getSalesSummary: async (range: string = 'monthly', filters: DashboardFilters = {}): Promise<SalesSummary> => {
-    const response = await apiClient.get('/dashboard/sales-summary', {
-      params: { range, ...filters }
-    });
-    return extractApiData<SalesSummary>(response);
+    try {
+      const response = await apiClient.get('/dashboard/sales-summary', {
+        params: { range, ...filters }
+      });
+      return extractApiData<SalesSummary>(response);
+    } catch (error) {
+      console.error('Error fetching sales summary:', error);
+      throw error;
+    }
   },
 
   getPaymentMethodBreakdown: async (filters: DashboardFilters = {}): Promise<PaymentMethodBreakdown[]> => {
-    const response = await apiClient.get('/dashboard/payment-methods', {
-      params: filters
-    });
-    return extractApiArray<PaymentMethodBreakdown>(response, 'paymentMethods');
+    try {
+      const response = await apiClient.get('/dashboard/payment-methods', {
+        params: filters
+      });
+      return extractApiArray<PaymentMethodBreakdown>(response, 'paymentMethods');
+    } catch (error) {
+      console.error('Error fetching payment method breakdown:', error);
+      return [];
+    }
   },
 
   getFuelTypeBreakdown: async (filters: DashboardFilters = {}): Promise<FuelTypeBreakdown[]> => {
-    const response = await apiClient.get('/dashboard/fuel-breakdown', {
-      params: filters
-    });
-    return extractApiArray<FuelTypeBreakdown>(response, 'fuelTypes');
+    try {
+      const response = await apiClient.get('/dashboard/fuel-breakdown', {
+        params: filters
+      });
+      return extractApiArray<FuelTypeBreakdown>(response, 'fuelTypes');
+    } catch (error) {
+      console.error('Error fetching fuel type breakdown:', error);
+      return [];
+    }
   },
 
   getTopCreditors: async (limit: number = 5): Promise<TopCreditor[]> => {
-    const response = await apiClient.get('/dashboard/top-creditors', {
-      params: { limit }
-    });
-    return extractApiArray<TopCreditor>(response, 'creditors');
+    try {
+      const response = await apiClient.get('/dashboard/top-creditors', {
+        params: { limit }
+      });
+      return extractApiArray<TopCreditor>(response, 'creditors');
+    } catch (error) {
+      console.error('Error fetching top creditors:', error);
+      return [];
+    }
   },
 
   getDailySalesTrend: async (days: number = 7, filters: DashboardFilters = {}): Promise<DailySalesTrend[]> => {
-    const response = await apiClient.get('/dashboard/sales-trend', {
-      params: { days, ...filters }
-    });
-    return extractApiArray<DailySalesTrend>(response, 'trends');
+    try {
+      const response = await apiClient.get('/dashboard/sales-trend', {
+        params: { days, ...filters }
+      });
+      return extractApiArray<DailySalesTrend>(response, 'trends');
+    } catch (error) {
+      console.error('Error fetching daily sales trend:', error);
+      return [];
+    }
   },
 
   getStationMetrics: async (): Promise<StationMetric[]> => {
-    const response = await apiClient.get('/dashboard/station-metrics');
-    console.log('Station metrics API response:', response.data); // Debug log
-    
-    // Handle nested data structure: { success: true, data: [...] }
-    if (response.data?.success && Array.isArray(response.data.data)) {
-      return response.data.data;
+    try {
+      const response = await apiClient.get('/dashboard/station-metrics');
+      if (response.data?.success && Array.isArray(response.data.data)) {
+        return response.data.data;
+      }
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      return extractApiArray<StationMetric>(response, 'stations');
+    } catch (error) {
+      console.error('Error fetching station metrics:', error);
+      return [];
     }
-    // Handle direct array response from API
-    if (Array.isArray(response.data)) {
-      return response.data;
-    }
-    return extractApiArray<StationMetric>(response, 'stations');
   },
 };

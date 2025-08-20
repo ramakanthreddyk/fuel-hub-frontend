@@ -18,9 +18,14 @@ interface Pump {
 
 interface Nozzle {
   id: string;
-  nozzleNumber: number;
-  fuelType: string;
   pumpId: string;
+  stationId: string;
+  name: string;
+  fuelType: string;
+  status: string;
+  currentReading: number;
+  createdAt: string;
+  updatedAt: string;
   readings?: Reading[];
 }
 

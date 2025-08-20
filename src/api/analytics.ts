@@ -13,14 +13,10 @@ import { StationComparison, HourlySales, PeakHour, FuelPerformance, StationRanki
 export const getStationComparison = async (params: { stationIds: string[]; period?: string }): Promise<StationComparison[]> => {
   try {
     const response = await contractClient.get<any>('/analytics/station-comparison', params);
-    
-    // Handle null or undefined response
     if (!response || !Array.isArray(response)) {
       console.warn('Station comparison API returned invalid data:', response);
       return [];
     }
-    
-    // Transform the response to match the StationComparison interface
     return response.map((item: any) => ({
       stationId: item.stationId || item.id,
       stationName: item.stationName || item.name,
@@ -38,7 +34,7 @@ export const getStationComparison = async (params: { stationIds: string[]; perio
     }));
   } catch (error) {
     console.error('Error fetching station comparison data:', error);
-    return []; // Return empty array to prevent map errors
+    return [];
   }
 };
 
@@ -46,21 +42,36 @@ export const getStationComparison = async (params: { stationIds: string[]; perio
  * Get hourly sales data
  */
 export const getHourlySales = async (params: { stationId?: string; date?: string }): Promise<HourlySales[]> => {
-  return contractClient.get<HourlySales[]>('/analytics/hourly-sales', params);
+  try {
+    return await contractClient.get<HourlySales[]>('/analytics/hourly-sales', params);
+  } catch (error) {
+    console.error('Error fetching hourly sales:', error);
+    return [];
+  }
 };
 
 /**
  * Get peak hours data
  */
 export const getPeakHours = async (params: { stationId?: string; period?: string }): Promise<PeakHour[]> => {
-  return contractClient.get<PeakHour[]>('/analytics/peak-hours', params);
+  try {
+    return await contractClient.get<PeakHour[]>('/analytics/peak-hours', params);
+  } catch (error) {
+    console.error('Error fetching peak hours:', error);
+    return [];
+  }
 };
 
 /**
  * Get fuel performance data
  */
 export const getFuelPerformance = async (params: { stationId?: string; period?: string }): Promise<FuelPerformance[]> => {
-  return contractClient.get<FuelPerformance[]>('/analytics/fuel-performance', params);
+  try {
+    return await contractClient.get<FuelPerformance[]>('/analytics/fuel-performance', params);
+  } catch (error) {
+    console.error('Error fetching fuel performance:', error);
+    return [];
+  }
 };
 
 /**
@@ -72,7 +83,7 @@ export const getStationRanking = async (params: { period?: string; limit?: numbe
     return result || [];
   } catch (error) {
     console.error('Error fetching station ranking data:', error);
-    return []; // Return empty array to prevent map errors
+    return [];
   }
 };
 

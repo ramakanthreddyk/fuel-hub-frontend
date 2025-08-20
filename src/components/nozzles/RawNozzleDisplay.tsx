@@ -2,54 +2,36 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { transformNozzle } from '@/utils/dataTransformers';
+
+import { nozzleService } from '@/services/nozzleService';
 
 interface RawNozzleDisplayProps {
-  pumpId: string;
+  readonly pumpId: string;
 }
 
-export function RawNozzleDisplay({ pumpId }: RawNozzleDisplayProps) {
+export function RawNozzleDisplay({ pumpId }: Readonly<RawNozzleDisplayProps>) {
   const [nozzles, setNozzles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pumpName, setPumpName] = useState<string>('Pump');
 
-  const fetchNozzles = async () => {
-    if (!pumpId) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch(`/api/v1/nozzles?pumpId=${pumpId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('fuelsync_token')}`,
-          'x-tenant-id': JSON.parse(localStorage.getItem('fuelsync_user') || '{}').tenantId || ''
+    const fetchNozzles = async () => {
+      if (!pumpId) return;
+      setLoading(true);
+      try {
+        const nozzlesArray = await nozzleService.getNozzles(pumpId);
+        setNozzles(nozzlesArray);
+        if (nozzlesArray.length > 0 && nozzlesArray[0].name) {
+          setPumpName(nozzlesArray[0].name);
+        } else {
+          setPumpName('Pump');
         }
-      });
-      
-      const result = await response.json();
-      
-      // Try to extract nozzles from the response
-      let nozzlesArray = [];
-      
-      if (result.success && result.data && result.data.nozzles) {
-        nozzlesArray = result.data.nozzles;
-      } else if (result.nozzles) {
-        nozzlesArray = result.nozzles;
-      } else if (Array.isArray(result)) {
-        nozzlesArray = result;
+        setError(null);
+      } catch (error: any) {
+        setError(error?.message || 'Failed to fetch nozzles');
+      } finally {
+        setLoading(false);
       }
-      
-      // Transform the nozzles
-      const transformedNozzles = nozzlesArray.map(transformNozzle);
-      setNozzles(transformedNozzles);
-      
-    } catch (err) {
-      setError(err.message || 'An error occurred');
-      console.error('Error fetching nozzles:', err);
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Fetch nozzles on mount
@@ -63,7 +45,7 @@ export function RawNozzleDisplay({ pumpId }: RawNozzleDisplayProps) {
     <Card className="mt-4">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm">Direct Nozzle Display</CardTitle>
+          <CardTitle className="text-sm">Direct Nozzle Display ({pumpName})</CardTitle>
           <Button 
             variant="outline" 
             size="sm" 
@@ -86,7 +68,7 @@ export function RawNozzleDisplay({ pumpId }: RawNozzleDisplayProps) {
             {nozzles.map(nozzle => (
               <div key={nozzle.id} className="border p-2 rounded">
                 <div className="flex justify-between items-center">
-                  <div className="font-medium">Nozzle #{nozzle.nozzleNumber}</div>
+                  <div className="font-medium">Nozzle: {nozzle.name}</div>
                   <Badge>{nozzle.status}</Badge>
                 </div>
                 <div className="text-sm text-gray-500">

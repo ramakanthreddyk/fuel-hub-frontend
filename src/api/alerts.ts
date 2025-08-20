@@ -8,7 +8,6 @@ export const alertsApi = {
       const searchParams = new URLSearchParams();
       if (params?.stationId) searchParams.append('stationId', params.stationId);
       if (params?.unreadOnly) searchParams.append('unreadOnly', 'true');
-      
       const response = await apiClient.get(`/alerts?${searchParams.toString()}`);
       return extractApiArray<Alert>(response, 'alerts');
     } catch (error) {
@@ -18,10 +17,18 @@ export const alertsApi = {
   },
 
   markAsRead: async (alertId: string): Promise<void> => {
-    await apiClient.patch(`/alerts/${alertId}/read`);
+    try {
+      await apiClient.patch(`/alerts/${alertId}/read`);
+    } catch (error) {
+      console.error('Error marking alert as read:', error);
+    }
   },
 
   dismissAlert: async (alertId: string): Promise<void> => {
-    await apiClient.delete(`/alerts/${alertId}`);
+    try {
+      await apiClient.delete(`/alerts/${alertId}`);
+    } catch (error) {
+      console.error('Error dismissing alert:', error);
+    }
   },
 };

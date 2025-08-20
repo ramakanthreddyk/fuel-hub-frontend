@@ -21,12 +21,12 @@ export default function EditNozzlePage() {
   const { data: nozzle, isLoading } = useNozzle(nozzleId || '');
   const updateNozzle = useUpdateNozzle(); // Toast handling is now in the hook
 
-  const [nozzleNumber, setNozzleNumber] = useState('');
+  const [nozzleName, setNozzleName] = useState('');
   const [fuelType, setFuelType] = useState('');
 
   useEffect(() => {
     if (nozzle) {
-      setNozzleNumber(String(nozzle.nozzleNumber));
+      setNozzleName(nozzle.name);
       setFuelType(nozzle.fuelType);
     }
   }, [nozzle]);
@@ -39,7 +39,7 @@ export default function EditNozzlePage() {
       await updateNozzle.mutateAsync({ 
         id: nozzleId, 
         data: { 
-          nozzleNumber: parseInt(nozzleNumber), 
+          name: nozzleName, 
           fuelType 
         } 
       });
@@ -89,16 +89,15 @@ export default function EditNozzlePage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="nozzleNumber" className="text-sm font-medium">
-                  Nozzle Number
+                <Label htmlFor="nozzleName" className="text-sm font-medium">
+                  Nozzle Name
                 </Label>
                 <Input
-                  id="nozzleNumber"
-                  type="number"
-                  min="1"
-                  placeholder="Enter nozzle number"
-                  value={nozzleNumber}
-                  onChange={(e) => setNozzleNumber(e.target.value)}
+                  id="nozzleName"
+                  type="text"
+                  placeholder="Enter nozzle name"
+                  value={nozzleName}
+                  onChange={(e) => setNozzleName(e.target.value)}
                   required
                 />
               </div>

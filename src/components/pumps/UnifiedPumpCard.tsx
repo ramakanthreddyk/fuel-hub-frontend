@@ -23,15 +23,12 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Droplets,
-  Settings2,
   Zap,
   Gauge,
   Activity,
   Hash,
   Edit,
   Power,
-  Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMobileFormatters } from '@/utils/mobileFormatters';
@@ -341,6 +338,9 @@ export const UnifiedPumpCard = memo(function UnifiedPumpCard({
 
   // Enhanced variant with metrics
   if (variant === 'enhanced') {
+    let shadowColor = 'gray';
+    if (pump.status === 'active') shadowColor = 'blue';
+    else if (pump.status === 'maintenance') shadowColor = 'amber';
     return (
       <Card className={cn(
         "group hover:shadow-lg transition-all duration-300 border-l-4",
@@ -352,7 +352,7 @@ export const UnifiedPumpCard = memo(function UnifiedPumpCard({
             <div className="flex items-center gap-3">
               <div className={cn(
                 "relative p-3 rounded-xl transition-all duration-300 group-hover:scale-110",
-                `bg-gradient-to-br ${statusConfig.gradient} shadow-lg shadow-${pump.status === 'active' ? 'blue' : pump.status === 'maintenance' ? 'amber' : 'gray'}-500/25`
+                `bg-gradient-to-br ${statusConfig.gradient} shadow-lg shadow-${shadowColor}-500/25`
               )}>
                 <Fuel className="h-6 w-6 text-white" />
                 {pump.status === 'maintenance' && (
@@ -393,7 +393,12 @@ export const UnifiedPumpCard = memo(function UnifiedPumpCard({
               <Zap className="h-5 w-5 text-emerald-600" />
               <div>
                 <div className="text-lg font-bold text-emerald-700">
-                  {pump.status === 'active' ? 'Ready' : pump.status === 'maintenance' ? 'Service' : 'Offline'}
+                  {(() => {
+                    let statusLabel = 'Offline';
+                    if (pump.status === 'active') statusLabel = 'Ready';
+                    else if (pump.status === 'maintenance') statusLabel = 'Service';
+                    return statusLabel;
+                  })()}
                 </div>
                 <div className="text-xs text-emerald-600 font-medium">Status</div>
               </div>
@@ -501,7 +506,12 @@ export const UnifiedPumpCard = memo(function UnifiedPumpCard({
             )}>
               {isRealistic ? (
                 <span className="text-2xl">
-                  {pump.status === 'active' ? '⛽' : pump.status === 'maintenance' ? '🔧' : '🚫'}
+                  {(() => {
+                    let statusIcon = '🚫';
+                    if (pump.status === 'active') statusIcon = '⛽';
+                    else if (pump.status === 'maintenance') statusIcon = '🔧';
+                    return statusIcon;
+                  })()}
                 </span>
               ) : (
                 <Fuel className="h-6 w-6 text-white" />

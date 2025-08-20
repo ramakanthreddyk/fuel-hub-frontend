@@ -7,7 +7,7 @@ import { formatVolume } from '@/utils/formatters';
 
 interface Nozzle {
   id: string;
-  nozzleNumber: number;
+  name: string;
   fuelType: string;
   status: 'active' | 'maintenance' | 'inactive';
   stationName?: string;
@@ -51,7 +51,7 @@ export function ModernNozzleCard({ nozzle, onView, onDelete, onRecord }: ModernN
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                Nozzle #{nozzle.nozzleNumber}
+                Nozzle {nozzle.name}
               </h3>
               <p className="text-sm text-gray-500">
                 {nozzle.fuelType} Dispenser
@@ -79,7 +79,7 @@ export function ModernNozzleCard({ nozzle, onView, onDelete, onRecord }: ModernN
           <div className="relative">
             <div className="w-24 h-32 bg-gradient-to-b from-gray-400 to-gray-600 rounded-lg shadow-lg flex items-center justify-center">
               <div className="bg-gray-800 text-white px-2 py-1 rounded text-sm font-bold">
-                #{nozzle.nozzleNumber}
+                {nozzle.name}
               </div>
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
             </div>

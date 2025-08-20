@@ -41,24 +41,44 @@ export const stationsApi = {
 
   // Get station by ID
   getStation: async (id: string): Promise<Station> => {
-    const response = await apiClient.get(`/stations/${id}`);
-    return extractApiData<Station>(response);
+    try {
+      const response = await apiClient.get(`/stations/${id}`);
+      return extractApiData<Station>(response);
+    } catch (error) {
+      console.error('Error fetching station:', error);
+      throw error;
+    }
   },
 
   // Create station
   createStation: async (data: CreateStationData): Promise<Station> => {
-    const response = await apiClient.post('/stations', data);
-    return extractApiData<Station>(response);
+    try {
+      const response = await apiClient.post('/stations', data);
+      return extractApiData<Station>(response);
+    } catch (error) {
+      console.error('Error creating station:', error);
+      throw error;
+    }
   },
 
   // Update station
   updateStation: async (id: string, data: UpdateStationData): Promise<Station> => {
-    const response = await apiClient.put(`/stations/${id}`, data);
-    return extractApiData<Station>(response);
+    try {
+      const response = await apiClient.put(`/stations/${id}`, data);
+      return extractApiData<Station>(response);
+    } catch (error) {
+      console.error('Error updating station:', error);
+      throw error;
+    }
   },
 
   // Delete station
   deleteStation: async (id: string): Promise<void> => {
-    await apiClient.delete(`/stations/${id}`);
+    try {
+      await apiClient.delete(`/stations/${id}`);
+    } catch (error) {
+      console.error('Error deleting station:', error);
+      throw error;
+    }
   }
 };

@@ -1,13 +1,13 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { reportsApi } from '@/api/reports';
-import { SalesReportFilters, SalesReportExportFilters } from '@/api/api-contract';
+import { SalesReportFilters } from '../../contract/salesReport';
 
 export const useSalesReport = (filters: SalesReportFilters) => {
   return useQuery({
     queryKey: ['sales-report', filters],
     queryFn: () => reportsApi.getSalesReport(filters),
-    enabled: !!(filters.startDate && filters.endDate),
+  enabled: !!(filters.dateFrom && filters.dateTo),
   });
 };
 
@@ -27,7 +27,7 @@ export const useReportExport = () => {
   };
 };
 
-export const useExportSalesReport = (filters: SalesReportExportFilters) => {
+export const useExportSalesReport = (filters: SalesReportFilters) => {
   return useMutation({
     mutationFn: () => reportsApi.exportSalesReport(filters),
   });

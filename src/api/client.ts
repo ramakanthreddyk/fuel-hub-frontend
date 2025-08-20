@@ -4,12 +4,23 @@
  */
 import axios from 'axios';
 
-// Get the backend URL from environment variables or use localhost for development
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV
-    ? 'http://localhost:3003'  // Development: Use local backend
-    : 'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net'  // Production: Use Azure
-  );
+/**
+ * Backend selection is controlled ONLY by VITE_API_BASE_URL.
+ * Set this in your .env for production, and .env.development for local.
+ * Example:
+ *   Production: VITE_API_BASE_URL=https://your-production-backend/api/v1
+ *   Development: VITE_API_BASE_URL=http://localhost:3003/api/v1
+ */
+function getApiBaseUrl() {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!apiBaseUrl) {
+    throw new Error('VITE_API_BASE_URL is not set. Please set it in your .env file.');
+  }
+  console.log('[API-CLIENT] Using API base URL:', apiBaseUrl);
+  return apiBaseUrl;
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({

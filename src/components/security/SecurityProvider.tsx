@@ -196,20 +196,11 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
 
     // Send to server in production
     if (process.env.NODE_ENV === 'production') {
-      fetch('/api/security/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': getCSRFToken() || '',
-        },
-        body: JSON.stringify(event),
-      }).catch(error => {
-        console.warn('Failed to report security event:', error);
-      });
+  reportSecurityEvent(event);
     }
   };
 
-  const value: SecurityContextType = {
+  const value = React.useMemo(() => ({
     settings,
     updateSettings,
     isSecureContext,
@@ -220,7 +211,7 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
     extendSession,
     clearSession,
     reportSecurityEvent,
-  };
+  }), [settings, updateSettings, isSecureContext, rateLimiter, getCSRFToken, validateSession, extendSession, clearSession, reportSecurityEvent]);
 
   return (
     <SecurityContext.Provider value={value}>
@@ -266,7 +257,7 @@ export const SecurityMonitor: React.FC = () => {
 
       // Monitor for suspicious console activity
       const originalConsole = { ...console };
-      ['log', 'warn', 'error', 'info'].forEach(method => {
+      const overrideConsoleMethod = (method: string) => {
         (console as any)[method] = (...args: any[]) => {
           // Check for potential XSS attempts
           const message = args.join(' ');
@@ -279,7 +270,8 @@ export const SecurityMonitor: React.FC = () => {
           }
           (originalConsole as any)[method](...args);
         };
-      });
+      };
+      ['log', 'warn', 'error', 'info'].forEach(overrideConsoleMethod);
     };
 
     checkSecurityViolations();
@@ -313,12 +305,13 @@ export const SecuritySettings: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <label className="text-sm font-medium">CSRF Protection</label>
+            <label htmlFor="csrf-toggle" className="text-sm font-medium">CSRF Protection</label>
             <p className="text-xs text-muted-foreground">
               Protect against cross-site request forgery attacks
             </p>
           </div>
           <input
+            id="csrf-toggle"
             type="checkbox"
             checked={settings.enableCSRF}
             onChange={(e) => updateSettings({ enableCSRF: e.target.checked })}
@@ -328,12 +321,13 @@ export const SecuritySettings: React.FC = () => {
 
         <div className="flex items-center justify-between">
           <div>
-            <label className="text-sm font-medium">Rate Limiting</label>
+            <label htmlFor="rate-limit-toggle" className="text-sm font-medium">Rate Limiting</label>
             <p className="text-xs text-muted-foreground">
               Limit the number of requests to prevent abuse
             </p>
           </div>
           <input
+            id="rate-limit-toggle"
             type="checkbox"
             checked={settings.enableRateLimiting}
             onChange={(e) => updateSettings({ enableRateLimiting: e.target.checked })}
@@ -343,12 +337,13 @@ export const SecuritySettings: React.FC = () => {
 
         <div className="flex items-center justify-between">
           <div>
-            <label className="text-sm font-medium">Secure Storage</label>
+            <label htmlFor="secure-storage-toggle" className="text-sm font-medium">Secure Storage</label>
             <p className="text-xs text-muted-foreground">
               Encrypt sensitive data stored locally
             </p>
           </div>
           <input
+            id="secure-storage-toggle"
             type="checkbox"
             checked={settings.enableSecureStorage}
             onChange={(e) => updateSettings({ enableSecureStorage: e.target.checked })}
@@ -357,8 +352,9 @@ export const SecuritySettings: React.FC = () => {
         </div>
 
         <div>
-          <label className="text-sm font-medium">Session Timeout (minutes)</label>
+          <label htmlFor="session-timeout" className="text-sm font-medium">Session Timeout (minutes)</label>
           <input
+            id="session-timeout"
             type="number"
             min="5"
             max="480"
@@ -369,8 +365,9 @@ export const SecuritySettings: React.FC = () => {
         </div>
 
         <div>
-          <label className="text-sm font-medium">Max Login Attempts</label>
+          <label htmlFor="max-login-attempts" className="text-sm font-medium">Max Login Attempts</label>
           <input
+            id="max-login-attempts"
             type="number"
             min="3"
             max="10"
@@ -382,12 +379,13 @@ export const SecuritySettings: React.FC = () => {
 
         <div className="flex items-center justify-between">
           <div>
-            <label className="text-sm font-medium">Require HTTPS</label>
+            <label htmlFor="require-https-toggle" className="text-sm font-medium">Require HTTPS</label>
             <p className="text-xs text-muted-foreground">
               Enforce secure connections only
             </p>
           </div>
           <input
+            id="require-https-toggle"
             type="checkbox"
             checked={settings.requireHTTPS}
             onChange={(e) => updateSettings({ requireHTTPS: e.target.checked })}

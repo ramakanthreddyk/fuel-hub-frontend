@@ -1,3 +1,4 @@
+type NumericInput = number | string | null | undefined;
 
 /**
  * @file utils/formatters.ts
@@ -19,8 +20,8 @@ export const formatCurrency = (
   const {
     currency = 'INR',
     locale = 'en-IN',
-    minimumFractionDigits = 2,
-    maximumFractionDigits = 2,
+  minimumFractionDigits = 3,
+  maximumFractionDigits = 3,
     useLakhsCrores = false
   } = options;
 
@@ -56,8 +57,8 @@ export const formatNumber = (
   const numValue = typeof value === 'string' ? parseFloat(value) : (value || 0);
   
   const {
-    minimumFractionDigits = 0,
-    maximumFractionDigits = 2,
+  minimumFractionDigits = 0,
+  maximumFractionDigits = 3,
     useGrouping = true
   } = options;
 
@@ -149,7 +150,7 @@ export const formatPercentage = (
 
 export const formatVolume = (
   volume: number | string | null | undefined,
-  decimals: number = 2,
+  decimals: number = 3,
   showUnit: boolean = true,
   unit: string = 'L'
 ): string => {
@@ -222,8 +223,8 @@ export const formatGrowth = (
   
   const {
     showSign = true,
-    minimumFractionDigits = 1,
-    maximumFractionDigits = 2
+  minimumFractionDigits = 1,
+  maximumFractionDigits = 3
   } = options;
 
   const formatted = formatNumber(numValue, { minimumFractionDigits, maximumFractionDigits });
@@ -256,7 +257,7 @@ export const formatCompactNumber = (
 };
 
 export const formatDuration = (
-  milliseconds: number | string | null | undefined,
+  milliseconds: NumericInput,
   options: {
     format?: 'short' | 'long';
     includeSeconds?: boolean;
@@ -275,13 +276,33 @@ export const formatDuration = (
   const days = Math.floor(hours / 24);
 
   if (days > 0) {
-    return format === 'short' ? `${days}d ${hours % 24}h` : `${days} day${days > 1 ? 's' : ''} ${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`;
+    if (format === 'short') {
+      return `${days}d ${hours % 24}h`;
+    } else {
+      return `${days} day${days > 1 ? 's' : ''} ${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`;
+    }
   } else if (hours > 0) {
-    return format === 'short' ? `${hours}h ${minutes % 60}m` : `${hours} hour${hours > 1 ? 's' : ''} ${minutes % 60} minute${minutes % 60 > 1 ? 's' : ''}`;
+    if (format === 'short') {
+      return `${hours}h ${minutes % 60}m`;
+    } else {
+      return `${hours} hour${hours > 1 ? 's' : ''} ${minutes % 60} minute${minutes % 60 > 1 ? 's' : ''}`;
+    }
   } else if (minutes > 0) {
-    return format === 'short' ? `${minutes}m ${includeSeconds ? `${seconds % 60}s` : ''}` : `${minutes} minute${minutes > 1 ? 's' : ''} ${includeSeconds ? `${seconds % 60} second${seconds % 60 > 1 ? 's' : ''}` : ''}`;
+    let minResult = '';
+    if (format === 'short') {
+      minResult = `${minutes}m`;
+      if (includeSeconds) minResult += ` ${seconds % 60}s`;
+    } else {
+      minResult = `${minutes} minute${minutes > 1 ? 's' : ''}`;
+      if (includeSeconds) minResult += ` ${seconds % 60} second${seconds % 60 > 1 ? 's' : ''}`;
+    }
+    return minResult;
   } else {
-    return format === 'short' ? `${seconds}s` : `${seconds} second${seconds > 1 ? 's' : ''}`;
+    if (format === 'short') {
+      return `${seconds}s`;
+    } else {
+      return `${seconds} second${seconds > 1 ? 's' : ''}`;
+    }
   }
 };
 

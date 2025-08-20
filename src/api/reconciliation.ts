@@ -123,10 +123,12 @@ export const reconciliationApi = {
       throw new Error('Station ID and date are required for reconciliation summary');
     }
     
-    // Ensure the date is properly formatted (YYYY-MM-DD)
-    const formattedDate = new Date(date).toISOString().split('T')[0];
-    const baseUrl = 'http://localhost:3003/api/v1';
-    const url = `${baseUrl}/reconciliation/summary?stationId=${stationId}&date=${formattedDate}`;
+  // Ensure the date is properly formatted (YYYY-MM-DD)
+  const formattedDate = new Date(date).toISOString().split('T')[0];
+  // Use API base URL from client.ts
+  // @ts-ignore
+  const baseUrl = apiClient.defaults.baseURL;
+  const url = `${baseUrl}/reconciliation/summary?stationId=${stationId}&date=${formattedDate}`;
     
     // Get auth token
     const token = localStorage.getItem('fuelsync_token');

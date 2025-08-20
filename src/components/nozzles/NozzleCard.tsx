@@ -13,7 +13,7 @@ import { FuelBadge } from '@/components/ui/fuel-badge';
 interface NozzleCardProps {
   nozzle: {
     id: string;
-    nozzleNumber: number;
+  name: string;
     fuelType: string;
     status: string;
   };
@@ -67,7 +67,7 @@ export function NozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Nozzle
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-bold text-gray-900 text-lg group-hover:text-blue-700 transition-colors">
-                  Nozzle #{nozzle.nozzleNumber}
+                  Nozzle {nozzle.name}
                 </h3>
                 <div className="mt-1">
                   <FuelBadge fuelType={nozzle.fuelType} size="sm" />

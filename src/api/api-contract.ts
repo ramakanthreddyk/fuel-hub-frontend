@@ -1,4 +1,190 @@
-import { User } from "./auth";
+// Common status type for stations, pumps, nozzles
+export type StationStatus = "active" | "inactive" | "maintenance";
+// User type (frontend mirror of backend ExtendedUser)
+export interface User {
+  id: string;
+  userId: string;
+  email: string;
+  name?: string;
+  planName?: string;
+  tenantId?: string | null;
+  role: string;
+}
+// Error and validation responses
+export interface ApiErrorResponse {
+  success: false;
+  error: string;
+  message?: string;
+  code?: number;
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
+}
+
+// Alert actions
+export interface MarkAlertReadRequest {
+  alertId: string;
+}
+
+export interface MarkAlertReadResponse {
+  success: boolean;
+  alertId: string;
+  readAt: string;
+}
+
+export interface DismissAlertRequest {
+  alertId: string;
+}
+
+export interface DismissAlertResponse {
+  success: boolean;
+  alertId: string;
+  dismissedAt: string;
+}
+
+// Onboarding
+export interface OnboardingStatus {
+  completed: boolean;
+  currentStep: string;
+  steps: string[];
+}
+
+export interface OnboardingReminder {
+  id: string;
+  message: string;
+  completed: boolean;
+}
+
+export interface CompleteReminderRequest {
+  reminderId: string;
+}
+
+export interface CompleteReminderResponse {
+  success: boolean;
+  reminderId: string;
+  completedAt: string;
+}
+
+// Reconciliation diff
+export interface ReconciliationDiff {
+  id: string;
+  stationId: string;
+  date: string;
+  type: string;
+  description: string;
+  resolved: boolean;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export interface ReconciliationDiffSummary {
+  total: number;
+  unresolved: number;
+  byType: Record<string, number>;
+}
+export interface UpdateTenantRequest {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  planId?: string;
+  status?: 'active' | 'inactive' | 'suspended';
+}
+export interface SalesReportFilters {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  fuelType?: string;
+  paymentMethod?: string;
+  attendantId?: string;
+  groupBy?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+export interface SalesReportData {
+  id: string;
+  stationId: string;
+  stationName: string;
+  fuelType: string;
+  volume: number;
+  amount: number;
+  paymentMethod: string;
+  date: string;
+  attendantId?: string;
+  attendantName?: string;
+}
+
+export interface ExportRequest {
+  reportType: string;
+  filters: Record<string, any>;
+  format: 'csv' | 'excel' | 'pdf';
+}
+
+export interface ExportResponse {
+  success: boolean;
+  url: string;
+  message?: string;
+}
+export interface CreateCreditorRequest {
+  tenantId: string;
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  creditLimit: number;
+  paymentTerms?: string;
+  notes?: string;
+}
+
+export interface UpdateCreditorRequest {
+  name?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  creditLimit?: number;
+  paymentTerms?: string;
+  notes?: string;
+}
+export interface HourlySales {
+  hour: string;
+  sales: number;
+  volume: number;
+}
+
+export interface PeakHour {
+  hour: string;
+  sales: number;
+  volume: number;
+}
+
+export interface FuelPerformance {
+  fuelType: string;
+  sales: number;
+  volume: number;
+}
+
+export interface StationRanking {
+  stationId: string;
+  stationName: string;
+  rank: number;
+  sales: number;
+  volume: number;
+}
+
+export interface Alert {
+  id: string;
+  stationId?: string;
+  alertType: string;
+  message: string;
+  severity: 'info' | 'warning' | 'error';
+  isRead: boolean;
+  createdAt: string;
+}
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -29,7 +215,7 @@ export interface Station {
   };
   contactNumber: string;
   email: string;
-  status: "active" | "inactive" | "maintenance";
+  status: StationStatus;
   pumps: Pump[];
   nozzles: Nozzle[];
   createdAt: string;
@@ -40,7 +226,7 @@ export interface Pump {
   id: string;
   stationId: string;
   name: string;
-  status: "active" | "inactive" | "maintenance";
+  status: StationStatus;
   nozzles: Nozzle[];
   createdAt: string;
   updatedAt: string;
@@ -52,7 +238,7 @@ export interface Nozzle {
   stationId: string;
   name: string;
   fuelType: string;
-  status: "active" | "inactive" | "maintenance";
+  status: StationStatus;
   currentReading: number;
   lastReading: number;
   createdAt: string;
@@ -187,7 +373,7 @@ export interface DailySalesTrend {
 export interface StationMetric {
   id: string;
   name: string;
-  status: 'active' | 'inactive' | 'maintenance';
+  status: StationStatus;
   activePumps: number;
   totalPumps: number;
   todaySales: number;

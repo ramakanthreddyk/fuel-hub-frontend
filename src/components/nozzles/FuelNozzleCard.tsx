@@ -24,7 +24,7 @@ import { useFuelStore } from '@/store/fuelStore';
 interface FuelNozzleCardProps {
   nozzle: {
     id: string;
-    nozzleNumber: number;
+  name: string;
     fuelType: 'petrol' | 'diesel' | 'premium';
     status: 'active' | 'maintenance' | 'inactive';
     lastReading?: number;
@@ -128,7 +128,7 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
             </div>
             <div>
               <h3 className="font-bold text-xl text-gray-900">
-                Nozzle #{nozzle.nozzleNumber}
+                Nozzle {nozzle.name}
               </h3>
               <p className="text-sm text-gray-600 capitalize">
                 {nozzle.fuelType} Dispenser
@@ -175,7 +175,7 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
                     nozzle.status === 'active' ? "text-blue-400 animate-pulse" : 
                     nozzle.status === 'maintenance' ? "text-amber-400" : "text-red-400"
                   )}>
-                    #{nozzle.nozzleNumber}
+                    {nozzle.name}
                   </div>
                 </div>
                 

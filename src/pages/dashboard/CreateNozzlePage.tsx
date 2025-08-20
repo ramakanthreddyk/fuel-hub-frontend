@@ -29,15 +29,15 @@ export default function CreateNozzlePage() {
   console.log('[CREATE-NOZZLE] Search params:', Object.fromEntries(searchParams));
   console.log('[CREATE-NOZZLE] Final pumpId:', pumpId);
   
-  const [nozzleNumber, setNozzleNumber] = useState('');
+  const [nozzleName, setNozzleName] = useState('');
   const [fuelType, setFuelType] = useState('');
   const [selectedPumpId, setSelectedPumpId] = useState(pumpId || '');
   const [selectedStationId, setSelectedStationId] = useState(stationId || '');
   
   // Fetch data
-  const { data: stations = [], isLoading: stationsLoading } = useStations();
+  const { data: stations = [] } = useStations();
   const { data: pump, isLoading: pumpLoading } = usePump(selectedPumpId || '');
-  const { data: allPumps = [], isLoading: pumpsLoading } = usePumps(selectedStationId);
+  const { data: allPumps = [] } = usePumps(selectedStationId);
   
   // Filter pumps by selected station
   const stationPumps = selectedStationId ? allPumps.filter(p => p.stationId === selectedStationId) : allPumps;
@@ -50,22 +50,22 @@ export default function CreateNozzlePage() {
     e.preventDefault();
     console.log('[CREATE-NOZZLE] Form submitted');
     
-    if (!selectedPumpId || !nozzleNumber || !fuelType) {
-      console.log('[CREATE-NOZZLE] Validation failed:', { pumpId: selectedPumpId, nozzleNumber, fuelType });
+    if (!selectedPumpId || !nozzleName || !fuelType) {
+      console.log('[CREATE-NOZZLE] Validation failed:', { pumpId: selectedPumpId, nozzleName, fuelType });
       return;
     }
-    
+
     console.log('[CREATE-NOZZLE] Calling mutation with:', {
       pumpId: selectedPumpId,
-      nozzleNumber: parseInt(nozzleNumber),
+      name: nozzleName,
       fuelType,
       status: 'active'
     });
-    
+
     try {
       await createNozzleMutation.mutateAsync({
         pumpId: selectedPumpId,
-        nozzleNumber: parseInt(nozzleNumber),
+        name: nozzleName,
         fuelType: fuelType as 'petrol' | 'diesel' | 'premium',
         status: 'active'
       });
@@ -173,16 +173,15 @@ export default function CreateNozzlePage() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nozzleNumber" className="text-sm font-medium">
-                    Nozzle Number
+                  <Label htmlFor="nozzleName" className="text-sm font-medium">
+                    Nozzle Name
                   </Label>
                   <Input
-                    id="nozzleNumber"
-                    type="number"
-                    min="1"
-                    placeholder="Enter nozzle number"
-                    value={nozzleNumber}
-                    onChange={(e) => setNozzleNumber(e.target.value)}
+                    id="nozzleName"
+                    type="text"
+                    placeholder="Enter nozzle name"
+                    value={nozzleName}
+                    onChange={(e) => setNozzleName(e.target.value)}
                     required
                   />
                 </div>
@@ -220,7 +219,7 @@ export default function CreateNozzlePage() {
               </Button>
               <Button
                 type="submit"
-                disabled={createNozzleMutation.isPending || !selectedPumpId || !nozzleNumber || !fuelType || (!stationId && !selectedStationId)}
+                disabled={createNozzleMutation.isPending || !selectedPumpId || !nozzleName || !fuelType || (!stationId && !selectedStationId)}
                 className="order-1 sm:order-2"
               >
                 {createNozzleMutation.isPending ? (

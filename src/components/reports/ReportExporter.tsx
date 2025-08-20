@@ -7,12 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Mail } from 'lucide-react';
-import { reportsService } from '@/api/services/reports.service';
+import { exportReport, scheduleReport } from '@/services/reportService';
 
 interface ReportExporterProps {
-  stationId: string;
-  reportType: 'sales' | 'inventory' | 'reconciliation';
-  filters: Record<string, any>;
+  readonly stationId: string;
+  readonly reportType: 'sales' | 'inventory' | 'reconciliation';
+  readonly filters: Record<string, any>;
 }
 
 export function ReportExporter({ stationId, reportType, filters }: ReportExporterProps) {
@@ -33,31 +33,7 @@ export function ReportExporter({ stationId, reportType, filters }: ReportExporte
           ...filters
         }
       };
-
-      const response = await reportsService.exportReport(exportData);
-      
-      // Handle different response types
-      let blob: Blob;
-      
-      if (typeof response === 'string') {
-        // If response is a URL string, fetch it
-        const fetchResponse = await fetch(response);
-        blob = await fetchResponse.blob();
-      } else if (response && typeof response === 'object' && 'data' in response) {
-        // If response has data property, create blob from it
-        const responseData = (response as any).data;
-        blob = new Blob([JSON.stringify(responseData)], { type: 'application/json' });
-      } else {
-        // Handle as blob or fallback to JSON
-        const responseAsUnknown = response as unknown;
-        if (responseAsUnknown && typeof responseAsUnknown === 'object' && responseAsUnknown instanceof Blob) {
-          blob = responseAsUnknown;
-        } else {
-          blob = new Blob([JSON.stringify(response || {})], { type: 'application/octet-stream' });
-        }
-      }
-      
-      // Create download link
+      const blob = await exportReport(exportData);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -66,7 +42,6 @@ export function ReportExporter({ stationId, reportType, filters }: ReportExporte
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
       toast({
         title: "Success",
         description: "Report exported successfully",
@@ -74,7 +49,7 @@ export function ReportExporter({ stationId, reportType, filters }: ReportExporte
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to export report",
+        description: `Failed to export report: ${error instanceof Error ? error.message : String(error)}`,
         variant: "destructive",
       });
     } finally {
@@ -96,7 +71,7 @@ export function ReportExporter({ stationId, reportType, filters }: ReportExporte
         }
       };
 
-      await reportsService.scheduleReport(scheduleData);
+  await scheduleReport(scheduleData);
       
       toast({
         title: "Success",
@@ -107,7 +82,7 @@ export function ReportExporter({ stationId, reportType, filters }: ReportExporte
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to schedule report",
+        description: `Failed to schedule report: ${error instanceof Error ? error.message : String(error)}`,
         variant: "destructive",
       });
     } finally {

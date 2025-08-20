@@ -4,7 +4,7 @@
  * Enhanced to work with fuelStore as single source of truth
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { nozzlesService } from '@/api/services/nozzlesService';
+import { nozzleService } from '@/services/nozzleService';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useDataStore } from '@/store/dataStore';
 import { useFuelStore } from '@/store/fuelStore';
@@ -57,13 +57,13 @@ export const useNozzles = (pumpId?: string) => {
         }
         
         // If no cache or stale, fetch from API
-        const nozzles = await nozzlesService.getNozzles(pumpId);
+  const nozzles = await nozzleService.getNozzles(pumpId);
 
         console.log('[NOZZLES-HOOK] Fetched nozzles from API:', nozzles);
 
-        // Ensure each nozzle has proper isolation - log their lastReading values
+        // Ensure each nozzle has proper isolation - log their currentReading values
         nozzles.forEach(nozzle => {
-          console.log(`[NOZZLES-HOOK] Nozzle ${nozzle.id} (#${nozzle.nozzleNumber}) lastReading:`, nozzle.lastReading);
+          console.log(`[NOZZLES-HOOK] Nozzle ${nozzle.id} currentReading:`, nozzle.currentReading);
         });
 
         // Store in both caches
@@ -98,7 +98,7 @@ export const useNozzles = (pumpId?: string) => {
  * @returns Query result with nozzle data
  */
 export const useNozzle = (id: string) => {
-  const { handleApiError } = useToastNotifications();
+  // Removed unused handleApiError assignment
   const { nozzles: storedNozzles } = useDataStore();
   const { nozzles: fuelStoreNozzles, allNozzles, nozzlesStale } = useFuelStore();
   
@@ -136,14 +136,11 @@ export const useNozzle = (id: string) => {
       
       // If no cache hit, fetch from API
       console.log('[NOZZLES-HOOK] Fetching nozzle from API:', id);
-      return nozzlesService.getNozzle(id);
+  return nozzleService.getNozzle(id);
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    onError: (error: any) => {
-      console.error('Failed to fetch nozzle:', error);
-      handleApiError(error, 'Nozzle Details');
-    }
+  // Error handling should be done in the queryFn or via useQuery's error result
   });
 };
 
@@ -152,27 +149,22 @@ export const useNozzle = (id: string) => {
  * @returns Mutation result for creating a nozzle
  */
 export const useCreateNozzle = () => {
-  const { handleApiError } = useToastNotifications();
+  const { handleApiError, showSuccess } = useToastNotifications();
   const { syncAfterNozzleCRUD } = useStoreSync();
-
   return useMutation({
     mutationFn: (data: any) => {
       console.log('[CREATE-NOZZLE] Creating nozzle with data:', data);
-      return nozzlesService.createNozzle(data);
+      return nozzleService.createNozzle(data);
     },
     onSuccess: async (newNozzle, variables) => {
-      console.log('[CREATE-NOZZLE] Success - New nozzle created:', newNozzle);
-      console.log('[CREATE-NOZZLE] Original variables:', variables);
-
-      // Ensure we have the pump ID for proper cache invalidation
+  // Use correct property names based on contract (nozzleNumber removed, use name and id)
+      showSuccess('Nozzle Created', `Nozzle #${newNozzle.id} created successfully.`);
+      const decimals = 3;
       const nozzleWithPumpId = {
         ...newNozzle,
         pumpId: newNozzle.pumpId || variables.pumpId,
-        // Ensure new nozzles don't have stale lastReading data
-        lastReading: undefined,
-        last_reading: undefined
+        currentReading: typeof newNozzle.currentReading === 'number' ? Number(newNozzle.currentReading.toFixed(decimals)) : undefined,
       };
-
       console.log('[CREATE-NOZZLE] Triggering sync with nozzle data:', nozzleWithPumpId);
       await syncAfterNozzleCRUD('create', nozzleWithPumpId);
     },
@@ -188,18 +180,18 @@ export const useCreateNozzle = () => {
  * @returns Mutation result for updating a nozzle
  */
 export const useUpdateNozzle = () => {
-  const { handleApiError } = useToastNotifications();
+  // Removed unused handleApiError assignment
   const { syncAfterNozzleCRUD } = useStoreSync();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => nozzlesService.updateNozzle(id, data),
+  mutationFn: ({ id, data }: { id: string; data: any }) => nozzleService.updateNozzle(id, data),
     onSuccess: async (nozzle, { id }) => {
       console.log('[UPDATE-NOZZLE] Success:', nozzle);
       await syncAfterNozzleCRUD('update', nozzle);
     },
     onError: (error: any) => {
       console.error('[UPDATE-NOZZLE] Error:', error);
-      handleApiError(error, 'Update Nozzle');
+  // Error handling: log or show toast if needed
     },
   });
 };
@@ -209,18 +201,18 @@ export const useUpdateNozzle = () => {
  * @returns Mutation result for deleting a nozzle
  */
 export const useDeleteNozzle = () => {
-  const { handleApiError } = useToastNotifications();
+  // Removed unused handleApiError assignment
   const { syncAfterNozzleCRUD } = useStoreSync();
 
   return useMutation({
-    mutationFn: (id: string) => nozzlesService.deleteNozzle(id),
+  mutationFn: (id: string) => nozzleService.deleteNozzle(id),
     onSuccess: async (data, id) => {
       console.log('[DELETE-NOZZLE] Success:', id);
       await syncAfterNozzleCRUD('delete', { id });
     },
     onError: (error: any) => {
       console.error('[DELETE-NOZZLE] Error:', error);
-      handleApiError(error, 'Delete Nozzle');
+  // Error handling: log or show toast if needed
     },
   });
 };
@@ -231,16 +223,14 @@ export const useDeleteNozzle = () => {
  * @returns Query result with nozzle settings
  */
 export const useNozzleSettings = (id: string) => {
-  const { handleApiError } = useToastNotifications();
+  // Removed unused handleApiError assignment
   
   return useQuery({
     queryKey: ['nozzle-settings', id],
-    queryFn: () => nozzlesService.getNozzleSettings(id),
+  queryFn: () => nozzleService.getNozzleSettings(id),
     enabled: !!id,
     staleTime: 60000, // 1 minute
-    onError: (error: any) => {
-      handleApiError(error, 'Nozzle Settings');
-    },
+  // Error handling should be done in the queryFn or via useQuery's error result
   });
 };
 
@@ -253,7 +243,7 @@ export const useUpdateNozzleSettings = () => {
   const { showSuccess, handleApiError } = useToastNotifications();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => nozzlesService.updateNozzleSettings(id, data),
+  mutationFn: ({ id, data }: { id: string; data: any }) => nozzleService.updateNozzleSettings(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['nozzle-settings', id] });
       showSuccess('Settings Updated', 'Nozzle settings updated successfully');

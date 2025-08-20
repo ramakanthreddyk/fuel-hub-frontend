@@ -5,11 +5,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams, Link, useParams } from 'react-router-dom';
 import { useFuelStore } from '@/store/fuelStore';
-import { useQueryClient } from '@tanstack/react-query';
 import { useFuelStoreSync } from '@/hooks/useFuelStoreSync';
-import { isNavigationFrom, createNavigationState } from '@/utils/navigationHelper';
+import { isNavigationFrom } from '@/utils/navigationHelper';
 import { Button } from '@/components/ui/button';
-import { Plus, Droplets, Filter, Search } from 'lucide-react';
+import { Plus, Droplets, Search } from 'lucide-react';
 import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -29,13 +28,13 @@ export default function NozzlesPage() {
   const { showSuccess, showError } = useToastNotifications();
 
   console.log('NozzlesPage - pumpId:', pumpId);
-  const queryClient = useQueryClient();
+  // Removed unused queryClient assignment
   const { refreshNozzles } = useFuelStoreSync();
   
   // Get state from Zustand store
   const { 
     selectedStationId, 
-    selectedPumpId,
+  // Removed unused selectedPumpId assignment
     selectStation,
     selectPump,
     selectNozzle,
@@ -192,7 +191,7 @@ export default function NozzlesPage() {
     
     // Search filter
     const matchesSearch = !searchQuery || 
-      nozzle.nozzleNumber?.toString().includes(searchQuery) ||
+  nozzle.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       nozzle.fuelType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       nozzlePump?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       nozzleStation?.name?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -370,7 +369,7 @@ export default function NozzlesPage() {
                   key={nozzle.id}
                   nozzle={{
                     id: nozzle.id,
-                    nozzleNumber: nozzle.nozzleNumber || 0,
+                    name: nozzle.name,
                     fuelType: (nozzle.fuelType as 'petrol' | 'diesel' | 'premium') || 'petrol',
                     status: (nozzle.status as 'active' | 'maintenance' | 'inactive') || 'inactive',
                     lastReading: nozzle.lastReading,

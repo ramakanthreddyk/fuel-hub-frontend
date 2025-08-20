@@ -2,6 +2,7 @@ import { apiClient, extractApiData, extractApiArray } from './client';
 import type { 
   Creditor, 
   CreateCreditorRequest, 
+  UpdateCreditorRequest,
   CreditPayment, 
   CreatePaymentRequest,
   ApiResponse 
@@ -9,27 +10,15 @@ import type {
 
 export const creditorsApi = {
   // Get all creditors
-  getCreditors: async (stationId?: string | object): Promise<Creditor[]> => {
-    // Ensure stationId is a string if provided
-    let url = '/creditors';
-    if (stationId) {
-      if (typeof stationId === 'string' && stationId.trim() !== '') {
-        url = `/creditors?stationId=${stationId}`;
-      } else {
-        console.warn('[CREDITORS-API] Invalid stationId type:', typeof stationId);
-      }
-    }
-    
+  getCreditors: async (): Promise<Creditor[]> => {
     try {
-      console.log('[CREDITORS-API] Fetching creditors with URL:', url);
-      const response = await apiClient.get(url);
+      const response = await apiClient.get('/creditors');
       return extractApiArray<Creditor>(response, 'creditors');
     } catch (error) {
-      console.error('[CREDITORS-API] Error fetching creditors:', error);
+      console.error('Error fetching creditors:', error);
       return [];
     }
   },
-
   // Create new creditor
   createCreditor: async (data: CreateCreditorRequest): Promise<Creditor> => {
     try {
@@ -47,7 +36,6 @@ export const creditorsApi = {
         // Update the data with the validated number
         data.creditLimit = creditLimit;
       }
-      
       const response = await apiClient.post('/creditors', data);
       return extractApiData<Creditor>(response);
     } catch (error: any) {
@@ -58,10 +46,14 @@ export const creditorsApi = {
 
   // Get creditor by ID
   getCreditor: async (id: string): Promise<Creditor> => {
-    const response = await apiClient.get(`/creditors/${id}`);
-    return extractApiData<Creditor>(response);
+    try {
+      const response = await apiClient.get(`/creditors/${id}`);
+      return extractApiData<Creditor>(response);
+    } catch (error) {
+      console.error('Error fetching creditor:', error);
+      throw error;
+    }
   },
-
   // Get payments for a creditor
   getPayments: async (creditorId: string): Promise<CreditPayment[]> => {
     const response = await apiClient.get(`/credit-payments?creditorId=${creditorId}`);
@@ -72,13 +64,26 @@ export const creditorsApi = {
   createPayment: async (data: CreatePaymentRequest): Promise<CreditPayment> => {
     const response = await apiClient.post('/credit-payments', data);
     return extractApiData<CreditPayment>(response);
+  },
+  // Update creditor
+  updateCreditor: async (id: string, data: UpdateCreditorRequest): Promise<Creditor> => {
+    try {
+      const response = await apiClient.put(`/creditors/${id}`, data);
+      return extractApiData<Creditor>(response);
+    } catch (error) {
+      console.error('Error updating creditor:', error);
+      throw error;
+    }
+  },
+  // Delete creditor
+  deleteCreditor: async (id: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/creditors/${id}`);
+    } catch (error) {
+      console.error('Error deleting creditor:', error);
+      throw error;
+    }
   }
-};
 
-// Export types for backward compatibility
-export type { 
-  Creditor, 
-  CreateCreditorRequest, 
-  CreditPayment, 
-  CreatePaymentRequest 
-};
+
+}

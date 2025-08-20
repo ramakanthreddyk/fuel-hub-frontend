@@ -4,27 +4,21 @@
  * @description Modern station card with realistic design and better space utilization
  * Updated: 2025-07-27
  */
-import React from 'react';
+import type { Station, Pump } from '../../../contract/models';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, TrendingUp, Fuel, Trash2, Eye, Zap } from 'lucide-react';
 import { formatCurrency, formatNumber } from '@/utils/formatters';
-import { useMobileFormatters } from '@/utils/mobileFormatters';
+import { formatCurrencyMobile, formatCountMobile } from '@/utils/mobileFormatters';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ModernStationCardProps {
-  station: {
-    id: string;
-    name: string;
-    address: string;
-    status: 'active' | 'maintenance' | 'inactive';
-    pumpCount: number;
-    rating?: number;
-  };
+  station: Station;
   onView: (stationId: string) => void;
   onDelete: (stationId: string) => void;
   fuelPrices?: any[];
-  pumps?: any[];
+  pumps?: Pump[];
   todaySales?: number;
   todayTransactions?: number;
   activePumps?: number;
@@ -40,7 +34,7 @@ export function ModernStationCard({
   todayTransactions = 0,
   activePumps = 0
 }: ModernStationCardProps) {
-  const { formatCurrency: formatCurrencyMobile, formatCount, isMobile } = useMobileFormatters();
+  const isMobile = useIsMobile();
   
   const getStatusConfig = () => {
     switch (station.status) {
@@ -89,13 +83,13 @@ export function ModernStationCard({
               <span className="text-lg">⛽</span>
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className={`font-bold text-xl mb-1 truncate ${statusConfig.textColor}`} title={station.name}>
-                {station.name}
+              <h3 className={`font-bold text-xl mb-1 truncate ${statusConfig.textColor}`} title={station.address}>
+                {station.address}
               </h3>
               <div className="flex items-center gap-1 text-blue-700/80">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm truncate" title={station.address}>
-                  {station.address}
+                <span className="text-sm truncate" title={station.contactNumber}>
+                  {station.contactNumber}
                 </span>
               </div>
             </div>
@@ -113,14 +107,14 @@ export function ModernStationCard({
           <div className="text-center p-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
             <TrendingUp className="h-3 w-3 text-blue-600 mx-auto mb-1" />
             <div className="text-sm sm:text-lg font-bold text-blue-900">
-              {isMobile ? formatCount(todayTransactions) : formatNumber(todayTransactions)}
+              {isMobile ? formatCountMobile(todayTransactions) : formatNumber(todayTransactions)}
             </div>
             <div className="text-[10px] text-blue-700 font-medium">Sales Today</div>
           </div>
 
           <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
             <Fuel className="h-3 w-3 text-purple-600 mx-auto mb-1" />
-            <div className="text-sm sm:text-lg font-bold text-purple-900">{activePumps}/{pumps.length || station.pumpCount}</div>
+            <div className="text-sm sm:text-lg font-bold text-purple-900">{activePumps}/{pumps.length || station.pumps.length}</div>
             <div className="text-[10px] text-purple-700 font-medium">Active Pumps</div>
           </div>
         </div>
@@ -146,7 +140,7 @@ export function ModernStationCard({
               {/* Support Pillars */}
               <div className="absolute -bottom-12 left-2 w-2 h-12 bg-gray-400 rounded-b-lg shadow-md"></div>
               <div className="absolute -bottom-12 right-2 w-2 h-12 bg-gray-400 rounded-b-lg shadow-md"></div>
-              
+              <div className="text-sm sm:text-lg font-bold text-purple-900">{activePumps}/{(pumps ? pumps.length : 0) || station.pumps.length}</div>
               {/* LED Strip */}
               <div className="absolute bottom-1 left-4 right-4 flex justify-center space-x-2">
                 {Array.from({ length: 4 }, (_, i) => (
@@ -156,7 +150,7 @@ export function ModernStationCard({
               
               {/* Fuel Dispensers */}
               <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-3">
-                {Array.from({ length: Math.min(pumps.length || station.pumpCount, 4) }, (_, i) => (
+                {Array.from({ length: Math.min(pumps.length || station.pumps.length, 4) }, (_, i) => (
                   <div key={i} className="flex flex-col items-center">
                     {/* Dispenser Body */}
                     <div className="w-6 h-12 bg-gradient-to-b from-gray-600 to-gray-800 rounded-lg shadow-lg relative">

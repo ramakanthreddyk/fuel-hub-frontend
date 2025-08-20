@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 interface CompactNozzleCardProps {
   nozzle: {
     id: string;
-    nozzleNumber: number;
+  name: string;
     fuelType: string;
     status: string;
   };
@@ -81,7 +81,7 @@ export function CompactNozzleCard({ nozzle, onRecordReading, onEdit, onDelete }:
               <span className="text-lg">{fuelConfig.icon}</span>
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-gray-900">Nozzle #{nozzle.nozzleNumber}</h3>
+              <h3 className="font-semibold text-gray-900">Nozzle {nozzle.name}</h3>
               <Badge className={cn("text-xs mt-1", fuelConfig.className)}>
                 {nozzle.fuelType}
               </Badge>

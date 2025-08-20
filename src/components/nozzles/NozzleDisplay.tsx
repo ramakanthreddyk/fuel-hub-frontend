@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 interface Nozzle {
   id: string;
-  nozzleNumber: number;
+  name: string;
   fuelType: string;
   status: 'active' | 'inactive' | 'dispensing' | 'maintenance';
   currentReading?: number;
@@ -74,7 +74,7 @@ export function NozzleDisplay({ nozzle, onTakeReading, onSettings }: NozzleDispl
             </div>
             <div>
               <h3 className="text-lg font-bold text-gray-800">
-                Nozzle {nozzle.nozzleNumber}
+                Nozzle {nozzle.name}
               </h3>
               <p className="text-sm text-muted-foreground font-medium">{nozzle.fuelType}</p>
             </div>

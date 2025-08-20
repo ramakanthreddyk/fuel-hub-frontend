@@ -18,7 +18,7 @@ import {
   Crown,
   ArrowUp
 } from 'lucide-react';
-import { apiClient } from '@/api/client';
+import { fetchPlanInfo } from '@/services/planService';
 
 interface PlanInfo {
   currentPlan: {
@@ -59,10 +59,7 @@ interface PlanInfo {
 export function PlanUsageWidget() {
   const { data: planInfo, isLoading, error } = useQuery({
     queryKey: ['plan-info'],
-    queryFn: async () => {
-      const response = await apiClient.get('/settings/plan');
-      return response.data;
-    },
+    queryFn: fetchPlanInfo,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -230,8 +227,8 @@ export function PlanUsageWidget() {
           <div className="mt-4">
             <h4 className="text-sm font-medium mb-2">Your Plan Features:</h4>
             <div className="flex flex-wrap gap-1">
-              {currentPlan.features.slice(0, 6).map((feature, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
+              {currentPlan.features.slice(0, 6).map((feature) => (
+                <Badge key={feature} variant="secondary" className="text-xs">
                   {feature}
                 </Badge>
               ))}

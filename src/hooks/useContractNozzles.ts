@@ -5,14 +5,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { nozzlesService } from '@/api/contract/nozzles.service';
+import { nozzleService } from '@/services/nozzleService';
 import { toast } from '@/hooks/use-toast';
-import type { CreateNozzleRequest } from '@/api/api-contract';
+import type { CreateNozzleRequest } from '@/services/nozzleService';
 
 export const useContractNozzles = (pumpId?: string) => {
   return useQuery({
     queryKey: ['contract-nozzles', pumpId],
-    queryFn: () => nozzlesService.getNozzles(pumpId),
+  queryFn: () => nozzleService.getNozzles(pumpId),
     enabled: !!pumpId,
   });
 };
@@ -20,7 +20,7 @@ export const useContractNozzles = (pumpId?: string) => {
 export const useContractNozzle = (nozzleId: string) => {
   return useQuery({
     queryKey: ['contract-nozzle', nozzleId],
-    queryFn: () => nozzlesService.getNozzle(nozzleId),
+  queryFn: () => nozzleService.getNozzle(nozzleId),
     enabled: !!nozzleId,
   });
 };
@@ -29,7 +29,7 @@ export const useCreateContractNozzle = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateNozzleRequest) => nozzlesService.createNozzle(data),
+  mutationFn: (data: CreateNozzleRequest) => nozzleService.createNozzle(data),
     onSuccess: (newNozzle) => {
       // Invalidate nozzles for the pump
       queryClient.invalidateQueries({ queryKey: ['contract-nozzles', newNozzle.pumpId] });
@@ -39,7 +39,7 @@ export const useCreateContractNozzle = () => {
       
       toast({
         title: "Success",
-        description: `Nozzle #${newNozzle.nozzleNumber} created successfully`,
+        description: `Nozzle #${newNozzle.id} created successfully`,
       });
     },
     onError: (error: any) => {
@@ -58,7 +58,7 @@ export const useUpdateContractNozzle = () => {
 
   return useMutation({
     mutationFn: ({ nozzleId, data }: { nozzleId: string; data: Partial<CreateNozzleRequest> }) => 
-      nozzlesService.updateNozzle(nozzleId, data),
+  nozzleService.updateNozzle(nozzleId, data),
     onSuccess: (updatedNozzle) => {
       queryClient.invalidateQueries({ queryKey: ['contract-nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['contract-nozzle', updatedNozzle.id] });
@@ -82,7 +82,7 @@ export const useDeleteContractNozzle = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (nozzleId: string) => nozzlesService.deleteNozzle(nozzleId),
+  mutationFn: (nozzleId: string) => nozzleService.deleteNozzle(nozzleId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contract-nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['contract-pumps'] });

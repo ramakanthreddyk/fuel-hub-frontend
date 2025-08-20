@@ -5,14 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { stationsApi } from '@/api/stations';
-import type { SalesReportFilters } from '@/api/api-contract';
+import type { SalesReportFilters } from '../../../contract/salesReport';
 
 interface SalesReportFiltersProps {
-  filters: SalesReportFilters;
-  onFiltersChange: (filters: SalesReportFilters) => void;
+  readonly filters: SalesReportFilters;
+  readonly onFiltersChange: (filters: SalesReportFilters) => void;
 }
 
-export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFiltersProps) {
+export function SalesReportFilters({ filters, onFiltersChange }: Readonly<SalesReportFiltersProps>) {
   const { data: stations } = useQuery({
     queryKey: ['stations'],
     queryFn: () => stationsApi.getStations(),
@@ -36,8 +36,8 @@ export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFilt
             <Input
               id="startDate"
               type="date"
-              value={filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-              onChange={(e) => handleFilterChange('startDate', e.target.value)}
+              value={filters.dateFrom || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
               className="bg-input border border-border text-foreground"
             />
           </div>
@@ -47,8 +47,8 @@ export function SalesReportFilters({ filters, onFiltersChange }: SalesReportFilt
             <Input
               id="endDate"
               type="date"
-              value={filters.endDate || new Date().toISOString().split('T')[0]}
-              onChange={(e) => handleFilterChange('endDate', e.target.value)}
+              value={filters.dateTo || new Date().toISOString().split('T')[0]}
+              onChange={(e) => handleFilterChange('dateTo', e.target.value)}
               className="bg-input border border-border text-foreground"
             />
           </div>

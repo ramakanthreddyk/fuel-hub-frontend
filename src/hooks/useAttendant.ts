@@ -1,7 +1,7 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { attendantApi, CreateCashReportRequest } from '@/api/attendant';
 import { useToast } from '@/hooks/use-toast';
+import type { AttendantPump } from '@/api/api-contract';
 
 export const useAttendantStations = () => {
   return useQuery({
@@ -12,7 +12,7 @@ export const useAttendantStations = () => {
 };
 
 export const useAttendantPumps = (stationId?: string) => {
-  return useQuery({
+  return useQuery<AttendantPump[]>({
     queryKey: ['attendant', 'pumps', stationId],
     queryFn: () => attendantApi.getAssignedPumps(stationId),
     enabled: !!stationId,
@@ -90,5 +90,13 @@ export const useAcknowledgeAlert = () => {
         description: "Alert has been marked as acknowledged",
       });
     },
+  });
+};
+
+export const useTodaysSummary = () => {
+  return useQuery({
+    queryKey: ['attendant', 'todays-summary'],
+    queryFn: attendantApi.getTodaysSummary,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };

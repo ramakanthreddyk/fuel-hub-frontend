@@ -1,3 +1,11 @@
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  tenantId?: string;
+  tenantName?: string;
+}
 /**
  * @file api/auth.ts
  * @description Authentication API functions

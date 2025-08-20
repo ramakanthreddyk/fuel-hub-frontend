@@ -7,7 +7,7 @@ interface Nozzle {
   id: string;
   pumpId?: string;
   pump_id?: string;
-  nozzleNumber?: number;
+  name?: string;
   nozzle_number?: number;
   fuelType?: string;
   fuel_type?: string;
@@ -23,7 +23,7 @@ interface EnhancedNozzleCardProps {
 
 export function EnhancedNozzleCard({ nozzle, onTakeReading }: EnhancedNozzleCardProps) {
   // Handle both snake_case and camelCase properties
-  const nozzleNumber = nozzle.nozzleNumber || nozzle.nozzle_number || 0;
+  const nozzleName = nozzle.name || '';
   const fuelType = nozzle.fuelType || nozzle.fuel_type || 'unknown';
   const status = nozzle.status || 'inactive';
 
@@ -60,7 +60,7 @@ export function EnhancedNozzleCard({ nozzle, onTakeReading }: EnhancedNozzleCard
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <span className="text-2xl">{getFuelTypeIcon(fuelType)}</span>
-            Nozzle #{nozzleNumber}
+            Nozzle {nozzleName}
           </CardTitle>
           <Badge className={getStatusColor(status)}>
             {status}

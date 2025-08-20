@@ -28,6 +28,7 @@ import { CreateReadingRequest } from '@/api/services/readingsService';
 // Import creditors API
 import { creditorsApi } from '@/api/creditors';
 import { useQuery } from '@tanstack/react-query';
+import { fetchSales } from '@/services/salesService';
 
 interface ReadingFormData {
   stationId: string;
@@ -51,19 +52,9 @@ interface ReadingEntryFormProps {
 function useSales(nozzleId: string, from: string, to: string, options: { enabled: boolean }) {
   const { data, refetch } = useQuery({
     queryKey: ['sales', nozzleId, from, to],
-    queryFn: async () => {
-      if (!nozzleId || !from || !to) {
-        return [];
-      }
-      const response = await fetch(`/api/sales?nozzleId=${nozzleId}&from=${from}&to=${to}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch sales data');
-      }
-      return response.json();
-    },
+    queryFn: () => fetchSales(nozzleId, from, to),
     enabled: options.enabled,
   });
-
   return { data: data || [], refetch };
 }
 
@@ -210,7 +201,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
       creditorId: data.paymentMethod === 'credit' ? data.creditorId : undefined,
     };
 
-    const nozzleNumber = selectedNozzleData?.nozzleNumber;
+  // nozzleNumber removed from contract; use nozzle name or id if needed
     
     createReading.mutate(readingData);
   };
@@ -466,7 +457,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                               {nozzles.length > 0 ? (
                                 nozzles.map((nozzle) => (
                                   <SelectItem key={nozzle.id} value={nozzle.id}>
-                                    Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})
+                                    Nozzle {nozzle.name} ({nozzle.fuelType})
                                   </SelectItem>
                                 ))
                               ) : (
@@ -500,8 +491,8 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                             <span className="font-semibold text-gray-900 capitalize">{selectedNozzleData.fuelType}</span>
                           </div>
                           <div className="flex justify-between items-center p-3 bg-white rounded-lg">
-                            <span className="text-gray-600">Nozzle Number:</span>
-                            <span className="font-semibold text-gray-900">#{selectedNozzleData.nozzleNumber}</span>
+                            <span className="text-gray-600">Nozzle Name:</span>
+                            <span className="font-semibold text-gray-900">{selectedNozzleData.name}</span>
                           </div>
                           <div className="flex justify-between items-center p-3 bg-white rounded-lg">
                             <span className="text-gray-600">Status:</span>

@@ -1,26 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { EnhancedNozzleCard } from '@/components/nozzles/EnhancedNozzleCard';
 import { ArrowLeft, Fuel, Activity, AlertTriangle, Plus, Gauge } from 'lucide-react';
-import { apiClient } from '@/api/client';
+import { nozzleService } from '@/services/nozzleService';
+import type { Nozzle } from '../../contract/models';
+// Use canonical Nozzle type from contract/models
 
-interface Nozzle {
-  id: string;
-  fuelType?: string;
-  fuel_type?: string;
-  currentReading?: number;
-  current_reading?: number;
-  status: string;
-  nozzleNumber?: number;
-  nozzle_number?: number;
-  [key: string]: any;
-}
-
-const NozzlesPage = () => {
-  const { pumpId, stationId } = useParams<{ pumpId: string; stationId: string }>();
+const NozzlesPage: React.FC = () => {
+  const { pumpId } = useParams<{ pumpId: string }>();
   const navigate = useNavigate();
   const [nozzles, setNozzles] = useState<Nozzle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,23 +18,17 @@ const NozzlesPage = () => {
   const [pumpName, setPumpName] = useState('Pump');
 
   useEffect(() => {
-    async function fetchNozzles() {
+    async function loadNozzles() {
       setLoading(true);
       setError('');
       try {
-        const response = await apiClient.get(`/pumps/${pumpId}/nozzles`);
-        const data = response.data;
-        
-        if (Array.isArray(data)) {
-          setNozzles(data);
-        } else if (Array.isArray(data.nozzles)) {
-          setNozzles(data.nozzles);
+        const nozzlesArray = await nozzleService.getNozzles(pumpId);
+        setNozzles(nozzlesArray);
+        if (nozzlesArray.length > 0 && nozzlesArray[0].name) {
+          setPumpName(nozzlesArray[0].name);
         } else {
-          setNozzles([]);
+          setPumpName('Pump');
         }
-        
-        // Try to get pump name
-        if (data.pump?.name) setPumpName(data.pump.name);
       } catch (err: any) {
         setError(err.message || 'Error fetching nozzles');
         setNozzles([]);
@@ -52,7 +36,7 @@ const NozzlesPage = () => {
         setLoading(false);
       }
     }
-    if (pumpId) fetchNozzles();
+    if (pumpId) loadNozzles();
   }, [pumpId]);
 
   const handleTakeReading = (nozzleId: string) => {
@@ -138,14 +122,15 @@ const NozzlesPage = () => {
       </div>
 
       {/* Nozzles Grid */}
-      {loading ? (
+      {loading && (
         <Card className="border-0 shadow-lg">
           <CardContent className="p-12 text-center">
             <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading nozzles...</p>
           </CardContent>
         </Card>
-      ) : error ? (
+      )}
+      {!loading && error && (
         <Card className="border-0 shadow-lg border-red-200">
           <CardContent className="p-12 text-center">
             <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -159,7 +144,8 @@ const NozzlesPage = () => {
             </Button>
           </CardContent>
         </Card>
-      ) : nozzles.length === 0 ? (
+      )}
+      {!loading && !error && nozzles.length === 0 && (
         <Card className="border-0 shadow-lg">
           <CardContent className="p-12 text-center">
             <Fuel className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -171,7 +157,8 @@ const NozzlesPage = () => {
             </Button>
           </CardContent>
         </Card>
-      ) : (
+      )}
+      {!loading && !error && nozzles.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {nozzles.map((nozzle) => (
             <EnhancedNozzleCard 

@@ -2,13 +2,40 @@
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { 
   User, 
-  CreateUserRequest, 
-  UpdateUserRequest,
-  ChangePasswordRequest,
-  ResetPasswordRequest,
-  CreateSuperAdminRequest,
   ApiResponse 
 } from './api-contract';
+
+export type UpdateUserRequest = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  role?: 'superadmin' | 'owner' | 'manager' | 'attendant';
+  stationId?: string;
+};
+
+export type CreateUserRequest = {
+  name: string;
+  email: string;
+  phone: string;
+  role: 'superadmin' | 'owner' | 'manager' | 'attendant';
+  stationId?: string;
+};
+
+export type ChangePasswordRequest = {
+  oldPassword: string;
+  newPassword: string;
+};
+
+export type ResetPasswordRequest = {
+  newPassword: string;
+};
+
+export type CreateSuperAdminRequest = {
+  name: string;
+  email: string;
+  phone: string;
+  role: 'superadmin';
+};
 
 export const usersApi = {
   // Get users for current tenant

@@ -5,6 +5,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '@/api/auth';
+import { useQueryClient } from '@tanstack/react-query';
 
 export type UserRole = 'superadmin' | 'owner' | 'manager' | 'attendant';
 
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [sessionExpired, setSessionExpired] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const token = localStorage.getItem('fuelsync_token');
   const isAuthenticated = !!user && !!token;
@@ -168,8 +170,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error('[AUTH-CONTEXT] Logout error:', error);
     } finally {
+      // Clear all local/session storage
       localStorage.removeItem('fuelsync_token');
       localStorage.removeItem('fuelsync_user');
+      sessionStorage.clear();
+      // Clear react-query cache
+      if (queryClient && typeof queryClient.clear === 'function') {
+        queryClient.clear();
+      }
       setUser(null);
       if (!location.pathname.includes('/login') && location.pathname !== '/') {
         navigate('/', { replace: true });
