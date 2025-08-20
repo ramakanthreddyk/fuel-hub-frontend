@@ -6,17 +6,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '@/api/auth';
 import { useQueryClient } from '@tanstack/react-query';
-
-export type UserRole = 'superadmin' | 'owner' | 'manager' | 'attendant';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  tenantId?: string;
-  tenantName?: string;
-}
+import type { User } from '@/api/api-contract';
 
 interface AuthContextType {
   user: User | null;
@@ -32,11 +22,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
-  children: ReactNode;
+  readonly children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem('fuelsync_token'));
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -44,7 +35,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const location = useLocation();
   const queryClient = useQueryClient();
 
-  const token = localStorage.getItem('fuelsync_token');
   const isAuthenticated = !!user && !!token;
 
   // Initialize auth state on mount
@@ -61,20 +51,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const parsedUser = JSON.parse(storedUser);
           if (parsedUser.role && ['superadmin', 'owner', 'manager', 'attendant'].includes(parsedUser.role)) {
             setUser(parsedUser as User);
+            setToken(token);
             console.log('[AUTH-CONTEXT] User restored from storage:', parsedUser);
           } else {
             console.error('[AUTH-CONTEXT] Invalid user role:', parsedUser.role);
             localStorage.removeItem('fuelsync_token');
             localStorage.removeItem('fuelsync_user');
+            setToken(null);
           }
         } else {
           console.log('[AUTH-CONTEXT] No stored credentials found');
+          setToken(null);
         }
       } catch (error) {
         console.error('[AUTH-CONTEXT] Error initializing auth:', error);
         localStorage.removeItem('fuelsync_token');
         localStorage.removeItem('fuelsync_user');
         setUser(null);
+        setToken(null);
       } finally {
         setIsLoading(false);
         setInitialized(true);
@@ -87,6 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('[AUTH-CONTEXT] Auth expired event received');
       setSessionExpired(true);
       setUser(null);
+      setToken(null);
       setIsLoading(false);
       setInitialized(true);
     };
@@ -108,7 +103,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       const response = await authApi.login({ email, password }, isAdminLogin);
       
-      if (!response || !response.token || !response.user) {
+      if (!response?.token || !response?.user) {
         throw new Error('Invalid response from server');
       }
       
@@ -126,10 +121,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem('fuelsync_user', JSON.stringify(authUser));
       
       setUser(authUser as User);
+      setToken(token);
       console.log('[AUTH-CONTEXT] Login successful:', authUser);
-      
-      // Let App.tsx handle navigation based on user role
-      console.log('[AUTH-CONTEXT] User authenticated, letting App.tsx handle navigation');
+      // Debug: Show token and user after login
+      console.log('[AUTH-CONTEXT] Token after login:', token);
+      console.log('[AUTH-CONTEXT] Token length:', token.length);
+      console.log('[AUTH-CONTEXT] User after login:', JSON.stringify(authUser, null, 2));  // Let App.tsx handle navigation based on user role
+  console.log('[AUTH-CONTEXT] User authenticated, letting App.tsx handle navigation');
     } catch (error: any) {
       console.error('[AUTH-CONTEXT] Login error:', error);
       throw new Error(error.response?.data?.message || error.message || 'Login failed');
@@ -143,15 +141,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('[AUTH-CONTEXT] Refreshing token');
       const response = await authApi.refreshToken();
       
-      if (response && response.token) {
+      if (response?.token) {
         localStorage.setItem('fuelsync_token', response.token);
+        setToken(response.token);
         console.log('[AUTH-CONTEXT] Token refreshed successfully');
-        
         if (response.user && ['superadmin', 'owner', 'manager', 'attendant'].includes(response.user.role)) {
           localStorage.setItem('fuelsync_user', JSON.stringify(response.user));
           setUser(response.user as User);
         }
-        
         return;
       }
       
@@ -164,32 +161,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = async () => {
-    try {
-      console.log('[AUTH-CONTEXT] Logging out user');
-      await authApi.logout();
-    } catch (error) {
-      console.error('[AUTH-CONTEXT] Logout error:', error);
-    } finally {
-      // Clear all local/session storage
-      localStorage.removeItem('fuelsync_token');
-      localStorage.removeItem('fuelsync_user');
-      sessionStorage.clear();
-      // Clear react-query cache
-      if (queryClient && typeof queryClient.clear === 'function') {
-        queryClient.clear();
+    (async () => {
+      try {
+        console.log('[AUTH-CONTEXT] Logging out user');
+        await authApi.logout();
+      } catch (error) {
+        console.error('[AUTH-CONTEXT] Logout error:', error);
+      } finally {
+        // Clear all local/session storage
+        localStorage.removeItem('fuelsync_token');
+        localStorage.removeItem('fuelsync_user');
+        sessionStorage.clear();
+        // Clear react-query cache
+        if (queryClient && typeof queryClient.clear === 'function') {
+          queryClient.clear();
+        }
+        setUser(null);
+        setToken(null);
+        if (!location.pathname.includes('/login') && location.pathname !== '/') {
+          navigate('/', { replace: true });
+        }
       }
-      setUser(null);
-      if (!location.pathname.includes('/login') && location.pathname !== '/') {
-        navigate('/', { replace: true });
-      }
-    }
+    })();
   };
 
   const getCurrentUser = () => {
     return user;
   };
 
-  const value: AuthContextType = {
+  // Memoize context value to avoid unnecessary renders
+  const value: AuthContextType = React.useMemo(() => ({
     user,
     isLoading,
     isAuthenticated,
@@ -198,7 +199,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     getCurrentUser,
     refreshToken
-  };
+  }), [user, isLoading, isAuthenticated, token]);
 
   return (
     <AuthContext.Provider value={value}>

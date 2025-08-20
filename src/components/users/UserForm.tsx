@@ -18,10 +18,9 @@ interface UserFormProps {
 export function UserForm({ user, onSubmit, onCancel, isLoading }: UserFormProps) {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreateUserRequest>({
     defaultValues: {
-      name: user?.name || '',
-      email: user?.email || '',
-      role: (user?.role as 'manager' | 'attendant') || 'attendant',
-      password: ''
+  name: user?.name || '',
+  email: user?.email || '',
+  role: (user?.role as 'superadmin' | 'owner' | 'manager' | 'attendant') || 'attendant',
     }
   });
 
@@ -79,20 +78,7 @@ export function UserForm({ user, onSubmit, onCancel, isLoading }: UserFormProps)
             </Select>
           </div>
 
-          {!user && (
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                {...register('password', { required: 'Password is required' })}
-                placeholder="Enter password"
-              />
-              {errors.password && (
-                <p className="text-sm text-red-600">{errors.password.message}</p>
-              )}
-            </div>
-          )}
+          {/* No password field in CreateUserRequest contract */}
 
           <div className="flex gap-2 pt-4">
             <Button type="submit" disabled={isLoading}>

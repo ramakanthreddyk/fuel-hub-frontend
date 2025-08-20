@@ -1,5 +1,7 @@
-// Common status type for stations, pumps, nozzles
-export type StationStatus = "active" | "inactive" | "maintenance";
+// Common status type for stations, pumps, nozzles, attendants
+export type EntityStatus = "active" | "inactive" | "maintenance";
+// Backward compatibility
+export type StationStatus = EntityStatus;
 // User type (frontend mirror of backend ExtendedUser)
 export interface User {
   id: string;
@@ -215,7 +217,7 @@ export interface Station {
   };
   contactNumber: string;
   email: string;
-  status: StationStatus;
+  status: EntityStatus;
   pumps: Pump[];
   nozzles: Nozzle[];
   createdAt: string;
@@ -226,7 +228,7 @@ export interface Pump {
   id: string;
   stationId: string;
   name: string;
-  status: StationStatus;
+  status: EntityStatus;
   nozzles: Nozzle[];
   createdAt: string;
   updatedAt: string;
@@ -238,7 +240,7 @@ export interface Nozzle {
   stationId: string;
   name: string;
   fuelType: string;
-  status: StationStatus;
+  status: EntityStatus;
   currentReading: number;
   lastReading: number;
   createdAt: string;
@@ -670,14 +672,14 @@ export interface AttendantStation {
   id: string;
   name: string;
   address: string;
-  status: 'active' | 'inactive' | 'maintenance';
+  status: EntityStatus;
 }
 
 export interface AttendantPump {
   id: string;
   stationId: string;
   name: string;
-  status: 'active' | 'inactive' | 'maintenance';
+  status: EntityStatus;
 }
 
 export interface AttendantNozzle {
@@ -686,7 +688,7 @@ export interface AttendantNozzle {
   stationId: string;
   name: string;
   fuelType: string;
-  status: 'active' | 'inactive' | 'maintenance';
+  status: EntityStatus;
 }
 
 export interface AlertSummary {

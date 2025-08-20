@@ -3,18 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Settings, Activity, AlertTriangle, Plus } from 'lucide-react';
 
-interface Nozzle {
-  id: string;
-  pumpId?: string;
-  pump_id?: string;
-  name?: string;
-  nozzle_number?: number;
-  fuelType?: string;
-  fuel_type?: string;
-  status: string;
-  createdAt?: string;
-  created_at?: string;
-}
+import type { Nozzle } from '@/api/api-contract';
 
 interface EnhancedNozzleCardProps {
   nozzle: Nozzle;
@@ -24,7 +13,7 @@ interface EnhancedNozzleCardProps {
 export function EnhancedNozzleCard({ nozzle, onTakeReading }: EnhancedNozzleCardProps) {
   // Handle both snake_case and camelCase properties
   const nozzleName = nozzle.name || '';
-  const fuelType = nozzle.fuelType || nozzle.fuel_type || 'unknown';
+  const fuelType = nozzle.fuelType || 'unknown';
   const status = nozzle.status || 'inactive';
 
   const getStatusColor = (statusValue: string) => {

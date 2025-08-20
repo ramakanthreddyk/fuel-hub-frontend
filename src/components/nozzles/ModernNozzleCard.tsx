@@ -5,18 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Fuel, Eye, Trash2, MapPin } from 'lucide-react';
 import { formatVolume } from '@/utils/formatters';
 
-interface Nozzle {
-  id: string;
-  name: string;
-  fuelType: string;
-  status: 'active' | 'maintenance' | 'inactive';
-  stationName?: string;
-  pumpName?: string;
-  lastReading?: number;
-}
+import type { Nozzle } from '@/api/api-contract';
 
 interface ModernNozzleCardProps {
-  nozzle: Nozzle;
+  nozzle: Nozzle & { stationName?: string; pumpName?: string; lastReading?: number };
   onView?: (nozzleId: string) => void;
   onDelete?: (nozzleId: string) => void;
   onRecord?: (nozzleId: string) => void;

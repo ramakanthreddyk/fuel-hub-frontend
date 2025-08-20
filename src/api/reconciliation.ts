@@ -5,7 +5,7 @@
  */
 import { contractClient } from './contract-client';
 import { apiClient } from './client';
-import { ReconciliationRecord, ReconciliationSummary, CreateReconciliationRequest, DailyReadingSummary } from './api-contract';
+import { ReconciliationRecord } from './api-contract';
 
 /**
  * Get reconciliation records
@@ -18,9 +18,23 @@ export const getReconciliationRecords = async (params: {
   return contractClient.get<ReconciliationRecord[]>('/reconciliation/records', params);
 };
 
+
 /**
  * Get reconciliation summary
  */
+export const getReconciliationSummary = async (params: {
+  stationId: string;
+  date: string;
+}): Promise<any | null> => {
+  if (!params.stationId || !params.date) {
+    throw new Error('Station ID and date are required for reconciliation summary');
+  }
+  const formattedDate = new Date(params.date).toISOString().split('T')[0];
+  return contractClient.get<any>('/reconciliation/summary', {
+    stationId: params.stationId,
+    date: formattedDate
+  });
+};
 
 
 /**
@@ -76,16 +90,15 @@ export const getReconciliationAnalytics = async (params: {
 
   if (records.length > 0) {
     const discrepancies = records.map(record => {
-      const expected = record.total_sales || 0;
-      const actual = record.variance || 0;
-      return Math.abs(actual);
+      // Use difference for discrepancy
+      return Math.abs(record.difference || 0);
     });
 
     analytics.averageDiscrepancy = discrepancies.reduce((a, b) => a + b, 0) / discrepancies.length;
     analytics.largestDiscrepancy = Math.max(...discrepancies);
     analytics.reconciliationRate = (records.filter(r => {
-      const variance = r.variance || 0;
-      return Math.abs(variance) < 100; // Within 100 rupees tolerance
+      // Use difference for reconciliation rate
+      return Math.abs(r.difference || 0) < 100; // Within 100 rupees tolerance
     }).length / records.length) * 100;
   }
 
@@ -106,9 +119,9 @@ export const getDailyReconciliationStatus = async (params: {
     stationId: record.stationId,
     date: record.date,
     status: record.status,
-    discrepancy: record.variance || 0,
-    totalSales: record.total_sales || 0,
-    cashBalance: record.variance || 0,
+    discrepancy: record.difference || 0,
+    totalSales: record.actualSales || 0,
+    cashBalance: record.difference || 0,
     expenses: 0
   }));
 };
@@ -122,24 +135,20 @@ export const reconciliationApi = {
     if (!stationId || !date) {
       throw new Error('Station ID and date are required for reconciliation summary');
     }
-    
-  // Ensure the date is properly formatted (YYYY-MM-DD)
-  const formattedDate = new Date(date).toISOString().split('T')[0];
-  // Use API base URL from client.ts
-  // @ts-ignore
-  const baseUrl = apiClient.defaults.baseURL;
-  const url = `${baseUrl}/reconciliation/summary?stationId=${stationId}&date=${formattedDate}`;
-    
+    // Ensure the date is properly formatted (YYYY-MM-DD)
+    const formattedDate = new Date(date).toISOString().split('T')[0];
+    // Use API base URL from client.ts
+    // @ts-ignore
+    const baseUrl = apiClient.defaults.baseURL;
+    const url = `${baseUrl}/reconciliation/summary?stationId=${stationId}&date=${formattedDate}`;
     // Get auth token
     const token = localStorage.getItem('fuelsync_token');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    
     // Add tenant context
     const storedUser = localStorage.getItem('fuelsync_user');
     if (storedUser) {
@@ -152,33 +161,23 @@ export const reconciliationApi = {
         console.error('Error parsing stored user:', error);
       }
     }
-    
     const response = await fetch(url, {
       method: 'GET',
       headers,
     });
-    
     if (!response.ok) {
       if (response.status === 404) {
         return null;
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
     const data = await response.json();
-    
-    // Handle different response formats
-    if (data && data.success && data.data) {
-      return data.data;
-    } else if (data && typeof data === 'object') {
-      return data;
-    } else {
-      return null;
-    }
+    // Handle different response formats using optional chaining
+    return data?.data ?? (typeof data === 'object' ? data : null);
   },
 
   // Create new reconciliation record
-  createReconciliation: async (data: CreateReconciliationRequest): Promise<ReconciliationRecord> => {
+  createReconciliation: async (data: any): Promise<ReconciliationRecord> => {
     try {
       // First check if reconciliation already exists
       try {

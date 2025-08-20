@@ -4,7 +4,7 @@
  * @description Modern station card with realistic design and better space utilization
  * Updated: 2025-07-27
  */
-import type { Station, Pump } from '../../../contract/models';
+import type { Station, Pump } from '@/api/api-contract';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ interface ModernStationCardProps {
   station: Station;
   onView: (stationId: string) => void;
   onDelete: (stationId: string) => void;
-  fuelPrices?: any[];
+  fuelPrices?: Array<{ fuelType: string; price: number }>;
   pumps?: Pump[];
   todaySales?: number;
   todayTransactions?: number;
@@ -33,7 +33,7 @@ export function ModernStationCard({
   todaySales = 0,
   todayTransactions = 0,
   activePumps = 0
-}: ModernStationCardProps) {
+}: Readonly<ModernStationCardProps>) {
   const isMobile = useIsMobile();
   
   const getStatusConfig = () => {

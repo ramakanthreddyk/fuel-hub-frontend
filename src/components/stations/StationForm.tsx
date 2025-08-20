@@ -3,6 +3,7 @@
  * @file components/stations/StationForm.tsx
  * @description Station form component with improved mobile layout and field grouping
  */
+import type { Station } from '@/api/api-contract';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,10 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, MapPin, Phone, Mail, Loader2 } from 'lucide-react';
 
-interface StationFormData {
-  name: string;
-  address: string;
-}
+type StationFormData = Pick<Station, 'name' | 'address'>;
 
 interface StationFormProps {
   onSubmit: (data: StationFormData) => void;

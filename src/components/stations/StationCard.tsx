@@ -4,6 +4,7 @@
  * @description Clean station card with proper styling and subtle hover effects
  */
 import React from 'react';
+import type { Station, EntityStatus } from '@/api/api-contract';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { usePumps } from '@/hooks/api/usePumps';
 import { useEnhancedSales } from '@/hooks/useEnhancedSales';
@@ -14,14 +15,7 @@ import { StationActions } from './StationActions';
 import { StationQuickStats } from './StationQuickStats';
 
 interface StationCardProps {
-  station: {
-    id: string;
-    name: string;
-    address: string;
-    status: 'active' | 'maintenance' | 'inactive';
-    pumpCount: number;
-    rating?: number;
-  };
+  station: Station;
   onView: (stationId: string) => void;
   onDelete: (stationId: string) => void;
 }
@@ -77,7 +71,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
       <div className="px-6 pb-4">
         <StationVisual
           stationName={station.name}
-          pumpCount={station.pumpCount}
+          pumpCount={station.pumps.length}
         />
       </div>
 
@@ -94,7 +88,7 @@ export function StationCard({ station, onView, onDelete }: StationCardProps) {
       {/* Stats Sections */}
       <div className="px-6 space-y-4 transform group-hover:translate-y-[-2px] transition-transform duration-300">
         <StationStats
-          pumpCount={station.pumpCount}
+          pumpCount={station.pumps.length}
           fuelPrices={processedPrices}
           pricesLoading={pricesLoading}
         />

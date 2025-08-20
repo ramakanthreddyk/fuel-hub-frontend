@@ -33,15 +33,9 @@ import {
 import { cn } from '@/lib/utils';
 import { useMobileFormatters } from '@/utils/mobileFormatters';
 
+import type { Pump } from '@/api/api-contract';
 // Unified pump interface
-export interface PumpData {
-  id: string;
-  name: string;
-  serialNumber?: string;
-  status: 'active' | 'inactive' | 'maintenance';
-  nozzleCount: number;
-  stationName?: string;
-}
+export type PumpData = Pump & { nozzleCount: number; serialNumber?: string; stationName?: string };
 
 // Display variant types
 export type PumpCardVariant = 'compact' | 'standard' | 'enhanced' | 'realistic' | 'creative';

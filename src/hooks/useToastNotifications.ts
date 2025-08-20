@@ -1,22 +1,30 @@
 import { toast } from 'sonner';
 import { useCallback } from 'react';
 import { useGlobalLoader } from '@/hooks/useGlobalLoader';
+import { formatReading, formatVolume } from '@/utils/formatters';
+import { isNaN } from 'lodash';
 
 export const useToastNotifications = () => {
   const { show: showLoader, hide: hideLoader } = useGlobalLoader();
 
-  const showSuccess = useCallback((title: string, description?: string) => {
+  const showSuccess = useCallback((title: string, description?: string | number) => {
     hideLoader();
+    const formattedDescription = description && !isNaN(Number(description))
+      ? formatVolume(description, 2) // Ensure 2 decimal places
+      : 'N/A';
     toast.success(title, {
-      description,
+      description: formattedDescription,
       duration: 3000,
     });
   }, [hideLoader]);
 
-  const showError = useCallback((title: string, description?: string) => {
+  const showError = useCallback((title: string, description?: string | number) => {
     hideLoader();
+    const formattedDescription = description && !isNaN(Number(description))
+      ? formatVolume(description, 2) // Ensure 2 decimal places
+      : 'N/A';
     toast.error(title, {
-      description,
+      description: formattedDescription,
       duration: 5000,
     });
   }, [hideLoader]);

@@ -5,16 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Fuel, Gauge, Settings, AlertTriangle, Zap, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface Pump {
-  id: string;
-  name: string;
-  serialNumber?: string;
-  status: 'active' | 'inactive' | 'maintenance';
-  nozzleCount: number;
-}
+import type { Pump } from '@/api/api-contract';
 
 interface EnhancedFuelPumpCardProps {
-  pump: Pump;
+  pump: Pump & { nozzleCount: number; serialNumber?: string };
   onViewNozzles?: (pumpId: string) => void;
   onSettings?: (pumpId: string) => void;
 }

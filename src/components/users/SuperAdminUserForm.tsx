@@ -4,10 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreateSuperAdminRequest, AdminUser } from '@/api/api-contract';
+// Local types for super admin creation
+interface SuperAdminUser {
+  name: string;
+  email: string;
+}
+
+interface CreateSuperAdminRequest {
+  name: string;
+  email: string;
+  password: string;
+}
 
 interface SuperAdminUserFormProps {
-  user?: AdminUser;
+  user?: SuperAdminUser;
   onSubmit: (data: CreateSuperAdminRequest) => void;
   onCancel: () => void;
   isLoading: boolean;

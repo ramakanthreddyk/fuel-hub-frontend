@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { EnhancedNozzleCard } from '@/components/nozzles/EnhancedNozzleCard';
 import { ArrowLeft, Fuel, Activity, AlertTriangle, Plus, Gauge } from 'lucide-react';
 import { nozzleService } from '@/services/nozzleService';
-import type { Nozzle } from '../../contract/models';
+import type { Nozzle } from '@/api/api-contract';
 // Use canonical Nozzle type from contract/models
 
 const NozzlesPage: React.FC = () => {
@@ -23,12 +23,15 @@ const NozzlesPage: React.FC = () => {
       setError('');
       try {
         const nozzlesArray = await nozzleService.getNozzles(pumpId);
-        setNozzles(nozzlesArray);
-        if (nozzlesArray.length > 0 && nozzlesArray[0].name) {
-          setPumpName(nozzlesArray[0].name);
-        } else {
-          setPumpName('Pump');
-        }
+        // Ensure lastReading property exists for all nozzles
+        // Patch: convert contract/models Nozzle to api-contract Nozzle by adding lastReading
+        const normalizedNozzles = nozzlesArray.map(n => ({
+          ...n,
+          lastReading: null // always add lastReading for compatibility
+        }));
+        setNozzles(normalizedNozzles);
+        // Fallback: use pumpId as pumpName if available
+        setPumpName(pumpId ? `Pump ${pumpId}` : 'Pump');
       } catch (err: any) {
         setError(err.message || 'Error fetching nozzles');
         setNozzles([]);
@@ -45,6 +48,7 @@ const NozzlesPage: React.FC = () => {
 
   const activeNozzles = nozzles.filter(n => n.status === 'active').length;
   const totalNozzles = nozzles.length;
+  const operationalPercent = totalNozzles > 0 ? Math.round((activeNozzles/totalNozzles)*100) : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
@@ -113,7 +117,7 @@ const NozzlesPage: React.FC = () => {
                 <Plus className="h-6 w-6 text-white" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-purple-900">{Math.round((activeNozzles/totalNozzles)*100) || 0}%</div>
+                <div className="text-2xl font-bold text-purple-900">{operationalPercent}%</div>
                 <div className="text-sm text-purple-700 font-medium">Operational</div>
               </div>
             </div>
@@ -161,9 +165,9 @@ const NozzlesPage: React.FC = () => {
       {!loading && !error && nozzles.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {nozzles.map((nozzle) => (
-            <EnhancedNozzleCard 
-              key={nozzle.id} 
-              nozzle={nozzle} 
+            <EnhancedNozzleCard
+              key={nozzle.id}
+              nozzle={{ ...nozzle, lastReading: nozzle.lastReading ?? null }}
               onTakeReading={handleTakeReading}
             />
           ))}

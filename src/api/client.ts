@@ -42,16 +42,26 @@ apiClient.interceptors.request.use(
 
     // Add tenant context
     const storedUser = localStorage.getItem('fuelsync_user');
+    let tenantId = undefined;
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         if (user.tenantId) {
+          tenantId = user.tenantId;
           config.headers['x-tenant-id'] = user.tenantId;
         }
       } catch (error) {
         console.error('[API-CLIENT] Error parsing stored user:', error);
       }
     }
+    // Debug log outgoing request headers
+    console.log('[API-CLIENT] Outgoing request:', {
+      url: config.url,
+      method: config.method,
+      hasAuth: !!token,
+      tenantId,
+      headers: config.headers
+    });
 
     return config;
   },
@@ -75,12 +85,36 @@ apiClient.interceptors.response.use(
     
     // Handle authentication errors
     if (error.response?.status === 401 || error.response?.status === 403) {
-      // Clear stored auth data
-      localStorage.removeItem('fuelsync_token');
-      localStorage.removeItem('fuelsync_user');
+      console.warn('[API-CLIENT] Authentication error detected:', {
+        url: error.config?.url,
+        status: error.response?.status,
+        message: error.response?.data?.message
+      });
       
-      // Redirect to login
-      window.location.href = '/login';
+      // Only clear auth data and redirect if this wasn't a login attempt
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      const isCurrentUserLoggedIn = !!localStorage.getItem('fuelsync_token') && !!localStorage.getItem('fuelsync_user');
+      
+      if (!isLoginRequest && isCurrentUserLoggedIn) {
+        console.error('[API-CLIENT] Authenticated request failed with auth error, this suggests token is invalid');
+        
+        // Clear stored auth data
+        localStorage.removeItem('fuelsync_token');
+        localStorage.removeItem('fuelsync_user');
+        
+        // Dispatch custom event for AuthContext to handle
+        window.dispatchEvent(new Event('auth-expired'));
+        
+        // Only redirect if not already on login page
+        if (!window.location.pathname.includes('/login')) {
+          console.log('[API-CLIENT] Redirecting to login due to auth failure');
+          window.location.href = '/login';
+        }
+      } else if (isLoginRequest) {
+        console.log('[API-CLIENT] Login request failed, not clearing session');
+      } else {
+        console.log('[API-CLIENT] Auth error but no current session, ignoring');
+      }
       return Promise.reject(error);
     }
     

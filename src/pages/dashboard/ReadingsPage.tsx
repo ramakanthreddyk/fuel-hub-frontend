@@ -22,9 +22,10 @@ import { useStations } from '@/hooks/api/useStations';
 import { useSalesSummary } from '@/hooks/useDashboard';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 import { useReadingsStore } from '@/store/readingsStore';
+import { toast } from 'sonner';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { formatDateTime, formatCurrency } from '@/utils/formatters';
+import { formatDateTime, formatCurrency, formatVolume } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 import { ReadingCard } from '@/components/readings/ReadingCard';
 import { useAutoLoader } from '@/hooks/useAutoLoader';
@@ -93,12 +94,10 @@ export default function ReadingsPage() {
   // Show success toast if we have a last created reading
   useEffect(() => {
     if (lastCreatedReading.id) {
-      // Import toast dynamically to avoid SSR issues
-      import('sonner').then(({ toast }) => {
-        toast.success('Reading Recorded Successfully!', {
-          description: `${lastCreatedReading.nozzleNumber ? `Nozzle #${lastCreatedReading.nozzleNumber}` : 'Nozzle'} reading of ${lastCreatedReading.reading}L was recorded.`,
-          duration: 4000,
-        });
+      toast.success('Reading Recorded Successfully!', {
+        description: (lastCreatedReading.nozzleNumber ? 'Nozzle #' + lastCreatedReading.nozzleNumber : 'Nozzle') +
+          ' reading of ' + formatVolume(lastCreatedReading.reading, 2, true, '') + ' was recorded.',
+        duration: 4000,
       });
 
       const timer = setTimeout(() => {
@@ -117,20 +116,36 @@ export default function ReadingsPage() {
   // Ensure readings is always an array and enrich with related data
   const readingsArray = Array.isArray(readings) ? readings : [];
   
-  // Enrich readings with nozzle, pump, and station information
-  const enrichedReadings = readingsArray.map(reading => {
+  // Handle errors from API hooks
+  useEffect(() => {
+    if (error) {
+      toast.error('Failed to load readings. Please try again later.', {
+        duration: 5000,
+      });
+      console.error('[READINGS-PAGE] Error loading readings:', error);
+    }
+  }, [error]);
+  
+  // Validate readings data
+  const validatedReadings = readingsArray.filter(reading => {
+    if (!reading.nozzleId || !reading.reading || !reading.recordedAt) {
+      console.warn('[READINGS-PAGE] Invalid reading data:', reading);
+      return false;
+    }
+    return true;
+  });
+  
+  // Enrich validated readings with nozzle, pump, and station information
+  const enrichedReadings = validatedReadings.map(reading => {
     const nozzle = nozzles.find(n => n.id === reading.nozzleId);
     const pump = pumps.find(p => p.id === nozzle?.pumpId);
     const station = stations.find(s => s.id === pump?.stationId);
     
     return {
       ...reading,
-      nozzleNumber: nozzle?.nozzleNumber,
-      fuelType: nozzle?.fuelType,
-      pumpName: pump?.name,
-      stationName: station?.name,
-      pumpId: pump?.id,
-      stationId: station?.id
+      nozzleNumber: nozzle?.nozzleNumber || 'Unknown',
+      pumpName: pump?.name || 'Unknown Pump',
+      stationName: station?.name || 'Unknown Station',
     };
   });
   
@@ -244,6 +259,18 @@ export default function ReadingsPage() {
         return <Badge variant="outline">Unknown</Badge>;
     }
   };
+
+  // Fix for stationName error by deriving stationName from pump and station data
+  const enrichedAlerts = pendingAlerts.map(alert => {
+    // Find the nozzle, pump, and station for this alert
+    const nozzle = nozzles.find(n => n.id === alert.nozzleId);
+    const pump = pumps.find(p => p.id === nozzle?.pumpId);
+    const station = stations.find(s => s.id === pump?.stationId);
+    return {
+      ...alert,
+      stationName: station?.name || 'Station',
+    };
+  });
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-3 sm:p-4 lg:p-6">
@@ -379,10 +406,10 @@ export default function ReadingsPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
-              {pendingAlerts.map((alert) => (
+              {enrichedAlerts.map((alert) => (
                 <li key={alert.id} className="flex items-center justify-between bg-white/70 rounded-lg p-3 border border-orange-100">
                   <span className="font-medium text-orange-800">
-                    {alert.stationName || 'Station'} – Nozzle {alert.id}
+                    {alert.stationName} – Nozzle {alert.id}
                   </span>
                   <div className="flex gap-2">
                     <Button

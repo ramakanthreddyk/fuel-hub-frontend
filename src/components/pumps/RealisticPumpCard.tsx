@@ -17,14 +17,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Fuel, Eye, Settings, Droplets, Cog, Edit, Power, Wrench, Trash2 } from 'lucide-react';
 
+import type { Pump } from '@/api/api-contract';
+
 interface RealisticPumpCardProps {
-  pump: {
-    id: string;
-    name: string;
-    serialNumber?: string;
-    status: string;
-    nozzleCount: number;
-  };
+  pump: Pump & { nozzleCount: number; serialNumber?: string };
   onViewNozzles: (id: string) => void;
   onSettings?: (id: string) => void;
 }

@@ -10,13 +10,10 @@ import { ColorfulCard, CardContent, CardHeader } from '@/components/ui/colorful-
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FuelBadge } from '@/components/ui/fuel-badge';
 
+import type { Nozzle } from '@/api/api-contract';
+
 interface NozzleCardProps {
-  nozzle: {
-    id: string;
-  name: string;
-    fuelType: string;
-    status: string;
-  };
+  nozzle: Nozzle;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onRecordReading?: (id: string) => void;

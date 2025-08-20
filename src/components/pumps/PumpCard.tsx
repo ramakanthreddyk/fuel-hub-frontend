@@ -4,24 +4,19 @@
  * @description Enhanced pump card component with realistic fuel station design
  * Updated for immersive fuel station UI – 2025-07-04
  */
+import type { Pump } from '@/api/api-contract';
 import { Button } from '@/components/ui/button';
-import { Eye, Settings, Fuel, Hash, Activity } from 'lucide-react';
+import { Eye, Settings, Hash, Activity } from 'lucide-react';
 import { ColorfulCard, CardContent, CardHeader } from '@/components/ui/colorful-card';
 import { StatusBadge } from '@/components/ui/status-badge';
 
 interface PumpCardProps {
-  pump: {
-    id: string;
-    name: string;
-    serialNumber?: string;
-    status: string;
-    nozzleCount: number;
-  };
+  pump: Pump & { nozzleCount: number; serialNumber?: string };
   onViewNozzles: (id: string) => void;
   onSettings: (id: string) => void;
 }
 
-export function PumpCard({ pump, onViewNozzles, onSettings }: PumpCardProps) {
+export function PumpCard({ pump, onViewNozzles, onSettings }: Readonly<PumpCardProps>) {
   const getGradientByStatus = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active':

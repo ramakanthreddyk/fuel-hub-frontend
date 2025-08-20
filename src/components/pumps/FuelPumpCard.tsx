@@ -22,15 +22,10 @@ import {
 import { cn } from '@/lib/utils';
 import { useFuelStore } from '@/store/fuelStore';
 
+import type { Pump } from '@/api/api-contract';
+
 interface FuelPumpCardProps {
-  pump: {
-    id: string;
-    name: string;
-    serialNumber?: string;
-    status: 'active' | 'maintenance' | 'inactive';
-    nozzleCount: number;
-    stationName?: string;
-  };
+  pump: Pump & { nozzleCount: number; serialNumber?: string; stationName?: string };
   onViewNozzles: (pumpId: string) => void;
   onDelete: (pumpId: string) => void;
   needsAttention?: boolean;

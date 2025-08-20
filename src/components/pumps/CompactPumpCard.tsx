@@ -11,14 +11,10 @@ import {
 import { Fuel, Settings, MoreVertical, Eye, Trash2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+import type { Pump } from '@/api/api-contract';
+
 interface CompactPumpCardProps {
-  pump: {
-    id: string;
-    name: string;
-    serialNumber?: string;
-    status: 'active' | 'inactive' | 'maintenance';
-    nozzleCount: number;
-  };
+  pump: Pump & { nozzleCount: number; serialNumber?: string };
   onViewNozzles?: (pumpId: string) => void;
   onEdit?: (pumpId: string) => void;
   onDelete?: (pumpId: string) => void;

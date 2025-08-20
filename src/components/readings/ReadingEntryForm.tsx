@@ -3,8 +3,9 @@
  * @description Form component for recording nozzle readings
  */
 import React, { useState, useEffect } from 'react';
+// ...existing code...
 import { useForm } from 'react-hook-form';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useFuelStore } from '@/store/fuelStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, DollarSign, Fuel, Gauge, Clock, CreditCard, Building2, Droplets, AlertTriangle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowLeft, DollarSign, Gauge, Clock, CreditCard, Building2, Droplets, AlertTriangle } from 'lucide-react';
+// ...existing code...
 import { useToastNotifications } from '@/hooks/useToastNotifications';
+import { formatReading, formatVolume } from '@/utils/formatters';
 
 // Import API hooks
 import { useStations } from '@/hooks/api/useStations';
@@ -41,7 +43,7 @@ interface ReadingFormData {
 }
 
 interface ReadingEntryFormProps {
-  preselected?: {
+  readonly preselected?: {
     stationId?: string;
     pumpId?: string;
     nozzleId?: string;
@@ -61,7 +63,7 @@ function useSales(nozzleId: string, from: string, to: string, options: { enabled
 export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { showSuccess, showError } = useToastNotifications();
+  useToastNotifications();
   
   // Get initial values from props, location state, or store
   const { selectedStationId, selectedPumpId, selectedNozzleId } = useFuelStore();
@@ -75,7 +77,8 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   });
   
   // Local state for selections
-  const [selectedStation, setSelectedStation] = useState(initialValues.current.stationId);
+  // Always ensure selectedStation is a string (never undefined/null)
+  const [selectedStation, setSelectedStation] = useState<string>(initialValues.current.stationId || "");
   const [selectedPump, setSelectedPump] = useState(initialValues.current.pumpId);
   const [selectedNozzle, setSelectedNozzle] = useState(initialValues.current.nozzleId);
 
@@ -99,14 +102,22 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   const { data: canCreateReading, isLoading: loadingCanCreate } = useCanCreateReading(selectedNozzle);
   const { data: fuelPrices = [], isLoading: loadingPrices } = useFuelPrices(selectedStation);
   const { data: creditors = [] } = useQuery({
-    queryKey: ['creditors', selectedStation],
-    queryFn: () => creditorsApi.getCreditors(selectedStation),
-    enabled: !!selectedStation
+    queryKey: ['creditors'],
+    queryFn: () => creditorsApi.getCreditors(),
+    enabled: true
   });
 
   // Sale summary state
-  const [saleSummary, setSaleSummary] = useState(null);
-  const [readingWindow, setReadingWindow] = useState(null);
+  interface SaleSummary {
+    totalLiters: number;
+    totalAmount: number;
+    byPayment: Record<string, { liters: number; amount: number }>;
+    sales: Array<{ liters: number; amount: number; paymentMethod: string }>;
+  }
+  const [saleSummary, setSaleSummary] = useState<SaleSummary | null>(null);
+  // Explicitly type readingWindow for useSales
+  type ReadingWindow = { nozzleId: string; from: string; to: string } | null;
+  const [readingWindow] = useState<ReadingWindow>(null);
   const createReading = useCreateReading({
     navigateAfterSuccess: true,
     navigateTo: '/dashboard'
@@ -118,10 +129,10 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   useAutoLoader(loadingPrices, 'Loading fuel prices...');
   
   // Fetch sales for the nozzle between previous and new reading
-  const { data: sales = [], refetch: refetchSales } = useSales(
-    readingWindow?.nozzleId,
-    readingWindow?.from,
-    readingWindow?.to,
+  const { data: sales = [] } = useSales(
+    readingWindow?.nozzleId ?? "",
+    readingWindow?.from ?? "",
+    readingWindow?.to ?? "",
     { enabled: !!readingWindow }
   );
 
@@ -250,10 +261,10 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <div className="text-green-800">
-                    <strong>Total Liters:</strong> {saleSummary.totalLiters.toFixed(2)} L
+                    <strong>Total Liters:</strong> {formatVolume(saleSummary.totalLiters)} L
                   </div>
                   <div className="text-green-800">
-                    <strong>Total Amount:</strong> ₹{saleSummary.totalAmount.toFixed(2)}
+                    <strong>Total Amount:</strong> ₹{formatReading(saleSummary.totalAmount)}
                   </div>
                 </div>
                 <div>
@@ -261,7 +272,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                   <ul className="list-disc ml-6 mt-2">
                     {Object.entries(saleSummary.byPayment).map(([method, stats]) => (
                       <li key={method} className="text-green-700">
-                        {method}: {stats.liters.toFixed(2)} L, ₹{stats.amount.toFixed(2)}
+                        {method}: {formatVolume(stats.liters)} L, ₹{formatReading(stats.amount)}
                       </li>
                     ))}
                   </ul>
@@ -638,7 +649,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                                 {creditors.length > 0 ? (
                                   creditors.map((creditor) => (
                                     <SelectItem key={creditor.id} value={creditor.id}>
-                                      {creditor.partyName}
+                                      {creditor.name ? creditor.name : String(creditor.id)}
                                     </SelectItem>
                                   ))
                                 ) : (
@@ -657,25 +668,22 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                 </div>
 
                 <Button 
-                  type="submit" 
-                  disabled={createReading.isPending || !finalCanSubmit} 
+                  type="submit"
+                  disabled={createReading.isPending || !finalCanSubmit}
                   className="w-full h-14 text-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-200"
                 >
-                  {createReading.isPending ? (
-                    <>
-                      <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-                      Recording...
-                    </>
-                  ) : hasMissingPrices ? (
-                    'Set Fuel Price Required'
-                  ) : !hasRequiredFields ? (
-                    'Fill Required Fields'
-                  ) : (
-                    <>
-                      <Gauge className="mr-2 h-5 w-5" />
-                      Record Reading
-                    </>
-                  )}
+                  {(() => {
+                    if (createReading.isPending) {
+                      return <><div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>Recording...</>;
+                    }
+                    if (hasMissingPrices) {
+                      return 'Set Fuel Price Required';
+                    }
+                    if (!hasRequiredFields) {
+                      return 'Fill Required Fields';
+                    }
+                    return <><Gauge className="mr-2 h-5 w-5" />Record Reading</>;
+                  })()}
                 </Button>
               </form>
             </Form>

@@ -11,7 +11,7 @@ import { formatCurrency } from '@/utils/formatters';
 
 interface StationStatsProps {
   pumpCount: number;
-  fuelPrices: Record<string, any>;
+  fuelPrices: Record<string, { price: number }>;
   pricesLoading: boolean;
 }
 

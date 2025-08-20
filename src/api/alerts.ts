@@ -1,9 +1,10 @@
 
-import { apiClient, extractApiData, extractApiArray } from './client';
-import type { Alert, AlertsParams, ApiResponse } from './api-contract';
+import { apiClient, extractApiArray } from './client';
+import type { Alert, AlertsParams } from './api-contract';
 
 export const alertsApi = {
-  getAlerts: async (params?: AlertsParams): Promise<Alert[]> => {
+  // Ensure AlertsParams includes stationId property
+  getAlerts: async (params?: AlertsParams & { stationId?: string }): Promise<Alert[]> => {
     try {
       const searchParams = new URLSearchParams();
       if (params?.stationId) searchParams.append('stationId', params.stationId);
