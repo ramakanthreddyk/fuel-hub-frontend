@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AttendantSidebar } from '@/components/attendant/AttendantSidebar';
 
-export function AttendantLayout() {
+const AttendantLayout = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -19,4 +19,6 @@ export function AttendantLayout() {
       </div>
     </SidebarProvider>
   );
-}
+};
+
+export default AttendantLayout;

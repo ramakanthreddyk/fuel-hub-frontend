@@ -14,6 +14,8 @@ interface EmptyStateProps {
   icon?: 'database' | 'chart' | 'file' | 'users' | 'default';
   actionLabel?: string;
   onAction?: () => void;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
   showRefresh?: boolean;
   onRefresh?: () => void;
   className?: string;
@@ -33,6 +35,8 @@ export function EmptyState({
   icon = 'default',
   actionLabel,
   onAction,
+  secondaryActionLabel,
+  onSecondaryAction,
   showRefresh = true,
   onRefresh,
   className = ''
@@ -74,6 +78,17 @@ export function EmptyState({
               className="flex items-center space-x-2"
             >
               <span>{actionLabel}</span>
+            </Button>
+          )}
+
+          {secondaryActionLabel && onSecondaryAction && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onSecondaryAction}
+              className="flex items-center space-x-2"
+            >
+              <span>{secondaryActionLabel}</span>
             </Button>
           )}
         </div>

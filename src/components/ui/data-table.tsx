@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import {
@@ -21,7 +20,7 @@ import {
   SortDesc
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { EmptyState } from '@/components/common/EmptyState';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export interface DataTableColumn<T = any> {
   /** Column key/accessor */
@@ -163,7 +162,11 @@ export function DataTable<T = any>({
         <EmptyState
           title={emptyState?.title || 'No data available'}
           description={emptyState?.description || 'There are no items to display.'}
-          action={emptyState?.action}
+          onAction={() => {
+            if (emptyState?.action) {
+              emptyState.action.onClick();
+            }
+          }}
         />
       </div>
     );

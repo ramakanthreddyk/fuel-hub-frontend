@@ -7,7 +7,7 @@ import { Header } from './Header';
  * SuperAdmin layout component that provides consistent structure
  * for all superadmin pages with sidebar navigation and header.
  */
-export function SuperAdminLayout() {
+const SuperAdminLayout = () => {
   return (
     <div className="min-h-screen flex w-full bg-white">
       <SuperAdminSidebar />
@@ -21,4 +21,6 @@ export function SuperAdminLayout() {
       </div>
     </div>
   );
-}
+};
+
+export default SuperAdminLayout;

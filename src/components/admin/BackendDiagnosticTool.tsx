@@ -27,8 +27,15 @@ export function BackendDiagnosticTool() {
     setIsLoading(true);
     setError(null);
     try {
-      const diagnosticResults = await diagnosticApi.checkBackendHealth();
-      setResults(diagnosticResults);
+      const connectivityResult = await diagnosticApi.checkConnectivity();
+      setResults({
+        auth: { status: connectivityResult.status === 'ok' ? 'ok' : 'error', error: null },
+        tenants: { status: 'unknown', error: null },
+        users: { status: 'unknown', error: null },
+        plans: { status: 'unknown', error: null },
+        dashboard: { status: 'unknown', error: null },
+        schemaIssues: [],
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error occurred');
     } finally {
@@ -69,7 +76,7 @@ export function BackendDiagnosticTool() {
             <p className="text-amber-700 font-medium">Schema Issues Detected:</p>
             <ul className="list-disc pl-5 mt-2">
               {results.schemaIssues.map((issue, index) => (
-                <li key={index} className="text-amber-700">{issue}</li>
+                <li key={`${issue}-${index}`} className="text-amber-700">{issue}</li>
               ))}
             </ul>
             <p className="text-amber-700 mt-2 text-sm">

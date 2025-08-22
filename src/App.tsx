@@ -1,8 +1,8 @@
 /**
  * @file App.tsx
- * @description Main application component with role-based routing
+ * @description Main application component with role-based routing and lazy loading
  */
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
@@ -11,83 +11,115 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useAuth } from './contexts/AuthContext';
 
-// Import pages
-import ModernLandingPage from './pages/ModernLandingPage';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/dashboard/DashboardPage';
-
-// Import modern layout components
-import { SmartLayout } from './components/layout/ModernLayout';
-
 // Import test utility for debugging
 import './utils/testNozzleHierarchy';
-import { SuperAdminLayout } from './components/layout/SuperAdminLayout';
-import { AttendantLayout } from './components/layout/AttendantLayout';
-
-// Import dashboard pages
-import StationsPage from './pages/dashboard/StationsPage';
-import StationDetailPage from './pages/dashboard/StationDetailPage';
-import NewStationPage from './pages/dashboard/NewStationPage';
-import EditStationPage from './pages/dashboard/EditStationPage';
-import StationSettingsPage from './pages/dashboard/StationSettingsPage';
-import PumpsPage from './pages/dashboard/PumpsPage';
-import PumpDetailPage from './pages/dashboard/PumpDetailPage';
-import CreatePumpPage from './pages/dashboard/CreatePumpPage';
-import EditPumpPage from './pages/dashboard/EditPumpPage';
-import NozzlesPage from './pages/dashboard/NozzlesPage';
-import CreateNozzlePage from './pages/dashboard/CreateNozzlePage';
-import EditNozzlePage from './pages/dashboard/EditNozzlePage';
-import SalesPage from './pages/dashboard/SalesPage';
-import SalesOverviewPage from './pages/dashboard/SalesOverviewPage';
-import ReportsPage from './pages/dashboard/ReportsPage';
-import InventoryPage from './pages/dashboard/InventoryPage';
-import SettingsPage from './pages/dashboard/SettingsPage';
-import UsersPage from './pages/dashboard/UsersPage';
-import ReconciliationPage from './pages/dashboard/ReconciliationPage';
-import ReconciliationDetailPage from './pages/dashboard/ReconciliationDetailPage';
-import ReadingsPage from './pages/dashboard/ReadingsPage';
-import SimpleReadingPage from './pages/dashboard/SimpleReadingPage';
-import ReadingDetailPage from './pages/dashboard/ReadingDetailPage';
-import FuelPricesPage from './pages/dashboard/FuelPricesPage';
-import FuelInventoryPage from './pages/dashboard/FuelInventoryPage';
-import AnalyticsPage from './pages/dashboard/AnalyticsPage';
-import CreditorsPage from './pages/dashboard/CreditorsPage';
-import NewCreditorPage from './pages/dashboard/NewCreditorPage';
-import CreditorDetailPage from './pages/dashboard/CreditorDetailPage';
-import NewCreditorPaymentPage from './pages/dashboard/NewCreditorPaymentPage';
-import CashReportPage from './pages/dashboard/CashReportPage';
-import SimpleCashReportSubmission from './pages/dashboard/SimpleCashReportSubmission';
-import TestCashReportPage from './pages/dashboard/TestCashReportPage';
-import CashReportsListPage from './pages/dashboard/CashReportsListPage';
-import { QuickReadingButton } from './components/readings/QuickReadingButton';
-import { CashReportTest } from './components/test/CashReportTest';
-
-// Attendant Pages
-import AttendantDashboard from './pages/attendant/AttendantDashboard';
-import SimpleReadingEntry from './pages/attendant/SimpleReadingEntry';
-import SimpleCashReport from './pages/attendant/SimpleCashReport';
-import AttendantAlertsPage from './pages/attendant/AttendantAlertsPage';
-import AttendantInventoryPage from './pages/attendant/AttendantInventoryPage';
-
-// SuperAdmin Pages
-import SuperAdminOverviewPage from './pages/superadmin/OverviewPage';
-import SuperAdminTenantsPage from './pages/superadmin/TenantsPage';
-import TenantDetailsPage from './pages/superadmin/TenantDetailsPage';
-import TenantSettingsPage from './pages/superadmin/TenantSettingsPage';
-import SuperAdminUsersPage from './pages/superadmin/UsersPage';
-import SuperAdminPlansPage from './pages/superadmin/PlansPage';
-import SuperAdminAnalyticsPage from './pages/superadmin/AnalyticsPage';
-import SuperAdminSettingsPage from './pages/superadmin/SettingsPage';
-
-// Reset Password
-import ResetPasswordPage from './pages/dashboard/ResetPasswordPage';
 
 // Notifications
 import { DailyReminderToast } from './components/notifications/DailyReminderToast';
 
-// Error boundary component
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
-  constructor(props: {children: React.ReactNode}) {
+// Core layouts and pages (non-feature specific)
+const ModernLandingPage = React.lazy(() => import('./pages/ModernLandingPage'));
+
+// Layout Components
+const SmartLayout = React.lazy(() => import('./components/layout/ModernLayout').then(module => ({ default: module.SmartLayout })));
+const SuperAdminLayout = React.lazy(() => import('./components/layout/SuperAdminLayout'));
+const AttendantLayout = React.lazy(() => import('./components/layout/AttendantLayout'));
+
+// Feature-based lazy imports
+// Auth Feature
+const LoginPage = React.lazy(() => import('./features/auth/pages/LoginPage'));
+
+// Dashboard Feature
+const DashboardPage = React.lazy(() => import('./features/dashboard/pages/DashboardPage'));
+const AnalyticsPage = React.lazy(() => import('./features/dashboard/pages/AnalyticsPage'));
+const SummaryPage = React.lazy(() => import('./features/dashboard/pages/SummaryPage'));
+
+// Stations Feature
+const StationsPage = React.lazy(() => import('./features/stations/pages/StationsPage'));
+
+// Pumps Feature  
+const PumpsPage = React.lazy(() => import('./features/pumps/pages/PumpsPage'));
+
+// Nozzles Feature
+const NozzlesPage = React.lazy(() => import('./features/nozzles/pages/NozzlesPage'));
+
+// Readings Feature
+const ReadingsPage = React.lazy(() => import('./features/readings/pages/ReadingsPage'));
+
+// Users Feature
+const UsersPage = React.lazy(() => import('./features/users/pages/UsersPage'));
+
+// Settings Feature
+const SettingsPage = React.lazy(() => import('./features/settings/pages/SettingsPage'));
+
+// Fuel Prices Feature
+const FuelPricesPage = React.lazy(() => import('./features/fuel-prices/pages/FuelPricesPage'));
+
+// Legacy imports for pages not yet moved (keeping these for now)
+const StationDetailPage = React.lazy(() => import('./pages/dashboard/StationDetailPage'));
+const NewStationPage = React.lazy(() => import('./pages/dashboard/NewStationPage'));
+const EditStationPage = React.lazy(() => import('./pages/dashboard/EditStationPage'));
+const StationSettingsPage = React.lazy(() => import('./pages/dashboard/StationSettingsPage'));
+const PumpDetailPage = React.lazy(() => import('./pages/dashboard/PumpDetailPage'));
+const CreatePumpPage = React.lazy(() => import('./pages/dashboard/CreatePumpPage'));
+const EditPumpPage = React.lazy(() => import('./pages/dashboard/EditPumpPage'));
+const CreateNozzlePage = React.lazy(() => import('./pages/dashboard/CreateNozzlePage'));
+const EditNozzlePage = React.lazy(() => import('./pages/dashboard/EditNozzlePage'));
+const SalesPage = React.lazy(() => import('./pages/dashboard/SalesPage'));
+const SalesOverviewPage = React.lazy(() => import('./pages/dashboard/SalesOverviewPage'));
+const ReportsPage = React.lazy(() => import('./pages/dashboard/ReportsPage'));
+const InventoryPage = React.lazy(() => import('./pages/dashboard/InventoryPage'));
+const ReconciliationPage = React.lazy(() => import('./pages/dashboard/ReconciliationPage'));
+const ReconciliationDetailPage = React.lazy(() => import('./pages/dashboard/ReconciliationDetailPage'));
+const SimpleReadingPage = React.lazy(() => import('./pages/dashboard/SimpleReadingPage'));
+const ReadingDetailPage = React.lazy(() => import('./pages/dashboard/ReadingDetailPage'));
+const FuelInventoryPage = React.lazy(() => import('./pages/dashboard/FuelInventoryPage'));
+const CreditorsPage = React.lazy(() => import('./pages/dashboard/CreditorsPage'));
+const NewCreditorPage = React.lazy(() => import('./pages/dashboard/NewCreditorPage'));
+const CreditorDetailPage = React.lazy(() => import('./pages/dashboard/CreditorDetailPage'));
+const NewCreditorPaymentPage = React.lazy(() => import('./pages/dashboard/NewCreditorPaymentPage'));
+const CashReportPage = React.lazy(() => import('./pages/dashboard/CashReportPage'));
+const SimpleCashReportSubmission = React.lazy(() => import('./pages/dashboard/SimpleCashReportSubmission'));
+const TestCashReportPage = React.lazy(() => import('./pages/dashboard/TestCashReportPage'));
+const CashReportsListPage = React.lazy(() => import('./pages/dashboard/CashReportsListPage'));
+const ResetPasswordPage = React.lazy(() => import('./pages/dashboard/ResetPasswordPage'));
+
+// Attendant Pages
+const AttendantDashboard = React.lazy(() => import('./pages/attendant/AttendantDashboard'));
+const SimpleReadingEntry = React.lazy(() => import('./pages/attendant/SimpleReadingEntry'));
+const SimpleCashReport = React.lazy(() => import('./pages/attendant/SimpleCashReport'));
+const AttendantAlertsPage = React.lazy(() => import('./pages/attendant/AttendantAlertsPage'));
+const AttendantInventoryPage = React.lazy(() => import('./pages/attendant/AttendantInventoryPage'));
+
+// SuperAdmin Pages
+const SuperAdminOverviewPage = React.lazy(() => import('./pages/superadmin/OverviewPage'));
+const SuperAdminTenantsPage = React.lazy(() => import('./pages/superadmin/TenantsPage'));
+const TenantDetailsPage = React.lazy(() => import('./pages/superadmin/TenantDetailsPage'));
+const TenantSettingsPage = React.lazy(() => import('./pages/superadmin/TenantSettingsPage'));
+const SuperAdminUsersPage = React.lazy(() => import('./pages/superadmin/UsersPage'));
+const SuperAdminPlansPage = React.lazy(() => import('./pages/superadmin/PlansPage'));
+const SuperAdminAnalyticsPage = React.lazy(() => import('./pages/superadmin/AnalyticsPage'));
+const SuperAdminSettingsPage = React.lazy(() => import('./pages/superadmin/SettingsPage'));
+
+// Types for user roles
+type UserRole = 'superadmin' | 'owner' | 'manager' | 'attendant';
+
+// Loading spinner component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p className="mt-4 text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
+
+// Enhanced Error Boundary component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode }, 
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false, error: null };
   }
@@ -134,19 +166,32 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
   }
 }
 
-// Safe component wrapper
-function SafeComponent({ children }: { children: React.ReactNode }) {
-  return (
-    <ErrorBoundary>
+// Safe component wrapper with suspense
+const SafeComponent = ({ children }: { children: React.ReactNode }) => (
+  <ErrorBoundary>
+    <Suspense fallback={<LoadingSpinner />}>
       {children}
-    </ErrorBoundary>
-  );
-}
+    </Suspense>
+  </ErrorBoundary>
+);
+
+// Role-based redirect helper
+const getRoleBasedRedirect = (role?: UserRole): string => {
+  switch (role) {
+    case 'superadmin':
+      return '/superadmin/overview';
+    case 'attendant':
+      return '/attendant/dashboard';
+    case 'owner':
+    case 'manager':
+    default:
+      return '/dashboard';
+  }
+};
 
 // Router component that handles authentication logic
-function AppRouter() {
+const AppRouter = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   console.log('[APP-ROUTER] Auth state:', {
     isAuthenticated,
@@ -169,91 +214,297 @@ function AppRouter() {
     );
   }
 
-  // If user is authenticated, show all routes
+  // If user is authenticated, show authenticated routes
   if (isAuthenticated && user) {
     return (
       <Routes>
         {/* SuperAdmin Routes */}
-        <Route path="/superadmin" element={<SuperAdminLayout />}>
+        <Route path="/superadmin" element={
+          <SafeComponent>
+            <SuperAdminLayout />
+          </SafeComponent>
+        }>
           <Route index element={<Navigate to="/superadmin/overview" replace />} />
-          <Route path="overview" element={<SuperAdminOverviewPage />} />
-          <Route path="tenants" element={<SuperAdminTenantsPage />} />
-          <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
-          <Route path="tenants/:tenantId/settings" element={<TenantSettingsPage />} />
-          <Route path="users" element={<SuperAdminUsersPage />} />
-          <Route path="plans" element={<SuperAdminPlansPage />} />
-          <Route path="analytics" element={<SuperAdminAnalyticsPage />} />
-          <Route path="settings" element={<SuperAdminSettingsPage />} />
+          <Route path="overview" element={
+            <SafeComponent>
+              <SuperAdminOverviewPage />
+            </SafeComponent>
+          } />
+          <Route path="tenants" element={
+            <SafeComponent>
+              <SuperAdminTenantsPage />
+            </SafeComponent>
+          } />
+          <Route path="tenants/:tenantId" element={
+            <SafeComponent>
+              <TenantDetailsPage />
+            </SafeComponent>
+          } />
+          <Route path="tenants/:tenantId/settings" element={
+            <SafeComponent>
+              <TenantSettingsPage />
+            </SafeComponent>
+          } />
+          <Route path="users" element={
+            <SafeComponent>
+              <SuperAdminUsersPage />
+            </SafeComponent>
+          } />
+          <Route path="plans" element={
+            <SafeComponent>
+              <SuperAdminPlansPage />
+            </SafeComponent>
+          } />
+          <Route path="analytics" element={
+            <SafeComponent>
+              <SuperAdminAnalyticsPage />
+            </SafeComponent>
+          } />
+          <Route path="settings" element={
+            <SafeComponent>
+              <SuperAdminSettingsPage />
+            </SafeComponent>
+          } />
         </Route>
 
         {/* Attendant Routes */}
-        <Route path="/attendant" element={<AttendantLayout />}>
-          <Route index element={<AttendantDashboard />} />
-          <Route path="dashboard" element={<AttendantDashboard />} />
-          <Route path="readings" element={<SimpleReadingEntry />} />
-          <Route path="cash-reports" element={<SimpleCashReport />} />
-          <Route path="alerts" element={<SafeComponent><AttendantAlertsPage /></SafeComponent>} />
-          <Route path="inventory" element={<SafeComponent><AttendantInventoryPage /></SafeComponent>} />
+        <Route path="/attendant" element={
+          <SafeComponent>
+            <AttendantLayout />
+          </SafeComponent>
+        }>
+          <Route index element={<Navigate to="/attendant/dashboard" replace />} />
+          <Route path="dashboard" element={
+            <SafeComponent>
+              <AttendantDashboard />
+            </SafeComponent>
+          } />
+          <Route path="readings" element={
+            <SafeComponent>
+              <SimpleReadingEntry />
+            </SafeComponent>
+          } />
+          <Route path="cash-reports" element={
+            <SafeComponent>
+              <SimpleCashReport />
+            </SafeComponent>
+          } />
+          <Route path="alerts" element={
+            <SafeComponent>
+              <AttendantAlertsPage />
+            </SafeComponent>
+          } />
+          <Route path="inventory" element={
+            <SafeComponent>
+              <AttendantInventoryPage />
+            </SafeComponent>
+          } />
         </Route>
 
         {/* Dashboard Routes for Owner/Manager */}
         <Route path="/dashboard/*" element={
-          <SmartLayout>
-            <Routes>
-              <Route index element={<SafeComponent><DashboardPage /></SafeComponent>} />
-              <Route path="stations" element={<SafeComponent><StationsPage /></SafeComponent>} />
-              <Route path="stations/new" element={<SafeComponent><NewStationPage /></SafeComponent>} />
-              <Route path="stations/:stationId" element={<SafeComponent><StationDetailPage /></SafeComponent>} />
-              <Route path="stations/:stationId/edit" element={<SafeComponent><EditStationPage /></SafeComponent>} />
-              <Route path="stations/:stationId/settings" element={<SafeComponent><StationSettingsPage /></SafeComponent>} />
-              <Route path="stations/:stationId/pumps" element={<SafeComponent><PumpsPage /></SafeComponent>} />
-              <Route path="pumps" element={<SafeComponent><PumpsPage /></SafeComponent>} />
-              <Route path="pumps/new" element={<SafeComponent><CreatePumpPage /></SafeComponent>} />
-              <Route path="pumps/:pumpId" element={<SafeComponent><PumpDetailPage /></SafeComponent>} />
-              <Route path="pumps/:pumpId/edit" element={<SafeComponent><EditPumpPage /></SafeComponent>} />
-              <Route path="pumps/:pumpId/nozzles" element={<SafeComponent><NozzlesPage /></SafeComponent>} />
-              <Route path="nozzles" element={<SafeComponent><NozzlesPage /></SafeComponent>} />
-              <Route path="nozzles/new" element={<SafeComponent><CreateNozzlePage /></SafeComponent>} />
-              <Route path="nozzles/:nozzleId/edit" element={<SafeComponent><EditNozzlePage /></SafeComponent>} />
-              <Route path="readings" element={<SafeComponent><ReadingsPage /></SafeComponent>} />
-              <Route path="readings/new" element={<SafeComponent><SimpleReadingPage /></SafeComponent>} />
-              <Route path="readings/:readingId" element={<SafeComponent><ReadingDetailPage /></SafeComponent>} />
-              <Route path="fuel-prices" element={<SafeComponent><FuelPricesPage /></SafeComponent>} />
-              <Route path="fuel-inventory" element={<SafeComponent><FuelInventoryPage /></SafeComponent>} />
-              <Route path="sales" element={<SafeComponent><SalesPage /></SafeComponent>} />
-              <Route path="sales/overview" element={<SafeComponent><SalesOverviewPage /></SafeComponent>} />
-              <Route path="reports" element={<SafeComponent><ReportsPage /></SafeComponent>} />
-              <Route path="analytics" element={<SafeComponent><AnalyticsPage /></SafeComponent>} />
-              <Route path="inventory" element={<SafeComponent><InventoryPage /></SafeComponent>} />
-              <Route path="creditors" element={<SafeComponent><CreditorsPage /></SafeComponent>} />
-              <Route path="creditors/new" element={<SafeComponent><NewCreditorPage /></SafeComponent>} />
-              <Route path="creditors/:creditorId" element={<SafeComponent><CreditorDetailPage /></SafeComponent>} />
-              <Route path="creditors/:creditorId/payments/new" element={<SafeComponent><NewCreditorPaymentPage /></SafeComponent>} />
-              <Route path="cash-reports" element={<SafeComponent><CashReportsListPage /></SafeComponent>} />
-              <Route path="cash-reports/new" element={<SafeComponent><CashReportPage /></SafeComponent>} />
-              <Route path="cash-reports/simple" element={<SafeComponent><SimpleCashReportSubmission /></SafeComponent>} />
-              <Route path="cash-reports/test" element={<SafeComponent><TestCashReportPage /></SafeComponent>} />
-              <Route path="users" element={<SafeComponent><UsersPage /></SafeComponent>} />
-              <Route path="reconciliation" element={<SafeComponent><ReconciliationPage /></SafeComponent>} />
-              <Route path="reconciliation/:reconciliationId" element={<SafeComponent><ReconciliationDetailPage /></SafeComponent>} />
-              <Route path="settings" element={<SafeComponent><SettingsPage /></SafeComponent>} />
-              <Route path="reset-password" element={<SafeComponent><ResetPasswordPage /></SafeComponent>} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </SmartLayout>
+          <SafeComponent>
+            <SmartLayout>
+              <Routes>
+                <Route index element={
+                  <SafeComponent>
+                    <DashboardPage />
+                  </SafeComponent>
+                } />
+                <Route path="stations" element={
+                  <SafeComponent>
+                    <StationsPage />
+                  </SafeComponent>
+                } />
+                <Route path="stations/new" element={
+                  <SafeComponent>
+                    <NewStationPage />
+                  </SafeComponent>
+                } />
+                <Route path="stations/:stationId" element={
+                  <SafeComponent>
+                    <StationDetailPage />
+                  </SafeComponent>
+                } />
+                <Route path="stations/:stationId/edit" element={
+                  <SafeComponent>
+                    <EditStationPage />
+                  </SafeComponent>
+                } />
+                <Route path="stations/:stationId/settings" element={
+                  <SafeComponent>
+                    <StationSettingsPage />
+                  </SafeComponent>
+                } />
+                <Route path="stations/:stationId/pumps" element={
+                  <SafeComponent>
+                    <PumpsPage />
+                  </SafeComponent>
+                } />
+                <Route path="pumps" element={
+                  <SafeComponent>
+                    <PumpsPage />
+                  </SafeComponent>
+                } />
+                <Route path="pumps/new" element={
+                  <SafeComponent>
+                    <CreatePumpPage />
+                  </SafeComponent>
+                } />
+                <Route path="pumps/:pumpId" element={
+                  <SafeComponent>
+                    <PumpDetailPage />
+                  </SafeComponent>
+                } />
+                <Route path="pumps/:pumpId/edit" element={
+                  <SafeComponent>
+                    <EditPumpPage />
+                  </SafeComponent>
+                } />
+                <Route path="pumps/:pumpId/nozzles" element={
+                  <SafeComponent>
+                    <NozzlesPage />
+                  </SafeComponent>
+                } />
+                <Route path="nozzles" element={
+                  <SafeComponent>
+                    <NozzlesPage />
+                  </SafeComponent>
+                } />
+                <Route path="nozzles/new" element={
+                  <SafeComponent>
+                    <CreateNozzlePage />
+                  </SafeComponent>
+                } />
+                <Route path="nozzles/:nozzleId/edit" element={
+                  <SafeComponent>
+                    <EditNozzlePage />
+                  </SafeComponent>
+                } />
+                <Route path="readings" element={
+                  <SafeComponent>
+                    <ReadingsPage />
+                  </SafeComponent>
+                } />
+                <Route path="readings/new" element={
+                  <SafeComponent>
+                    <SimpleReadingPage />
+                  </SafeComponent>
+                } />
+                <Route path="readings/:readingId" element={
+                  <SafeComponent>
+                    <ReadingDetailPage />
+                  </SafeComponent>
+                } />
+                <Route path="fuel-prices" element={
+                  <SafeComponent>
+                    <FuelPricesPage />
+                  </SafeComponent>
+                } />
+                <Route path="fuel-inventory" element={
+                  <SafeComponent>
+                    <FuelInventoryPage />
+                  </SafeComponent>
+                } />
+                <Route path="sales" element={
+                  <SafeComponent>
+                    <SalesPage />
+                  </SafeComponent>
+                } />
+                <Route path="sales/overview" element={
+                  <SafeComponent>
+                    <SalesOverviewPage />
+                  </SafeComponent>
+                } />
+                <Route path="reports" element={
+                  <SafeComponent>
+                    <ReportsPage />
+                  </SafeComponent>
+                } />
+                <Route path="analytics" element={
+                  <SafeComponent>
+                    <AnalyticsPage />
+                  </SafeComponent>
+                } />
+                <Route path="inventory" element={
+                  <SafeComponent>
+                    <InventoryPage />
+                  </SafeComponent>
+                } />
+                <Route path="creditors" element={
+                  <SafeComponent>
+                    <CreditorsPage />
+                  </SafeComponent>
+                } />
+                <Route path="creditors/new" element={
+                  <SafeComponent>
+                    <NewCreditorPage />
+                  </SafeComponent>
+                } />
+                <Route path="creditors/:creditorId" element={
+                  <SafeComponent>
+                    <CreditorDetailPage />
+                  </SafeComponent>
+                } />
+                <Route path="creditors/:creditorId/payments/new" element={
+                  <SafeComponent>
+                    <NewCreditorPaymentPage />
+                  </SafeComponent>
+                } />
+                <Route path="cash-reports" element={
+                  <SafeComponent>
+                    <CashReportsListPage />
+                  </SafeComponent>
+                } />
+                <Route path="cash-reports/new" element={
+                  <SafeComponent>
+                    <CashReportPage />
+                  </SafeComponent>
+                } />
+                <Route path="cash-reports/simple" element={
+                  <SafeComponent>
+                    <SimpleCashReportSubmission />
+                  </SafeComponent>
+                } />
+                <Route path="cash-reports/test" element={
+                  <SafeComponent>
+                    <TestCashReportPage />
+                  </SafeComponent>
+                } />
+                <Route path="users" element={
+                  <SafeComponent>
+                    <UsersPage />
+                  </SafeComponent>
+                } />
+                <Route path="reconciliation" element={
+                  <SafeComponent>
+                    <ReconciliationPage />
+                  </SafeComponent>
+                } />
+                <Route path="reconciliation/:reconciliationId" element={
+                  <SafeComponent>
+                    <ReconciliationDetailPage />
+                  </SafeComponent>
+                } />
+                <Route path="settings" element={
+                  <SafeComponent>
+                    <SettingsPage />
+                  </SafeComponent>
+                } />
+                <Route path="reset-password" element={
+                  <SafeComponent>
+                    <ResetPasswordPage />
+                  </SafeComponent>
+                } />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </SmartLayout>
+          </SafeComponent>
         } />
 
         {/* Role-based default redirects */}
-        <Route path="/" element={
-          user?.role === 'superadmin' ? <Navigate to="/superadmin/overview" replace /> :
-          user?.role === 'attendant' ? <Navigate to="/attendant/dashboard" replace /> :
-          <Navigate to="/dashboard" replace />
-        } />
-        <Route path="*" element={
-          user?.role === 'superadmin' ? <Navigate to="/superadmin/overview" replace /> :
-          user?.role === 'attendant' ? <Navigate to="/attendant/dashboard" replace /> :
-          <Navigate to="/dashboard" replace />
-        } />
+        <Route path="/" element={<Navigate to={getRoleBasedRedirect(user?.role as UserRole)} replace />} />
+        <Route path="*" element={<Navigate to={getRoleBasedRedirect(user?.role as UserRole)} replace />} />
       </Routes>
     );
   }
@@ -261,20 +512,31 @@ function AppRouter() {
   // If not authenticated, show public routes
   return (
     <Routes>
-      <Route path="/" element={<ModernLandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={
+        <SafeComponent>
+          <ModernLandingPage />
+        </SafeComponent>
+      } />
+      <Route path="/login" element={
+        <SafeComponent>
+          <LoginPage />
+        </SafeComponent>
+      } />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
-}
+};
 
-function App() {
+// Main App component with proper provider wrapping
+const App = () => {
   return (
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
           <div className="min-h-screen">
-            <AppRouter />
+            <Suspense fallback={<LoadingSpinner />}>
+              <AppRouter />
+            </Suspense>
             <DailyReminderToast enabled={true} showOnMount={true} />
             <Toaster
               position="top-right"
@@ -293,6 +555,6 @@ function App() {
       </ThemeProvider>
     </ErrorBoundary>
   );
-}
+};
 
 export default App;

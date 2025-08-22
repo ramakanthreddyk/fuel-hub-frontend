@@ -1,4 +1,3 @@
-
 /**
  * @file components/sales/SalesTable.tsx
  * @description Fully responsive table component for displaying sales data
@@ -9,6 +8,7 @@ import { Building2, Fuel, DollarSign } from 'lucide-react';
 import { FuelLoader } from '@/components/ui/FuelLoader';
 import { Sale } from '@/api/services/salesService';
 import { formatCurrency, formatVolume, formatDateTime } from '@/utils/formatters';
+import { getFuelTypeColor, getPaymentMethodColor } from '@/utils/reading-config';
 
 interface SalesTableProps {
   sales: Sale[];
@@ -37,27 +37,6 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
     );
   }
 
-  const getFuelTypeColor = (fuelType: string) => {
-    if (!fuelType) return 'bg-gray-100 text-gray-800 border-gray-200';
-    switch (fuelType.toLowerCase()) {
-      case 'petrol': return 'bg-green-100 text-green-800 border-green-200';
-      case 'diesel': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'premium': return 'bg-purple-100 text-purple-800 border-purple-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getPaymentMethodColor = (method: string) => {
-    if (!method) return 'bg-gray-100 text-gray-800';
-    switch (method.toLowerCase()) {
-      case 'cash': return 'bg-green-100 text-green-800';
-      case 'card': return 'bg-blue-100 text-blue-800';
-      case 'upi': return 'bg-purple-100 text-purple-800';
-      case 'credit': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
     <div className="w-full">
       {/* Desktop Table - Hidden on mobile */}
@@ -81,8 +60,8 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                   <div className="flex items-center gap-2 min-w-0">
                     <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium truncate">{sale.station_name || sale.stationName || 'Unknown Station'}</div>
-                      <div className="text-sm text-muted-foreground truncate">{sale.pump_name || sale.pumpName || 'Unknown Pump'}</div>
+                      <div className="font-medium truncate">{sale.stationName || 'Unknown Station'}</div>
+                      <div className="text-sm text-muted-foreground truncate">{sale.pumpName || 'Unknown Pump'}</div>
                     </div>
                   </div>
                 </td>
@@ -90,9 +69,9 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                   <div className="flex items-center gap-2 min-w-0">
                     <Fuel className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold">#{sale.nozzle_number || sale.nozzleNumber || 'N/A'}</div>
-                      <Badge className={`text-xs font-medium ${getFuelTypeColor(sale.fuel_type || sale.fuelType)}`}>
-                        {(sale.fuel_type || sale.fuelType || '').toUpperCase()}
+                      <div className="font-semibold">#{sale.nozzleNumber || 'N/A'}</div>
+                      <Badge className={`text-xs font-medium ${getFuelTypeColor(sale.fuelType)}`}>
+                        {(sale.fuelType || '').toUpperCase()}
                       </Badge>
                     </div>
                   </div>
@@ -102,7 +81,7 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                   <div className="text-xs text-muted-foreground">Liters</div>
                 </td>
                 <td className="p-4">
-                  <div className="font-semibold">{formatCurrency(sale.fuel_price || sale.fuelPrice || 0)}</div>
+                  <div className="font-semibold">{formatCurrency(sale.fuelPrice || 0)}</div>
                   <div className="text-xs text-muted-foreground">per liter</div>
                 </td>
                 <td className="p-4">
@@ -111,12 +90,12 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                   </div>
                 </td>
                 <td className="p-4">
-                  <Badge className={`${getPaymentMethodColor(sale.payment_method || sale.paymentMethod)} font-medium`}>
-                    {(sale.payment_method || sale.paymentMethod || '').toUpperCase()}
+                  <Badge className={`${getPaymentMethodColor(sale.paymentMethod)} font-medium`}>
+                    {(sale.paymentMethod || '').toUpperCase()}
                   </Badge>
                 </td>
                 <td className="p-4">
-                  <div className="text-sm font-medium">{formatDateTime(sale.recorded_at || sale.recordedAt)}</div>
+                  <div className="text-sm font-medium">{formatDateTime(sale.recordedAt)}</div>
                 </td>
               </tr>
             ))}
@@ -134,16 +113,16 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium text-sm truncate">{sale.station_name || sale.stationName || 'Unknown Station'}</div>
-                    <div className="text-xs text-muted-foreground truncate">{sale.pump_name || sale.pumpName || 'Unknown Pump'}</div>
+                    <div className="font-medium text-sm truncate">{sale.stationName || 'Unknown Station'}</div>
+                    <div className="text-xs text-muted-foreground truncate">{sale.pumpName || 'Unknown Pump'}</div>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0 ml-2">
                   <div className="font-bold text-lg text-green-600">
                     {formatCurrency(sale.amount)}
                   </div>
-                  <Badge className={`${getPaymentMethodColor(sale.payment_method || sale.paymentMethod)} text-xs`}>
-                    {(sale.payment_method || sale.paymentMethod || '').toUpperCase()}
+                  <Badge className={`${getPaymentMethodColor(sale.paymentMethod)} text-xs`}>
+                    {(sale.paymentMethod || '').toUpperCase()}
                   </Badge>
                 </div>
               </div>
@@ -153,9 +132,9 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                 <div className="min-w-0">
                   <span className="text-muted-foreground block text-xs">Nozzle:</span>
                   <div className="flex items-center gap-1 mt-1">
-                    <span className="font-medium">#{sale.nozzle_number || sale.nozzleNumber || 'N/A'}</span>
-                    <Badge className={`${getFuelTypeColor(sale.fuel_type || sale.fuelType)} text-xs`}>
-                      {sale.fuel_type || sale.fuelType}
+                    <span className="font-medium">#{sale.nozzleNumber || 'N/A'}</span>
+                    <Badge className={`${getFuelTypeColor(sale.fuelType)} text-xs`}>
+                      {sale.fuelType}
                     </Badge>
                   </div>
                 </div>
@@ -165,11 +144,11 @@ export function SalesTable({ sales, isLoading }: SalesTableProps) {
                 </div>
                 <div className="min-w-0">
                   <span className="text-muted-foreground block text-xs">Price:</span>
-                  <div className="font-medium mt-1 truncate">{formatCurrency(sale.fuel_price || sale.fuelPrice || 0)}/L</div>
+                  <div className="font-medium mt-1 truncate">{formatCurrency(sale.fuelPrice || 0)}/L</div>
                 </div>
                 <div className="min-w-0">
                   <span className="text-muted-foreground block text-xs">Date:</span>
-                  <div className="font-medium mt-1 text-xs truncate">{formatDateTime(sale.recorded_at || sale.recordedAt)}</div>
+                  <div className="font-medium mt-1 text-xs truncate">{formatDateTime(sale.recordedAt)}</div>
                 </div>
               </div>
             </CardContent>

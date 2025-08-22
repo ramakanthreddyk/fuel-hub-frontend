@@ -13,7 +13,7 @@ interface ModernLayoutProps {
   className?: string;
 }
 
-export function ModernLayout({ children, className }: ModernLayoutProps) {
+const ModernLayout = ({ children, className }: ModernLayoutProps) => {
   const { user } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -94,7 +94,9 @@ export function ModernLayout({ children, className }: ModernLayoutProps) {
       </div>
     </div>
   );
-}
+};
+
+export default ModernLayout;
 
 // Specialized layout for attendants (simplified)
 export function AttendantLayout({ children, className }: ModernLayoutProps) {
