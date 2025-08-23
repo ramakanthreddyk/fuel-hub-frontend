@@ -40,7 +40,7 @@ NODE_ENV=development
 DB_HOST=fuelsync-server.postgres.database.azure.com
 DB_PORT=5432
 DB_USER=fueladmin
-DB_PASSWORD=Th1nkpad!2304
+DB_PASSWORD=xxxxxx
 DB_NAME=fuelsync_db
 
 # JWT Configuration
