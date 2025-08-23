@@ -3,6 +3,8 @@
  * @description Enhanced error boundary with comprehensive error handling
  */
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { secureLog } from '@/utils/security';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { errorReporting } from '@/utils/errorReporting';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,9 +89,9 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.group('🚨 Error Boundary Caught Error');
-      console.error('Error:', error);
-      console.error('Error Info:', errorInfo);
-      console.error('Component Stack:', errorInfo.componentStack);
+      secureLog.error('Error:', error);
+      secureLog.error('Error Info:', errorInfo);
+      secureLog.error('Component Stack:', errorInfo.componentStack);
       console.groupEnd();
     }
   }
@@ -188,7 +190,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
           <FallbackComponent
             error={this.state.error!}
             errorInfo={this.state.errorInfo!}
-            resetError={this.resetError}
+            resetError={<SafeText text={this.resetError} />}
             retryCount={this.state.retryCount}
             level={this.props.level || 'component'}
           />
@@ -262,7 +264,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
                 {this.props.level === 'page' && (
                   <>
                     <Button
-                      onClick={this.handleReload}
+                      onClick={<SafeText text={this.handleReload} />}
                       variant="outline"
                       size="sm"
                       className="flex items-center gap-2"
@@ -285,7 +287,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
                 {process.env.NODE_ENV === 'development' && (
                   <Button
-                    onClick={this.handleDownloadReport}
+                    onClick={<SafeText text={this.handleDownloadReport} />}
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-2"
@@ -361,18 +363,18 @@ export function useErrorBoundary() {
 // Specialized error boundaries for different levels
 export const PageErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
   <EnhancedErrorBoundary level="page">
-    {children}
+    {<SafeText text={children} />}
   </EnhancedErrorBoundary>
 );
 
 export const SectionErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
   <EnhancedErrorBoundary level="section">
-    {children}
+    {<SafeText text={children} />}
   </EnhancedErrorBoundary>
 );
 
 export const ComponentErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
   <EnhancedErrorBoundary level="component">
-    {children}
+    {<SafeText text={children} />}
   </EnhancedErrorBoundary>
 );

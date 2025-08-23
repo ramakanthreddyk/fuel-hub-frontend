@@ -4,6 +4,7 @@
  */
 
 import axios from 'axios';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 // Get the backend URL from environment variables or use the default API URL
 const API_BASE_URL =
@@ -16,7 +17,7 @@ export const diagnosticApi = {
    */
   checkConnectivity: async (): Promise<{ status: string; baseUrl: string; timestamp: string }> => {
     try {
-      console.log('[DIAGNOSTIC] Checking API connectivity to:', API_BASE_URL);
+      secureLog.debug('[DIAGNOSTIC] Checking API connectivity to:', API_BASE_URL);
       
       // Create a timestamp to prevent caching
       const timestamp = new Date().toISOString();
@@ -37,7 +38,7 @@ export const diagnosticApi = {
         timestamp
       };
     } catch (error) {
-      console.error('[DIAGNOSTIC] API connectivity check failed:', error);
+      secureLog.error('[DIAGNOSTIC] API connectivity check failed:', error);
       
       return {
         status: 'disconnected',
@@ -76,7 +77,7 @@ export const diagnosticApi = {
     redirectCount: number;
   }> => {
     try {
-      console.log('[DIAGNOSTIC] Checking redirects for:', url);
+      secureLog.debug('[DIAGNOSTIC] Checking redirects for:', url);
       
       // Make a request and track redirects
       const response = await axios.get(url, {
@@ -96,7 +97,7 @@ export const diagnosticApi = {
         redirectCount: response.request?.res?.responseUrl ? 1 : 0 // Basic count, may not be accurate
       };
     } catch (error) {
-      console.error('[DIAGNOSTIC] Redirect check failed:', error);
+      secureLog.error('[DIAGNOSTIC] Redirect check failed:', error);
       
       return {
         originalUrl: url,

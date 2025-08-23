@@ -1,9 +1,9 @@
-
 /**
  * @file api/services/fuel-prices.service.ts
  * @description Service for fuel prices API endpoints
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 export interface FuelPrice {
   id: string;
@@ -32,7 +32,7 @@ export const fuelPricesService = {
   getFuelPrices: async (filters: FuelPriceFilters = {}): Promise<FuelPrice[]> => {
     try {
       const params = new URLSearchParams();
-      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.stationId) params.append('stationId', sanitizeUrlParam(filters.stationId));
       if (filters.fuelType) params.append('fuelType', filters.fuelType);
       if (filters.isActive !== undefined) params.append('isActive', filters.isActive.toString());
       if (filters.validFrom) params.append('validFrom', filters.validFrom);
@@ -41,7 +41,7 @@ export const fuelPricesService = {
       const response = await apiClient.get(`/fuel-prices?${params.toString()}`);
       return extractArray<FuelPrice>(response, 'fuelPrices');
     } catch (error) {
-      console.error('[FUEL-PRICES-API] Error fetching fuel prices:', error);
+      secureLog.error('[FUEL-PRICES-API] Error fetching fuel prices:', error);
       return [];
     }
   },
@@ -51,10 +51,10 @@ export const fuelPricesService = {
    */
   getFuelPrice: async (id: string): Promise<FuelPrice | null> => {
     try {
-      const response = await apiClient.get(`/fuel-prices/${id}`);
+      const response = await apiClient.get(`/fuel-prices/${sanitizeUrlParam(id)}`);
       return extractData<FuelPrice>(response);
     } catch (error) {
-      console.error('[FUEL-PRICES-API] Error fetching fuel price:', error);
+      secureLog.error('[FUEL-PRICES-API] Error fetching fuel price:', error);
       return null;
     }
   },
@@ -67,7 +67,7 @@ export const fuelPricesService = {
       const response = await apiClient.post('/fuel-prices', data);
       return extractData<FuelPrice>(response);
     } catch (error) {
-      console.error('[FUEL-PRICES-API] Error creating fuel price:', error);
+      secureLog.error('[FUEL-PRICES-API] Error creating fuel price:', error);
       throw error;
     }
   },
@@ -77,10 +77,10 @@ export const fuelPricesService = {
    */
   updateFuelPrice: async (id: string, data: Partial<FuelPrice>): Promise<FuelPrice> => {
     try {
-      const response = await apiClient.put(`/fuel-prices/${id}`, data);
+      const response = await apiClient.put(`/fuel-prices/${sanitizeUrlParam(id)}`, data);
       return extractData<FuelPrice>(response);
     } catch (error) {
-      console.error('[FUEL-PRICES-API] Error updating fuel price:', error);
+      secureLog.error('[FUEL-PRICES-API] Error updating fuel price:', error);
       throw error;
     }
   },
@@ -90,9 +90,9 @@ export const fuelPricesService = {
    */
   deleteFuelPrice: async (id: string): Promise<void> => {
     try {
-      await apiClient.delete(`/fuel-prices/${id}`);
+      await apiClient.delete(`/fuel-prices/${sanitizeUrlParam(id)}`);
     } catch (error) {
-      console.error('[FUEL-PRICES-API] Error deleting fuel price:', error);
+      secureLog.error('[FUEL-PRICES-API] Error deleting fuel price:', error);
       throw error;
     }
   }

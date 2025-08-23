@@ -1,34 +1,17 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DollarSign, Plus, CheckCircle, CreditCard, Smartphone, Users, MapPin } from 'lucide-react';
+import { DollarSign, Plus, MapPin } from 'lucide-react';
 import { useStations } from '@/hooks/api/useStations';
 
 export function CashReportWidget() {
-  const [amounts, setAmounts] = useState({
-    cash: '',
-    card: '',
-    upi: '',
-    credit: ''
-  });
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleAmountChange = (type: string, value: string) => {
-    setAmounts(prev => ({ ...prev, [type]: value }));
-  };
-
-  const getTotalAmount = () => {
-    return Object.values(amounts).reduce((sum, amount) => {
-      return sum + (parseFloat(amount) || 0);
-    }, 0);
-  };
+  const [selectedStationId, setSelectedStationId] = useState('');
+  const { data: stations = [] } = useStations();
 
   const handleSubmit = () => {
-    // Navigate to the full cash report page instead of submitting here
-    window.location.href = '/dashboard/cash-reports/new';
+    if (!selectedStationId) return;
+    window.location.href = `/dashboard/cash-reports/new?stationId=${selectedStationId}`;
   };
 
   return (
@@ -41,6 +24,25 @@ export function CashReportWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        <div className="space-y-2">
+          <label className="text-xs font-medium flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            Station
+          </label>
+          <Select value={selectedStationId} onValueChange={setSelectedStationId} disabled={isSubmitted || stationsLoading}>
+            <SelectTrigger className="text-sm">
+              <SelectValue placeholder={stationsLoading ? "Loading..." : "Select station"} />
+            </SelectTrigger>
+            <SelectContent>
+              {stations.map((station) => (
+                <SelectItem key={station.id} value={station.id}>
+                  {station.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
             <label className="text-xs font-medium flex items-center gap-1">
@@ -50,8 +52,8 @@ export function CashReportWidget() {
             <Input
               type="number"
               placeholder="0"
-              value={amounts.cash}
-              onChange={(e) => handleAmountChange('cash', e.target.value)}
+              value={amounts.cashAmount}
+              onChange={(e) => handleAmountChange('cashAmount', e.target.value)}
               disabled={isSubmitted}
               className="text-sm"
             />
@@ -64,8 +66,8 @@ export function CashReportWidget() {
             <Input
               type="number"
               placeholder="0"
-              value={amounts.card}
-              onChange={(e) => handleAmountChange('card', e.target.value)}
+              value={amounts.cardAmount}
+              onChange={(e) => handleAmountChange('cardAmount', e.target.value)}
               disabled={isSubmitted}
               className="text-sm"
             />
@@ -78,8 +80,8 @@ export function CashReportWidget() {
             <Input
               type="number"
               placeholder="0"
-              value={amounts.upi}
-              onChange={(e) => handleAmountChange('upi', e.target.value)}
+              value={amounts.upiAmount}
+              onChange={(e) => handleAmountChange('upiAmount', e.target.value)}
               disabled={isSubmitted}
               className="text-sm"
             />
@@ -92,8 +94,8 @@ export function CashReportWidget() {
             <Input
               type="number"
               placeholder="0"
-              value={amounts.credit}
-              onChange={(e) => handleAmountChange('credit', e.target.value)}
+              value={amounts.creditAmount}
+              onChange={(e) => handleAmountChange('creditAmount', e.target.value)}
               disabled={isSubmitted}
               className="text-sm"
             />

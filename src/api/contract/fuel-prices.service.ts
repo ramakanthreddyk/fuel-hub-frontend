@@ -6,6 +6,7 @@
  */
 
 import { contractClient } from '../contract-client';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import type { FuelPrice, CreateFuelPriceRequest } from '../api-contract';
 
 export const fuelPricesService = {
@@ -14,7 +15,7 @@ export const fuelPricesService = {
    */
   async getFuelPrices(): Promise<FuelPrice[]> {
     try {
-      console.log('[FUEL-PRICES-SERVICE] Fetching fuel prices...');
+      secureLog.debug('[FUEL-PRICES-SERVICE] Fetching fuel prices...');
       const response = await contractClient.get('/fuel-prices');
       
       // Handle different response structures from backend
@@ -33,7 +34,7 @@ export const fuelPricesService = {
         rawPrices = responseData;
       }
       
-      console.log('[FUEL-PRICES-SERVICE] Raw prices:', rawPrices);
+      secureLog.debug('[FUEL-PRICES-SERVICE] Raw prices:', rawPrices);
       
       // Transform to contract format
       const fuelPrices = rawPrices.map((price: any) => ({
@@ -48,10 +49,10 @@ export const fuelPricesService = {
         stationName: price.station?.name || undefined
       }));
       
-      console.log('[FUEL-PRICES-SERVICE] Transformed prices:', fuelPrices);
+      secureLog.debug('[FUEL-PRICES-SERVICE] Transformed prices:', fuelPrices);
       return fuelPrices;
     } catch (error) {
-      console.error('[FUEL-PRICES-SERVICE] Error fetching fuel prices:', error);
+      secureLog.error('[FUEL-PRICES-SERVICE] Error fetching fuel prices:', error);
       return [];
     }
   },
@@ -60,9 +61,9 @@ export const fuelPricesService = {
    * Create new fuel price
    */
   async createFuelPrice(data: CreateFuelPriceRequest): Promise<FuelPrice> {
-    console.log('[FUEL-PRICES-SERVICE] Creating fuel price:', data);
+    secureLog.debug('[FUEL-PRICES-SERVICE] Creating fuel price:', data);
     const response = await contractClient.post<FuelPrice>('/fuel-prices', data);
-    console.log('[FUEL-PRICES-SERVICE] Created:', response);
+    secureLog.debug('[FUEL-PRICES-SERVICE] Created:', response);
     return response;
   },
 
@@ -70,9 +71,9 @@ export const fuelPricesService = {
    * Update fuel price
    */
   async updateFuelPrice(priceId: string, data: Partial<CreateFuelPriceRequest>): Promise<FuelPrice> {
-    console.log('[FUEL-PRICES-SERVICE] Updating fuel price:', priceId, data);
-    const response = await contractClient.put<FuelPrice>(`/fuel-prices/${priceId}`, data);
-    console.log('[FUEL-PRICES-SERVICE] Updated:', response);
+    secureLog.debug('[FUEL-PRICES-SERVICE] Updating fuel price:', priceId, data);
+    const response = await contractClient.put<FuelPrice>(`/fuel-prices/${sanitizeUrlParam(priceId)}`, data);
+    secureLog.debug('[FUEL-PRICES-SERVICE] Updated:', response);
     return response;
   },
 
@@ -80,8 +81,8 @@ export const fuelPricesService = {
    * Delete fuel price
    */
   async deleteFuelPrice(priceId: string): Promise<void> {
-    console.log('[FUEL-PRICES-SERVICE] Deleting fuel price:', priceId);
-    await contractClient.delete(`/fuel-prices/${priceId}`);
+    secureLog.debug('[FUEL-PRICES-SERVICE] Deleting fuel price:', priceId);
+    await contractClient.delete(`/fuel-prices/${sanitizeUrlParam(priceId)}`);
   },
 
   /**
@@ -91,10 +92,15 @@ export const fuelPricesService = {
     hasActivePrices: boolean;
     missingFuelTypes?: string[];
   }> {
-    return contractClient.get<{
-      hasActivePrices: boolean;
-      missingFuelTypes?: string[];
-    }>(`/fuel-prices/validate/${stationId}`);
+    try {
+      return await contractClient.get<{
+        hasActivePrices: boolean;
+        missingFuelTypes?: string[];
+      }>(`/fuel-prices/validate/${sanitizeUrlParam(stationId)}`);
+    } catch (error) {
+      secureLog.error('[FUEL-PRICES-SERVICE] Error validating station prices:', error);
+      return { hasActivePrices: false, missingFuelTypes: [] };
+    }
   },
 
   /**

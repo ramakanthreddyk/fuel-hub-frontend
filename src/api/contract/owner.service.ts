@@ -1,4 +1,3 @@
-
 /**
  * Owner Service - Contract Aligned
  * 
@@ -6,6 +5,7 @@
  */
 
 import { contractClient } from '../contract-client';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 import type { 
   User,
   CreateUserRequest,
@@ -47,7 +47,7 @@ export class OwnerService {
    * PUT /users/{id}
    */
   async updateUser(id: string, data: Partial<CreateUserRequest>): Promise<User> {
-    return contractClient.put<User>(`/users/${id}`, data);
+    return contractClient.put<User>(`/users/${sanitizeUrlParam(id)}`, data);
   }
 
   /**
@@ -55,7 +55,7 @@ export class OwnerService {
    * DELETE /users/{id}
    */
   async deleteUser(id: string): Promise<void> {
-    return contractClient.delete(`/users/${id}`);
+    return contractClient.delete(`/users/${sanitizeUrlParam(id)}`);
   }
 
   /**
@@ -63,7 +63,7 @@ export class OwnerService {
    * POST /users/{id}/reset-password
    */
   async resetUserPassword(id: string, newPassword: string): Promise<void> {
-    return contractClient.post(`/users/${id}/reset-password`, { newPassword });
+    return contractClient.post(`/users/${sanitizeUrlParam(id)}/reset-password`, { newPassword });
   }
 
   // Station Management
@@ -80,7 +80,7 @@ export class OwnerService {
    * PUT /stations/{id}
    */
   async updateStation(id: string, data: Partial<CreateStationRequest>): Promise<Station> {
-    return contractClient.put<Station>(`/stations/${id}`, data);
+    return contractClient.put<Station>(`/stations/${sanitizeUrlParam(id)}`, data);
   }
 
   /**
@@ -88,7 +88,7 @@ export class OwnerService {
    * DELETE /stations/{id}
    */
   async deleteStation(id: string): Promise<void> {
-    return contractClient.delete(`/stations/${id}`);
+    return contractClient.delete(`/stations/${sanitizeUrlParam(id)}`);
   }
 
   // Pump Management
@@ -105,7 +105,7 @@ export class OwnerService {
    * PUT /pumps/{id}
    */
   async updatePump(id: string, data: Partial<CreatePumpRequest>): Promise<Pump> {
-    return contractClient.put<Pump>(`/pumps/${id}`, data);
+    return contractClient.put<Pump>(`/pumps/${sanitizeUrlParam(id)}`, data);
   }
 
   /**
@@ -113,7 +113,7 @@ export class OwnerService {
    * DELETE /pumps/{id}
    */
   async deletePump(id: string): Promise<void> {
-    return contractClient.delete(`/pumps/${id}`);
+    return contractClient.delete(`/pumps/${sanitizeUrlParam(id)}`);
   }
   
   // Nozzle Management
@@ -130,7 +130,7 @@ export class OwnerService {
    * PUT /nozzles/{id}
    */
   async updateNozzle(id: string, data: UpdateNozzleRequest): Promise<Nozzle> {
-    return contractClient.put<Nozzle>(`/nozzles/${id}`, data);
+    return contractClient.put<Nozzle>(`/nozzles/${sanitizeUrlParam(id)}`, data);
   }
   
   /**
@@ -138,7 +138,7 @@ export class OwnerService {
    * DELETE /nozzles/{id}
    */
   async deleteNozzle(id: string): Promise<void> {
-    return contractClient.delete(`/nozzles/${id}`);
+    return contractClient.delete(`/nozzles/${sanitizeUrlParam(id)}`);
   }
 
   // Fuel Price Management
@@ -167,7 +167,7 @@ export class OwnerService {
     missingFuelTypes: string[];
     hasActivePrices: boolean;
   }> {
-    return contractClient.get(`/fuel-prices/validate/${stationId}`);
+    return contractClient.get(`/fuel-prices/validate/${sanitizeUrlParam(stationId)}`);
   }
 
   // Creditor Management
@@ -192,7 +192,7 @@ export class OwnerService {
    * PUT /creditors/{id}
    */
   async updateCreditor(id: string, data: Partial<CreateCreditorRequest>): Promise<Creditor> {
-    return contractClient.put<Creditor>(`/creditors/${id}`, data);
+    return contractClient.put<Creditor>(`/creditors/${sanitizeUrlParam(id)}`, data);
   }
 
   /**
@@ -200,7 +200,7 @@ export class OwnerService {
    * DELETE /creditors/{id}
    */
   async deleteCreditor(id: string): Promise<void> {
-    return contractClient.delete(`/creditors/${id}`);
+    return contractClient.delete(`/creditors/${sanitizeUrlParam(id)}`);
   }
 
   // Dashboard Analytics

@@ -3,6 +3,7 @@
  * @description Reusable error state components for different scenarios
  */
 import React from 'react';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { 
   AlertTriangle, 
   Wifi, 
@@ -47,25 +48,25 @@ export function ErrorState({
     <Card className={cn("w-full max-w-md mx-auto", className)}>
       <CardContent className="flex flex-col items-center text-center p-8">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-          {icon}
+          {<SafeText text={icon} />}
         </div>
         
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          {title}
+          {<SafeText text={title} />}
         </h3>
         
         <p className="text-gray-600 mb-6">
-          {description}
+          {<SafeText text={description} />}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full">
           {showRetry && onRetry && (
-            <Button onClick={onRetry} className="flex items-center gap-2">
+            <Button onClick={<SafeText text={onRetry} />} className="flex items-center gap-2">
               <RefreshCw className="w-4 h-4" />
-              {retryLabel}
+              {<SafeText text={retryLabel} />}
             </Button>
           )}
-          {actions}
+          {<SafeText text={actions} />}
         </div>
       </CardContent>
     </Card>
@@ -79,8 +80,8 @@ export function NetworkError({ onRetry, className, ...props }: BaseErrorProps) {
       title="Connection Problem"
       description="Unable to connect to the server. Please check your internet connection and try again."
       icon={<Wifi className="w-8 h-8 text-red-600" />}
-      onRetry={onRetry}
-      className={className}
+      onRetry={<SafeText text={onRetry} />}
+      className={<SafeText text={className} />}
       {...props}
     />
   );
@@ -93,9 +94,9 @@ export function ServerError({ onRetry, className, ...props }: BaseErrorProps) {
       title="Server Error"
       description="Something went wrong on our end. Our team has been notified and is working on a fix."
       icon={<Database className="w-8 h-8 text-red-600" />}
-      onRetry={onRetry}
+      onRetry={<SafeText text={onRetry} />}
       retryLabel="Retry Request"
-      className={className}
+      className={<SafeText text={className} />}
       {...props}
     />
   );
@@ -111,11 +112,11 @@ export function NotFoundError({
   return (
     <ErrorState
       title="Not Found"
-      description={`The ${resource} you're looking for doesn't exist or has been moved.`}
+      description={`The ${<SafeText text={resource} />} you're looking for doesn't exist or has been moved.`}
       icon={<Search className="w-8 h-8 text-red-600" />}
-      onRetry={onRetry}
+      onRetry={<SafeText text={onRetry} />}
       retryLabel="Search Again"
-      className={className}
+      className={<SafeText text={className} />}
       actions={
         <Button variant="outline" onClick={() => window.history.back()}>
           Go Back
@@ -133,10 +134,10 @@ export function PermissionError({ onRetry, className, ...props }: BaseErrorProps
       title="Access Denied"
       description="You don't have permission to access this resource. Please contact your administrator."
       icon={<Shield className="w-8 h-8 text-red-600" />}
-      onRetry={onRetry}
+      onRetry={<SafeText text={onRetry} />}
       retryLabel="Check Again"
-      showRetry={false}
-      className={className}
+      showRetry={<SafeText text={false} />}
+      className={<SafeText text={className} />}
       actions={
         <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>
           Go to Dashboard
@@ -154,9 +155,9 @@ export function TimeoutError({ onRetry, className, ...props }: BaseErrorProps) {
       title="Request Timeout"
       description="The request is taking longer than expected. Please try again."
       icon={<Clock className="w-8 h-8 text-red-600" />}
-      onRetry={onRetry}
+      onRetry={<SafeText text={onRetry} />}
       retryLabel="Try Again"
-      className={className}
+      className={<SafeText text={className} />}
       {...props}
     />
   );
@@ -174,8 +175,8 @@ export function GenericError({
       title="Something went wrong"
       description={message}
       icon={<AlertTriangle className="w-8 h-8 text-red-600" />}
-      onRetry={onRetry}
-      className={className}
+      onRetry={<SafeText text={onRetry} />}
+      className={<SafeText text={className} />}
       {...props}
     />
   );
@@ -188,9 +189,9 @@ export function DataLoadError({ onRetry, className, ...props }: BaseErrorProps) 
       title="Failed to Load Data"
       description="We couldn't load the requested data. This might be a temporary issue."
       icon={<FileX className="w-8 h-8 text-red-600" />}
-      onRetry={onRetry}
+      onRetry={<SafeText text={onRetry} />}
       retryLabel="Reload Data"
-      className={className}
+      className={<SafeText text={className} />}
       {...props}
     />
   );
@@ -215,12 +216,12 @@ export function RateLimitError({
   return (
     <ErrorState
       title="Too Many Requests"
-      description={`You've made too many requests. Please wait ${countdown > 0 ? `${countdown} seconds` : ''} before trying again.`}
+      description={`You've made too many requests. Please wait ${countdown > 0 ? `${<SafeText text={countdown} />} seconds` : ''} before trying again.`}
       icon={<Zap className="w-8 h-8 text-red-600" />}
       onRetry={countdown === 0 ? onRetry : undefined}
-      retryLabel={countdown > 0 ? `Wait ${countdown}s` : "Try Again"}
-      showRetry={true}
-      className={className}
+      retryLabel={countdown > 0 ? `Wait ${<SafeText text={countdown} />}s` : "Try Again"}
+      showRetry={<SafeText text={true} />}
+      className={<SafeText text={className} />}
       {...props}
     />
   );
@@ -242,9 +243,9 @@ export function InlineError({
     return (
       <div className={cn("flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2", className)}>
         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-        <span className="flex-1">{message}</span>
+        <span className="flex-1">{<SafeText text={message} />}</span>
         {onRetry && (
-          <Button size="sm" variant="ghost" onClick={onRetry} className="h-6 px-2 text-red-600 hover:text-red-700">
+          <Button size="sm" variant="ghost" onClick={<SafeText text={onRetry} />} className="h-6 px-2 text-red-600 hover:text-red-700">
             <RefreshCw className="w-3 h-3" />
           </Button>
         )}
@@ -256,10 +257,10 @@ export function InlineError({
     <div className={cn("flex items-center justify-between gap-4 p-4 bg-red-50 border border-red-200 rounded-lg", className)}>
       <div className="flex items-center gap-3">
         <AlertTriangle className="w-5 h-5 text-red-600" />
-        <span className="text-red-800">{message}</span>
+        <span className="text-red-800">{<SafeText text={message} />}</span>
       </div>
       {onRetry && (
-        <Button size="sm" variant="outline" onClick={onRetry} className="border-red-300 text-red-700 hover:bg-red-100">
+        <Button size="sm" variant="outline" onClick={<SafeText text={onRetry} />} className="border-red-300 text-red-700 hover:bg-red-100">
           <RefreshCw className="w-4 h-4 mr-1" />
           Retry
         </Button>
@@ -282,10 +283,10 @@ export function ComponentErrorFallback({
     <div className="border border-red-200 bg-red-50 rounded-lg p-6 text-center">
       <AlertTriangle className="w-8 h-8 text-red-600 mx-auto mb-3" />
       <h3 className="font-medium text-red-900 mb-2">
-        {componentName} Error
+        {<SafeText text={componentName} />} Error
       </h3>
       <p className="text-sm text-red-700 mb-4">
-        This {componentName} encountered an error and couldn't render properly.
+        This {<SafeText text={componentName} />} encountered an error and couldn't render properly.
       </p>
       <Button size="sm" onClick={resetError} variant="outline" className="border-red-300 text-red-700">
         <RefreshCw className="w-4 h-4 mr-1" />
@@ -295,7 +296,7 @@ export function ComponentErrorFallback({
         <details className="mt-4 text-left">
           <summary className="text-xs text-red-600 cursor-pointer">Error Details</summary>
           <pre className="text-xs text-red-800 mt-2 bg-red-100 p-2 rounded overflow-auto">
-            {error.message}
+            {<SafeText text={error.message} />}
           </pre>
         </details>
       )}

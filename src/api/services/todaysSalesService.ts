@@ -1,5 +1,6 @@
 import { apiClient } from '../client';
 import { parseTodaysSalesResponse } from '@/utils/dataParser';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 export interface TodaysSalesNozzleEntry {
   nozzleId: string;
@@ -73,17 +74,17 @@ export const todaysSalesService = {
 
       const response = await apiClient.get(`/todays-sales/summary?${params.toString()}`);
 
-      console.log('[TODAYS-SALES] Raw response before parsing:', response.data);
+      secureLog.debug('[TODAYS-SALES] Raw response before parsing:', response.data);
 
       // Parse the complex data format from backend
       const parsedResponse = parseTodaysSalesResponse(response.data);
       const data = parsedResponse.data;
 
-      console.log('[TODAYS-SALES] Parsed response:', data);
+      secureLog.debug('[TODAYS-SALES] Parsed response:', data);
 
       // If we get a successful response but no data, that's normal (not an error)
       if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
-        console.log('[TODAYS-SALES] No sales data available for the requested date');
+        secureLog.debug('[TODAYS-SALES] No sales data available for the requested date');
         return {
           date: date || new Date().toISOString().split('T')[0],
           totalEntries: 0,
@@ -99,7 +100,7 @@ export const todaysSalesService = {
 
       return data;
     } catch (error: any) {
-      console.error('[TODAYS-SALES] Error:', error);
+      secureLog.error('[TODAYS-SALES] Error:', error);
 
       // Check if this is an authentication error
       if (error?.response?.status === 401 || error?.response?.status === 403) {
@@ -107,7 +108,7 @@ export const todaysSalesService = {
       }
 
       // For other errors (like 404 - no data), return empty structure
-      console.log('[TODAYS-SALES] Returning empty data structure due to error:', error?.response?.status);
+      secureLog.debug('[TODAYS-SALES] Returning empty data structure due to error:', error?.response?.status);
       return {
         date: date || new Date().toISOString().split('T')[0],
         totalEntries: 0,

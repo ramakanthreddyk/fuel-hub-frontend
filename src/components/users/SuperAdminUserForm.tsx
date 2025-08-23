@@ -23,7 +23,7 @@ interface SuperAdminUserFormProps {
   isLoading: boolean;
 }
 
-export function SuperAdminUserForm({ user, onSubmit, onCancel, isLoading }: SuperAdminUserFormProps) {
+export function SuperAdminUserForm({ user, onSubmit, onCancel, isLoading }: Readonly<SuperAdminUserFormProps>) {
   const [formData, setFormData] = useState<CreateSuperAdminRequest>({
     name: user?.name || '',
     email: user?.email || '',
@@ -83,7 +83,11 @@ export function SuperAdminUserForm({ user, onSubmit, onCancel, isLoading }: Supe
           
           <div className="flex gap-2 pt-4">
             <Button type="submit" disabled={isLoading} className="flex-1">
-              {isLoading ? 'Saving...' : (user ? 'Update' : 'Create')}
+              {(() => {
+                if (isLoading) return 'Saving...';
+                if (user) return 'Update';
+                return 'Create';
+              })()}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel

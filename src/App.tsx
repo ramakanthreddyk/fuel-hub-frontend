@@ -5,11 +5,11 @@
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { secureLog } from '@/utils/security';
 
 // Import context providers
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { useAuth } from './contexts/AuthContext';
 
 // Import test utility for debugging
 import './utils/testNozzleHierarchy';
@@ -129,7 +129,7 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Component Error:', error, errorInfo);
+    secureLog.error('Component Error:', error, errorInfo);
   }
 
   render() {
@@ -193,14 +193,7 @@ const getRoleBasedRedirect = (role?: UserRole): string => {
 const AppRouter = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
 
-  console.log('[APP-ROUTER] Auth state:', {
-    isAuthenticated,
-    user: user?.email,
-    role: user?.role,
-    isLoading,
-    hasToken: !!localStorage.getItem('fuelsync_token'),
-    hasStoredUser: !!localStorage.getItem('fuelsync_user')
-  });
+  secureLog.debug('Auth state initialized');
 
   if (isLoading) {
     return (

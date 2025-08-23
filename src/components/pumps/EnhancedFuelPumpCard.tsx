@@ -6,7 +6,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Fuel, Gauge, Settings, AlertTriangle, Zap, Activity } from 'lucide-react';
+import { Fuel, Gauge, Settings, AlertTriangle, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { PumpModel } from '@/models/pump';
 import type { PumpCardActions } from '@/models/pump-actions';

@@ -3,7 +3,7 @@
  * @description Service for fuel inventory API endpoints
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
-import API_CONFIG from '../core/config';
+import { secureLog } from '@/utils/security';
 
 // Types
 export interface FuelInventory {
@@ -37,13 +37,13 @@ export const inventoryService = {
    */
   getFuelInventory: async (stationId?: string): Promise<FuelInventory[]> => {
     try {
-      console.log('[INVENTORY-API] Fetching fuel inventory', stationId ? `for station: ${stationId}` : '');
+      secureLog.debug('[INVENTORY-API] Fetching fuel inventory', stationId ? `for station: ${stationId}` : '');
       
       const params = stationId ? { stationId } : {};
       const response = await apiClient.get('fuel-inventory', { params });
       
       // Log the raw response for debugging
-      console.log('[INVENTORY-API] Raw response:', JSON.stringify(response.data, null, 2));
+      secureLog.debug('[INVENTORY-API] Raw response:', JSON.stringify(response.data, null, 2));
       
       // Extract inventory from response
       let inventoryArray: FuelInventory[] = [];
@@ -62,13 +62,13 @@ export const inventoryService = {
       
       // Log the first item for structure analysis
       if (inventoryArray.length > 0) {
-        console.log('[INVENTORY-API] First inventory item structure:', JSON.stringify(inventoryArray[0], null, 2));
+        secureLog.debug('[INVENTORY-API] First inventory item structure:', JSON.stringify(inventoryArray[0], null, 2));
       }
       
-      console.log(`[INVENTORY-API] Successfully fetched ${inventoryArray.length} inventory items`);
+      secureLog.debug(`[INVENTORY-API] Successfully fetched ${inventoryArray.length} inventory items`);
       return inventoryArray;
     } catch (error) {
-      console.error('[INVENTORY-API] Error fetching fuel inventory:', error);
+      secureLog.error('[INVENTORY-API] Error fetching fuel inventory:', error);
       // Return empty array on error
       return [];
     }
@@ -80,11 +80,11 @@ export const inventoryService = {
    */
   getInventorySummary: async (): Promise<FuelInventorySummary | null> => {
     try {
-      console.log('[INVENTORY-API] Fetching inventory summary');
+      secureLog.debug('[INVENTORY-API] Fetching inventory summary');
       const response = await apiClient.get('fuel-inventory/summary');
       return extractData<FuelInventorySummary>(response);
     } catch (error) {
-      console.error('[INVENTORY-API] Error fetching inventory summary:', error);
+      secureLog.error('[INVENTORY-API] Error fetching inventory summary:', error);
       
       // Try to calculate summary from inventory data if API fails
       try {
@@ -115,7 +115,7 @@ export const inventoryService = {
           totalCurrentStock
         };
       } catch (fallbackError) {
-        console.error('[INVENTORY-API] Error calculating inventory summary:', fallbackError);
+        secureLog.error('[INVENTORY-API] Error calculating inventory summary:', fallbackError);
         return null;
       }
     }
@@ -142,10 +142,10 @@ export const inventoryService = {
       };
       
       const response = await apiClient.post('/inventory/update', payload);
-      console.log('[INVENTORY-API] Update response:', response.data);
+      secureLog.debug('[INVENTORY-API] Update response:', response.data);
       return response.data?.success === true || response.status === 200;
     } catch (error) {
-      console.error('[INVENTORY-API] Error updating inventory:', error);
+      secureLog.error('[INVENTORY-API] Error updating inventory:', error);
       return false;
     }
   }

@@ -3,6 +3,8 @@
  * Handles the backend's { success: true, data: {...} } response pattern
  */
 
+import { secureLog } from '@/utils/security';
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -20,7 +22,9 @@ export function extractApiData<T>(response: ApiResponse<T>): T {
     return response.data;
   }
   
-  throw new Error(response.error || response.message || 'API request failed');
+  const errorMessage = response.error || response.message || 'API request failed';
+  secureLog.error('API response error:', errorMessage);
+  throw new Error(errorMessage);
 }
 
 /**
@@ -29,6 +33,11 @@ export function extractApiData<T>(response: ApiResponse<T>): T {
  * @returns Promise with extracted data
  */
 export async function handleApiResponse<T>(apiCall: () => Promise<{ data: ApiResponse<T> }>): Promise<T> {
-  const response = await apiCall();
-  return extractApiData(response.data);
+  try {
+    const response = await apiCall();
+    return extractApiData(response.data);
+  } catch (error) {
+    secureLog.error('API call failed:', error);
+    throw error;
+  }
 }

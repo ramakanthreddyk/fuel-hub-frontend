@@ -10,8 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Eye, Settings, Hash, Activity } from 'lucide-react';
 import { ColorfulCard, CardContent, CardHeader } from '@/components/ui/colorful-card';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { getPumpStatusConfig } from '@/utils/pump-config';
-import { getPumpStatusLabel } from '@/models/pump';
 
 interface PumpCardProps {
   pump: PumpModel;
@@ -19,7 +17,7 @@ interface PumpCardProps {
 }
 
 export function PumpCard({ pump, actions }: Readonly<PumpCardProps>) {
-  const statusConfig = getPumpStatusConfig(pump.status);
+  // Removed useless assignment to statusConfig
 
   const getGradientByStatus = (status: string) => {
     switch (status.toLowerCase()) {

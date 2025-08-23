@@ -3,6 +3,7 @@
  * @description Centralized API client
  */
 import axios from 'axios';
+import { secureLog, sanitizeForLogging } from '@/utils/security';
 
 /**
  * Backend selection is controlled ONLY by VITE_API_BASE_URL.
@@ -16,7 +17,7 @@ function getApiBaseUrl() {
   if (!apiBaseUrl) {
     throw new Error('VITE_API_BASE_URL is not set. Please set it in your .env file.');
   }
-  console.log('[API-CLIENT] Using API base URL:', apiBaseUrl);
+  secureLog.info('[API-CLIENT] Using API base URL:', sanitizeForLogging(apiBaseUrl));
   return apiBaseUrl;
 }
 
@@ -24,7 +25,7 @@ const API_BASE_URL = getApiBaseUrl();
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1`,
+  baseURL: API_BASE_URL.replace(/\/?$/, '/api/v1'),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -51,22 +52,21 @@ apiClient.interceptors.request.use(
           config.headers['x-tenant-id'] = user.tenantId;
         }
       } catch (error) {
-        console.error('[API-CLIENT] Error parsing stored user:', error);
+        secureLog.error('[API-CLIENT] Error parsing stored user:', sanitizeForLogging(String(error)));
       }
     }
     // Debug log outgoing request headers
-    console.log('[API-CLIENT] Outgoing request:', {
-      url: config.url,
-      method: config.method,
+    secureLog.debug('[API-CLIENT] Outgoing request:', {
+      url: sanitizeForLogging(config.url),
+      method: sanitizeForLogging(config.method),
       hasAuth: !!token,
-      tenantId,
-      headers: config.headers
+      tenantId: sanitizeForLogging(tenantId)
     });
 
     return config;
   },
   (error) => {
-    return Promise.reject(error);
+    return Promise.reject(new Error(error));
   }
 );
 
@@ -76,19 +76,19 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error(`[API-CLIENT] Request failed:`, {
-      url: error.config?.url,
-      method: error.config?.method,
+    secureLog.error(`[API-CLIENT] Request failed:`, {
+      url: sanitizeForLogging(error.config?.url),
+      method: sanitizeForLogging(error.config?.method),
       status: error.response?.status,
-      message: error.response?.data?.message || error.message
+      message: sanitizeForLogging(error.response?.data?.message || error.message)
     });
     
     // Handle authentication errors
     if (error.response?.status === 401 || error.response?.status === 403) {
-      console.warn('[API-CLIENT] Authentication error detected:', {
-        url: error.config?.url,
+      secureLog.warn('[API-CLIENT] Authentication error detected:', {
+        url: sanitizeForLogging(error.config?.url),
         status: error.response?.status,
-        message: error.response?.data?.message
+        message: sanitizeForLogging(error.response?.data?.message)
       });
       
       // Only clear auth data and redirect if this wasn't a login attempt
@@ -96,7 +96,7 @@ apiClient.interceptors.response.use(
       const isCurrentUserLoggedIn = !!localStorage.getItem('fuelsync_token') && !!localStorage.getItem('fuelsync_user');
       
       if (!isLoginRequest && isCurrentUserLoggedIn) {
-        console.error('[API-CLIENT] Authenticated request failed with auth error, this suggests token is invalid');
+        secureLog.error('[API-CLIENT] Authenticated request failed with auth error, this suggests token is invalid');
         
         // Clear stored auth data
         localStorage.removeItem('fuelsync_token');
@@ -107,18 +107,18 @@ apiClient.interceptors.response.use(
         
         // Only redirect if not already on login page
         if (!window.location.pathname.includes('/login')) {
-          console.log('[API-CLIENT] Redirecting to login due to auth failure');
+          secureLog.info('[API-CLIENT] Redirecting to login due to auth failure');
           window.location.href = '/login';
         }
       } else if (isLoginRequest) {
-        console.log('[API-CLIENT] Login request failed, not clearing session');
+        secureLog.info('[API-CLIENT] Login request failed, not clearing session');
       } else {
-        console.log('[API-CLIENT] Auth error but no current session, ignoring');
+        secureLog.info('[API-CLIENT] Auth error but no current session, ignoring');
       }
-      return Promise.reject(error);
+  return Promise.reject(new Error(error));
     }
     
-    return Promise.reject(error);
+  return Promise.reject(new Error(error));
   }
 );
 
@@ -133,8 +133,6 @@ export function extractApiData<T>(response: any, schema?: ZodSchema<T>): T {
   let data: any;
   if (response.data?.data) {
     data = response.data.data;
-  } else if (response.data?.success && response.data?.data) {
-    data = response.data.data;
   } else {
     data = response.data;
   }
@@ -142,7 +140,7 @@ export function extractApiData<T>(response: any, schema?: ZodSchema<T>): T {
   if (schema) {
     const result = schema.safeParse(data);
     if (!result.success) {
-      console.error('[API-CLIENT] Response validation error:', result.error);
+      secureLog.error('[API-CLIENT] Response validation error:', sanitizeForLogging(String(result.error)));
     } else {
       data = result.data;
     }
@@ -180,7 +178,7 @@ function validateArray<T>(items: any[], schema: ZodSchema<T>): T[] {
   return items.reduce<T[]>((acc, item) => {
     const result = schema.safeParse(item);
     if (!result.success) {
-      console.error('[API-CLIENT] Response validation error:', result.error);
+  secureLog.error('[API-CLIENT] Response validation error:', sanitizeForLogging(String(result.error).replace(/\n|\r/g, ' ')));
     } else {
       acc.push(result.data);
     }

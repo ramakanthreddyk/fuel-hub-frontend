@@ -3,9 +3,7 @@
  * @description Enhanced fuel nozzle card with improved visibility and white theme
  */
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
-  Droplets, 
   Eye, 
   Trash2, 
   AlertTriangle,
@@ -20,6 +18,8 @@ import { FuelLoader } from '@/components/ui/FuelLoader';
 import { useLatestReading } from '@/hooks/api/useReadings';
 import { cn } from '@/lib/utils';
 import { useFuelStore } from '@/store/fuelStore';
+import { SafeText } from '@/components/ui/SafeHtml';
+import { secureLog } from '@/utils/security';
 
 interface FuelNozzleCardProps {
   nozzle: {
@@ -38,8 +38,7 @@ interface FuelNozzleCardProps {
   onRecordReading: (nozzleId: string) => void;
 }
 
-export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: FuelNozzleCardProps) {
-  // Get selectNozzle function from store
+export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Readonly<FuelNozzleCardProps>) {
   const { selectNozzle } = useFuelStore();
   // Get card variant based on fuel type
   const getFuelTypeConfig = () => {
@@ -128,10 +127,10 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
             </div>
             <div>
               <h3 className="font-bold text-xl text-gray-900">
-                Nozzle {nozzle.name}
+                Nozzle <SafeText text={nozzle.name} />
               </h3>
               <p className="text-sm text-gray-600 capitalize">
-                {nozzle.fuelType} Dispenser
+                <SafeText text={nozzle.fuelType} /> Dispenser
               </p>
             </div>
           </div>
@@ -153,10 +152,10 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
             <MapPin className="h-4 w-4 flex-shrink-0" />
             <div className="flex flex-col">
               {nozzle.stationName && (
-                <span className="font-medium">{nozzle.stationName}</span>
+                <span className="font-medium"><SafeText text={nozzle.stationName} /></span>
               )}
               {nozzle.pumpName && (
-                <span className="text-gray-500">{nozzle.pumpName}</span>
+                <span className="text-gray-500"><SafeText text={nozzle.pumpName} /></span>
               )}
             </div>
           </div>
@@ -170,22 +169,31 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
               <div className="w-16 h-20 rounded-xl shadow-lg border bg-gradient-to-b from-gray-300 to-gray-500 relative overflow-hidden">
                 {/* Display Screen */}
                 <div className="absolute top-2 left-1 right-1 h-6 bg-gray-800 rounded-md border border-blue-400/60 flex items-center justify-center">
-                  <div className={cn(
-                    "text-xs font-mono font-bold",
-                    nozzle.status === 'active' ? "text-blue-400 animate-pulse" : 
-                    nozzle.status === 'maintenance' ? "text-amber-400" : "text-red-400"
-                  )}>
-                    {nozzle.name}
-                  </div>
+                  {(() => {
+                    let statusColor = '';
+                    if (nozzle.status === 'active') {
+                      statusColor = 'text-blue-400 animate-pulse';
+                    } else if (nozzle.status === 'maintenance') {
+                      statusColor = 'text-amber-400';
+                    } else {
+                      statusColor = 'text-red-400';
+                    }
+                    return (
+                      <div className={cn('text-xs font-mono font-bold', statusColor)}>
+                        <SafeText text={nozzle.name} />
+                      </div>
+                    );
+                  })()}
                 </div>
-                
                 {/* Status Light */}
                 <div className={cn(
-                  "absolute top-10 right-1 w-2 h-2 rounded-full border border-white/50",
-                  nozzle.status === 'active' ? "bg-emerald-500 animate-pulse" : 
-                  nozzle.status === 'maintenance' ? "bg-amber-500" : "bg-red-500"
+                  'absolute top-10 right-1 w-2 h-2 rounded-full border border-white/50',
+                  nozzle.status === 'active'
+                    ? 'bg-emerald-500 animate-pulse'
+                    : nozzle.status === 'maintenance'
+                    ? 'bg-amber-500'
+                    : 'bg-red-500'
                 )} />
-                
                 {/* Nozzle Hose */}
                 <div className="absolute right-0 top-12 w-4 h-3 bg-gradient-to-r from-gray-400 to-gray-600 rounded-r-lg" />
               </div>
@@ -209,7 +217,7 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
               <span className={cn("text-xs font-medium", fuelConfig.color)}>Fuel Type</span>
             </div>
             <div className="text-lg font-bold text-gray-900 capitalize">
-              {nozzle.fuelType}
+              <SafeText text={nozzle.fuelType} />
             </div>
           </div>
         </div>
@@ -254,10 +262,9 @@ export function FuelNozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Fu
 }
 
 // Component to display the latest reading for a nozzle
-function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
+function LastReadingDisplay({ nozzleId }: Readonly<{ nozzleId: string }>) {
   const { data: latestReading, isLoading, error, isError } = useLatestReading(nozzleId);
-
-  console.log(`[LastReadingDisplay] Nozzle ${nozzleId}:`, { latestReading, isLoading, error, isError });
+  secureLog.debug('[LastReadingDisplay] Nozzle reading status:', { isLoading, isError });
 
   if (isLoading) {
     return (
@@ -269,7 +276,7 @@ function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
 
   // Handle error cases - this might be a new nozzle with no readings
   if (error || isError) {
-    console.log(`[LastReadingDisplay] Error for nozzle ${nozzleId}:`, error);
+    secureLog.debug('[LastReadingDisplay] Error for nozzle:', error);
     // For new nozzles, this is expected
     return (
       <div className="text-lg font-bold text-gray-500">
@@ -279,8 +286,9 @@ function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
   }
 
   // Check if we have a reading from the API
-  if (!latestReading || latestReading.reading === undefined || latestReading.reading === null) {
-    console.log(`[LastReadingDisplay] No reading data for nozzle ${nozzleId}`);
+  // Type guard for latestReading
+  if (!latestReading || typeof (latestReading as any)?.reading === 'undefined' || (latestReading as any)?.reading === null) {
+    secureLog.debug('[LastReadingDisplay] No reading data for nozzle');
     return (
       <div className="text-lg font-bold text-gray-500">
         No readings yet
@@ -289,13 +297,13 @@ function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
   }
 
   // Ensure reading is a number
-  const readingValue = typeof latestReading.reading === 'number'
-    ? latestReading.reading
-    : parseFloat(latestReading.reading);
+  const readingValue = typeof (latestReading as any).reading === 'number'
+    ? (latestReading as any).reading
+    : parseFloat((latestReading as any).reading);
 
   // Handle NaN case
   if (isNaN(readingValue)) {
-    console.log(`[LastReadingDisplay] Invalid reading value for nozzle ${nozzleId}:`, latestReading.reading);
+    secureLog.debug('[LastReadingDisplay] Invalid reading value for nozzle');
     return (
       <div className="text-lg font-bold text-gray-500">
         No readings yet
@@ -306,7 +314,7 @@ function LastReadingDisplay({ nozzleId }: { nozzleId: string }) {
   // Format the reading with proper number formatting
   return (
     <div className="text-lg font-bold text-gray-900">
-      {new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(readingValue)}
+  {typeof readingValue === 'number' ? new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(readingValue) : ''}
     </div>
   );
 }

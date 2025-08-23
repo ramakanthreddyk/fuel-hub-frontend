@@ -11,6 +11,7 @@ export interface User {
  * @description Authentication API functions
  */
 import apiClient from './core/apiClient';
+import { secureLog } from '@/utils/security';
 
 interface LoginCredentials {
   email: string;
@@ -57,6 +58,7 @@ export const authApi = {
       const responseData = response.data.data || response.data;
       return responseData;
     } catch (error) {
+      secureLog.error('Login failed:', error);
       throw error;
     }
   },
@@ -68,6 +70,7 @@ export const authApi = {
     try {
       await apiClient.post('auth/logout');
     } catch (error) {
+      secureLog.error('Logout failed:', error);
       throw error;
     }
   },
@@ -84,6 +87,7 @@ export const authApi = {
       const responseData = response.data.data || response.data;
       return responseData;
     } catch (error) {
+      secureLog.error('Token refresh failed:', error);
       throw error;
     }
   }

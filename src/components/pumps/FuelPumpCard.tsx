@@ -165,7 +165,7 @@ export function FuelPumpCard({ pump, actions, needsAttention }: Readonly<FuelPum
             </div>
             {actions.onViewNozzles && (
               <Button 
-                onClick={() => actions.onViewNozzles!(pump.id)}
+                onClick={() => actions.onViewNozzles(pump.id)}
                 size="sm"
                 variant="outline"
                 className="bg-white/60 backdrop-blur-sm border border-blue-300 hover:bg-blue-50 text-blue-700 hover:text-blue-800"

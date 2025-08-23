@@ -3,6 +3,7 @@
  * @description Dashboard for viewing and managing error reports
  */
 import React, { useState, useEffect } from 'react';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -120,7 +121,7 @@ export const ErrorReportingDashboard: React.FC = () => {
             <Bug className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.totalErrors}</div>
+            <div className="text-2xl font-bold">{<SafeText text={metrics.totalErrors} />}</div>
           </CardContent>
         </Card>
 
@@ -189,21 +190,21 @@ export const ErrorReportingDashboard: React.FC = () => {
                 <div className="space-y-2">
                   {metrics.recentErrors.map((error) => (
                     <div
-                      key={error.id}
+                      key={<SafeText text={error.id} />}
                       className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-muted/50"
                       onClick={() => setSelectedError(error)}
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <Badge variant={getSeverityVariant(error.severity)}>
-                            {error.severity}
+                            {<SafeText text={error.severity} />}
                           </Badge>
                           {error.component && (
-                            <Badge variant="outline">{error.component}</Badge>
+                            <Badge variant="outline">{<SafeText text={error.component} />}</Badge>
                           )}
                         </div>
                         <p className="text-sm font-medium truncate">
-                          {error.message}
+                          {<SafeText text={error.message} />}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(error.timestamp).toLocaleString()}
@@ -230,9 +231,9 @@ export const ErrorReportingDashboard: React.FC = () => {
             <CardContent>
               <div className="space-y-2">
                 {Object.entries(metrics.errorsByType).map(([type, count]) => (
-                  <div key={type} className="flex items-center justify-between">
-                    <span className="text-sm">{type}</span>
-                    <Badge variant="secondary">{count}</Badge>
+                  <div key={<SafeText text={type} />} className="flex items-center justify-between">
+                    <span className="text-sm">{<SafeText text={type} />}</span>
+                    <Badge variant="secondary">{<SafeText text={count} />}</Badge>
                   </div>
                 ))}
               </div>
@@ -248,12 +249,12 @@ export const ErrorReportingDashboard: React.FC = () => {
             <CardContent>
               <div className="space-y-2">
                 {Object.entries(metrics.errorsBySeverity).map(([severity, count]) => (
-                  <div key={severity} className="flex items-center justify-between">
+                  <div key={<SafeText text={severity} />} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-3 h-3 rounded-full ${getSeverityColor(severity)}`} />
-                      <span className="text-sm capitalize">{severity}</span>
+                      <span className="text-sm capitalize">{<SafeText text={severity} />}</span>
                     </div>
-                    <Badge variant="secondary">{count}</Badge>
+                    <Badge variant="secondary">{<SafeText text={count} />}</Badge>
                   </div>
                 ))}
               </div>
@@ -269,9 +270,9 @@ export const ErrorReportingDashboard: React.FC = () => {
             <CardContent>
               <div className="space-y-2">
                 {Object.entries(metrics.errorsByComponent).map(([component, count]) => (
-                  <div key={component} className="flex items-center justify-between">
-                    <span className="text-sm">{component}</span>
-                    <Badge variant="secondary">{count}</Badge>
+                  <div key={<SafeText text={component} />} className="flex items-center justify-between">
+                    <span className="text-sm">{<SafeText text={component} />}</span>
+                    <Badge variant="secondary">{<SafeText text={count} />}</Badge>
                   </div>
                 ))}
               </div>
@@ -300,7 +301,7 @@ export const ErrorReportingDashboard: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium">Error ID</label>
-                  <p className="text-sm text-muted-foreground">{selectedError.id}</p>
+                  <p className="text-sm text-muted-foreground">{<SafeText text={selectedError.id} />}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Timestamp</label>
@@ -311,7 +312,7 @@ export const ErrorReportingDashboard: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium">Severity</label>
                   <Badge variant={getSeverityVariant(selectedError.severity)}>
-                    {selectedError.severity}
+                    {<SafeText text={selectedError.severity} />}
                   </Badge>
                 </div>
                 <div>
@@ -325,14 +326,14 @@ export const ErrorReportingDashboard: React.FC = () => {
               <div>
                 <label className="text-sm font-medium">Message</label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {selectedError.message}
+                  {<SafeText text={selectedError.message} />}
                 </p>
               </div>
 
               <div>
                 <label className="text-sm font-medium">URL</label>
                 <p className="text-sm text-muted-foreground mt-1 break-all">
-                  {selectedError.url}
+                  {<SafeText text={selectedError.url} />}
                 </p>
               </div>
 
@@ -340,7 +341,7 @@ export const ErrorReportingDashboard: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium">Stack Trace</label>
                   <pre className="text-xs bg-muted p-3 rounded-md mt-1 overflow-auto">
-                    {selectedError.stack}
+                    {<SafeText text={selectedError.stack} />}
                   </pre>
                 </div>
               )}

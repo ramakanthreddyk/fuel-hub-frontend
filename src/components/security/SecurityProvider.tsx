@@ -3,6 +3,7 @@
  * @description Security context provider for managing security features
  */
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { RateLimiter, SecureStorage, getCSRFToken } from '@/utils/security';
 
 interface SecuritySettings {
@@ -176,7 +177,7 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
 
   const reportSecurityEvent = (event: SecurityEvent) => {
     // Log security event
-    console.warn(`Security Event [${event.severity.toUpperCase()}]:`, event);
+    secureLog.warn(`Security Event [${event.severity.toUpperCase()}]:`, event);
 
     // Store in secure storage for analysis
     const events = JSON.parse(localStorage.getItem('security-events') || '[]');
@@ -215,7 +216,7 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
 
   return (
     <SecurityContext.Provider value={value}>
-      {children}
+      {<SafeText text={children} />}
     </SecurityContext.Provider>
   );
 };

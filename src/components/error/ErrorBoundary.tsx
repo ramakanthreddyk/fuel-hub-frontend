@@ -3,6 +3,8 @@
  * @description Global error boundary component for catching and handling React errors
  */
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { secureLog } from '@/utils/security';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,9 +55,9 @@ export class ErrorBoundary extends Component<Props, State> {
     // Log error to console in development
     if (process.env.NODE_ENV === 'development') {
       console.group('🚨 Error Boundary Caught Error');
-      console.error('Error:', error);
-      console.error('Error Info:', errorInfo);
-      console.error('Component Stack:', errorInfo.componentStack);
+      secureLog.error('Error:', error);
+      secureLog.error('Error Info:', errorInfo);
+      secureLog.error('Component Stack:', errorInfo.componentStack);
       console.groupEnd();
     }
 
@@ -80,7 +82,7 @@ export class ErrorBoundary extends Component<Props, State> {
       url: window.location.href,
     };
 
-    console.log('Error report:', errorReport);
+    secureLog.debug('Error report:', errorReport);
     // Example: sendToErrorService(errorReport);
   };
 
@@ -126,7 +128,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
               <div className="flex justify-center mt-4">
                 <Badge variant="outline" className="text-xs">
-                  Error ID: {errorId}
+                  Error ID: {<SafeText text={errorId} />}
                 </Badge>
               </div>
             </CardHeader>
@@ -162,7 +164,7 @@ export class ErrorBoundary extends Component<Props, State> {
                       <div>
                         <h4 className="font-medium text-gray-900 mb-2">Error Message:</h4>
                         <pre className="bg-red-50 border border-red-200 rounded p-3 text-sm text-red-800 overflow-auto">
-                          {error.message}
+                          {<SafeText text={error.message} />}
                         </pre>
                       </div>
 
@@ -170,7 +172,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         <div>
                           <h4 className="font-medium text-gray-900 mb-2">Stack Trace:</h4>
                           <pre className="bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-700 overflow-auto max-h-40">
-                            {error.stack}
+                            {<SafeText text={error.stack} />}
                           </pre>
                         </div>
                       )}
@@ -179,7 +181,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         <div>
                           <h4 className="font-medium text-gray-900 mb-2">Component Stack:</h4>
                           <pre className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-800 overflow-auto max-h-40">
-                            {errorInfo.componentStack}
+                            {<SafeText text={errorInfo.componentStack} />}
                           </pre>
                         </div>
                       )}
@@ -228,7 +230,7 @@ export function withErrorBoundary<P extends object>(
 // Hook for manual error reporting
 export function useErrorHandler() {
   return React.useCallback((error: Error, context?: string) => {
-    console.error(`Error in ${context || 'unknown context'}:`, error);
+    secureLog.error(`Error in ${context || 'unknown context'}:`, error);
     
     // In production, report to error service
     if (process.env.NODE_ENV === 'production') {

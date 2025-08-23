@@ -3,6 +3,7 @@
  * @description API client for nozzles endpoints
  */
 import apiClient from './core/apiClient';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 
 // Types
 export interface Nozzle {
@@ -50,13 +51,13 @@ const normalizeNozzle = (nozzle: any): Nozzle => {
 export const nozzlesService = {
   getNozzles: async (pumpId?: string): Promise<Nozzle[]> => {
     try {
-      console.log('[NOZZLES-API] Fetching nozzles for pump:', pumpId || 'all');
+      secureLog.debug('[NOZZLES-API] Fetching nozzles for pump:', pumpId || 'all');
       
       if (!pumpId) {
-        console.log('[NOZZLES-API] No pumpId provided, fetching all nozzles');
+        secureLog.debug('[NOZZLES-API] No pumpId provided, fetching all nozzles');
       }
       
-      const response = await apiClient.get(pumpId ? `/nozzles?pumpId=${pumpId}` : '/nozzles');
+      const response = await apiClient.get(pumpId ? `/nozzles?pumpId=${sanitizeUrlParam(pumpId)}` : '/nozzles');
       
       // Extract nozzles from response
       let nozzlesArray = [];
@@ -73,29 +74,29 @@ export const nozzlesService = {
       
       // Normalize all nozzles
       const normalizedNozzles = nozzlesArray.map(normalizeNozzle);
-      console.log(`[NOZZLES-API] Successfully fetched ${normalizedNozzles.length} nozzles`);
+      secureLog.debug(`[NOZZLES-API] Successfully fetched ${normalizedNozzles.length} nozzles`);
       return normalizedNozzles;
     } catch (error) {
-      console.error('[NOZZLES-API] Error in getNozzles:', error);
+      secureLog.error('[NOZZLES-API] Error in getNozzles:', error);
       return [];
     }
   },
 
   getNozzle: async (id: string): Promise<Nozzle | null> => {
     try {
-      const response = await apiClient.get(`/nozzles/${id}`);
+      const response = await apiClient.get(`/nozzles/${sanitizeUrlParam(id)}`);
       return normalizeNozzle(response.data);
     } catch (error) {
-      console.error(`[NOZZLES-API] Error in getNozzle: ${id}`, error);
+      secureLog.error('[NOZZLES-API] Error in getNozzle:', error);
       return null;
     }
   },
 
   createNozzle: async (data: CreateNozzleRequest): Promise<Nozzle | null> => {
     try {
-      console.log('[NOZZLES-API] Creating nozzle with data:', data);
+      secureLog.debug('[NOZZLES-API] Creating nozzle with data:', data);
       const response = await apiClient.post('/nozzles', data);
-      console.log('[NOZZLES-API] Create nozzle response:', response.data);
+      secureLog.debug('[NOZZLES-API] Create nozzle response received');
       
       // Handle different response formats
       let nozzleData = response.data;
@@ -105,26 +106,26 @@ export const nozzlesService = {
       
       return normalizeNozzle(nozzleData);
     } catch (error) {
-      console.error('[NOZZLES-API] Error in createNozzle:', error);
+      secureLog.error('[NOZZLES-API] Error in createNozzle:', error);
       throw error;
     }
   },
 
   updateNozzle: async (id: string, data: UpdateNozzleRequest): Promise<Nozzle | null> => {
     try {
-      const response = await apiClient.put(`/nozzles/${id}`, data);
+      const response = await apiClient.put(`/nozzles/${sanitizeUrlParam(id)}`, data);
       return normalizeNozzle(response.data);
     } catch (error) {
-      console.error(`[NOZZLES-API] Error in updateNozzle: ${id}`, error);
+      secureLog.error('[NOZZLES-API] Error in updateNozzle:', error);
       throw error;
     }
   },
 
   deleteNozzle: async (id: string): Promise<void> => {
     try {
-      await apiClient.delete(`/nozzles/${id}`);
+      await apiClient.delete(`/nozzles/${sanitizeUrlParam(id)}`);
     } catch (error) {
-      console.error(`[NOZZLES-API] Error in deleteNozzle: ${id}`, error);
+      secureLog.error('[NOZZLES-API] Error in deleteNozzle:', error);
       throw error;
     }
   }

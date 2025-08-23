@@ -6,12 +6,13 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 function SimpleComponent() {
   return <div>Hello World</div>;
 }
 
 function ButtonComponent({ onClick, children }: { onClick?: () => void; children: React.ReactNode }) {
-  return <button onClick={onClick}>{children}</button>;
+  return <button onClick={<SafeText text={onClick} />}>{<SafeText text={children} />}</button>;
 }
 
 describe('Simple Test Suite', () => {

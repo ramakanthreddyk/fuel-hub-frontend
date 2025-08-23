@@ -3,6 +3,7 @@
  * @description Service for daily sales reports and summaries
  */
 import apiClient, { extractData } from '../core/apiClient';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 export interface NozzleSales {
   nozzleId: string;
@@ -42,10 +43,10 @@ export const dailySalesService = {
    */
   getDailySales: async (date: string): Promise<DailySalesReport> => {
     try {
-      const response = await apiClient.get(`/reports/daily-sales?date=${date}`);
+      const response = await apiClient.get(`/reports/daily-sales?date=${sanitizeUrlParam(date)}`);
       return extractData<DailySalesReport>(response);
     } catch (error) {
-      console.error('[DAILY-SALES-API] Error fetching daily sales:', error);
+      secureLog.error('[DAILY-SALES-API] Error fetching daily sales:', error);
       throw error;
     }
   },
@@ -55,10 +56,10 @@ export const dailySalesService = {
    */
   getSalesRange: async (startDate: string, endDate: string): Promise<DailySalesReport[]> => {
     try {
-      const response = await apiClient.get(`/reports/sales-range?startDate=${startDate}&endDate=${endDate}`);
+      const response = await apiClient.get(`/reports/sales-range?startDate=${sanitizeUrlParam(startDate)}&endDate=${sanitizeUrlParam(endDate)}`);
       return extractData<DailySalesReport[]>(response);
     } catch (error) {
-      console.error('[DAILY-SALES-API] Error fetching sales range:', error);
+      secureLog.error('[DAILY-SALES-API] Error fetching sales range:', error);
       throw error;
     }
   }

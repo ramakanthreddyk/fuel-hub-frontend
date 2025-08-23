@@ -215,6 +215,17 @@ export class ApiResponseHandler {
     limit: number;
     totalPages: number;
   } {
+    // Handle null or undefined response
+    if (!response) {
+      return {
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 0,
+        totalPages: 0,
+      };
+    }
+
     // Backend might return different pagination formats
     if (response.data && Array.isArray(response.data)) {
       // Format 1: { data: [], total: number, page: number, ... }
@@ -223,7 +234,7 @@ export class ApiResponseHandler {
         total: response.total || response.count || response.data.length,
         page: response.page || response.currentPage || 1,
         limit: response.limit || response.pageSize || response.data.length,
-        totalPages: response.totalPages || response.pages || Math.ceil((response.total || response.data.length) / (response.limit || response.data.length)),
+        totalPages: response.totalPages || response.pages || Math.ceil((response.total || response.data.length) / Math.max(1, response.limit || response.data.length)),
       };
     } else if (Array.isArray(response)) {
       // Format 2: Direct array response
@@ -297,12 +308,12 @@ export class DateFormatter {
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
-        console.warn('Invalid date string:', dateString);
+        console.warn('Invalid date string provided');
         return dateString; // Return original if invalid
       }
       return date.toISOString();
     } catch (error) {
-      console.warn('Error formatting date:', dateString, error);
+      console.warn('Error formatting date:', error instanceof Error ? error.message : 'Unknown error');
       return dateString;
     }
   }
@@ -314,13 +325,13 @@ export class DateFormatter {
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
-        console.warn('Invalid date string:', dateString);
+        console.warn('Invalid date string provided');
         return dateString;
       }
       // Backend expects ISO string
       return date.toISOString();
     } catch (error) {
-      console.warn('Error formatting date:', dateString, error);
+      console.warn('Error formatting date:', error instanceof Error ? error.message : 'Unknown error');
       return dateString;
     }
   }
@@ -336,7 +347,7 @@ export class DateFormatter {
       }
       return date.toLocaleDateString(locale);
     } catch (error) {
-      console.warn('Error formatting display date:', dateString, error);
+      console.warn('Error formatting display date:', error instanceof Error ? error.message : 'Unknown error');
       return 'Invalid Date';
     }
   }
@@ -352,7 +363,7 @@ export class DateFormatter {
       }
       return date.toLocaleString(locale);
     } catch (error) {
-      console.warn('Error formatting display datetime:', dateString, error);
+      console.warn('Error formatting display datetime:', error instanceof Error ? error.message : 'Unknown error');
       return 'Invalid Date';
     }
   }
@@ -402,6 +413,24 @@ export class ValidationHelper {
     
     if (!station.name?.trim()) {
       errors.push('Station name is required');
+    }
+    
+    if (!station.address?.trim()) {
+      errors.push('Address is required');
+    }
+    
+    if (!station.city?.trim()) {
+      errors.push('City is required');
+    }
+    
+    if (!station.state?.trim()) {
+      errors.push('State is required');
+    }
+    
+    if (!station.zipCode?.trim()) {
+      errors.push('ZIP code is required');
+    } else if (!/^\d{6}$/.test(station.zipCode.trim())) {
+      errors.push('ZIP code must be 6 digits');
     }
     
     return errors;

@@ -10,7 +10,7 @@ interface EnhancedNozzleCardProps {
   onTakeReading: (nozzleId: string) => void;
 }
 
-export function EnhancedNozzleCard({ nozzle, onTakeReading }: EnhancedNozzleCardProps) {
+export function EnhancedNozzleCard({ nozzle, onTakeReading }: Readonly<EnhancedNozzleCardProps>) {
   // Handle both snake_case and camelCase properties
   const nozzleName = nozzle.name || '';
   const fuelType = nozzle.fuelType || 'unknown';
@@ -51,9 +51,14 @@ export function EnhancedNozzleCard({ nozzle, onTakeReading }: EnhancedNozzleCard
             <span className="text-2xl">{getFuelTypeIcon(fuelType)}</span>
             Nozzle {nozzleName}
           </CardTitle>
-          <Badge className={getStatusColor(status)}>
-            {status}
-          </Badge>
+          {(() => {
+            let statusColor = getStatusColor(status);
+            return (
+              <Badge className={statusColor}>
+                {status}
+              </Badge>
+            );
+          })()}
         </div>
         <CardDescription className={`capitalize font-medium ${getFuelTypeColor(fuelType)}`}>
           {fuelType}

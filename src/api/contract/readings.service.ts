@@ -8,6 +8,7 @@
 
 import { contractClient } from '../contract-client';
 import type { NozzleReading, CreateReadingRequest } from '../api-contract';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 export const readingsService = {
   /**
@@ -27,7 +28,7 @@ export const readingsService = {
     limit?: number;
   }): Promise<NozzleReading[]> {
     const searchParams = new URLSearchParams();
-    if (params?.nozzleId) searchParams.set('nozzleId', params.nozzleId);
+    if (params?.nozzleId) searchParams.set('nozzleId', sanitizeUrlParam(params.nozzleId));
     if (params?.startDate) searchParams.set('startDate', params.startDate);
     if (params?.endDate) searchParams.set('endDate', params.endDate);
     if (params?.limit) searchParams.set('limit', String(params.limit));
@@ -40,7 +41,7 @@ export const readingsService = {
    * Get single reading by ID
    */
   async getReading(id: string): Promise<NozzleReading> {
-    return contractClient.get<NozzleReading>(`/nozzle-readings/${id}`);
+    return contractClient.get<NozzleReading>(`/nozzle-readings/${sanitizeUrlParam(id)}`);
   },
 
   /**
@@ -51,7 +52,7 @@ export const readingsService = {
       const readings = await this.getReadings({ nozzleId, limit: 1 });
       return readings.length > 0 ? readings[0] : null;
     } catch (error) {
-      console.warn('Failed to get latest reading:', error);
+      secureLog.warn('Failed to get latest reading:', error);
       return null;
     }
   },
@@ -61,10 +62,10 @@ export const readingsService = {
    */
   async canCreateReading(nozzleId: string): Promise<{ canCreate: boolean; reason?: string; missingPrice?: boolean }> {
     try {
-      const response = await contractClient.get<{ canCreate: boolean; reason?: string; missingPrice?: boolean }>(`/nozzle-readings/can-create/${nozzleId}`);
+      const response = await contractClient.get<{ canCreate: boolean; reason?: string; missingPrice?: boolean }>(`/nozzle-readings/can-create/${sanitizeUrlParam(nozzleId)}`);
       return response;
     } catch (error) {
-      console.warn('Failed to check reading creation:', error);
+      secureLog.warn('Failed to check reading creation:', error);
       return { canCreate: false, reason: 'Unable to verify reading requirements' };
     }
   }

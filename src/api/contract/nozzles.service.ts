@@ -6,6 +6,7 @@
  */
 
 import { contractClient } from '../contract-client';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import type { Nozzle, CreateNozzleRequest } from '../api-contract';
 
 export const nozzlesService = {
@@ -13,7 +14,7 @@ export const nozzlesService = {
    * Get nozzles for a pump
    */
   async getNozzles(pumpId?: string): Promise<Nozzle[]> {
-    const endpoint = pumpId ? `/nozzles?pumpId=${pumpId}` : '/nozzles';
+    const endpoint = pumpId ? `/nozzles?pumpId=${sanitizeUrlParam(pumpId)}` : '/nozzles';
     return contractClient.getArray<Nozzle>(endpoint, 'nozzles');
   },
 
@@ -21,7 +22,7 @@ export const nozzlesService = {
    * Get single nozzle by ID
    */
   async getNozzle(nozzleId: string): Promise<Nozzle> {
-    return contractClient.get<Nozzle>(`/nozzles/${nozzleId}`);
+    return contractClient.get<Nozzle>(`/nozzles/${sanitizeUrlParam(nozzleId)}`);
   },
 
   /**
@@ -35,13 +36,13 @@ export const nozzlesService = {
    * Update nozzle
    */
   async updateNozzle(nozzleId: string, data: Partial<CreateNozzleRequest>): Promise<Nozzle> {
-    return contractClient.put<Nozzle>(`/nozzles/${nozzleId}`, data);
+    return contractClient.put<Nozzle>(`/nozzles/${sanitizeUrlParam(nozzleId)}`, data);
   },
 
   /**
    * Delete nozzle
    */
   async deleteNozzle(nozzleId: string): Promise<void> {
-    await contractClient.delete(`/nozzles/${nozzleId}`);
+    await contractClient.delete(`/nozzles/${sanitizeUrlParam(nozzleId)}`);
   }
 };

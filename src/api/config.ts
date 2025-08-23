@@ -1,6 +1,8 @@
 // This file contains the API URL configuration
 // It's used to ensure all API calls use the correct URL
 
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
+
 // The API base URL from environment variables
 export const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL === 'https://aspirereach.com' 
@@ -10,7 +12,7 @@ export const API_BASE_URL = (
 
 // If we're on the custom domain, make sure we're using the correct API URL
 if (typeof window !== 'undefined' && window.localStorage.getItem('fuelsync_custom_domain') === 'true') {
-  console.log('Using API URL for custom domain');
+  secureLog.debug('Using API URL for custom domain');
 }
 
 // The API version

@@ -12,7 +12,7 @@ import type { CreateNozzleRequest } from '@/services/nozzleService';
 export const useContractNozzles = (pumpId?: string) => {
   return useQuery({
     queryKey: ['contract-nozzles', pumpId],
-  queryFn: () => nozzleService.getNozzles(pumpId),
+    queryFn: () => nozzleService.getNozzles(pumpId),
     enabled: !!pumpId,
   });
 };
@@ -20,7 +20,7 @@ export const useContractNozzles = (pumpId?: string) => {
 export const useContractNozzle = (nozzleId: string) => {
   return useQuery({
     queryKey: ['contract-nozzle', nozzleId],
-  queryFn: () => nozzleService.getNozzle(nozzleId),
+    queryFn: () => nozzleService.getNozzle(nozzleId),
     enabled: !!nozzleId,
   });
 };
@@ -29,7 +29,7 @@ export const useCreateContractNozzle = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-  mutationFn: (data: CreateNozzleRequest) => nozzleService.createNozzle(data),
+    mutationFn: (data: CreateNozzleRequest) => nozzleService.createNozzle(data),
     onSuccess: (newNozzle) => {
       // Invalidate nozzles for the pump
       queryClient.invalidateQueries({ queryKey: ['contract-nozzles', newNozzle.pumpId] });
@@ -58,7 +58,7 @@ export const useUpdateContractNozzle = () => {
 
   return useMutation({
     mutationFn: ({ nozzleId, data }: { nozzleId: string; data: Partial<CreateNozzleRequest> }) => 
-  nozzleService.updateNozzle(nozzleId, data),
+      nozzleService.updateNozzle(nozzleId, data),
     onSuccess: (updatedNozzle) => {
       queryClient.invalidateQueries({ queryKey: ['contract-nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['contract-nozzle', updatedNozzle.id] });
@@ -82,7 +82,7 @@ export const useDeleteContractNozzle = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-  mutationFn: (nozzleId: string) => nozzleService.deleteNozzle(nozzleId),
+    mutationFn: (nozzleId: string) => nozzleService.deleteNozzle(nozzleId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contract-nozzles'] });
       queryClient.invalidateQueries({ queryKey: ['contract-pumps'] });

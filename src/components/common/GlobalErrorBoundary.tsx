@@ -4,6 +4,8 @@
  * @description Enhanced global error boundary for the entire application
  */
 import React from 'react';
+import { secureLog } from '@/utils/security';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 interface Props {
@@ -13,7 +15,7 @@ interface Props {
 export function GlobalErrorBoundary({ children }: Props) {
   const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
     // Log to console
-    console.error('🚨 Global Error Boundary:', error, errorInfo);
+    secureLog.error('🚨 Global Error Boundary:', error, errorInfo);
 
     // In production, send to error reporting service
     if (process.env.NODE_ENV === 'production') {
@@ -27,7 +29,7 @@ export function GlobalErrorBoundary({ children }: Props) {
         userAgent: navigator.userAgent,
       };
 
-      console.log('Error report for service:', errorReport);
+      secureLog.debug('Error report for service:', errorReport);
       // Example: Sentry.captureException(error, { extra: errorReport });
     }
   };
@@ -37,7 +39,7 @@ export function GlobalErrorBoundary({ children }: Props) {
       onError={handleError}
       showDetails={process.env.NODE_ENV === 'development'}
     >
-      {children}
+      {<SafeText text={children} />}
     </ErrorBoundary>
   );
 }

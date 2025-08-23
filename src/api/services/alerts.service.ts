@@ -7,6 +7,7 @@
 
 import { apiClient } from '../client';
 import type { Alert, ApiResponse } from '../api-contract';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 export const alertsService = {
   // Get all alerts
@@ -21,20 +22,20 @@ export const alertsService = {
       const response = await apiClient.get<ApiResponse<{ alerts: Alert[] }>>('/alerts', { params });
       return response.data?.data?.alerts || [];
     } catch (error) {
-      console.error('[ALERTS-SERVICE] Error fetching alerts:', error);
+      secureLog.error('[ALERTS-SERVICE] Error fetching alerts:', error);
       return [];
     }
   },
 
   // Get alert by ID
   getAlert: async (id: string): Promise<Alert> => {
-    const response = await apiClient.get<ApiResponse<Alert>>(`/alerts/${id}`);
+    const response = await apiClient.get<ApiResponse<Alert>>(`/alerts/${sanitizeUrlParam(id)}`);
     return response.data.data;
   },
 
   // Acknowledge alert
   acknowledgeAlert: async (id: string): Promise<Alert> => {
-    const response = await apiClient.put<ApiResponse<Alert>>(`/alerts/${id}/acknowledge`);
+    const response = await apiClient.put<ApiResponse<Alert>>(`/alerts/${sanitizeUrlParam(id)}/acknowledge`);
     return response.data.data;
   },
 
@@ -46,7 +47,7 @@ export const alertsService = {
 
   // Dismiss alert
   dismissAlert: async (id: string): Promise<void> => {
-    await apiClient.put(`/alerts/${id}/dismiss`);
+    await apiClient.put(`/alerts/${sanitizeUrlParam(id)}/dismiss`);
   },
 
   // Get unread count

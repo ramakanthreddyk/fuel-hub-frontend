@@ -12,6 +12,7 @@ import {
   type FrontendStation,
   type BackendStation
 } from '../integration-fixes';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 
 // Types - Updated to match backend and include all required fields
 export interface Station extends FrontendStation {
@@ -66,7 +67,7 @@ export const stationsService = {
       if (params?.includeMetrics) queryParams.append('includeMetrics', 'true');
 
       const url = `/stations${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      console.log(`[STATIONS-API] Fetching stations from ${url}`);
+      secureLog.debug('[STATIONS-API] Fetching stations');
 
       const response = await apiClient.get(url);
 
@@ -76,10 +77,10 @@ export const stationsService = {
         (item: BackendStation) => DataTransformer.transformStation(item)
       );
 
-      console.log(`[STATIONS-API] Successfully fetched ${result.data.length} stations`);
+      secureLog.debug(`[STATIONS-API] Successfully fetched ${result.data.length} stations`);
       return result;
     } catch (error) {
-      console.error('[STATIONS-API] Error fetching stations:', error);
+      secureLog.error('[STATIONS-API] Error fetching stations:', error);
       const errorInfo = ApiResponseHandler.handleErrorResponse(error);
       throw new Error(errorInfo.message);
     }
@@ -90,8 +91,8 @@ export const stationsService = {
    */
   getStation: async (id: string): Promise<Station> => {
     try {
-      console.log(`[STATIONS-API] Fetching station details for ID: ${id}`);
-      const response = await apiClient.get(`/stations/${id}`);
+      secureLog.debug('[STATIONS-API] Fetching station details');
+      const response = await apiClient.get(`/stations/${sanitizeUrlParam(id)}`);
 
       const station = ApiResponseHandler.handleSingleResponse<Station>(
         response.data,
@@ -104,7 +105,7 @@ export const stationsService = {
 
       return station;
     } catch (error) {
-      console.error(`[STATIONS-API] Error fetching station ${id}:`, error);
+      secureLog.error('[STATIONS-API] Error fetching station:', error);
       const errorInfo = ApiResponseHandler.handleErrorResponse(error);
       throw new Error(errorInfo.message);
     }
@@ -122,7 +123,7 @@ export const stationsService = {
         throw new Error(errorMessage);
       }
 
-      console.log('[STATIONS-API] Creating station with data:', data);
+      secureLog.debug('[STATIONS-API] Creating station');
 
       // Transform data to backend format
       const backendData = DataTransformer.transformStationForBackend(data);
@@ -140,7 +141,7 @@ export const stationsService = {
 
       return station;
     } catch (error) {
-      console.error('[STATIONS-API] Error creating station:', error);
+      secureLog.error('[STATIONS-API] Error creating station:', error);
       const errorInfo = ApiResponseHandler.handleErrorResponse(error);
       throw new Error(errorInfo.message);
     }
@@ -157,12 +158,12 @@ export const stationsService = {
         throw new Error(`Validation failed: ${validationErrors.join(', ')}`);
       }
 
-      console.log(`[STATIONS-API] Updating station ${id} with data:`, data);
+      secureLog.debug('[STATIONS-API] Updating station');
 
       // Transform data to backend format
       const backendData = DataTransformer.transformStationForBackend(data);
 
-      const response = await apiClient.put(`/stations/${id}`, backendData);
+      const response = await apiClient.put(`/stations/${sanitizeUrlParam(id)}`, backendData);
 
       const station = ApiResponseHandler.handleSingleResponse<Station>(
         response.data,
@@ -175,7 +176,7 @@ export const stationsService = {
 
       return station;
     } catch (error) {
-      console.error(`[STATIONS-API] Error updating station ${id}:`, error);
+      secureLog.error('[STATIONS-API] Error updating station:', error);
       const errorInfo = ApiResponseHandler.handleErrorResponse(error);
       throw new Error(errorInfo.message);
     }
@@ -186,11 +187,11 @@ export const stationsService = {
    */
   deleteStation: async (id: string): Promise<void> => {
     try {
-      console.log(`[STATIONS-API] Deleting station ${id}`);
-      await apiClient.delete(`/stations/${id}`);
-      console.log(`[STATIONS-API] Successfully deleted station ${id}`);
+      secureLog.debug('[STATIONS-API] Deleting station');
+      await apiClient.delete(`/stations/${sanitizeUrlParam(id)}`);
+      secureLog.debug('[STATIONS-API] Successfully deleted station');
     } catch (error) {
-      console.error(`[STATIONS-API] Error deleting station ${id}:`, error);
+      secureLog.error('[STATIONS-API] Error deleting station:', error);
       const errorInfo = ApiResponseHandler.handleErrorResponse(error);
       throw new Error(errorInfo.message);
     }
@@ -208,8 +209,8 @@ export const stationsService = {
     efficiency: number;
   }> => {
     try {
-      console.log(`[STATIONS-API] Fetching metrics for station ${id}`);
-      const response = await apiClient.get(`/stations/${id}/metrics`);
+      secureLog.debug('[STATIONS-API] Fetching metrics for station');
+      const response = await apiClient.get(`/stations/${sanitizeUrlParam(id)}/metrics`);
 
       const metrics = ApiResponseHandler.handleSingleResponse(response.data);
 
@@ -220,7 +221,7 @@ export const stationsService = {
       // Transform snake_case to camelCase
       return DataTransformer.snakeToCamel(metrics);
     } catch (error) {
-      console.error(`[STATIONS-API] Error fetching station metrics ${id}:`, error);
+      secureLog.error('[STATIONS-API] Error fetching station metrics:', error);
       const errorInfo = ApiResponseHandler.handleErrorResponse(error);
       throw new Error(errorInfo.message);
     }

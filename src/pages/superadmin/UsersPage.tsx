@@ -27,7 +27,6 @@ import { MoreVertical, Copy, Edit, Trash2, RotateCcw } from 'lucide-react';
 import { superAdminApi } from '@/api/superadmin';
  // import types from correct location if needed
 import { SuperAdminUserForm } from '@/components/users/SuperAdminUserForm';
-import { ResetPasswordForm } from '@/components/users/ResetPasswordForm';
 
 export default function UsersPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);

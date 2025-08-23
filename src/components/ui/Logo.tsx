@@ -3,6 +3,7 @@
  * @description Modern, scalable logo component for FuelSync
  */
 import React from 'react';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {

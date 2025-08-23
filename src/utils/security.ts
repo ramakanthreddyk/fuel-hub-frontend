@@ -1,417 +1,293 @@
 /**
  * @file utils/security.ts
- * @description Security utilities and protection mechanisms
+ * @description Security utilities for input sanitization, logging, and XSS prevention
  */
 
-// Content Security Policy utilities
-export function setupCSP() {
-  if (typeof document === 'undefined') return;
-
-  // Create CSP meta tag if it doesn't exist
-  let cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-  if (!cspMeta) {
-    cspMeta = document.createElement('meta');
-    cspMeta.setAttribute('http-equiv', 'Content-Security-Policy');
-    document.head.appendChild(cspMeta);
+/**
+ * Sanitizes user input for logging to prevent log injection attacks
+ */
+export function sanitizeForLogging(input: unknown): string {
+  if (input === null || input === undefined) {
+    return 'null';
   }
-
-  // Define CSP policy
-  const cspPolicy = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Note: In production, remove unsafe-inline and unsafe-eval
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: https:",
-    "connect-src 'self' https://api.fuelhub.com wss://api.fuelhub.com",
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-  ].join('; ');
-
-  cspMeta.setAttribute('content', cspPolicy);
+  
+  const str = String(input);
+  
+  // Remove or encode dangerous characters that could break log integrity
+  return str
+    .replace(/\r\n/g, '\\r\\n')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t')
+    .replace(/\x00/g, '\\x00')
+    .replace(/\x1b/g, '\\x1b') // ANSI escape sequences
+    .slice(0, 1000); // Limit length to prevent log flooding
 }
 
-// XSS Protection
-export function sanitizeHTML(html: string): string {
-  if (typeof DOMParser === 'undefined') return html;
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-
-  // Remove script tags
-  const scripts = doc.querySelectorAll('script');
-  scripts.forEach(script => script.remove());
-
-  // Remove event handlers
-  const allElements = doc.querySelectorAll('*');
-  allElements.forEach(element => {
-    const attributes = Array.from(element.attributes);
-    attributes.forEach(attr => {
-      if (attr.name.startsWith('on')) {
-        element.removeAttribute(attr.name);
-      }
-    });
-  });
-
-  // Remove dangerous attributes
-  const dangerousAttributes = ['src', 'href', 'action', 'formaction', 'data'];
-  allElements.forEach(element => {
-    dangerousAttributes.forEach(attr => {
-      const value = element.getAttribute(attr);
-      if (value && (value.includes('javascript:') || value.includes('data:'))) {
-        element.removeAttribute(attr);
-      }
-    });
-  });
-
-  return doc.body.innerHTML;
-}
-
-// Input validation and sanitization
-export function sanitizeInput(input: string): string {
-  if (typeof input !== 'string') return '';
-
+/**
+ * Sanitizes HTML content to prevent XSS attacks
+ */
+export function sanitizeHtml(input: string): string {
+  if (!input) return '';
+  
   return input
-    .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .trim();
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
 }
 
+/**
+ * Validates and sanitizes URL parameters to prevent injection
+ */
+export function sanitizeUrlParam(param: string): string {
+  if (!param) return '';
+  
+  // Encode URI component and validate
+  return encodeURIComponent(param.toString().slice(0, 200));
+}
+
+/**
+ * Validates file paths to prevent path traversal attacks
+ */
+export function validateFilePath(filePath: string): boolean {
+  if (!filePath) return false;
+  
+  // Check for path traversal sequences
+  const dangerous = ['../', '..\\', '../', '..\\\\'];
+  const normalizedPath = filePath.toLowerCase();
+  
+  return !dangerous.some(seq => normalizedPath.includes(seq));
+}
+
+/**
+ * Sanitizes file paths by removing dangerous sequences
+ */
+export function sanitizeFilePath(filePath: string): string {
+  if (!filePath) return '';
+  
+  // Use path.basename to strip directory components
+  const path = require('path');
+  return path.basename(filePath);
+}
+
+/**
+ * Validates email format
+ */
 export function validateEmail(email: string): boolean {
+  if (!email) return false;
+  
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email) && email.length <= 254;
 }
 
-export function validatePassword(password: string): {
-  isValid: boolean;
-  errors: string[];
-} {
-  const errors: string[] = [];
-
-  if (password.length < 8) {
-    errors.push('Password must be at least 8 characters long');
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
-  }
-
-  if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter');
-  }
-
-  if (!/\d/.test(password)) {
-    errors.push('Password must contain at least one number');
-  }
-
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    errors.push('Password must contain at least one special character');
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
+/**
+ * Validates phone number (Indian format)
+ */
+export function validatePhoneNumber(phone: string): boolean {
+  if (!phone) return false;
+  
+  const cleanPhone = phone.replace(/\s+/g, '');
+  const phoneRegex = /^[6-9]\d{9}$/;
+  return phoneRegex.test(cleanPhone);
 }
 
-// CSRF Protection
-export function generateCSRFToken(): string {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+/**
+ * Validates and sanitizes database query parameters
+ */
+export function sanitizeDbParam(param: unknown): string {
+  if (param === null || param === undefined) {
+    return '';
+  }
+  
+  const str = String(param);
+  
+  // Remove potentially dangerous SQL/NoSQL injection characters
+  return str
+    .replace(/['"`;\\]/g, '')
+    .replace(/\$\{/g, '')
+    .replace(/\$\(/g, '')
+    .slice(0, 500);
 }
 
-export function setCSRFToken(token: string) {
-  if (typeof document !== 'undefined') {
-    // Set as meta tag
-    let csrfMeta = document.querySelector('meta[name="csrf-token"]');
-    if (!csrfMeta) {
-      csrfMeta = document.createElement('meta');
-      csrfMeta.setAttribute('name', 'csrf-token');
-      document.head.appendChild(csrfMeta);
-    }
-    csrfMeta.setAttribute('content', token);
-
-    // Store in sessionStorage
-    sessionStorage.setItem('csrf-token', token);
-  }
-}
-
-export function getCSRFToken(): string | null {
-  if (typeof document === 'undefined') return null;
-
-  // Try to get from meta tag first
-  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-  if (csrfMeta) {
-    return csrfMeta.getAttribute('content');
-  }
-
-  // Fallback to sessionStorage
-  return sessionStorage.getItem('csrf-token');
-}
-
-// Secure storage utilities
-export class SecureStorage {
-  private static encryptionKey: string | null = null;
-
-  static async generateKey(): Promise<string> {
-    if (typeof crypto === 'undefined' || !crypto.subtle) {
-      throw new Error('Web Crypto API not supported');
-    }
-
-    const key = await crypto.subtle.generateKey(
-      { name: 'AES-GCM', length: 256 },
-      true,
-      ['encrypt', 'decrypt']
-    );
-
-    const exported = await crypto.subtle.exportKey('raw', key);
-    return Array.from(new Uint8Array(exported))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-  }
-
-  static setEncryptionKey(key: string) {
-    this.encryptionKey = key;
-  }
-
-  static async encrypt(data: string): Promise<string> {
-    if (!this.encryptionKey) {
-      throw new Error('Encryption key not set');
-    }
-
-    if (typeof crypto === 'undefined' || !crypto.subtle) {
-      // Fallback to base64 encoding (not secure, but better than nothing)
-      return btoa(data);
-    }
-
-    const keyData = new Uint8Array(
-      this.encryptionKey.match(/.{2}/g)!.map(byte => parseInt(byte, 16))
-    );
-
-    const key = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'AES-GCM' },
-      false,
-      ['encrypt']
-    );
-
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encodedData = new TextEncoder().encode(data);
-
-    const encrypted = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      encodedData
-    );
-
-    const combined = new Uint8Array(iv.length + encrypted.byteLength);
-    combined.set(iv);
-    combined.set(new Uint8Array(encrypted), iv.length);
-
-    return Array.from(combined)
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-  }
-
-  static async decrypt(encryptedData: string): Promise<string> {
-    if (!this.encryptionKey) {
-      throw new Error('Encryption key not set');
-    }
-
-    if (typeof crypto === 'undefined' || !crypto.subtle) {
-      // Fallback from base64 encoding
-      return atob(encryptedData);
-    }
-
-    const keyData = new Uint8Array(
-      this.encryptionKey.match(/.{2}/g)!.map(byte => parseInt(byte, 16))
-    );
-
-    const key = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'AES-GCM' },
-      false,
-      ['decrypt']
-    );
-
-    const combined = new Uint8Array(
-      encryptedData.match(/.{2}/g)!.map(byte => parseInt(byte, 16))
-    );
-
-    const iv = combined.slice(0, 12);
-    const encrypted = combined.slice(12);
-
-    const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      encrypted
-    );
-
-    return new TextDecoder().decode(decrypted);
-  }
-
-  static async setItem(key: string, value: string): Promise<void> {
-    try {
-      const encrypted = await this.encrypt(value);
-      localStorage.setItem(key, encrypted);
-    } catch (error) {
-      console.warn('Failed to encrypt data, storing as plain text:', error);
-      localStorage.setItem(key, value);
+/**
+ * Secure logging function that sanitizes all inputs
+ */
+export const secureLog = {
+  info: (message: string, ...args: unknown[]) => {
+    const sanitizedMessage = sanitizeForLogging(message);
+    const sanitizedArgs = args.map(sanitizeForLogging);
+    console.info(sanitizedMessage, ...sanitizedArgs);
+  },
+  
+  warn: (message: string, ...args: unknown[]) => {
+    const sanitizedMessage = sanitizeForLogging(message);
+    const sanitizedArgs = args.map(sanitizeForLogging);
+    console.warn(sanitizedMessage, ...sanitizedArgs);
+  },
+  
+  error: (message: string, ...args: unknown[]) => {
+    const sanitizedMessage = sanitizeForLogging(message);
+    const sanitizedArgs = args.map(sanitizeForLogging);
+    console.error(sanitizedMessage, ...sanitizedArgs);
+  },
+  
+  debug: (message: string, ...args: unknown[]) => {
+    if (process.env.NODE_ENV === 'development') {
+      const sanitizedMessage = sanitizeForLogging(message);
+      const sanitizedArgs = args.map(sanitizeForLogging);
+      console.debug(sanitizedMessage, ...sanitizedArgs);
     }
   }
+};
 
-  static async getItem(key: string): Promise<string | null> {
-    const stored = localStorage.getItem(key);
-    if (!stored) return null;
-
-    try {
-      return await this.decrypt(stored);
-    } catch (error) {
-      console.warn('Failed to decrypt data, returning as plain text:', error);
-      return stored;
-    }
+/**
+ * Content Security Policy helpers
+ */
+export const CSP = {
+  /**
+   * Generates a nonce for inline scripts
+   */
+  generateNonce: (): string => {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  },
+  
+  /**
+   * Validates if content is safe for innerHTML
+   */
+  isSafeContent: (content: string): boolean => {
+    const dangerousPatterns = [
+      /<script/i,
+      /javascript:/i,
+      /on\w+\s*=/i,
+      /<iframe/i,
+      /<object/i,
+      /<embed/i,
+      /<link/i,
+      /<meta/i
+    ];
+    
+    return !dangerousPatterns.some(pattern => pattern.test(content));
   }
+};
 
-  static removeItem(key: string): void {
-    localStorage.removeItem(key);
-  }
-}
-
-// Rate limiting
+/**
+ * Rate limiting helper for API calls
+ */
 export class RateLimiter {
-  private attempts: Map<string, number[]> = new Map();
-
+  private requests: Map<string, number[]> = new Map();
+  
   constructor(
-    private maxAttempts: number = 5,
-    private windowMs: number = 15 * 60 * 1000 // 15 minutes
+    private maxRequests: number = 100,
+    private windowMs: number = 60000 // 1 minute
   ) {}
-
+  
   isAllowed(identifier: string): boolean {
     const now = Date.now();
-    const attempts = this.attempts.get(identifier) || [];
-
-    // Remove old attempts outside the window
-    const validAttempts = attempts.filter(time => now - time < this.windowMs);
-
-    if (validAttempts.length >= this.maxAttempts) {
+    const requests = this.requests.get(identifier) || [];
+    
+    // Remove old requests outside the window
+    const validRequests = requests.filter(time => now - time < this.windowMs);
+    
+    if (validRequests.length >= this.maxRequests) {
       return false;
     }
-
-    // Add current attempt
-    validAttempts.push(now);
-    this.attempts.set(identifier, validAttempts);
-
+    
+    validRequests.push(now);
+    this.requests.set(identifier, validRequests);
+    
     return true;
   }
-
-  getRemainingAttempts(identifier: string): number {
-    const now = Date.now();
-    const attempts = this.attempts.get(identifier) || [];
-    const validAttempts = attempts.filter(time => now - time < this.windowMs);
-
-    return Math.max(0, this.maxAttempts - validAttempts.length);
-  }
-
-  getTimeUntilReset(identifier: string): number {
-    const attempts = this.attempts.get(identifier) || [];
-    if (attempts.length === 0) return 0;
-
-    const oldestAttempt = Math.min(...attempts);
-    const resetTime = oldestAttempt + this.windowMs;
-
-    return Math.max(0, resetTime - Date.now());
-  }
-
-  reset(identifier: string): void {
-    this.attempts.delete(identifier);
+  
+  reset(identifier?: string): void {
+    if (identifier) {
+      this.requests.delete(identifier);
+    } else {
+      this.requests.clear();
+    }
   }
 }
 
-// Session security
-export function generateSecureSessionId(): string {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-}
-
-export function isSecureContext(): boolean {
-  return typeof window !== 'undefined' && (
-    window.location.protocol === 'https:' ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1'
-  );
-}
-
-// Security headers validation
-export function validateSecurityHeaders(): {
-  isSecure: boolean;
-  warnings: string[];
-} {
-  const warnings: string[] = [];
-
-  if (typeof document === 'undefined') {
-    return { isSecure: true, warnings: [] };
+/**
+ * Input validation schemas
+ */
+export const ValidationSchemas = {
+  station: {
+    name: (value: string) => value && value.trim().length >= 2 && value.length <= 100,
+    address: (value: string) => value && value.trim().length >= 5 && value.length <= 200,
+    city: (value: string) => value && value.trim().length >= 2 && value.length <= 50,
+    state: (value: string) => value && value.trim().length >= 2 && value.length <= 50,
+    zipCode: (value: string) => /^\d{6}$/.test(value?.trim() || '')
+  },
+  
+  pump: {
+    name: (value: string) => value && value.trim().length >= 2 && value.length <= 50,
+    serialNumber: (value: string) => value && /^[A-Z0-9-]{3,20}$/.test(value.trim()),
+    nozzleCount: (value: number) => Number.isInteger(value) && value >= 1 && value <= 12
+  },
+  
+  user: {
+    email: validateEmail,
+    phone: validatePhoneNumber,
+    name: (value: string) => value && value.trim().length >= 2 && value.length <= 100
   }
+};
 
-  // Check for HTTPS
-  if (!isSecureContext()) {
-    warnings.push('Application is not served over HTTPS');
+/**
+ * Secure data transformation utilities
+ */
+export const SecureTransform = {
+  /**
+   * Safely converts snake_case to camelCase with validation
+   */
+  snakeToCamel: (obj: unknown): unknown => {
+    if (obj === null || obj === undefined || typeof obj !== 'object') {
+      return obj;
+    }
+    
+    if (Array.isArray(obj)) {
+      return obj.map(item => SecureTransform.snakeToCamel(item));
+    }
+    
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Validate key to prevent prototype pollution
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        continue;
+      }
+      
+      const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      result[camelKey] = SecureTransform.snakeToCamel(value);
+    }
+    return result;
+  },
+  
+  /**
+   * Safely converts camelCase to snake_case with validation
+   */
+  camelToSnake: (obj: unknown): unknown => {
+    if (obj === null || obj === undefined || typeof obj !== 'object') {
+      return obj;
+    }
+    
+    if (Array.isArray(obj)) {
+      return obj.map(item => SecureTransform.camelToSnake(item));
+    }
+    
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Validate key to prevent prototype pollution
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        continue;
+      }
+      
+      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+      result[snakeKey] = SecureTransform.camelToSnake(value);
+    }
+    return result;
   }
-
-  // Check for CSP header
-  const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-  if (!cspMeta) {
-    warnings.push('Content Security Policy not found');
-  }
-
-  // Check for X-Frame-Options
-  const frameOptions = document.querySelector('meta[http-equiv="X-Frame-Options"]');
-  if (!frameOptions) {
-    warnings.push('X-Frame-Options header not found');
-  }
-
-  return {
-    isSecure: warnings.length === 0,
-    warnings,
-  };
-}
-
-// Initialize security measures
-export function initializeSecurity() {
-  if (typeof window === 'undefined') return;
-
-  // Setup CSP
-  setupCSP();
-
-  // Generate and set CSRF token
-  const csrfToken = generateCSRFToken();
-  setCSRFToken(csrfToken);
-
-  // Initialize secure storage encryption key
-  SecureStorage.generateKey().then(key => {
-    SecureStorage.setEncryptionKey(key);
-  }).catch(error => {
-    console.warn('Failed to generate encryption key:', error);
-  });
-
-  // Validate security headers
-  const validation = validateSecurityHeaders();
-  if (!validation.isSecure) {
-    console.warn('Security warnings:', validation.warnings);
-  }
-
-  // Prevent clickjacking
-  if (window.top !== window.self) {
-    window.top!.location = window.self.location;
-  }
-
-  // Clear sensitive data on page unload
-  window.addEventListener('beforeunload', () => {
-    // Clear any sensitive data from memory
-    sessionStorage.removeItem('sensitive-data');
-  });
-}
+};

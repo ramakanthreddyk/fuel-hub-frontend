@@ -1,3 +1,5 @@
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
+import { secureLog } from '@/utils/security';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,7 +30,7 @@ export function DirectApiCall({ endpoint, title = 'Direct API Call' }: DirectApi
       setData(result);
     } catch (err) {
       setError(err.message || 'An error occurred');
-      console.error('Direct API call error:', err);
+      secureLog.error('Direct API call error:', err);
     } finally {
       setLoading(false);
     }
@@ -38,7 +40,7 @@ export function DirectApiCall({ endpoint, title = 'Direct API Call' }: DirectApi
     <Card className="mt-4 border-dashed border-blue-300">
       <CardHeader className="py-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm text-blue-500">{title}</CardTitle>
+          <CardTitle className="text-sm text-blue-500">{<SafeText text={title} />}</CardTitle>
           <Button 
             variant="outline" 
             size="sm" 
@@ -51,7 +53,7 @@ export function DirectApiCall({ endpoint, title = 'Direct API Call' }: DirectApi
       </CardHeader>
       <CardContent>
         {error && (
-          <div className="text-xs text-red-500 mb-2">Error: {error}</div>
+          <div className="text-xs text-red-500 mb-2">Error: {<SafeText text={error} />}</div>
         )}
         {data && (
           <pre className="text-xs overflow-auto bg-gray-50 p-2 rounded max-h-60">

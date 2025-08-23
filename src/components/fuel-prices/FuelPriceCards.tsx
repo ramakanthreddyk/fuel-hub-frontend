@@ -3,20 +3,25 @@
  * @file FuelPriceCards.tsx
  * @description Improved card view for fuel prices with proper price display
  */
+import { SafeText } from '@/components/ui/SafeHtml';
+import { secureLog } from '@/utils/security';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Building2, Fuel, AlertCircle, Plus, Edit } from 'lucide-react';
 import { FuelLoader } from '@/components/ui/FuelLoader';
 import { useFuelPrices } from '@/hooks/api/useFuelPrices';
 import { useStations } from '@/hooks/api/useStations';
-import { formatCurrency } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 
 export function FuelPriceCards() {
   const navigate = useNavigate();
-  const { data: fuelPrices = [], isLoading, error } = useFuelPrices();
-  const { data: stations = [] } = useStations();
+  const { data: fuelPricesRaw, isLoading, error } = useFuelPrices();
+  const { data: stationsRaw } = useStations();
+
+  // Defensive: ensure arrays
+  const fuelPrices: Array<any> = Array.isArray(fuelPricesRaw) ? fuelPricesRaw : [];
+  const stations: Array<any> = Array.isArray(stationsRaw) ? stationsRaw : [];
 
   if (isLoading) {
     return (
@@ -39,9 +44,11 @@ export function FuelPriceCards() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-4">
-            Failed to load fuel prices: {(error as Error).message}
-          </p>
+          {error?.message && (
+            <p className="text-muted-foreground text-center py-4">
+              Failed to load fuel prices: {error.message}
+            </p>
+          )}
           <div className="flex justify-center">
             <Button onClick={() => window.location.reload()}>Retry</Button>
           </div>
@@ -50,8 +57,8 @@ export function FuelPriceCards() {
     );
   }
 
-  console.log('[FUEL-PRICE-CARDS] Fuel prices:', fuelPrices);
-  console.log('[FUEL-PRICE-CARDS] Stations:', stations);
+  secureLog.debug('[FUEL-PRICE-CARDS] Fuel prices:', fuelPrices);
+  secureLog.debug('[FUEL-PRICE-CARDS] Stations:', stations);
   
   // Group prices by station and get the latest price for each fuel type
   const stationPrices = new Map();
@@ -70,12 +77,15 @@ export function FuelPriceCards() {
   
   // Then add the latest price for each fuel type per station
   fuelPrices.forEach(price => {
-    console.log('[FUEL-PRICE-CARDS] Processing price:', price);
-    
-    if (!stationPrices.has(price.stationId)) {
-      // If station not found in our map, create an entry using stationName from price
-      stationPrices.set(price.stationId, {
-        station: { id: price.stationId, name: price.stationName || 'Unknown Station' },
+    secureLog.debug('[FUEL-PRICE-CARDS] Processing price:', price);
+    // Defensive checks and sanitization
+    const safeStationId = typeof price.stationId === 'string' ? price.stationId.replace(/[^\w-]/g, '') : '';
+    const safeStationName = typeof price.stationName === 'string' ? price.stationName.replace(/<[^>]*>/g, '') : 'Unknown Station';
+    const safeFuelType = typeof price.fuelType === 'string' ? price.fuelType : '';
+    const safeValidFrom = price.validFrom ? new Date(price.validFrom) : new Date();
+    if (!stationPrices.has(safeStationId)) {
+      stationPrices.set(safeStationId, {
+        station: { id: safeStationId, name: safeStationName },
         prices: {
           petrol: null,
           diesel: null,
@@ -83,20 +93,17 @@ export function FuelPriceCards() {
         }
       });
     }
-    
-    const stationData = stationPrices.get(price.stationId);
-    
+    const stationData = stationPrices.get(safeStationId);
     // Only update if this is a newer price or no price exists yet
-    if (!stationData.prices[price.fuelType] || 
-        new Date(price.validFrom) > new Date(stationData.prices[price.fuelType].validFrom)) {
-      stationData.prices[price.fuelType] = price;
+    if (!stationData.prices[safeFuelType] || safeValidFrom > new Date(stationData.prices[safeFuelType]?.validFrom)) {
+      stationData.prices[safeFuelType] = price;
     }
   });
   
   // Convert map to array for rendering
   const stationPricesArray = Array.from(stationPrices.values());
 
-  console.log('[FUEL-PRICE-CARDS] Station prices array:', stationPricesArray);
+  secureLog.debug('[FUEL-PRICE-CARDS] Station prices array:', stationPricesArray);
 
   const getFuelTypeColor = (fuelType: string) => {
     switch (fuelType) {
@@ -134,7 +141,7 @@ export function FuelPriceCards() {
               <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900">
                 <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              {station.name}
+              {<SafeText text={station.name} />}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -195,7 +202,7 @@ export function FuelPriceCards() {
                 className="w-full"
                 onClick={() => {
                   // Use window.location.href to force a full page reload with the new parameters
-                  window.location.href = `/dashboard/fuel-prices?stationId=${station.id}&showForm=true`;
+                  window.location.href = `/dashboard/fuel-prices?stationId=${encodeURIComponent(String(station.id))}&showForm=true`;
                 }}
               >
                 <Edit className="mr-2 h-4 w-4" />

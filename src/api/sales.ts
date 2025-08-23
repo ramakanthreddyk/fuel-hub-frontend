@@ -1,13 +1,21 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { Sale, SalesFilters, ApiResponse } from './api-contract';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 export const salesApi = {
   getSales: async (filters: SalesFilters = {}): Promise<Sale[]> => {
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.append(key, value);
-    });
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          if (key === 'stationId') {
+            params.append(key, sanitizeUrlParam(value));
+          } else {
+            params.append(key, value);
+          }
+        }
+      });
     
     const response = await apiClient.get(`/sales?${params.toString()}`);
     const sales = extractApiArray<any>(response, 'sales');
@@ -36,6 +44,10 @@ export const salesApi = {
       attendantName: sale.attendantName || sale.attendant_name,
       notes: sale.notes
     }));
+    } catch (error) {
+      secureLog.error('Error fetching sales:', error);
+      return [];
+    }
   }
 };
 

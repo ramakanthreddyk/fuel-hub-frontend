@@ -1,4 +1,6 @@
 type NumericInput = number | string | null | undefined;
+type DateInput = string | Date | null | undefined;
+type DateStyle = 'full' | 'long' | 'medium' | 'short';
 
 /**
  * @file utils/formatters.ts
@@ -6,7 +8,7 @@ type NumericInput = number | string | null | undefined;
  */
 
 export const formatCurrency = (
-  amount: number | string | null | undefined,
+  amount: NumericInput,
   options: {
     currency?: string;
     locale?: string;
@@ -47,7 +49,7 @@ export const formatCurrency = (
 };
 
 export const formatNumber = (
-  value: number | string | null | undefined,
+  value: NumericInput,
   options: {
     minimumFractionDigits?: number;
     maximumFractionDigits?: number;
@@ -70,10 +72,10 @@ export const formatNumber = (
 };
 
 export const formatDate = (
-  date: string | Date | null | undefined,
+  date: DateInput,
   options: {
-    dateStyle?: 'full' | 'long' | 'medium' | 'short';
-    timeStyle?: 'full' | 'long' | 'medium' | 'short';
+    dateStyle?: DateStyle;
+    timeStyle?: DateStyle;
     format?: 'date' | 'time' | 'datetime';
     locale?: string;
   } = {}
@@ -117,10 +119,10 @@ export const formatDate = (
 };
 
 export const formatDateTime = (
-  date: string | Date | null | undefined,
+  date: DateInput,
   options: {
-    dateStyle?: 'full' | 'long' | 'medium' | 'short';
-    timeStyle?: 'full' | 'long' | 'medium' | 'short';
+    dateStyle?: DateStyle;
+    timeStyle?: DateStyle;
     locale?: string;
   } = {}
 ): string => {
@@ -128,7 +130,7 @@ export const formatDateTime = (
 };
 
 export const formatPercentage = (
-  value: number | string | null | undefined,
+  value: NumericInput,
   options: {
     minimumFractionDigits?: number;
     maximumFractionDigits?: number;
@@ -149,7 +151,7 @@ export const formatPercentage = (
 };
 
 export const formatVolume = (
-  volume: number | string | null | undefined,
+  volume: NumericInput,
   decimals: number = 3,
   showUnit: boolean = true,
   unit: string = 'L'
@@ -170,7 +172,7 @@ export const formatVolume = (
 };
 
 export const formatPrice = (
-  price: number | string | null | undefined,
+  price: NumericInput,
   options: {
     currency?: string;
     locale?: string;
@@ -182,7 +184,7 @@ export const formatPrice = (
 };
 
 export const formatReading = (
-  reading: number | string | null | undefined,
+  reading: NumericInput,
   options: {
     minimumFractionDigits?: number;
     maximumFractionDigits?: number;
@@ -203,7 +205,7 @@ export const formatReading = (
 };
 
 export const formatSafeNumber = (
-  value: number | string | null | undefined,
+  value: NumericInput,
   fallback: string = '0'
 ): string => {
   if (value === null || value === undefined) return fallback;
@@ -212,7 +214,7 @@ export const formatSafeNumber = (
 };
 
 export const formatGrowth = (
-  growth: number | string | null | undefined,
+  growth: NumericInput,
   options: {
     showSign?: boolean;
     minimumFractionDigits?: number;
@@ -237,7 +239,7 @@ export const formatGrowth = (
 };
 
 export const formatCompactNumber = (
-  value: number | string | null | undefined,
+  value: NumericInput,
   options: {
     locale?: string;
     maximumFractionDigits?: number;
@@ -256,6 +258,47 @@ export const formatCompactNumber = (
   }).format(numValue);
 };
 
+
+function formatDays(days: number, hours: number, format: 'short' | 'long'): string {
+  if (format === 'short') {
+    return `${days}d ${hours % 24}h`;
+  }
+  const dayLabel = days > 1 ? 's' : '';
+  const hourLabel = hours % 24 > 1 ? 's' : '';
+  return `${days} day${dayLabel} ${hours % 24} hour${hourLabel}`;
+}
+
+function formatHours(hours: number, minutes: number, format: 'short' | 'long'): string {
+  if (format === 'short') {
+    return `${hours}h ${minutes % 60}m`;
+  }
+  const hourLabel = hours > 1 ? 's' : '';
+  const minuteLabel = minutes % 60 > 1 ? 's' : '';
+  return `${hours} hour${hourLabel} ${minutes % 60} minute${minuteLabel}`;
+}
+
+function formatMinutes(minutes: number, seconds: number, format: 'short' | 'long', includeSeconds: boolean): string {
+  if (format === 'short') {
+    let minResult = `${minutes}m`;
+    if (includeSeconds) minResult += ` ${seconds % 60}s`;
+    return minResult;
+  }
+  let minResult = `${minutes} minute${minutes > 1 ? 's' : ''}`;
+  if (includeSeconds) {
+    const secondLabel = seconds % 60 > 1 ? 's' : '';
+    minResult += ` ${seconds % 60} second${secondLabel}`;
+  }
+  return minResult;
+}
+
+function formatSeconds(seconds: number, format: 'short' | 'long'): string {
+  if (format === 'short') {
+    return `${seconds}s`;
+  }
+  const secondLabel = seconds > 1 ? 's' : '';
+  return `${seconds} second${secondLabel}`;
+}
+
 export const formatDuration = (
   milliseconds: NumericInput,
   options: {
@@ -264,7 +307,6 @@ export const formatDuration = (
   } = {}
 ): string => {
   const ms = typeof milliseconds === 'string' ? parseFloat(milliseconds) : (milliseconds || 0);
-  
   const {
     format = 'short',
     includeSeconds = true
@@ -276,38 +318,19 @@ export const formatDuration = (
   const days = Math.floor(hours / 24);
 
   if (days > 0) {
-    if (format === 'short') {
-      return `${days}d ${hours % 24}h`;
-    } else {
-      return `${days} day${days > 1 ? 's' : ''} ${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`;
-    }
-  } else if (hours > 0) {
-    if (format === 'short') {
-      return `${hours}h ${minutes % 60}m`;
-    } else {
-      return `${hours} hour${hours > 1 ? 's' : ''} ${minutes % 60} minute${minutes % 60 > 1 ? 's' : ''}`;
-    }
-  } else if (minutes > 0) {
-    let minResult = '';
-    if (format === 'short') {
-      minResult = `${minutes}m`;
-      if (includeSeconds) minResult += ` ${seconds % 60}s`;
-    } else {
-      minResult = `${minutes} minute${minutes > 1 ? 's' : ''}`;
-      if (includeSeconds) minResult += ` ${seconds % 60} second${seconds % 60 > 1 ? 's' : ''}`;
-    }
-    return minResult;
-  } else {
-    if (format === 'short') {
-      return `${seconds}s`;
-    } else {
-      return `${seconds} second${seconds > 1 ? 's' : ''}`;
-    }
+    return formatDays(days, hours, format);
   }
+  if (hours > 0) {
+    return formatHours(hours, minutes, format);
+  }
+  if (minutes > 0) {
+    return formatMinutes(minutes, seconds, format, includeSeconds);
+  }
+  return formatSeconds(seconds, format);
 };
 
 export const formatFileSize = (
-  bytes: number | string | null | undefined,
+  bytes: NumericInput,
   options: {
     decimals?: number;
     binary?: boolean;
@@ -444,8 +467,8 @@ export const formatTimeAgo = (
 };
 
 export const formatRange = (
-  min: number | string | null | undefined,
-  max: number | string | null | undefined,
+  min: NumericInput,
+  max: NumericInput,
   options: {
     separator?: string;
     formatter?: (value: number) => string;

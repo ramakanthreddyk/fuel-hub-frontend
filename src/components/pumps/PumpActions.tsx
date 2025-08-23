@@ -38,7 +38,7 @@ export const CompactPumpActions = memo(function CompactPumpActions({
     <div className="flex items-center justify-between gap-2">
       {actions.onViewNozzles && (
         <Button
-          onClick={() => actions.onViewNozzles!(pumpId)}
+          onClick={() => actions.onViewNozzles(pumpId)}
           size="sm"
           className="flex-1 h-8"
         >
@@ -88,7 +88,7 @@ export const StandardPumpActions = memo(function StandardPumpActions({
     <div className="flex gap-2">
       {actions.onViewNozzles && (
         <Button
-          onClick={() => actions.onViewNozzles!(pumpId)}
+          onClick={() => actions.onViewNozzles(pumpId)}
           size="sm"
           className={cn(
             "flex-1",
@@ -105,7 +105,7 @@ export const StandardPumpActions = memo(function StandardPumpActions({
 
       {actions.onSettings && (
         <Button
-          onClick={() => actions.onSettings!(pumpId)}
+          onClick={() => actions.onSettings(pumpId)}
           size="sm"
           variant="outline"
           className="hover:bg-gray-50 border-gray-200 hover:border-gray-300"

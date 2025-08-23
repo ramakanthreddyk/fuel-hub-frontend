@@ -5,6 +5,8 @@
 
 import { EntityStatus, ID, Timestamp } from './index';
 
+import type { Nozzle } from './nozzle';
+
 export interface Pump {
   id: ID;
   stationId: ID;

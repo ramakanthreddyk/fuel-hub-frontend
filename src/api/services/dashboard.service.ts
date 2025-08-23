@@ -4,6 +4,7 @@
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
 import { API_URL } from '../config';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 export interface SalesSummary {
   totalRevenue: number;
@@ -74,7 +75,7 @@ export const dashboardService = {
     try {
       const params = new URLSearchParams();
       params.append('range', range);
-      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.stationId) params.append('stationId', sanitizeUrlParam(filters.stationId));
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
       if (filters.dateTo) params.append('dateTo', filters.dateTo);
 
@@ -89,7 +90,7 @@ export const dashboardService = {
         return directResponse.data;
       }
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching sales summary:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching sales summary:', error);
       throw error;
     }
   },
@@ -100,14 +101,14 @@ export const dashboardService = {
   getPaymentMethodBreakdown: async (filters: DashboardFilters = {}): Promise<PaymentMethodBreakdown[]> => {
     try {
       const params = new URLSearchParams();
-      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.stationId) params.append('stationId', sanitizeUrlParam(filters.stationId));
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
       if (filters.dateTo) params.append('dateTo', filters.dateTo);
 
       const response = await apiClient.get(`/dashboard/payment-methods?${params.toString()}`);
       return extractArray<PaymentMethodBreakdown>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching payment methods:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching payment methods:', error);
       throw error;
     }
   },
@@ -118,14 +119,14 @@ export const dashboardService = {
   getFuelTypeBreakdown: async (filters: DashboardFilters = {}): Promise<FuelTypeBreakdown[]> => {
     try {
       const params = new URLSearchParams();
-      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.stationId) params.append('stationId', sanitizeUrlParam(filters.stationId));
       if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
       if (filters.dateTo) params.append('dateTo', filters.dateTo);
 
       const response = await apiClient.get(`/dashboard/fuel-breakdown?${params.toString()}`);
       return extractArray<FuelTypeBreakdown>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching fuel breakdown:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching fuel breakdown:', error);
       throw error;
     }
   },
@@ -135,10 +136,10 @@ export const dashboardService = {
    */
   getTopCreditors: async (limit: number = 5): Promise<TopCreditor[]> => {
     try {
-      const response = await apiClient.get(`/dashboard/top-creditors?limit=${limit}`);
+      const response = await apiClient.get(`/dashboard/top-creditors?limit=${sanitizeUrlParam(limit.toString())}`);
       return extractArray<TopCreditor>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching top creditors:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching top creditors:', error);
       throw error;
     }
   },
@@ -150,12 +151,12 @@ export const dashboardService = {
     try {
       const params = new URLSearchParams();
       params.append('days', days.toString());
-      if (filters.stationId) params.append('stationId', filters.stationId);
+      if (filters.stationId) params.append('stationId', sanitizeUrlParam(filters.stationId));
 
       const response = await apiClient.get(`/dashboard/sales-trend?${params.toString()}`);
       return extractArray<DailySalesTrend>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching sales trend:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching sales trend:', error);
       throw error;
     }
   },
@@ -180,7 +181,7 @@ export const dashboardService = {
         return Array.isArray(directResponse.data) ? directResponse.data : [];
       }
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching station metrics:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching station metrics:', error);
       // Return empty array instead of throwing to prevent dashboard from breaking
       return [];
     }
@@ -188,20 +189,20 @@ export const dashboardService = {
 
   getTopStations: async (limit: number = 10): Promise<any[]> => {
     try {
-      const response = await apiClient.get(`/dashboard/top-stations?limit=${limit}`);
+      const response = await apiClient.get(`/dashboard/top-stations?limit=${sanitizeUrlParam(limit.toString())}`);
       return extractArray<any>(response, 'stations');
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching top stations:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching top stations:', error);
       throw error;
     }
   },
 
   getRecentActivities: async (limit: number = 20): Promise<any[]> => {
     try {
-      const response = await apiClient.get(`/dashboard/recent-activities?limit=${limit}`);
+      const response = await apiClient.get(`/dashboard/recent-activities?limit=${sanitizeUrlParam(limit.toString())}`);
       return extractArray<any>(response, 'activities');
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching recent activities:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching recent activities:', error);
       throw error;
     }
   },
@@ -211,7 +212,7 @@ export const dashboardService = {
       const response = await apiClient.get('/dashboard/alerts-summary');
       return extractData<{ total: number; critical: number; unread: number }>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching alerts summary:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching alerts summary:', error);
       throw error;
     }
   }

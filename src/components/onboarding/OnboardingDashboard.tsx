@@ -4,6 +4,8 @@
  */
 
 import React from 'react';
+import { secureLog } from '@/utils/security';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { useNavigate } from 'react-router-dom';
 import { 
   CheckCircle, 
@@ -48,7 +50,7 @@ export function OnboardingDashboard({
   const { data: setupStatus, isLoading, refetch } = useSetupStatus();
 
   const handleRefresh = async () => {
-    console.log('[ONBOARDING] Manual refresh triggered');
+    secureLog.debug('[ONBOARDING] Manual refresh triggered');
     await queryClient.invalidateQueries({ queryKey: ['setup-status'] });
     await refetch();
   };
@@ -92,12 +94,12 @@ export function OnboardingDashboard({
 
   const handleCompleteReminder = (reminderId: string) => {
     // For now, just log it
-    console.log('Reminder completed:', reminderId);
+    secureLog.debug('Reminder completed:', reminderId);
   };
 
   if (isLoading) {
     return (
-      <Card className={className}>
+      <Card className={<SafeText text={className} />}>
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <RefreshCw className="h-6 w-6 animate-spin text-gray-400" />
@@ -109,9 +111,9 @@ export function OnboardingDashboard({
   }
 
   // Debug information
-  console.log('[ONBOARDING-DASHBOARD] Setup status:', setupStatus);
-  console.log('[ONBOARDING-DASHBOARD] Overall progress:', overallProgress);
-  console.log('[ONBOARDING-DASHBOARD] Needs guidance:', needsGuidance);
+  secureLog.debug('[ONBOARDING-DASHBOARD] Setup status:', setupStatus);
+  secureLog.debug('[ONBOARDING-DASHBOARD] Overall progress:', overallProgress);
+  secureLog.debug('[ONBOARDING-DASHBOARD] Needs guidance:', needsGuidance);
 
   // Smart visibility logic:
   // - Always show if setup is incomplete (needsGuidance = true)
@@ -125,7 +127,7 @@ export function OnboardingDashboard({
 
   if (compact) {
     return (
-      <Card className={`border-l-4 ${needsGuidance ? 'border-l-blue-500 bg-blue-50/30' : 'border-l-green-500 bg-green-50/30'} ${className}`}>
+      <Card className={`border-l-4 ${needsGuidance ? 'border-l-blue-500 bg-blue-50/30' : 'border-l-green-500 bg-green-50/30'} ${<SafeText text={className} />}`}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -146,12 +148,12 @@ export function OnboardingDashboard({
                   {needsGuidance ? nextAction : '🎉 Setup Complete!'}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {needsGuidance ? `${overallProgress}% complete` : 'Ready to manage your fuel station'}
+                  {needsGuidance ? `${<SafeText text={overallProgress} />}% complete` : 'Ready to manage your fuel station'}
                 </p>
               </div>
             </div>
             {needsGuidance && (
-              <Button size="sm" onClick={handleStartNextStep} className="bg-blue-600 hover:bg-blue-700">
+              <Button size="sm" onClick={<SafeText text={handleStartNextStep} />} className="bg-blue-600 hover:bg-blue-700">
                 Continue
                 <ArrowRight className="ml-1 h-3 w-3" />
               </Button>
@@ -161,7 +163,7 @@ export function OnboardingDashboard({
           {/* Progress bar for incomplete setup */}
           {needsGuidance && (
             <div className="mt-3">
-              <Progress value={overallProgress} className="h-2" />
+              <Progress value={<SafeText text={overallProgress} />} className="h-2" />
             </div>
           )}
 
@@ -172,7 +174,7 @@ export function OnboardingDashboard({
                 <div className="flex items-center text-orange-600">
                   <Bell className="h-4 w-4 mr-1" />
                   <span className="text-xs font-medium">
-                    {urgentReminders.length} urgent task{urgentReminders.length > 1 ? 's' : ''}
+                    {<SafeText text={urgentReminders.length} />} urgent task{urgentReminders.length > 1 ? 's' : ''}
                   </span>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => navigate('/dashboard')}>
@@ -206,7 +208,7 @@ export function OnboardingDashboard({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={handleRefresh}
+                  onClick={<SafeText text={handleRefresh} />}
                   className="border-blue-300 text-blue-700 hover:bg-blue-100"
                 >
                   <RefreshCw className="h-4 w-4 mr-1" />
@@ -224,7 +226,7 @@ export function OnboardingDashboard({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Overall Progress</span>
-                  <span className="text-sm text-gray-500">{overallProgress}%</span>
+                  <span className="text-sm text-gray-500">{<SafeText text={overallProgress} />}%</span>
                 </div>
                 <Progress value={overallProgress} className="h-2" />
               </div>
@@ -232,7 +234,7 @@ export function OnboardingDashboard({
               <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                 <div>
                   <p className="font-medium text-blue-900">Next Step</p>
-                  <p className="text-sm text-blue-700">{nextAction}</p>
+                  <p className="text-sm text-blue-700">{<SafeText text={nextAction} />}</p>
                 </div>
                 <Button onClick={handleStartNextStep} className="bg-blue-600 hover:bg-blue-700">
                   Start Now

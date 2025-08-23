@@ -1,4 +1,6 @@
 
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
+import { secureLog } from '@/utils/security';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StationMetricsCard } from './StationMetricsCard';
 import { useStationMetrics } from '@/hooks/api/useDashboard';
@@ -8,7 +10,7 @@ import { FuelLoader } from '@/components/ui/FuelLoader';
 export function StationMetricsList() {
   const { data: stationMetrics = [], isLoading, error, refetch } = useStationMetrics();
   
-  console.log('StationMetricsList render:', { 
+  secureLog.debug('StationMetricsList render:', { 
     stationMetrics, 
     isLoading, 
     error,
@@ -17,7 +19,7 @@ export function StationMetricsList() {
   
   // Force refetch on mount
   React.useEffect(() => {
-    console.log('StationMetricsList mounted, forcing refetch');
+    secureLog.debug('StationMetricsList mounted, forcing refetch');
     refetch();
   }, [refetch]);
 
@@ -42,7 +44,7 @@ export function StationMetricsList() {
     );
   }
 
-  console.log('Station metrics data:', stationMetrics, 'Error:', error); // Debug log
+  secureLog.debug('Station metrics data:', stationMetrics, 'Error:', error); // Debug log
   
   if (error || !stationMetrics || !Array.isArray(stationMetrics) || stationMetrics.length === 0) {
     return (
@@ -82,7 +84,7 @@ export function StationMetricsList() {
         {/* Updated grid to show maximum 2 cards per row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl mx-auto">
           {stationMetrics.slice(0, 10).map((stationMetric) => {
-            console.log('Station metric data:', stationMetric); // Debug log
+            secureLog.debug('Station metric data:', stationMetric); // Debug log
             // Map StationMetric to StationMetrics interface
             const mappedStation = {
               id: stationMetric.id,

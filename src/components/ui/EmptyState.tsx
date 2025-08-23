@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Database, TrendingUp, FileText, Users } from 'lucide-react';
@@ -44,18 +45,18 @@ export function EmptyState({
   const IconComponent = iconMap[icon];
 
   return (
-    <Card className={`border-dashed ${className}`}>
+    <Card className={`border-dashed ${<SafeText text={className} />}`}>
       <CardContent className="flex flex-col items-center justify-center py-12 px-6 text-center">
         <div className="mb-4 p-3 rounded-full bg-gray-100 dark:bg-gray-800">
           <IconComponent className="h-8 w-8 text-gray-400" />
         </div>
         
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          {title}
+          {<SafeText text={title} />}
         </h3>
         
         <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
-          {description}
+          {<SafeText text={description} />}
         </p>
         
         <div className="flex items-center space-x-3">
@@ -63,7 +64,7 @@ export function EmptyState({
             <Button
               variant="outline"
               size="sm"
-              onClick={onRefresh}
+              onClick={<SafeText text={onRefresh} />}
               className="flex items-center space-x-2"
             >
               <RefreshCw className="h-4 w-4" />
@@ -74,10 +75,10 @@ export function EmptyState({
           {actionLabel && onAction && (
             <Button
               size="sm"
-              onClick={onAction}
+              onClick={<SafeText text={onAction} />}
               className="flex items-center space-x-2"
             >
-              <span>{actionLabel}</span>
+              <span>{<SafeText text={actionLabel} />}</span>
             </Button>
           )}
 
@@ -85,10 +86,10 @@ export function EmptyState({
             <Button
               size="sm"
               variant="outline"
-              onClick={onSecondaryAction}
+              onClick={<SafeText text={onSecondaryAction} />}
               className="flex items-center space-x-2"
             >
-              <span>{secondaryActionLabel}</span>
+              <span>{<SafeText text={secondaryActionLabel} />}</span>
             </Button>
           )}
         </div>
@@ -106,7 +107,7 @@ export function SalesEmptyState({ onRefresh }: { onRefresh?: () => void }) {
       icon="chart"
       actionLabel="Record New Sale"
       onAction={() => {/* Navigate to sales entry */}}
-      onRefresh={onRefresh}
+      onRefresh={<SafeText text={onRefresh} />}
     />
   );
 }
@@ -119,7 +120,7 @@ export function ReadingsEmptyState({ onRefresh }: { onRefresh?: () => void }) {
       icon="database"
       actionLabel="Add Reading"
       onAction={() => {/* Navigate to readings entry */}}
-      onRefresh={onRefresh}
+      onRefresh={<SafeText text={onRefresh} />}
     />
   );
 }

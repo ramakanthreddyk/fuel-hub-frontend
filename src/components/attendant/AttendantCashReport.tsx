@@ -1,4 +1,6 @@
 
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
+import { secureLog } from '@/utils/security';
 import { useState } from "react";
 import { useAttendantStations, useSubmitCashReport } from "@/hooks/api/useAttendant";
 import { useCreditors } from "@/hooks/api/useCreditors";
@@ -88,7 +90,7 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
         const totalAmount = cashValue + cardValue + upiValue + creditValue;
         toast({
           title: "Cash Report Submitted",
-          description: `Successfully submitted ${shift} shift report for ₹${totalAmount.toFixed(2)}`,
+          description: `Successfully submitted ${<SafeText text={shift} />} shift report for ₹${totalAmount.toFixed(2)}`,
           variant: "success",
         });
         // Reset form
@@ -107,7 +109,7 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
           description: errorMessage,
           variant: "destructive",
         });
-        console.error("Cash report submission error:", error);
+        secureLog.error("Cash report submission error:", error);
       }
     });
   };
@@ -132,8 +134,8 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
             </SelectTrigger>
             <SelectContent>
               {stations.map(station => (
-                <SelectItem key={station.id} value={station.id || "default-id"}>
-                  {station.name}
+                <SelectItem key={<SafeText text={station.id} />} value={station.id || "default-id"}>
+                  {<SafeText text={station.name} />}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -207,13 +209,13 @@ export function AttendantCashReport({ stationId: propStationId }: AttendantCashR
         {creditAmount && parseFloat(creditAmount) > 0 && (
           <div className="space-y-2">
             <Label htmlFor="creditor">Creditor</Label>
-            <Select value={creditorId} onValueChange={setCreditorId}>
+            <Select value={<SafeText text={creditorId} />} onValueChange={<SafeText text={setCreditorId} />}>
               <SelectTrigger id="creditor">
                 <SelectValue placeholder="Select creditor" />
               </SelectTrigger>
               <SelectContent>
                 {creditors.map(creditor => (
-                  <SelectItem key={creditor.id} value={creditor.id}>
+                  <SelectItem key={<SafeText text={creditor.id} />} value={<SafeText text={creditor.id} />}>
                     {creditor.party_name || creditor.name}
                   </SelectItem>
                 ))}

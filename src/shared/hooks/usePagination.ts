@@ -37,7 +37,7 @@ export function usePagination({
   initialTotal = 0,
 }: UsePaginationOptions = {}): PaginationState & PaginationActions {
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const [pageSize, setPageSizeState] = useState(initialPageSize);
+  const [pageSize, setPageSize] = useState(initialPageSize);
   const [total, setTotalState] = useState(initialTotal);
 
   // Calculate derived state
@@ -80,8 +80,8 @@ export function usePagination({
     }
   }, [paginationState.hasPrevPage]);
 
-  const setPageSize = useCallback((size: number) => {
-    setPageSizeState(size);
+  const setPageSizeValue = useCallback((size: number) => {
+    setPageSize(size);
     // Reset to first page when page size changes
     setCurrentPage(1);
   }, []);
@@ -97,9 +97,9 @@ export function usePagination({
   }, [currentPage, pageSize]);
 
   const reset = useCallback(() => {
-    setCurrentPage(initialPage);
-    setPageSizeState(initialPageSize);
-    setTotalState(initialTotal);
+  setCurrentPage(initialPage);
+  setPageSize(initialPageSize);
+  setTotalState(initialTotal);
   }, [initialPage, initialPageSize, initialTotal]);
 
   return {
@@ -107,7 +107,7 @@ export function usePagination({
     goToPage,
     goToNextPage,
     goToPrevPage,
-    setPageSize,
+    setPageSize: setPageSizeValue,
     setTotal,
     reset,
   };

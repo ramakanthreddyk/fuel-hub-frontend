@@ -1,16 +1,17 @@
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { Pump, CreatePumpRequest, ApiResponse } from './api-contract';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 
 export const pumpsApi = {
   // Get pumps for a station
   getPumps: async (stationId: string): Promise<Pump[]> => {
     try {
-      console.log(`[PUMPS-API] Fetching pumps for station: ${stationId}`);
+      secureLog.debug('[PUMPS-API] Fetching pumps for station');
       
       // Use the correct API endpoint according to the API spec
-      const url = stationId === 'all' ? '/pumps' : `/pumps?stationId=${stationId}`;
+      const url = stationId === 'all' ? '/pumps' : `/pumps?stationId=${sanitizeUrlParam(stationId)}`;
       
-      console.log(`[PUMPS-API] Making request to: ${url}`);
+      secureLog.debug('[PUMPS-API] Making request to pumps endpoint');
       const response = await apiClient.get(url);
       
       // Extract pumps from response using the helper function
@@ -34,11 +35,11 @@ export const pumpsApi = {
         pumps = extractApiArray<Pump>(response, 'pumps');
       }
       
-      console.log(`[PUMPS-API] Successfully fetched ${pumps.length} pumps`);
+      secureLog.debug(`[PUMPS-API] Successfully fetched ${pumps.length} pumps`);
       
       return pumps;
     } catch (error) {
-      console.error('[PUMPS-API] Error fetching pumps:', error);
+      secureLog.error('[PUMPS-API] Error fetching pumps:', error);
       throw error; // Throw error to trigger React Query's retry mechanism
     }
   },
@@ -46,16 +47,16 @@ export const pumpsApi = {
   // Create new pump
   createPump: async (data: CreatePumpRequest): Promise<Pump> => {
     try {
-      console.log('[PUMPS-API] Creating pump with data:', data);
+      secureLog.debug('[PUMPS-API] Creating pump with data');
       
       const response = await apiClient.post('/pumps', data);
       const payload = extractApiData<any>(response);
       const pump: Pump = payload.pump ?? payload;
       
-      console.log('[PUMPS-API] Pump created successfully:', pump);
+      secureLog.debug('[PUMPS-API] Pump created successfully');
       return pump;
     } catch (error) {
-      console.error('[PUMPS-API] Error creating pump:', error);
+      secureLog.error('[PUMPS-API] Error creating pump:', error);
       throw error;
     }
   },
@@ -63,16 +64,16 @@ export const pumpsApi = {
   // Get single pump
   getPump: async (pumpId: string): Promise<Pump> => {
     try {
-      console.log(`[PUMPS-API] Fetching pump details for ID: ${pumpId}`);
+      secureLog.debug('[PUMPS-API] Fetching pump details');
       
-      const response = await apiClient.get(`/pumps/${pumpId}`);
+      const response = await apiClient.get(`/pumps/${sanitizeUrlParam(pumpId)}`);
       const payload = extractApiData<any>(response);
       const pump: Pump = payload.pump ?? payload;
       
-      console.log('[PUMPS-API] Pump details:', pump);
+      secureLog.debug('[PUMPS-API] Pump details retrieved');
       return pump;
     } catch (error) {
-      console.error(`[PUMPS-API] Error fetching pump ${pumpId}:`, error);
+      secureLog.error('[PUMPS-API] Error fetching pump:', error);
       throw error;
     }
   },
@@ -80,12 +81,12 @@ export const pumpsApi = {
   // Delete pump
   deletePump: async (pumpId: string): Promise<void> => {
     try {
-      console.log(`[PUMPS-API] Deleting pump ${pumpId}`);
+      secureLog.debug('[PUMPS-API] Deleting pump');
       
-      await apiClient.delete(`/pumps/${pumpId}`);
-      console.log(`[PUMPS-API] Pump ${pumpId} deleted successfully`);
+      await apiClient.delete(`/pumps/${sanitizeUrlParam(pumpId)}`);
+      secureLog.debug('[PUMPS-API] Pump deleted successfully');
     } catch (error) {
-      console.error(`[PUMPS-API] Error deleting pump ${pumpId}:`, error);
+      secureLog.error('[PUMPS-API] Error deleting pump:', error);
       throw error;
     }
   }

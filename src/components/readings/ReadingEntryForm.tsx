@@ -3,6 +3,8 @@
  * @description Form component for recording nozzle readings
  */
 import React, { useState, useEffect } from 'react';
+import { secureLog } from '@/utils/security';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useFuelStore } from '@/store/fuelStore';
@@ -79,8 +81,8 @@ export function ReusableSelect({
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
-          <SelectItem key={option.id} value={option.id}>
-            {option.name}
+          <SelectItem key={<SafeText text={option.id} />} value={<SafeText text={option.id} />}>
+            {<SafeText text={option.name} />}
           </SelectItem>
         ))}
       </SelectContent>
@@ -338,18 +340,18 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <div className="text-green-800">
-                    <strong>Total Liters:</strong> {saleSummary.totalLiters} L
+                    <strong>Total Liters:</strong> {<SafeText text={saleSummary.totalLiters} />} L
                   </div>
                   <div className="text-green-800">
-                    <strong>Total Amount:</strong> ₹{saleSummary.totalAmount}
+                    <strong>Total Amount:</strong> ₹{<SafeText text={saleSummary.totalAmount} />}
                   </div>
                 </div>
                 <div>
                   <strong className="text-green-900">By Payment Method:</strong>
                   <ul className="list-disc ml-6 mt-2">
                     {Object.entries(saleSummary.byPayment).map(([method, stats]) => (
-                      <li key={method} className="text-green-700">
-                        {method}: {stats.liters} L, ₹{stats.amount}
+                      <li key={<SafeText text={method} />} className="text-green-700">
+                        {<SafeText text={method} />}: {stats.liters} L, ₹{stats.amount}
                       </li>
                     ))}
                   </ul>
@@ -399,7 +401,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                               field.onChange(value);
                               setSelectedStation(value);
                             }}
-                            stations={stations}
+                            stations={<SafeText text={stations} />}
                             disabled={!!initialValues.current.stationId}
                           />
                           <FormMessage />
@@ -420,7 +422,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                               field.onChange(value);
                               setSelectedPump(value);
                             }}
-                            pumps={pumps}
+                            pumps={<SafeText text={pumps} />}
                             disabled={!selectedStation || !!initialValues.current.pumpId}
                           />
                           <FormMessage />
@@ -438,11 +440,11 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                           <NozzleSelect 
                             value={field.value} 
                             onChange={(value) => {
-                              console.log('[READING-FORM] Nozzle selection changed to:', value);
+                              secureLog.debug('[READING-FORM] Nozzle selection changed to:', value);
 
                               // Find the selected nozzle data to log its details
                               const selectedNozzleData = nozzles.find(n => n.id === value);
-                              console.log('[READING-FORM] Selected nozzle data:', selectedNozzleData);
+                              secureLog.debug('[READING-FORM] Selected nozzle data:', selectedNozzleData);
 
                               field.onChange(value);
                               setSelectedNozzle(value);
@@ -450,8 +452,8 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                               // Clear any cached reading data for the previous nozzle to prevent mixing
                               // This ensures we get fresh data for the newly selected nozzle
                               if (refetchLatestReading) {
-                                console.log('[READING-FORM] 🔄 Refetching latest reading for new nozzle:', value);
-                                console.log('[READING-FORM] 🔄 Previous nozzle was:', selectedNozzle);
+                                secureLog.debug('[READING-FORM] 🔄 Refetching latest reading for new nozzle:', value);
+                                secureLog.debug('[READING-FORM] 🔄 Previous nozzle was:', selectedNozzle);
 
                                 // Force refetch to get fresh data and avoid cache contamination
                                 setTimeout(() => {
@@ -459,7 +461,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                                 }, 100); // Small delay to ensure state is updated
                               }
                             }}
-                            nozzles={nozzles}
+                            nozzles={<SafeText text={nozzles} />}
                             disabled={!selectedPump || !!initialValues.current.nozzleId}
                           />
                           <FormMessage />
@@ -483,15 +485,15 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                         <div className="space-y-4">
                           <div className="flex justify-between items-center p-3 bg-white rounded-lg">
                             <span className="text-gray-600">Fuel Type:</span>
-                            <span className="font-semibold text-gray-900 capitalize">{selectedNozzleData.fuelType}</span>
+                            <span className="font-semibold text-gray-900 capitalize">{<SafeText text={selectedNozzleData.fuelType} />}</span>
                           </div>
                           <div className="flex justify-between items-center p-3 bg-white rounded-lg">
                             <span className="text-gray-600">Nozzle Name:</span>
-                            <span className="font-semibold text-gray-900">{selectedNozzleData.name}</span>
+                            <span className="font-semibold text-gray-900">{<SafeText text={selectedNozzleData.name} />}</span>
                           </div>
                           <div className="flex justify-between items-center p-3 bg-white rounded-lg">
                             <span className="text-gray-600">Status:</span>
-                            <span className="font-semibold text-gray-900 capitalize">{selectedNozzleData.status}</span>
+                            <span className="font-semibold text-gray-900 capitalize">{<SafeText text={selectedNozzleData.status} />}</span>
                           </div>
                         </div>
                         <div className="space-y-4">
@@ -510,7 +512,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                           {latestReading && (
                             <div className="flex items-center gap-2 text-xs text-orange-700 bg-orange-50 p-3 rounded-lg border border-orange-200">
                               <AlertTriangle className="h-4 w-4" />
-                              New reading must be greater than {latestReading.reading} L
+                              New reading must be greater than {<SafeText text={latestReading.reading} />} L
                             </div>
                           )}
                         </div>
@@ -609,7 +611,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
 
                     {form.watch('paymentMethod') === 'credit' && (
                       <FormField
-                        control={form.control}
+                        control={<SafeText text={form.control} />}
                         name="creditorId"
                         rules={{ required: 'Creditor is required for credit payments' }}
                         render={({ field }) => (
@@ -624,8 +626,8 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                               </SelectTrigger>
                               <SelectContent>
                                 {creditors.map(creditor => (
-                                  <SelectItem key={creditor.id} value={creditor.id}>
-                                    {creditor.name}
+                                  <SelectItem key={<SafeText text={creditor.id} />} value={<SafeText text={creditor.id} />}>
+                                    {<SafeText text={creditor.name} />}
                                   </SelectItem>
                                 ))}
                               </SelectContent>

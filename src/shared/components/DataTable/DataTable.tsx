@@ -4,21 +4,21 @@
  */
 
 import React from 'react';
-import { TableProps, TableColumn } from '@/shared/types';
-import { Button } from '@/components/ui/button';
+import { TableProps } from '@/shared/types/ui';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '../EmptyState/EmptyState';
+import { EmptyState } from '@/components/ui/EmptyState';
 
-export function DataTable<T extends { id: string }>({
-  data,
-  columns,
-  isLoading,
-  emptyMessage = 'No data available',
-  onRowClick,
-  selectedRows = [],
-  onSelectionChange,
-  className = '',
-}: TableProps<T>) {
+export function DataTable<T extends { id: string }>(props: Readonly<TableProps<T>>) {
+  const {
+    data,
+    columns,
+    isLoading,
+    emptyMessage = 'No data available',
+    onRowClick,
+    selectedRows = [],
+    onSelectionChange,
+    className = '',
+  } = props;
   const handleRowClick = (row: T) => {
     if (onRowClick) {
       onRowClick(row);
@@ -48,17 +48,17 @@ export function DataTable<T extends { id: string }>({
         <div className="border rounded-lg overflow-hidden">
           <div className="bg-gray-50 px-4 py-3">
             <div className="flex space-x-4">
-              {columns.map((_, index) => (
-                <Skeleton key={index} className="h-4 w-20" />
+              {columns.map((col) => (
+                <Skeleton key={`skeleton-${String(col.key)}`} className="h-4 w-20" />
               ))}
             </div>
           </div>
           <div className="divide-y">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="px-4 py-3">
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <div key={`empty-row`} className="px-4 py-3">
                 <div className="flex space-x-4">
-                  {columns.map((_, colIndex) => (
-                    <Skeleton key={colIndex} className="h-4 w-24" />
+                  {columns.map((col) => (
+                    <Skeleton key={`skeleton-col-${String(col.key)}`} className="h-4 w-24" />
                   ))}
                 </div>
               </div>
@@ -70,7 +70,7 @@ export function DataTable<T extends { id: string }>({
   }
 
   if (data.length === 0) {
-    return <EmptyState message={emptyMessage} />;
+    return <EmptyState description={emptyMessage} />;
   }
 
   return (
@@ -126,10 +126,16 @@ export function DataTable<T extends { id: string }>({
                   className="px-4 py-3 text-sm text-gray-900"
                   style={{ textAlign: column.align || 'left' }}
                 >
-                  {column.render 
-                    ? column.render(row[column.key as keyof T], row)
-                    : String(row[column.key as keyof T] || '-')
-                  }
+                  {(() => {
+                    if (column.render) {
+                      return column.render(row[column.key as keyof T], row);
+                    }
+                    const value = row[column.key as keyof T];
+                    if (typeof value === 'object' && value !== null) {
+                      return JSON.stringify(value);
+                    }
+                    return String(value ?? '-');
+                  })()}
                 </td>
               ))}
             </tr>

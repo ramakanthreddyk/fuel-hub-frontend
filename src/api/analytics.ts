@@ -1,4 +1,3 @@
-
 /**
  * @file analytics.ts
  * @description Analytics API functions
@@ -6,17 +5,23 @@
 import { contractClient } from './contract-client';
 import { apiClient } from './client';
 import { StationComparison, HourlySales, PeakHour, FuelPerformance, StationRanking, SuperAdminAnalytics } from './api-contract';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 /**
  * Get station comparison data
  */
 export const getStationComparison = async (params: { stationIds: string[]; period?: string }): Promise<StationComparison[]> => {
   try {
-    const response = await contractClient.get<any>('/analytics/station-comparison', params);
+    const sanitizedParams = {
+      stationIds: params.stationIds.map(id => sanitizeUrlParam(id)),
+      ...(params.period && { period: sanitizeUrlParam(params.period) })
+    };
+    const response = await contractClient.get<any>('/analytics/station-comparison', sanitizedParams);
     if (!response || !Array.isArray(response)) {
-      console.warn('Station comparison API returned invalid data:', response);
+      secureLog.warn('Station comparison API returned invalid data');
       return [];
     }
+    // Fixing type mismatch in the response mapping for StationComparison
     return response.map((item: any) => ({
       stationId: item.stationId || item.id,
       stationName: item.stationName || item.name,
@@ -31,9 +36,11 @@ export const getStationComparison = async (params: { stationIds: string[]; perio
         salesCount: item.previousTransactions || 0,
       },
       growth: item.salesGrowth || item.growth || 0,
+      sales: item.sales || 0, // Adding missing property
+      volume: item.volume || 0 // Adding missing property
     }));
   } catch (error) {
-    console.error('Error fetching station comparison data:', error);
+    secureLog.error('Error fetching station comparison data:', error);
     return [];
   }
 };
@@ -43,9 +50,13 @@ export const getStationComparison = async (params: { stationIds: string[]; perio
  */
 export const getHourlySales = async (params: { stationId?: string; date?: string }): Promise<HourlySales[]> => {
   try {
-    return await contractClient.get<HourlySales[]>('/analytics/hourly-sales', params);
+    const sanitizedParams = {
+      ...(params.stationId && { stationId: sanitizeUrlParam(params.stationId) }),
+      ...(params.date && { date: sanitizeUrlParam(params.date) })
+    };
+    return await contractClient.get<HourlySales[]>('/analytics/hourly-sales', sanitizedParams);
   } catch (error) {
-    console.error('Error fetching hourly sales:', error);
+    secureLog.error('Error fetching hourly sales:', error);
     return [];
   }
 };
@@ -55,9 +66,13 @@ export const getHourlySales = async (params: { stationId?: string; date?: string
  */
 export const getPeakHours = async (params: { stationId?: string; period?: string }): Promise<PeakHour[]> => {
   try {
-    return await contractClient.get<PeakHour[]>('/analytics/peak-hours', params);
+    const sanitizedParams = {
+      ...(params.stationId && { stationId: sanitizeUrlParam(params.stationId) }),
+      ...(params.period && { period: sanitizeUrlParam(params.period) })
+    };
+    return await contractClient.get<PeakHour[]>('/analytics/peak-hours', sanitizedParams);
   } catch (error) {
-    console.error('Error fetching peak hours:', error);
+    secureLog.error('Error fetching peak hours:', error);
     return [];
   }
 };
@@ -67,9 +82,13 @@ export const getPeakHours = async (params: { stationId?: string; period?: string
  */
 export const getFuelPerformance = async (params: { stationId?: string; period?: string }): Promise<FuelPerformance[]> => {
   try {
-    return await contractClient.get<FuelPerformance[]>('/analytics/fuel-performance', params);
+    const sanitizedParams = {
+      ...(params.stationId && { stationId: sanitizeUrlParam(params.stationId) }),
+      ...(params.period && { period: sanitizeUrlParam(params.period) })
+    };
+    return await contractClient.get<FuelPerformance[]>('/analytics/fuel-performance', sanitizedParams);
   } catch (error) {
-    console.error('Error fetching fuel performance:', error);
+    secureLog.error('Error fetching fuel performance:', error);
     return [];
   }
 };
@@ -79,10 +98,14 @@ export const getFuelPerformance = async (params: { stationId?: string; period?: 
  */
 export const getStationRanking = async (params: { period?: string; limit?: number }): Promise<StationRanking[]> => {
   try {
-    const result = await contractClient.get<StationRanking[]>('/analytics/station-ranking', params);
+    const sanitizedParams = {
+      ...(params.period && { period: sanitizeUrlParam(params.period) }),
+      ...(params.limit && { limit: params.limit })
+    };
+    const result = await contractClient.get<StationRanking[]>('/analytics/station-ranking', sanitizedParams);
     return result || [];
   } catch (error) {
-    console.error('Error fetching station ranking data:', error);
+    secureLog.error('Error fetching station ranking data:', error);
     return [];
   }
 };
@@ -91,8 +114,13 @@ export const getStationRanking = async (params: { period?: string; limit?: numbe
  * Get super admin analytics data
  */
 export const getSuperAdminAnalytics = async (): Promise<SuperAdminAnalytics> => {
-  const response = await apiClient.get('/analytics/superadmin');
-  return response.data;
+  try {
+    const response = await apiClient.get('/analytics/superadmin');
+    return response.data;
+  } catch (error) {
+    secureLog.error('Error fetching super admin analytics:', error);
+    throw error;
+  }
 };
 
 /**
@@ -106,13 +134,13 @@ export const analyticsApi = {
       }
       return getStationComparison(params);
     } catch (error) {
-      console.error('Error in getStationComparison:', error);
+      secureLog.error('Error in getStationComparison:', error);
       return []; // Return empty array to prevent map errors
     }
   },
   getHourlySales: async (stationId?: string, dateRange?: { from: Date; to: Date }) => {
     const params: any = {};
-    if (stationId) params.stationId = stationId;
+    if (stationId) params.stationId = sanitizeUrlParam(stationId);
     if (dateRange) {
       params.startDate = dateRange.from.toISOString().split('T')[0];
       params.endDate = dateRange.to.toISOString().split('T')[0];
@@ -121,12 +149,12 @@ export const analyticsApi = {
   },
   getPeakHours: async (stationId?: string) => {
     const params: any = {};
-    if (stationId) params.stationId = stationId;
+    if (stationId) params.stationId = sanitizeUrlParam(stationId);
     return getPeakHours(params);
   },
   getFuelPerformance: async (stationId?: string, dateRange?: { from: Date; to: Date }) => {
     const params: any = {};
-    if (stationId) params.stationId = stationId;
+    if (stationId) params.stationId = sanitizeUrlParam(stationId);
     if (dateRange) {
       params.startDate = dateRange.from.toISOString().split('T')[0];
       params.endDate = dateRange.to.toISOString().split('T')[0];
@@ -135,11 +163,14 @@ export const analyticsApi = {
   },
   getStationRanking: async (period: string) => {
     try {
-      const result = await getStationRanking({ period });
-      return result || [];
+      const result = await getStationRanking({ period: sanitizeUrlParam(period) });
+      if (!result) {
+        throw new Error('No result returned from getStationRanking');
+      }
+      return result;
     } catch (error) {
-      console.error('Error in getStationRanking:', error);
-      return []; // Return empty array to prevent map errors
+      secureLog.error('Error in getStationRanking:', error);
+      return [];
     }
   },
   getSuperAdminAnalytics

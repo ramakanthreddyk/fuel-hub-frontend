@@ -8,37 +8,49 @@ import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll, afterAll, vi } from 'vitest';
 
 // Mock Node.js process object for browser environment
-Object.defineProperty(globalThis, 'process', {
-  value: {
-    env: {},
-    nextTick: vi.fn((cb) => setTimeout(cb, 0)),
-    cwd: vi.fn(() => '/'),
-    platform: 'browser',
-    version: 'v18.0.0',
-    versions: { node: '18.0.0' },
-    emit: vi.fn(),
-    on: vi.fn(),
-    once: vi.fn(),
-    off: vi.fn(),
-    removeListener: vi.fn(),
-    removeAllListeners: vi.fn(),
-    listeners: vi.fn(() => []),
-    listenerCount: vi.fn(() => 0),
-    stdout: { write: vi.fn() },
-    stderr: { write: vi.fn() },
-    stdin: { read: vi.fn() },
-    uptime: vi.fn(() => 100),
-    memoryUsage: vi.fn(() => ({
-      rss: 1000000,
-      heapTotal: 1000000,
-      heapUsed: 500000,
-      external: 100000,
-      arrayBuffers: 50000
-    }))
-  },
-  writable: true,
-  configurable: true
-});
+const mockProcess = {
+  env: { NODE_ENV: 'test' },
+  nextTick: vi.fn((cb) => setTimeout(cb, 0)),
+  cwd: vi.fn(() => '/'),
+  platform: 'browser',
+  version: 'v18.0.0',
+  versions: { node: '18.0.0' },
+  emit: vi.fn(),
+  on: vi.fn(),
+  once: vi.fn(),
+  off: vi.fn(),
+  removeListener: vi.fn(),
+  removeAllListeners: vi.fn(),
+  listeners: vi.fn(() => []),
+  listenerCount: vi.fn(() => 0),
+  stdout: { write: vi.fn() },
+  stderr: { write: vi.fn() },
+  stdin: { read: vi.fn() },
+  uptime: vi.fn(() => 100),
+  memoryUsage: vi.fn(() => ({
+    rss: 1000000,
+    heapTotal: 1000000,
+    heapUsed: 500000,
+    external: 100000,
+    arrayBuffers: 50000
+  }))
+};
+
+// Ensure process is always available
+if (typeof process === 'undefined') {
+  Object.defineProperty(globalThis, 'process', {
+    value: mockProcess,
+    writable: true,
+    configurable: true
+  });
+} else {
+  // Extend existing process object with missing properties
+  Object.assign(process, {
+    listeners: process.listeners || vi.fn(() => []),
+    listenerCount: process.listenerCount || vi.fn(() => 0),
+    ...mockProcess
+  });
+}
 
 // Mock IntersectionObserver
 global.IntersectionObserver = vi.fn().mockImplementation((callback) => ({
@@ -119,6 +131,25 @@ beforeAll(() => {
   // Suppress console errors/warnings in tests
   console.error = vi.fn();
   console.warn = vi.fn();
+  
+  // Ensure window object is available for tests that need it
+  if (typeof window === 'undefined') {
+    Object.defineProperty(globalThis, 'window', {
+      value: {
+        location: {
+          href: 'http://localhost:3000',
+          pathname: '/',
+          search: '',
+          hash: ''
+        },
+        navigator: {
+          userAgent: 'Mozilla/5.0 (Test Environment)'
+        }
+      },
+      writable: true,
+      configurable: true
+    });
+  }
 });
 
 afterEach(() => {

@@ -1,5 +1,5 @@
-
 import { apiClient } from './client';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 import { 
   Tenant, 
   TenantDetailsResponse, 
@@ -9,8 +9,9 @@ import {
 } from './api-contract';
 
 export const tenantsApi = {
-  getTenants: (): Promise<Tenant[]> => {
-    return apiClient.get('/tenants').then(response => {
+  getTenants: async (): Promise<Tenant[]> => {
+    try {
+      const response = await apiClient.get('/tenants');
       const data = response.data;
       if (Array.isArray(data)) {
         return data.map(tenant => ({
@@ -20,54 +21,80 @@ export const tenantsApi = {
         }));
       }
       return [];
-    });
+    } catch (error) {
+      secureLog.error('Error fetching tenants:', error);
+      return [];
+    }
   },
 
-  getTenantDetails: (tenantId: string): Promise<Tenant> => {
-    return apiClient.get(`/tenants/${tenantId}`).then(response => {
+  getTenantDetails: async (tenantId: string): Promise<Tenant> => {
+    try {
+      const response = await apiClient.get(`/tenants/${sanitizeUrlParam(tenantId)}`);
       const data = response.data;
       return {
         ...data,
         users: data.users || [],
         stations: data.stations || []
       };
-    });
+    } catch (error) {
+      secureLog.error('Error fetching tenant details:', error);
+      throw error;
+    }
   },
 
-  createTenant: (tenantData: CreateTenantRequest): Promise<Tenant> => {
-    return apiClient.post('/tenants', tenantData).then(response => {
+  createTenant: async (tenantData: CreateTenantRequest): Promise<Tenant> => {
+    try {
+      const response = await apiClient.post('/tenants', tenantData);
       const data = response.data;
       return {
         ...data,
         users: data.users || [],
         stations: data.stations || []
       };
-    });
+    } catch (error) {
+      secureLog.error('Error creating tenant:', error);
+      throw error;
+    }
   },
 
-  updateTenant: (tenantId: string, updates: UpdateTenantRequest): Promise<Tenant> => {
-    return apiClient.put(`/tenants/${tenantId}`, updates).then(response => response.data);
+  updateTenant: async (tenantId: string, updates: UpdateTenantRequest): Promise<Tenant> => {
+    try {
+      const response = await apiClient.put(`/tenants/${sanitizeUrlParam(tenantId)}`, updates);
+      return response.data;
+    } catch (error) {
+      secureLog.error('Error updating tenant:', error);
+      throw error;
+    }
   },
 
-  updateTenantStatus: (tenantId: string, status: 'active' | 'suspended' | 'cancelled' | 'trial'): Promise<Tenant> => {
-    return apiClient.put(`/tenants/${tenantId}/status`, { status }).then(response => response.data);
+  updateTenantStatus: async (tenantId: string, status: 'active' | 'suspended' | 'cancelled' | 'trial'): Promise<Tenant> => {
+    try {
+      const response = await apiClient.put(`/tenants/${sanitizeUrlParam(tenantId)}/status`, { status });
+      return response.data;
+    } catch (error) {
+      secureLog.error('Error updating tenant status:', error);
+      throw error;
+    }
   },
 
-  updateTenantPlan: (tenantId: string, planId: string): Promise<Tenant> => {
-    console.log('[FRONTEND-API] Making plan update request:', { tenantId, planId });
-    console.log('[FRONTEND-API] Request URL:', `/superadmin/tenants/${tenantId}/plan`);
-    return apiClient.patch(`/superadmin/tenants/${tenantId}/plan`, { planId })
-      .then(response => {
-        console.log('[FRONTEND-API] Plan update success:', response.data);
-        return response.data;
-      })
-      .catch(error => {
-        console.error('[FRONTEND-API] Plan update error:', error);
-        throw error;
-      });
+  updateTenantPlan: async (tenantId: string, planId: string): Promise<Tenant> => {
+    try {
+      secureLog.debug('Making plan update request');
+      const response = await apiClient.patch(`/superadmin/tenants/${sanitizeUrlParam(tenantId)}/plan`, { planId: sanitizeUrlParam(planId) });
+      secureLog.debug('Plan update success');
+      return response.data;
+    } catch (error) {
+      secureLog.error('Plan update error:', error);
+      throw error;
+    }
   },
 
-  deleteTenant: (tenantId: string): Promise<void> => {
-    return apiClient.delete(`/tenants/${tenantId}`);
+  deleteTenant: async (tenantId: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/tenants/${sanitizeUrlParam(tenantId)}`);
+    } catch (error) {
+      secureLog.error('Error deleting tenant:', error);
+      throw error;
+    }
   }
 };

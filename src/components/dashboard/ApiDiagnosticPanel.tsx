@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { secureLog } from '@/utils/security';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -26,10 +28,10 @@ export function ApiDiagnosticPanel() {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
         'https://fuelsync-api-demo-bvadbhg8bdbmg0ff.germanywestcentral-01.azurewebsites.net';
       
-      const redirects = await diagnosticApi.checkRedirects(`${API_BASE_URL}/api/v1/dashboard/sales-summary`);
+      const redirects = await diagnosticApi.checkRedirects(`${<SafeText text={API_BASE_URL} />}/api/v1/dashboard/sales-summary`);
       setRedirectInfo(redirects);
     } catch (error) {
-      console.error('Diagnostic check failed:', error);
+      secureLog.error('Diagnostic check failed:', error);
     } finally {
       setIsChecking(false);
     }
@@ -68,8 +70,8 @@ export function ApiDiagnosticPanel() {
             </div>
             <AlertDescription className="mt-2 text-sm">
               <div className="space-y-1">
-                <p><strong>Base URL:</strong> {apiStatus.baseUrl}</p>
-                <p><strong>Timestamp:</strong> {apiStatus.timestamp}</p>
+                <p><strong>Base URL:</strong> {<SafeText text={apiStatus.baseUrl} />}</p>
+                <p><strong>Timestamp:</strong> {<SafeText text={apiStatus.timestamp} />}</p>
               </div>
             </AlertDescription>
           </Alert>
@@ -79,10 +81,10 @@ export function ApiDiagnosticPanel() {
           <div className="mt-4">
             <h3 className="font-medium mb-2">Redirect Check</h3>
             <div className="text-sm space-y-1 bg-slate-50 p-3 rounded-md">
-              <p><strong>Original URL:</strong> {redirectInfo.originalUrl}</p>
-              <p><strong>Final URL:</strong> {redirectInfo.finalUrl}</p>
+              <p><strong>Original URL:</strong> {<SafeText text={redirectInfo.originalUrl} />}</p>
+              <p><strong>Final URL:</strong> {<SafeText text={redirectInfo.finalUrl} />}</p>
               <p><strong>Redirected:</strong> {redirectInfo.redirected ? 'Yes' : 'No'}</p>
-              <p><strong>Redirect Count:</strong> {redirectInfo.redirectCount}</p>
+              <p><strong>Redirect Count:</strong> {<SafeText text={redirectInfo.redirectCount} />}</p>
             </div>
           </div>
         )}
@@ -92,7 +94,7 @@ export function ApiDiagnosticPanel() {
             <h3 className="font-medium mb-2">Browser Network Info</h3>
             <div className="text-sm space-y-1 bg-slate-50 p-3 rounded-md">
               <p><strong>Online:</strong> {networkInfo.onLine ? 'Yes' : 'No'}</p>
-              <p><strong>User Agent:</strong> {networkInfo.userAgent}</p>
+              <p><strong>User Agent:</strong> {<SafeText text={networkInfo.userAgent} />}</p>
               <p><strong>Cookies Enabled:</strong> {networkInfo.cookiesEnabled ? 'Yes' : 'No'}</p>
               <p><strong>Do Not Track:</strong> {networkInfo.doNotTrack || 'Not set'}</p>
             </div>

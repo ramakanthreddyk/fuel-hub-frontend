@@ -23,7 +23,7 @@ interface CompactNozzleCardProps {
   onDelete?: (nozzleId: string) => void;
 }
 
-export function CompactNozzleCard({ nozzle, onRecordReading, onEdit, onDelete }: CompactNozzleCardProps) {
+export function CompactNozzleCard({ nozzle, onRecordReading, onEdit, onDelete }: Readonly<CompactNozzleCardProps>) {
   const getFuelConfig = (fuelType: string) => {
     switch (fuelType.toLowerCase()) {
       case 'petrol':
@@ -87,9 +87,14 @@ export function CompactNozzleCard({ nozzle, onRecordReading, onEdit, onDelete }:
               </Badge>
             </div>
           </div>
-          <Badge className={cn("text-xs", statusConfig.className)}>
-            {nozzle.status}
-          </Badge>
+          {(() => {
+            let statusColor = statusConfig.className;
+            return (
+              <Badge className={cn("text-xs", statusColor)}>
+                {nozzle.status}
+              </Badge>
+            );
+          })()}
         </div>
 
         {/* Status Indicator */}

@@ -56,6 +56,7 @@ export interface TableProps<T = any> {
   onRowClick?: (row: T) => void;
   selectedRows?: string[];
   onSelectionChange?: (selectedIds: string[]) => void;
+  className?: string;
 }
 
 export interface ModalProps extends BaseComponentProps {

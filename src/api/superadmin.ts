@@ -1,5 +1,6 @@
 
 import { apiClient, extractApiData } from './client';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import { 
   Tenant, 
   CreateTenantRequest, 
@@ -14,48 +15,148 @@ import {
 // Main SuperAdmin API object
 export const superAdminApi = {
   // Tenant Management
-  getTenants: (): Promise<Tenant[]> => apiClient.get('/superadmin/tenants').then(response => {
-    const data = extractApiData(response);
-    return data?.tenants || [];
-  }),
-  createTenant: (data: CreateTenantRequest): Promise<Tenant> =>
-    apiClient.post('/superadmin/tenants', data).then(response => extractApiData(response)),
-  getTenant: (id: string): Promise<Tenant> =>
-    apiClient.get(`/superadmin/tenants/${id}`).then(response => extractApiData(response)),
-  updateTenant: (id: string, data: Partial<Tenant>): Promise<Tenant> =>
-    apiClient.put(`/superadmin/tenants/${id}`, data).then(response => extractApiData(response)),
-  updateTenantStatus: (id: string, status: string): Promise<Tenant> =>
-    apiClient.patch(`/superadmin/tenants/${id}/status`, { status }).then(response => extractApiData(response)),
-  deleteTenant: (id: string): Promise<void> =>
-    apiClient.delete(`/superadmin/tenants/${id}`),
+  getTenants: async (): Promise<Tenant[]> => {
+    try {
+      const response = await apiClient.get('/superadmin/tenants');
+      const data = extractApiData(response);
+      return data?.tenants || [];
+    } catch (error) {
+      secureLog.error('Error fetching tenants:', error);
+      return [];
+    }
+  },
+  createTenant: async (data: CreateTenantRequest): Promise<Tenant> => {
+    try {
+      const response = await apiClient.post('/superadmin/tenants', data);
+      return extractApiData(response);
+    } catch (error) {
+      secureLog.error('Error creating tenant:', error);
+      throw error;
+    }
+  },
+  getTenant: async (id: string): Promise<Tenant> => {
+    try {
+      const response = await apiClient.get(`/superadmin/tenants/${sanitizeUrlParam(id)}`);
+      return extractApiData(response);
+    } catch (error) {
+      secureLog.error('Error fetching tenant:', error);
+      throw error;
+    }
+  },
+  updateTenant: async (id: string, data: Partial<Tenant>): Promise<Tenant> => {
+    try {
+      const response = await apiClient.put(`/superadmin/tenants/${sanitizeUrlParam(id)}`, data);
+      return extractApiData(response);
+    } catch (error) {
+      secureLog.error('Error updating tenant:', error);
+      throw error;
+    }
+  },
+  updateTenantStatus: async (id: string, status: string): Promise<Tenant> => {
+    try {
+      const response = await apiClient.patch(`/superadmin/tenants/${sanitizeUrlParam(id)}/status`, { status });
+      return extractApiData(response);
+    } catch (error) {
+      secureLog.error('Error updating tenant status:', error);
+      throw error;
+    }
+  },
+  deleteTenant: async (id: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/superadmin/tenants/${sanitizeUrlParam(id)}`);
+    } catch (error) {
+      secureLog.error('Error deleting tenant:', error);
+      throw error;
+    }
+  },
 
   // Plan Management
-  getPlans: (): Promise<Plan[]> => apiClient.get('/superadmin/plans').then(response => {
-    const data = extractApiData(response);
-    return data?.plans || [];
-  }),
-  createPlan: (data: CreatePlanRequest): Promise<Plan> =>
-    apiClient.post('/superadmin/plans', data).then(response => extractApiData(response)),
-  updatePlan: (id: string, data: Partial<Plan>): Promise<Plan> =>
-    apiClient.put(`/superadmin/plans/${id}`, data).then(response => extractApiData(response)),
-  deletePlan: (id: string): Promise<void> =>
-    apiClient.delete(`/superadmin/plans/${id}`),
+  getPlans: async (): Promise<Plan[]> => {
+    try {
+      const response = await apiClient.get('/superadmin/plans');
+      const data = extractApiData(response);
+      return data?.plans || [];
+    } catch (error) {
+      secureLog.error('Error fetching plans:', error);
+      return [];
+    }
+  },
+  createPlan: async (data: CreatePlanRequest): Promise<Plan> => {
+    try {
+      const response = await apiClient.post('/superadmin/plans', data);
+      return extractApiData(response);
+    } catch (error) {
+      secureLog.error('Error creating plan:', error);
+      throw error;
+    }
+  },
+  updatePlan: async (id: string, data: Partial<Plan>): Promise<Plan> => {
+    try {
+      const response = await apiClient.put(`/superadmin/plans/${sanitizeUrlParam(id)}`, data);
+      return extractApiData(response);
+    } catch (error) {
+      secureLog.error('Error updating plan:', error);
+      throw error;
+    }
+  },
+  deletePlan: async (id: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/superadmin/plans/${sanitizeUrlParam(id)}`);
+    } catch (error) {
+      secureLog.error('Error deleting plan:', error);
+      throw error;
+    }
+  },
 
   // Admin User Management
-  getAdminUsers: (): Promise<{ tenantUsers: any[], adminUsers: AdminUser[], totalUsers: number }> =>
-    apiClient.get('/superadmin/users').then(response => extractApiData(response) || { tenantUsers: [], adminUsers: [], totalUsers: 0 }),
-  createAdminUser: (data: CreateSuperAdminRequest): Promise<AdminUser> =>
-    apiClient.post('/superadmin/users', data).then(response => extractApiData(response)),
-  updateAdminUser: (id: string, data: Partial<AdminUser>): Promise<AdminUser> =>
-    apiClient.put(`/superadmin/users/${id}`, data).then(response => extractApiData(response)),
-  deleteAdminUser: (id: string): Promise<void> =>
-    apiClient.delete(`/superadmin/users/${id}`),
-  resetAdminPassword: (id: string, passwordData: any): Promise<void> =>
-    apiClient.post(`/superadmin/users/${id}/reset-password`, passwordData),
+  getAdminUsers: async (): Promise<{ tenantUsers: any[], adminUsers: AdminUser[], totalUsers: number }> => {
+    try {
+      const response = await apiClient.get('/superadmin/users');
+      return extractApiData(response) || { tenantUsers: [], adminUsers: [], totalUsers: 0 };
+    } catch (error) {
+      secureLog.error('Error fetching admin users:', error);
+      return { tenantUsers: [], adminUsers: [], totalUsers: 0 };
+    }
+  },
+  createAdminUser: async (data: CreateSuperAdminRequest): Promise<AdminUser> => {
+    try {
+      const response = await apiClient.post('/superadmin/users', data);
+      return extractApiData(response);
+    } catch (error) {
+      secureLog.error('Error creating admin user:', error);
+      throw error;
+    }
+  },
+  updateAdminUser: async (id: string, data: Partial<AdminUser>): Promise<AdminUser> => {
+    try {
+      const response = await apiClient.put(`/superadmin/users/${sanitizeUrlParam(id)}`, data);
+      return extractApiData(response);
+    } catch (error) {
+      secureLog.error('Error updating admin user:', error);
+      throw error;
+    }
+  },
+  deleteAdminUser: async (id: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/superadmin/users/${sanitizeUrlParam(id)}`);
+    } catch (error) {
+      secureLog.error('Error deleting admin user:', error);
+      throw error;
+    }
+  },
+  resetAdminPassword: async (id: string, passwordData: any): Promise<void> => {
+    try {
+      await apiClient.post(`/superadmin/users/${sanitizeUrlParam(id)}/reset-password`, passwordData);
+    } catch (error) {
+      secureLog.error('Error resetting admin password:', error);
+      throw error;
+    }
+  },
 
   // Analytics and Summary
-  getSummary: (): Promise<SuperAdminSummary> => {
-    return apiClient.get('/superadmin/analytics/usage').then(response => {
+  getSummary: async (): Promise<SuperAdminSummary> => {
+    try {
+      const response = await apiClient.get('/superadmin/analytics/usage');
       const data = extractApiData<SuperAdminSummary>(response);
       return {
         totalTenants: data.totalTenants || 0,
@@ -73,14 +174,20 @@ export const superAdminApi = {
         alerts: data.alerts || [],
         tenantsByPlan: data.tenantsByPlan || []
       };
-    });
+    } catch (error) {
+      secureLog.error('Error fetching summary:', error);
+      throw error;
+    }
   },
-  getAnalytics: (): Promise<any> => {
-    return apiClient.get('/superadmin/analytics/usage').then(response => {
+  getAnalytics: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/superadmin/analytics/usage');
       const data = extractApiData<any>(response);
-      // Return the actual backend structure without transformation
       return data;
-    });
+    } catch (error) {
+      secureLog.error('Error fetching analytics:', error);
+      throw error;
+    }
   }
 };
 

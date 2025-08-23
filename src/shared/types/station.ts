@@ -4,10 +4,9 @@
  */
 
 import { FuelPrice } from './fuel';
+import { ID, Timestamp } from './index';
 
 export type EntityStatus = 'active' | 'inactive' | 'maintenance';
-export type ID = string;
-export type Timestamp = string;
 
 export interface Pump {
   id: ID;

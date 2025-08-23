@@ -7,6 +7,7 @@
 
 import { apiClient } from '../client';
 import type { ExportRequest, ExportResponse, ApiResponse } from '../api-contract';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 // Plan-based report access control
 const checkReportAccess = (reportType: string, userPlan: string): boolean => {
@@ -34,7 +35,7 @@ export const reportsService = {
     offset?: number;
   }): Promise<ExportResponse> => {
     // Add plan-based access control (will be implemented with user context)
-    console.log('[REPORTS] Generating report:', params.type);
+    secureLog.debug('[REPORTS] Generating report:', params.type);
 
     // Add query optimization parameters
     const optimizedParams = {
@@ -58,7 +59,7 @@ export const reportsService = {
 
   // Download generated report
   downloadReport: async (reportId: string): Promise<Blob> => {
-    const response = await apiClient.get(`/reports/download/${reportId}`, {
+    const response = await apiClient.get(`/reports/download/${sanitizeUrlParam(reportId)}`, {
       responseType: 'blob'
     });
     return response.data;

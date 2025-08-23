@@ -1,3 +1,4 @@
+type DateInput = Date | string | null | undefined;
 /**
  * @file shared/utils/date-helpers.ts
  * @description Centralized date utility functions
@@ -6,7 +7,7 @@
 /**
  * Format date to readable string
  */
-export function formatDate(date: Date | string | null | undefined): string {
+export function formatDate(date: DateInput): string {
   if (!date) return '';
   
   try {
@@ -26,7 +27,7 @@ export function formatDate(date: Date | string | null | undefined): string {
 /**
  * Format date and time to readable string
  */
-export function formatDateTime(date: Date | string | null | undefined): string {
+export function formatDateTime(date: DateInput): string {
   if (!date) return '';
   
   try {
@@ -48,7 +49,7 @@ export function formatDateTime(date: Date | string | null | undefined): string {
 /**
  * Format time only
  */
-export function formatTime(date: Date | string | null | undefined): string {
+export function formatTime(date: DateInput): string {
   if (!date) return '';
   
   try {
@@ -67,7 +68,7 @@ export function formatTime(date: Date | string | null | undefined): string {
 /**
  * Format relative time (e.g., "2 hours ago")
  */
-export function formatRelativeTime(date: Date | string | null | undefined): string {
+export function formatRelativeTime(date: DateInput): string {
   if (!date) return '';
   
   try {
@@ -157,21 +158,21 @@ export function getDateRange(period: 'today' | 'yesterday' | 'this-week' | 'last
         end: new Date(yesterday.getTime() + 24 * 60 * 60 * 1000 - 1)
       };
       
-    case 'this-week':
-      const startOfWeek = new Date(startOfToday);
-      startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+    case 'this-week': {
+      const startOfWeek = new Date(startOfToday.getFullYear(), startOfToday.getMonth(), startOfToday.getDate() - startOfToday.getDay());
       return {
         start: startOfWeek,
         end: addDays(startOfWeek, 6)
       };
+    }
       
-    case 'last-week':
-      const startOfLastWeek = new Date(startOfToday);
-      startOfLastWeek.setDate(startOfToday.getDate() - startOfToday.getDay() - 7);
+    case 'last-week': {
+      const startOfLastWeek = new Date(startOfToday.getFullYear(), startOfToday.getMonth(), startOfToday.getDate() - startOfToday.getDay() - 7);
       return {
         start: startOfLastWeek,
         end: addDays(startOfLastWeek, 6)
       };
+    }
       
     case 'this-month':
       return {

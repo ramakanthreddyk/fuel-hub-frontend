@@ -3,7 +3,7 @@
  * @description Hook for managing localStorage with TypeScript safety
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 type SetValue<T> = T | ((val: T) => T);
 

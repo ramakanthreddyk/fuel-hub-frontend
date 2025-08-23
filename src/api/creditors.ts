@@ -1,4 +1,5 @@
 import { apiClient, extractApiData, extractApiArray } from './client';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 import type { 
   Creditor, 
   CreateCreditorRequest, 
@@ -15,7 +16,7 @@ export const creditorsApi = {
       const response = await apiClient.get('/creditors');
       return extractApiArray<Creditor>(response, 'creditors');
     } catch (error) {
-      console.error('Error fetching creditors:', error);
+      secureLog.error('Error fetching creditors:', error);
       return [];
     }
   },
@@ -39,7 +40,7 @@ export const creditorsApi = {
       const response = await apiClient.post('/creditors', data);
       return extractApiData<Creditor>(response);
     } catch (error: any) {
-      console.error('[CREDITORS-API] Error creating creditor:', error);
+      secureLog.error('Error creating creditor:', error);
       throw error;
     }
   },
@@ -47,43 +48,52 @@ export const creditorsApi = {
   // Get creditor by ID
   getCreditor: async (id: string): Promise<Creditor> => {
     try {
-      const response = await apiClient.get(`/creditors/${id}`);
+      const response = await apiClient.get(`/creditors/${sanitizeUrlParam(id)}`);
       return extractApiData<Creditor>(response);
     } catch (error) {
-      console.error('Error fetching creditor:', error);
+      secureLog.error('Error fetching creditor:', error);
       throw error;
     }
   },
   // Get payments for a creditor
   getPayments: async (creditorId: string): Promise<CreditPayment[]> => {
-    const response = await apiClient.get(`/credit-payments?creditorId=${creditorId}`);
-    return extractApiArray<CreditPayment>(response);
+    try {
+      const response = await apiClient.get(`/credit-payments?creditorId=${sanitizeUrlParam(creditorId)}`);
+      return extractApiArray<CreditPayment>(response);
+    } catch (error) {
+      secureLog.error('Error fetching payments:', error);
+      return [];
+    }
   },
 
   // Create new payment
   createPayment: async (data: CreatePaymentRequest): Promise<CreditPayment> => {
-    const response = await apiClient.post('/credit-payments', data);
-    return extractApiData<CreditPayment>(response);
+    try {
+      const response = await apiClient.post('/credit-payments', data);
+      return extractApiData<CreditPayment>(response);
+    } catch (error) {
+      secureLog.error('Error creating payment:', error);
+      throw error;
+    }
   },
   // Update creditor
   updateCreditor: async (id: string, data: UpdateCreditorRequest): Promise<Creditor> => {
     try {
-      const response = await apiClient.put(`/creditors/${id}`, data);
+      const response = await apiClient.put(`/creditors/${sanitizeUrlParam(id)}`, data);
       return extractApiData<Creditor>(response);
     } catch (error) {
-      console.error('Error updating creditor:', error);
+      secureLog.error('Error updating creditor:', error);
       throw error;
     }
   },
   // Delete creditor
   deleteCreditor: async (id: string): Promise<void> => {
     try {
-      await apiClient.delete(`/creditors/${id}`);
+      await apiClient.delete(`/creditors/${sanitizeUrlParam(id)}`);
     } catch (error) {
-      console.error('Error deleting creditor:', error);
+      secureLog.error('Error deleting creditor:', error);
       throw error;
     }
   }
-
 
 }

@@ -5,9 +5,12 @@
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
 import API_CONFIG from '../core/config';
-import { parseReadingsResponse, parseReading } from '@/utils/dataParser';
+import { parseReadingsResponse } from '@/utils/dataParser';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 
 // Types
+export type PaymentMethod = 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
+
 export interface Reading {
   id: string;
   nozzleId: string;
@@ -17,7 +20,7 @@ export interface Reading {
   previous_reading?: number; // For backward compatibility
   recordedAt: string;
   recorded_at?: string; // For backward compatibility
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
+  paymentMethod: PaymentMethod;
   payment_method?: string; // For backward compatibility
   creditorId?: string;
   creditor_id?: string; // For backward compatibility
@@ -52,7 +55,7 @@ export interface CreateReadingRequest {
   nozzleId: string;
   reading: number;
   recordedAt?: string;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
+  paymentMethod: PaymentMethod;
   creditorId?: string;
   notes?: string;
 }
@@ -60,7 +63,7 @@ export interface CreateReadingRequest {
 export interface UpdateReadingRequest {
   reading?: number;
   recordedAt?: string;
-  paymentMethod?: 'cash' | 'card' | 'upi' | 'credit' | 'bank_transfer' | 'check';
+  paymentMethod?: PaymentMethod;
   creditorId?: string;
   notes?: string;
 }
@@ -79,21 +82,20 @@ export const readingsService = {
    */
   getReadings: async (): Promise<Reading[]> => {
     try {
-      console.log('[READINGS-API] Fetching readings');
+      secureLog.debug('[READINGS-API] Fetching readings');
       const response = await apiClient.get(API_CONFIG.endpoints.readings.base);
 
-      console.log('[READINGS-API] Raw response before parsing:', response.data);
+      secureLog.debug('[READINGS-API] Raw response received');
 
       // Parse the complex data format from backend
       const parsedResponse = parseReadingsResponse(response.data);
       const readings = parsedResponse.data?.readings || [];
 
-      console.log(`[READINGS-API] Successfully fetched and parsed ${readings.length} readings`);
-      console.log('[READINGS-API] First parsed reading:', readings[0]);
+      secureLog.debug(`[READINGS-API] Successfully fetched and parsed ${readings.length} readings`);
 
       return readings;
     } catch (error) {
-      console.error('[READINGS-API] Error fetching readings:', error);
+      secureLog.error('[READINGS-API] Error fetching readings:', error);
       throw error;
     }
   },
@@ -103,15 +105,15 @@ export const readingsService = {
    */
   getReading: async (id: string): Promise<Reading> => {
     try {
-      console.log(`[READINGS-API] Fetching reading details for ID: ${id}`);
+      secureLog.debug('[READINGS-API] Fetching reading details');
       try {
-        const response = await apiClient.get(API_CONFIG.endpoints.readings.byId(id));
+        const response = await apiClient.get(API_CONFIG.endpoints.readings.byId(sanitizeUrlParam(id)));
         const reading = extractData<Reading>(response);
         return reading;
       } catch (error: any) {
         // Check if the error is related to creditor_id column
         if (error?.response?.data?.message?.includes('creditor_id does not exist')) {
-          console.warn(`[READINGS-API] Creditor_id column error, trying alternative endpoint`);
+          secureLog.warn('[READINGS-API] Creditor_id column error, trying alternative endpoint');
           // Try an alternative approach - get all readings and filter by ID
           const allReadingsResponse = await apiClient.get(API_CONFIG.endpoints.readings.base);
           const allReadings = extractArray<Reading>(allReadingsResponse, 'readings');
@@ -126,7 +128,7 @@ export const readingsService = {
         throw error;
       }
     } catch (error) {
-      console.error(`[READINGS-API] Error fetching reading ${id}:`, error);
+      secureLog.error('[READINGS-API] Error fetching reading:', error);
       throw error;
     }
   },
@@ -136,16 +138,16 @@ export const readingsService = {
    */
   createReading: async (data: CreateReadingRequest): Promise<Reading> => {
     try {
-      console.log('[READINGS-API] Creating reading with data:', data);
+      secureLog.debug('[READINGS-API] Creating reading');
       const response = await apiClient.post(API_CONFIG.endpoints.readings.base, data);
       const result = extractData<Reading>(response);
-      console.log('[READINGS-API] Reading created successfully:', result);
+      secureLog.debug('[READINGS-API] Reading created successfully');
 
       // Toast notification is handled by the calling hook to avoid duplicates
       
       return result;
     } catch (error) {
-      console.error('[READINGS-API] Error creating reading:', error);
+      secureLog.error('[READINGS-API] Error creating reading:', error);
       throw error;
     }
   },
@@ -155,11 +157,11 @@ export const readingsService = {
    */
   updateReading: async (id: string, data: UpdateReadingRequest): Promise<Reading> => {
     try {
-      console.log(`[READINGS-API] Updating reading ${id} with data:`, data);
-      const response = await apiClient.put(API_CONFIG.endpoints.readings.byId(id), data);
+      secureLog.debug('[READINGS-API] Updating reading');
+      const response = await apiClient.put(API_CONFIG.endpoints.readings.byId(sanitizeUrlParam(id)), data);
       return extractData<Reading>(response);
     } catch (error) {
-      console.error(`[READINGS-API] Error updating reading ${id}:`, error);
+      secureLog.error('[READINGS-API] Error updating reading:', error);
       throw error;
     }
   },
@@ -171,11 +173,11 @@ export const readingsService = {
   getLatestReading: async (nozzleId: string): Promise<Reading | null> => {
     try {
       if (!nozzleId) {
-        console.warn('[READINGS-API] No nozzleId provided for getLatestReading');
+        secureLog.warn('[READINGS-API] No nozzleId provided for getLatestReading');
         return null;
       }
       
-      console.log(`[READINGS-API] Fetching latest reading for nozzle: ${nozzleId}`);
+      secureLog.debug('[READINGS-API] Fetching latest reading for nozzle');
       
       // Add tenant ID header explicitly for this request
       const headers = {};
@@ -187,32 +189,31 @@ export const readingsService = {
             headers['x-tenant-id'] = user.tenantId;
           }
         } catch (error) {
-          console.error('[READINGS-API] Error parsing stored user:', error);
+          secureLog.error('[READINGS-API] Error parsing stored user:', error);
         }
       }
       
       // Try direct API call first
       // Use limit=1 to get only the most recent reading as per OpenAPI spec
       let readings = [];
-      const apiUrl = `${API_CONFIG.endpoints.readings.base}?nozzleId=${nozzleId}&limit=1`;
+      const apiUrl = `${API_CONFIG.endpoints.readings.base}?nozzleId=${sanitizeUrlParam(nozzleId)}&limit=1`;
 
-      console.log('[READINGS-API] 🔍 Fetching latest reading for nozzle:', nozzleId);
-      console.log('[READINGS-API] 🔍 API URL:', apiUrl);
+      secureLog.debug('[READINGS-API] Fetching latest reading for nozzle');
 
       try {
         const response = await apiClient.get(apiUrl, { headers });
-        console.log('[READINGS-API] 📊 Latest reading response for nozzle', nozzleId, ':', response.data);
+        secureLog.debug('[READINGS-API] Latest reading response received');
 
         // Parse the complex data format from backend
         const parsedResponse = parseReadingsResponse(response.data);
         readings = parsedResponse.data?.readings || [];
 
         if (readings.length === 0) {
-          console.log(`[READINGS-API] No readings found for nozzle ${nozzleId}`);
+          secureLog.debug('[READINGS-API] No readings found for nozzle');
           return null;
         }
       } catch (error) {
-        console.error(`[READINGS-API] Error in primary method for nozzle ${nozzleId}:`, error);
+        secureLog.error('[READINGS-API] Error in primary method for nozzle:', error);
         // Try fallback method
         try {
           const allReadingsResponse = await apiClient.get(API_CONFIG.endpoints.readings.base);
@@ -223,7 +224,7 @@ export const readingsService = {
           const filteredReadings = allReadings.filter(r => r.nozzleId === nozzleId || r.nozzle_id === nozzleId);
           
           if (filteredReadings.length === 0) {
-            console.log(`[READINGS-API] No readings found for nozzle ${nozzleId} in fallback method`);
+            secureLog.debug('[READINGS-API] No readings found for nozzle in fallback method');
             return null;
           }
           
@@ -235,32 +236,28 @@ export const readingsService = {
           });
           
           const reading = filteredReadings[0];
-          console.log(`[READINGS-API] Found reading via fallback method:`, reading);
+          secureLog.debug('[READINGS-API] Found reading via fallback method');
           return reading;
         } catch (fallbackError) {
-          console.error(`[READINGS-API] Fallback method also failed:`, fallbackError);
+          secureLog.error('[READINGS-API] Fallback method also failed:', fallbackError);
           return null;
         }
       }
       
       // Make sure we have readings before trying to access them
       if (!readings || readings.length === 0) {
-        console.log(`[READINGS-API] ✅ No readings found for nozzle ${nozzleId} after processing (correct for new nozzles)`);
+        secureLog.debug('[READINGS-API] No readings found for nozzle after processing');
         return null;
       }
 
       // Normalize property names to handle both camelCase and snake_case
       const reading = readings[0];
-      console.log(`[READINGS-API] 📊 Processing reading for nozzle ${nozzleId}:`, reading);
+      secureLog.debug('[READINGS-API] Processing reading for nozzle');
 
       // Validate that the reading belongs to the requested nozzle
       const readingNozzleId = reading.nozzleId || reading.nozzle_id;
       if (readingNozzleId && readingNozzleId !== nozzleId) {
-        console.error('[READINGS-API] ❌ BACKEND RETURNED WRONG NOZZLE DATA!');
-        console.error('[READINGS-API] Requested nozzle:', nozzleId);
-        console.error('[READINGS-API] Received nozzle:', readingNozzleId);
-        console.error('[READINGS-API] Reading value:', reading.reading);
-        console.error('[READINGS-API] This indicates a backend query filtering bug!');
+        secureLog.error('[READINGS-API] Backend returned wrong nozzle data - query filtering bug detected');
         return null; // Don't return contaminated data
       }
       
@@ -291,16 +288,14 @@ export const readingsService = {
       
       // Final validation of normalized reading
       if (normalizedReading.nozzleId !== nozzleId) {
-        console.error('[READINGS-API] ❌ FINAL VALIDATION FAILED!');
-        console.error('[READINGS-API] Normalized reading nozzleId:', normalizedReading.nozzleId);
-        console.error('[READINGS-API] Expected nozzleId:', nozzleId);
+        secureLog.error('[READINGS-API] Final validation failed - nozzleId mismatch');
         return null;
       }
 
-      console.log(`[READINGS-API] ✅ Successfully fetched and validated latest reading for nozzle ${nozzleId}: ${normalizedReading.reading}L`);
+      secureLog.debug('[READINGS-API] Successfully fetched and validated latest reading');
       return normalizedReading;
     } catch (error) {
-      console.error(`[READINGS-API] Error fetching latest reading for nozzle ${nozzleId}:`, error);
+      secureLog.error('[READINGS-API] Error fetching latest reading for nozzle:', error);
       // Return null instead of throwing to handle missing readings gracefully
       return null;
     }
@@ -311,11 +306,11 @@ export const readingsService = {
    */
   canCreateReading: async (nozzleId: string): Promise<{ canCreate: boolean; reason?: string; missingPrice?: boolean }> => {
     try {
-      console.log(`[READINGS-API] Checking if reading can be created for nozzle: ${nozzleId}`);
-      const response = await apiClient.get(API_CONFIG.endpoints.readings.canCreate(nozzleId));
+      secureLog.debug('[READINGS-API] Checking if reading can be created for nozzle');
+      const response = await apiClient.get(API_CONFIG.endpoints.readings.canCreate(sanitizeUrlParam(nozzleId)));
       return extractData<{ canCreate: boolean; reason?: string; missingPrice?: boolean }>(response);
     } catch (error) {
-      console.error(`[READINGS-API] Error checking reading creation for nozzle ${nozzleId}:`, error);
+      secureLog.error('[READINGS-API] Error checking reading creation for nozzle:', error);
       throw error;
     }
   },
@@ -325,11 +320,11 @@ export const readingsService = {
    */
   voidReading: async (id: string, reason: string): Promise<any> => {
     try {
-      console.log(`[READINGS-API] Voiding reading ${id} with reason: ${reason}`);
-      const response = await apiClient.post(API_CONFIG.endpoints.readings.void(id), { reason, status: 'voided' });
+      secureLog.debug('[READINGS-API] Voiding reading');
+      const response = await apiClient.post(API_CONFIG.endpoints.readings.void(sanitizeUrlParam(id)), { reason, status: 'voided' });
       return extractData<any>(response);
     } catch (error) {
-      console.error(`[READINGS-API] Error voiding reading ${id}:`, error);
+      secureLog.error('[READINGS-API] Error voiding reading:', error);
       throw error;
     }
   }

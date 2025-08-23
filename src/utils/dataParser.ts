@@ -53,18 +53,16 @@ export function parseComplexNumber(value: any): number {
     // Handle complex case: multiple digits (decimal numbers)
     if (complexNum.d.length > 1) {
       // Convert digits array to string and parse
-      let numStr = '';
-      for (let i = 0; i < complexNum.d.length; i++) {
-        numStr += complexNum.d[i].toString();
-      }
-      
+      // Join all digits as strings for better performance and readability
+      const numStr = complexNum.d.map(d => d.toString()).join('');
+      // Use a new variable for decimal manipulation
+      let decimalStr = numStr;
       // Apply decimal point based on exponent
       const exponent = complexNum.e || 0;
       if (exponent > 0 && exponent < numStr.length) {
-        numStr = numStr.slice(0, exponent) + '.' + numStr.slice(exponent);
+        decimalStr = numStr.slice(0, exponent) + '.' + numStr.slice(exponent);
       }
-      
-      const result = parseFloat(numStr) * (complexNum.s || 1);
+      const result = parseFloat(decimalStr) * (complexNum.s || 1);
       return isNaN(result) ? 0 : result;
     }
 
@@ -166,7 +164,7 @@ export function parseReadings(readings: any[]): any[] {
  * Parse complete readings API response
  */
 export function parseReadingsResponse(response: any): any {
-  if (!response || !response.data) {
+  if (!response?.data) {
     return response;
   }
 
@@ -183,7 +181,7 @@ export function parseReadingsResponse(response: any): any {
  * Parse today's sales response (if it has similar issues)
  */
 export function parseTodaysSalesResponse(response: any): any {
-  if (!response || !response.data) {
+  if (!response?.data) {
     return response;
   }
 

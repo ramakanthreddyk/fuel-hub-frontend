@@ -11,7 +11,7 @@ interface ResetPasswordFormProps {
   isLoading: boolean;
 }
 
-export function ResetPasswordForm({ onSubmit, onCancel, isLoading }: ResetPasswordFormProps) {
+export function ResetPasswordForm({ onSubmit, onCancel, isLoading }: Readonly<ResetPasswordFormProps>) {
   const [formData, setFormData] = useState({
     newPassword: '',
     confirmPassword: ''

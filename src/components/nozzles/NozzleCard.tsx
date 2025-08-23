@@ -7,8 +7,9 @@
 import { Button } from '@/components/ui/button';
 import { Plus, Settings, Activity, AlertTriangle } from 'lucide-react';
 import { ColorfulCard, CardContent, CardHeader } from '@/components/ui/colorful-card';
-import { StatusBadge } from '@/components/ui/status-badge';
 import { FuelBadge } from '@/components/ui/fuel-badge';
+
+import { cn } from '@/lib/utils';
 
 import type { Nozzle } from '@/api/api-contract';
 
@@ -19,7 +20,7 @@ interface NozzleCardProps {
   onRecordReading?: (id: string) => void;
 }
 
-export function NozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: NozzleCardProps) {
+export function NozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Readonly<NozzleCardProps>) {
   const getGradientByFuelType = (fuelType: string) => {
     switch (fuelType.toLowerCase()) {
       case 'petrol':
@@ -71,7 +72,21 @@ export function NozzleCard({ nozzle, onEdit, onDelete, onRecordReading }: Nozzle
                 </div>
               </div>
             </div>
-            <StatusBadge status={nozzle.status} size="sm" />
+            {(() => {
+              let statusColor = '';
+              if (nozzle.status.toLowerCase() === 'active') {
+                statusColor = 'bg-green-100 text-green-800 border-green-200';
+              } else if (nozzle.status.toLowerCase() === 'maintenance') {
+                statusColor = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+              } else {
+                statusColor = 'bg-red-100 text-red-800 border-red-200';
+              }
+              return (
+                <span className={cn('text-xs font-bold px-2 py-1 rounded', statusColor)}>
+                  {nozzle.status}
+                </span>
+              );
+            })()}
           </div>
 
           {/* Status Info */}

@@ -2,6 +2,8 @@
  * @file toaster.tsx
  * @description Toast notification component
  */
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
+import { secureLog } from '@/utils/security';
 import * as React from "react";
 import { X } from "lucide-react";
 
@@ -15,7 +17,7 @@ export function Toaster() {
 
 export function useToast() {
   const toast = (props: { title?: string; description?: string; variant?: string }) => {
-    console.log('Toast:', props);
+    secureLog.debug('Toast:', props);
     // In a real implementation, this would show a toast notification
   };
 

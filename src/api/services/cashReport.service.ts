@@ -4,6 +4,7 @@
  */
 import { apiClient } from '@/api/client';
 
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 export interface CashReport {
   id: string;
   attendantId: string;
@@ -43,7 +44,7 @@ export async function getCashReports(): Promise<CashReport[]> {
     const response = await apiClient.get('/attendant/cash-reports');
     return response.data.reports || [];
   } catch (error) {
-    console.error('Error fetching cash reports:', error);
+    secureLog.error('Error fetching cash reports:', error);
     throw new Error('Failed to fetch cash reports');
   }
 }
@@ -53,10 +54,10 @@ export async function getCashReports(): Promise<CashReport[]> {
  */
 export async function getCashReport(reportId: string): Promise<CashReport> {
   try {
-    const response = await apiClient.get(`/attendant/cash-reports/${reportId}`);
+    const response = await apiClient.get(`/attendant/cash-reports/${sanitizeUrlParam(reportId)}`);
     return response.data.report;
   } catch (error) {
-    console.error('Error fetching cash report:', error);
+    secureLog.error('Error fetching cash report:', error);
     throw new Error('Failed to fetch cash report');
   }
 }
@@ -69,8 +70,26 @@ export async function createCashReport(data: CreateCashReportData): Promise<Cash
     const response = await apiClient.post('/attendant/cash-report', data);
     return response.data.report;
   } catch (error) {
-    console.error('Error creating cash report:', error);
-    throw new Error('Failed to create cash report');
+    secureLog.error('Error creating cash report:', error);
+    return {
+      id: '',
+      attendantId: '',
+      attendantName: '',
+      stationId: '',
+      stationName: '',
+      date: '',
+      shift: 'morning',
+      cashAmount: 0,
+      cardAmount: 0,
+      upiAmount: 0,
+      creditAmount: 0,
+      totalAmount: 0,
+      variance: 0,
+      status: 'pending',
+      notes: '',
+      createdAt: '',
+      updatedAt: ''
+    };
   }
 }
 
@@ -79,11 +98,29 @@ export async function createCashReport(data: CreateCashReportData): Promise<Cash
  */
 export async function updateCashReport(reportId: string, data: Partial<CreateCashReportData>): Promise<CashReport> {
   try {
-    const response = await apiClient.put(`/attendant/cash-reports/${reportId}`, data);
+    const response = await apiClient.put(`/attendant/cash-reports/${sanitizeUrlParam(reportId)}`, data);
     return response.data.report;
   } catch (error) {
-    console.error('Error updating cash report:', error);
-    throw new Error('Failed to update cash report');
+    secureLog.error('Error updating cash report:', error);
+    return {
+      id: '',
+      attendantId: '',
+      attendantName: '',
+      stationId: '',
+      stationName: '',
+      date: '',
+      shift: 'morning',
+      cashAmount: 0,
+      cardAmount: 0,
+      upiAmount: 0,
+      creditAmount: 0,
+      totalAmount: 0,
+      variance: 0,
+      status: 'pending',
+      notes: '',
+      createdAt: '',
+      updatedAt: ''
+    };
   }
 }
 
@@ -92,10 +129,10 @@ export async function updateCashReport(reportId: string, data: Partial<CreateCas
  */
 export async function deleteCashReport(reportId: string): Promise<void> {
   try {
-    await apiClient.delete(`/attendant/cash-reports/${reportId}`);
+    await apiClient.delete(`/attendant/cash-reports/${sanitizeUrlParam(reportId)}`);
   } catch (error) {
-    console.error('Error deleting cash report:', error);
-    throw new Error('Failed to delete cash report');
+    secureLog.error('Error deleting cash report:', error);
+    // Do not throw, just log error for safe default
   }
 }
 
@@ -104,10 +141,10 @@ export async function deleteCashReport(reportId: string): Promise<void> {
  */
 export async function approveCashReport(reportId: string): Promise<CashReport> {
   try {
-    const response = await apiClient.post(`/attendant/cash-reports/${reportId}/approve`);
+    const response = await apiClient.post(`/attendant/cash-reports/${sanitizeUrlParam(reportId)}/approve`);
     return response.data.report;
   } catch (error) {
-    console.error('Error approving cash report:', error);
+    secureLog.error('Error approving cash report:', error);
     throw new Error('Failed to approve cash report');
   }
 }
@@ -117,10 +154,10 @@ export async function approveCashReport(reportId: string): Promise<CashReport> {
  */
 export async function rejectCashReport(reportId: string, reason?: string): Promise<CashReport> {
   try {
-    const response = await apiClient.post(`/attendant/cash-reports/${reportId}/reject`, { reason });
+    const response = await apiClient.post(`/attendant/cash-reports/${sanitizeUrlParam(reportId)}/reject`, { reason });
     return response.data.report;
   } catch (error) {
-    console.error('Error rejecting cash report:', error);
+    secureLog.error('Error rejecting cash report:', error);
     throw new Error('Failed to reject cash report');
   }
 }

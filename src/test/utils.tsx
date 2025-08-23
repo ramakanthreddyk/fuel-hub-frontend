@@ -2,7 +2,8 @@
  * @file test/utils.tsx
  * @description Testing utilities and helpers for consistent test setup
  */
-import React, { ReactElement } from 'react';
+import React, { ReactNode } from 'react';
+import '@testing-library/jest-dom';
 import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
@@ -11,12 +12,11 @@ import { vi } from 'vitest';
 // Mock data generators
 export const createMockPump = (overrides = {}) => ({
   id: 'pump-001',
-  name: 'Test Pump',
-  serialNumber: 'SN-001',
-  status: 'active' as const,
-  nozzleCount: 4,
-  stationName: 'Test Station',
   stationId: 'station-001',
+  label: 'Test Pump',
+  serialNumber: 'SN-001',
+  status: 'active',
+  nozzleCount: 4,
   ...overrides,
 });
 
@@ -24,9 +24,9 @@ export const createMockStation = (overrides = {}) => ({
   id: 'station-001',
   name: 'Test Station',
   address: '123 Test St',
-  city: 'Test City',
-  state: 'TS',
-  zipCode: '12345',
+  status: 'active',
+  pumpCount: 2,
+  nozzleCount: 8,
   ...overrides,
 });
 
@@ -34,7 +34,7 @@ export const createMockNozzle = (overrides = {}) => ({
   id: 'nozzle-001',
   pumpId: 'pump-001',
   fuelType: 'Regular',
-  status: 'active' as const,
+  status: 'active',
   ...overrides,
 });
 
@@ -42,13 +42,13 @@ export const createMockUser = (overrides = {}) => ({
   id: 'user-001',
   email: 'test@example.com',
   name: 'Test User',
-  role: 'admin' as const,
+  role: 'superadmin',
   ...overrides,
 });
 
 // Test providers wrapper
 interface AllTheProvidersProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const AllTheProviders = ({ children }: AllTheProvidersProps) => {
@@ -73,15 +73,24 @@ const AllTheProviders = ({ children }: AllTheProvidersProps) => {
   );
 };
 
-// Custom render function with providers
+// Adjusted `ProvidersWrapper` to ensure compatibility with ReactNode type
+function ProvidersWrapper({ children }: { children?: React.ReactNode }) {
+  return <AllTheProviders>{children}</AllTheProviders>;
+}
+
 const customRender = (
-  ui: ReactElement,
+  ui: React.ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllTheProviders, ...options });
+) =>
+  render(ui, {
+    wrapper: ProvidersWrapper,
+    ...options,
+  });
 
 // Re-export everything from testing-library
 export * from '@testing-library/react';
 export { customRender as render };
+
 
 // Mock implementations for common hooks
 export const mockUseToast = () => ({
@@ -95,13 +104,15 @@ export const mockUseParams = (params = {}) => () => params;
 export const mockUseLocation = (location = { pathname: '/', search: '', hash: '', state: null }) => () => location;
 
 // Mock API responses
-export const createMockApiResponse = <T>(data: T, status = 200) => ({
-  data,
-  status,
-  statusText: 'OK',
-  headers: {},
-  config: {},
-});
+export function createMockApiResponse<T>(data: T, status = 200) {
+  return {
+    data,
+    status,
+    statusText: 'OK',
+    headers: {},
+    config: {},
+  };
+}
 
 export const createMockApiError = (message = 'API Error', status = 500) => {
   const error = new Error(message) as any;
@@ -115,14 +126,16 @@ export const createMockApiError = (message = 'API Error', status = 500) => {
 };
 
 // Mock query results
-export const createMockQueryResult = <T>(data: T, options = {}) => ({
-  data,
-  isLoading: false,
-  isError: false,
-  error: null,
-  refetch: vi.fn(),
-  ...options,
-});
+export function createMockQueryResult<T>(data: T, options = {}) {
+  return {
+    data,
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+    ...options,
+  };
+}
 
 export const createMockLoadingQuery = () => ({
   data: undefined,
@@ -205,14 +218,17 @@ export const mockWindow = () => ({
 
 // Mock intersection observer
 export const mockIntersectionObserver = () => {
-  const mockObserver = {
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  };
-
-  global.IntersectionObserver = vi.fn(() => mockObserver);
-  return mockObserver;
+  class MockIntersectionObserver {
+    root = null;
+    rootMargin = '';
+    thresholds = [];
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+    takeRecords = vi.fn(() => []);
+  }
+  globalThis.IntersectionObserver = MockIntersectionObserver as any;
+  return new MockIntersectionObserver();
 };
 
 // Mock resize observer
@@ -222,8 +238,7 @@ export const mockResizeObserver = () => {
     unobserve: vi.fn(),
     disconnect: vi.fn(),
   };
-
-  global.ResizeObserver = vi.fn(() => mockObserver);
+  globalThis.ResizeObserver = vi.fn(() => mockObserver);
   return mockObserver;
 };
 
@@ -241,7 +256,7 @@ export const mockPerformance = () => {
     },
   };
 
-  Object.defineProperty(global, 'performance', {
+  Object.defineProperty(globalThis, 'performance', {
     value: mockPerf,
     writable: true,
   });

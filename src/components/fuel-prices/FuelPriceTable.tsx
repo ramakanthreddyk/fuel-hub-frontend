@@ -3,6 +3,8 @@
  * @file FuelPriceTable.tsx
  * @description Table component for displaying fuel prices with dialog accessibility
  */
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
+import { secureLog } from '@/utils/security';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -117,7 +119,7 @@ export function FuelPriceTable() {
     try {
       await deleteFuelPrice.mutateAsync(id);
     } catch (error) {
-      console.error('Failed to delete fuel price:', error);
+      secureLog.error('Failed to delete fuel price:', error);
     } finally {
       setDeletingId(null);
     }
@@ -131,7 +133,7 @@ export function FuelPriceTable() {
       const numPrice = parseFloat(price);
       return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
     } else {
-      console.warn('Invalid price format:', price);
+      secureLog.warn('Invalid price format:', price);
       return '0.00';
     }
   };
@@ -141,7 +143,7 @@ export function FuelPriceTable() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Fuel className="h-5 w-5" />
-          Current Fuel Prices ({fuelPrices.length})
+          Current Fuel Prices ({<SafeText text={fuelPrices.length} />})
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -161,7 +163,7 @@ export function FuelPriceTable() {
                 </thead>
                 <tbody>
                   {fuelPrices.map((price) => (
-                    <tr key={price.id} className="border-b hover:bg-muted/50">
+                    <tr key={<SafeText text={price.id} />} className="border-b hover:bg-muted/50">
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -207,7 +209,7 @@ export function FuelPriceTable() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Delete Fuel Price</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to delete this fuel price for {price.fuelType} at {getStationName(price.stationId, price.stationName)}? This action cannot be undone.
+                                  Are you sure you want to delete this fuel price for {<SafeText text={price.fuelType} />} at {getStationName(price.stationId, price.stationName)}? This action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -233,7 +235,7 @@ export function FuelPriceTable() {
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
             {fuelPrices.map((price) => (
-              <Card key={price.id} className="p-4">
+              <Card key={<SafeText text={price.id} />} className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -280,7 +282,7 @@ export function FuelPriceTable() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete Fuel Price</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to delete this fuel price for {price.fuelType} at {getStationName(price.stationId, price.stationName)}? This action cannot be undone.
+                          Are you sure you want to delete this fuel price for {<SafeText text={price.fuelType} />} at {getStationName(price.stationId, price.stationName)}? This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

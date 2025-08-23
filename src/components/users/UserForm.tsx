@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+// import { useState } from 'react'; // Removed unused import
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ interface UserFormProps {
   isLoading?: boolean;
 }
 
-export function UserForm({ user, onSubmit, onCancel, isLoading }: UserFormProps) {
+export function UserForm({ user, onSubmit, onCancel, isLoading }: Readonly<UserFormProps>) {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreateUserRequest>({
     defaultValues: {
   name: user?.name || '',
@@ -82,7 +82,11 @@ export function UserForm({ user, onSubmit, onCancel, isLoading }: UserFormProps)
 
           <div className="flex gap-2 pt-4">
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : user ? 'Update User' : 'Create User'}
+              {(() => {
+                if (isLoading) return 'Saving...';
+                if (user) return 'Update User';
+                return 'Create User';
+              })()}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel

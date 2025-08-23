@@ -1,3 +1,4 @@
+type AllOrID = ID | 'all';
 /**
  * @file shared/types/reading.ts
  * @description Reading-related type definitions
@@ -42,9 +43,9 @@ export interface UpdateReadingRequest {
 }
 
 export interface ReadingFilters {
-  nozzleId?: ID | 'all';
-  pumpId?: ID | 'all'; 
-  stationId?: ID | 'all';
+  nozzleId?: AllOrID;
+  pumpId?: AllOrID;
+  stationId?: AllOrID;
   fuelType?: FuelType | 'all';
   dateFrom?: string;
   dateTo?: string;

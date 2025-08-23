@@ -5,6 +5,7 @@
  * to handle inconsistencies between frontend and backend API contracts.
  */
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import { normalizePropertyNames, ensurePropertyAccess } from '../../utils/apiTransform';
 
 // Create base axios instance
@@ -46,7 +47,7 @@ apiClient.interceptors.response.use(
  */
 export function extractData<T>(response: AxiosResponse): T {
   if (!response.data) {
-    console.warn('API response missing data property:', response);
+    secureLog.warn('API response missing data property:', response);
     return {} as T;
   }
 
@@ -69,7 +70,7 @@ export function extractData<T>(response: AxiosResponse): T {
  */
 export function extractArray<T>(response: AxiosResponse, arrayKey?: string): T[] {
   if (!response.data) {
-    console.warn('API response missing data property:', response);
+    secureLog.warn('API response missing data property:', response);
     return [];
   }
 
@@ -85,7 +86,7 @@ export function extractArray<T>(response: AxiosResponse, arrayKey?: string): T[]
   } else if (Array.isArray(response.data)) {
     items = response.data;
   } else {
-    console.warn(`Could not extract array from response${arrayKey ? ` with key ${arrayKey}` : ''}:`, response.data);
+    secureLog.warn(`Could not extract array from response${arrayKey ? ` with key ${arrayKey}` : ''}:`, response.data);
     return [];
   }
   

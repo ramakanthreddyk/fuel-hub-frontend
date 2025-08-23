@@ -3,6 +3,7 @@
  * @description Service for creditor API endpoints
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import { 
   Creditor, 
   CreateCreditorRequest, 
@@ -21,12 +22,12 @@ export const creditorService = {
    */
   getCreditors: async (stationId?: string): Promise<Creditor[]> => {
     try {
-      console.log('[CREDITOR-API] Fetching creditors for station:', stationId);
+      secureLog.debug('[CREDITOR-API] Fetching creditors for station:', stationId);
       const params = stationId ? { stationId } : {};
       const response = await apiClient.get(`creditors`, { params });
       return extractArray<Creditor>(response, 'creditors');
     } catch (error) {
-      console.error('[CREDITOR-API] Error fetching creditors:', error);
+      secureLog.error('[CREDITOR-API] Error fetching creditors:', error);
       return [];
     }
   },
@@ -38,11 +39,11 @@ export const creditorService = {
    */
   getCreditor: async (id: string): Promise<Creditor | null> => {
     try {
-      console.log('[CREDITOR-API] Fetching creditor details for ID:', id);
-      const response = await apiClient.get(`creditors/${id}`);
+      secureLog.debug('[CREDITOR-API] Fetching creditor details for ID:', id);
+      const response = await apiClient.get(`creditors/${sanitizeUrlParam(id)}`);
       return extractData<Creditor>(response);
     } catch (error) {
-      console.error(`[CREDITOR-API] Error fetching creditor ${id}:`, error);
+      secureLog.error(`[CREDITOR-API] Error fetching creditor ${id}:`, error);
       return null;
     }
   },
@@ -54,11 +55,11 @@ export const creditorService = {
    */
   createCreditor: async (data: CreateCreditorRequest): Promise<Creditor> => {
     try {
-      console.log('[CREDITOR-API] Creating creditor:', data);
+      secureLog.debug('[CREDITOR-API] Creating creditor:', data);
       const response = await apiClient.post('creditors', data);
       return extractData<Creditor>(response);
     } catch (error) {
-      console.error('[CREDITOR-API] Error creating creditor:', error);
+      secureLog.error('[CREDITOR-API] Error creating creditor:', error);
       throw error;
     }
   },
@@ -70,11 +71,11 @@ export const creditorService = {
    */
   createPayment: async (data: CreateCreditPaymentRequest): Promise<CreditPayment> => {
     try {
-      console.log('[CREDITOR-API] Creating payment:', data);
+      secureLog.debug('[CREDITOR-API] Creating payment:', data);
       const response = await apiClient.post('credit-payments', data);
       return extractData<CreditPayment>(response);
     } catch (error) {
-      console.error('[CREDITOR-API] Error creating payment:', error);
+      secureLog.error('[CREDITOR-API] Error creating payment:', error);
       throw error;
     }
   },
@@ -86,13 +87,13 @@ export const creditorService = {
    */
   getPayments: async (creditorId: string): Promise<CreditPayment[]> => {
     try {
-      console.log('[CREDITOR-API] Fetching payments for creditor:', creditorId);
+      secureLog.debug('[CREDITOR-API] Fetching payments for creditor:', creditorId);
       const response = await apiClient.get(`credit-payments`, { 
         params: { creditorId } 
       });
       return extractArray<CreditPayment>(response);
     } catch (error) {
-      console.error('[CREDITOR-API] Error fetching payments:', error);
+      secureLog.error('[CREDITOR-API] Error fetching payments:', error);
       return [];
     }
   }

@@ -13,8 +13,9 @@ export type UserRole = 'superadmin' | 'owner' | 'manager' | 'attendant';
 
 // Re-export all domain types
 export * from './fuel';
-export * from './station'; 
-export * from './pump';
+export * from './station';
+export type { Pump as StationPump } from './station';
+export type { Pump as PumpType } from './pump';
 export * from './nozzle';
 export * from './reading';
 export * from './user';

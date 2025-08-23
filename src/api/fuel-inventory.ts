@@ -1,5 +1,6 @@
 
 import { apiClient, extractApiArray } from './client';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import type { FuelInventory, FuelInventoryParams } from './api-contract';
 import { z } from 'zod';
 
@@ -21,13 +22,13 @@ export const fuelInventoryApi = {
   getFuelInventory: async (params?: FuelInventoryParams): Promise<FuelInventory[]> => {
     try {
       const searchParams = new URLSearchParams();
-      if (params?.stationId) searchParams.append('stationId', params.stationId);
-      if (params?.fuelType) searchParams.append('fuelType', params.fuelType);
+      if (params?.stationId) searchParams.append('stationId', sanitizeUrlParam(params.stationId));
+      if (params?.fuelType) searchParams.append('fuelType', sanitizeUrlParam(params.fuelType));
       
       const response = await apiClient.get(`/fuel-inventory?${searchParams.toString()}`);
       return extractApiArray(response, 'inventory', fuelInventorySchema) as FuelInventory[];
     } catch (error) {
-      console.error('Error fetching fuel inventory:', error);
+      secureLog.error('Error fetching fuel inventory:', error);
       return [];
     }
   }

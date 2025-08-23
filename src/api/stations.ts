@@ -1,6 +1,7 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { Station, ApiResponse } from './api-contract';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 export interface CreateStationData {
   name: string;
@@ -34,7 +35,7 @@ export const stationsApi = {
       const response = await apiClient.get('/stations', { params });
       return extractApiArray<Station>(response, 'stations');
     } catch (error) {
-      console.error('Error fetching stations:', error);
+      secureLog.error('Error fetching stations:', error);
       return [];
     }
   },
@@ -42,10 +43,10 @@ export const stationsApi = {
   // Get station by ID
   getStation: async (id: string): Promise<Station> => {
     try {
-      const response = await apiClient.get(`/stations/${id}`);
+      const response = await apiClient.get(`/stations/${sanitizeUrlParam(id)}`);
       return extractApiData<Station>(response);
     } catch (error) {
-      console.error('Error fetching station:', error);
+      secureLog.error('Error fetching station:', error);
       throw error;
     }
   },
@@ -56,7 +57,7 @@ export const stationsApi = {
       const response = await apiClient.post('/stations', data);
       return extractApiData<Station>(response);
     } catch (error) {
-      console.error('Error creating station:', error);
+      secureLog.error('Error creating station:', error);
       throw error;
     }
   },
@@ -64,10 +65,10 @@ export const stationsApi = {
   // Update station
   updateStation: async (id: string, data: UpdateStationData): Promise<Station> => {
     try {
-      const response = await apiClient.put(`/stations/${id}`, data);
+      const response = await apiClient.put(`/stations/${sanitizeUrlParam(id)}`, data);
       return extractApiData<Station>(response);
     } catch (error) {
-      console.error('Error updating station:', error);
+      secureLog.error('Error updating station:', error);
       throw error;
     }
   },
@@ -75,9 +76,9 @@ export const stationsApi = {
   // Delete station
   deleteStation: async (id: string): Promise<void> => {
     try {
-      await apiClient.delete(`/stations/${id}`);
+      await apiClient.delete(`/stations/${sanitizeUrlParam(id)}`);
     } catch (error) {
-      console.error('Error deleting station:', error);
+      secureLog.error('Error deleting station:', error);
       throw error;
     }
   }

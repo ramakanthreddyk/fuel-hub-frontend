@@ -5,6 +5,7 @@
 import axios from 'axios';
 import { normalizePropertyNames, ensurePropertyAccess } from '@/utils/apiTransform';
 import { API_URL } from '../config';
+import { secureLog } from '@/utils/security';
 
 // API base URL is configured from the centralized config
 
@@ -25,7 +26,7 @@ const getTenantId = () => {
       const user = JSON.parse(storedUser);
       return user.tenantId;
     } catch (error) {
-      console.error('[API-CLIENT] Error parsing stored user:', error);
+      secureLog.error('[API-CLIENT] Error parsing stored user:', error);
     }
   }
   return import.meta.env.VITE_DEFAULT_TENANT || null;
@@ -60,7 +61,7 @@ apiClient.interceptors.request.use(
         userRole = user.role;
         tenantId = user.tenantId;
       } catch (error) {
-        console.error('[API-CLIENT] Error parsing stored user:', error);
+        secureLog.error('[API-CLIENT] Error parsing stored user:', error);
       }
     }
     
@@ -76,13 +77,13 @@ apiClient.interceptors.request.use(
         config.headers['x-tenant-id'] = tenantId;
       } else {
         // Only warn for non-auth endpoints that actually need tenant context
-        console.warn('[API-CLIENT] No tenant ID available - request may fail');
+        secureLog.warn('[API-CLIENT] No tenant ID available - request may fail');
       }
     }
     
     // Log request details in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('[API-CLIENT] Request:', {
+      secureLog.debug('[API-CLIENT] Request:', {
         url: config.url,
         method: config.method,
         userRole: userRole || 'None',
@@ -163,7 +164,7 @@ apiClient.interceptors.response.use(
             return apiClient(originalRequest);
           }
         } catch (refreshError) {
-          console.error('[API-CLIENT] Token refresh failed:', refreshError);
+          secureLog.error('[API-CLIENT] Token refresh failed:', refreshError);
           // Clear auth data instead of hard redirect
           localStorage.removeItem('fuelsync_token');
           localStorage.removeItem('fuelsync_user');
@@ -190,7 +191,7 @@ apiClient.interceptors.response.use(
     
     // Check if this is a network error (server not reachable)
     if (error.code === 'ERR_NETWORK' || !error.response) {
-      console.error('[API-CLIENT] Network error - server not reachable:', error);
+      secureLog.error('[API-CLIENT] Network error - server not reachable:', error);
       
       // Just log the error, don't redirect or store in localStorage
       // This prevents infinite redirect loops
@@ -205,7 +206,7 @@ apiClient.interceptors.response.use(
       // Enhance the error object with the extracted message
       error.message = errorMessage;
       
-      console.error(`[API-CLIENT] Request failed:`, {
+      secureLog.error(`[API-CLIENT] Request failed:`, {
         url: error.config?.url,
         method: error.config?.method,
         status: error.response?.status,
@@ -268,7 +269,7 @@ export function extractArray<T>(response: any, arrayKey?: string): T[] {
     // Check common array properties if the specified key doesn't exist
     for (const key of ['readings', 'items', 'results', 'data']) {
       if (key in data && Array.isArray(data[key as keyof typeof data])) {
-        console.log(`[API-CLIENT] Found array in '${key}' property instead of '${arrayKey}'`);
+        secureLog.debug(`[API-CLIENT] Found array in '${key}' property instead of '${arrayKey}'`);
         return data[key as keyof typeof data];
       }
     }

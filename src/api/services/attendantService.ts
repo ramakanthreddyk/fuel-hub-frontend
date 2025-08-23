@@ -3,12 +3,21 @@
  * @description Service for attendant-specific API endpoints
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import { Station } from './stationsService';
 import { Pump } from './pumpsService';
-import { Nozzle } from './nozzlesService';
+// import { Nozzle } from './nozzlesService';
+// If Nozzle type is needed, import from a shared types file or define locally.
 import { Creditor } from './creditorsService';
 
 // Types
+export interface Nozzle {
+  id: string;
+  name: string;
+  pumpId: string;
+  fuelType: string;
+  status?: string;
+}
 export interface CreditEntry {
   creditorId: string;
   fuelType: 'petrol' | 'diesel' | 'premium';
@@ -52,14 +61,13 @@ export const attendantService = {
    */
   getFuelInventory: async (stationId?: string) => {
     try {
-      console.log('[ATTENDANT-API] Fetching fuel inventory');
+      secureLog.debug('[ATTENDANT-API] Fetching fuel inventory', { stationId: stationId ? sanitizeUrlParam(stationId) : undefined });
       let url = 'fuel-inventory';
-      if (stationId) url += `?stationId=${stationId}`;
-      
+      if (stationId) url += `?stationId=${sanitizeUrlParam(stationId)}`;
       const response = await apiClient.get(url);
       return extractData(response);
     } catch (error) {
-      console.error('[ATTENDANT-API] Error fetching fuel inventory:', error);
+      secureLog.error('[ATTENDANT-API] Error fetching fuel inventory', { error });
       return [];
     }
   },
@@ -70,11 +78,11 @@ export const attendantService = {
    */
   getFuelInventorySummary: async () => {
     try {
-      console.log('[ATTENDANT-API] Fetching fuel inventory summary');
+      secureLog.debug('[ATTENDANT-API] Fetching fuel inventory summary');
       const response = await apiClient.get('fuel-inventory/summary');
       return extractData(response);
     } catch (error) {
-      console.error('[ATTENDANT-API] Error fetching fuel inventory summary:', error);
+      secureLog.error('[ATTENDANT-API] Error fetching fuel inventory summary:', error);
       return [];
     }
   },
@@ -86,7 +94,7 @@ export const attendantService = {
       const response = await apiClient.get('attendant/health-check');
       return extractData(response);
     } catch (error) {
-      console.error('[ATTENDANT-API] Health check failed:', error);
+      secureLog.error('[ATTENDANT-API] Health check failed:', error);
       throw error;
     }
   },
@@ -96,11 +104,11 @@ export const attendantService = {
    */
   getStations: async (): Promise<Station[]> => {
     try {
-      console.log('[ATTENDANT-API] Fetching assigned stations');
+      secureLog.debug('[ATTENDANT-API] Fetching assigned stations');
       const response = await apiClient.get('attendant/stations');
       return extractArray<Station>(response, 'stations');
     } catch (error) {
-      console.error('[ATTENDANT-API] Error fetching stations:', error);
+      secureLog.error('[ATTENDANT-API] Error fetching stations:', error);
       return [];
     }
   },
@@ -110,11 +118,12 @@ export const attendantService = {
    */
   getPumps: async (stationId: string): Promise<Pump[]> => {
     try {
-      console.log(`[ATTENDANT-API] Fetching pumps for station: ${stationId}`);
-      const response = await apiClient.get(`attendant/pumps?stationId=${stationId}`);
+      const sanitizedStationId = sanitizeUrlParam(stationId);
+      secureLog.debug('[ATTENDANT-API] Fetching pumps for station', { stationId: sanitizedStationId });
+      const response = await apiClient.get(`attendant/pumps?stationId=${sanitizedStationId}`);
       return extractArray<Pump>(response, 'pumps');
     } catch (error) {
-      console.error(`[ATTENDANT-API] Error fetching pumps for station ${stationId}:`, error);
+      secureLog.error('[ATTENDANT-API] Error fetching pumps for station', { stationId, error });
       return [];
     }
   },
@@ -124,11 +133,12 @@ export const attendantService = {
    */
   getNozzles: async (pumpId: string): Promise<Nozzle[]> => {
     try {
-      console.log(`[ATTENDANT-API] Fetching nozzles for pump: ${pumpId}`);
-      const response = await apiClient.get(`attendant/nozzles?pumpId=${pumpId}`);
+      const sanitizedPumpId = sanitizeUrlParam(pumpId);
+      secureLog.debug('[ATTENDANT-API] Fetching nozzles for pump', { pumpId: sanitizedPumpId });
+      const response = await apiClient.get(`attendant/nozzles?pumpId=${sanitizedPumpId}`);
       return extractArray<Nozzle>(response, 'nozzles');
     } catch (error) {
-      console.error(`[ATTENDANT-API] Error fetching nozzles for pump ${pumpId}:`, error);
+      secureLog.error('[ATTENDANT-API] Error fetching nozzles for pump', { pumpId, error });
       return [];
     }
   },
@@ -138,11 +148,11 @@ export const attendantService = {
    */
   getCreditors: async (): Promise<Creditor[]> => {
     try {
-      console.log('[ATTENDANT-API] Fetching creditors');
+      secureLog.debug('[ATTENDANT-API] Fetching creditors');
       const response = await apiClient.get('attendant/creditors');
       return extractArray<Creditor>(response, 'creditors');
     } catch (error) {
-      console.error('[ATTENDANT-API] Error fetching creditors:', error);
+      secureLog.error('[ATTENDANT-API] Error fetching creditors:', error);
       return [];
     }
   },
@@ -154,11 +164,11 @@ export const attendantService = {
    */
   submitCashReport: async (report: CashReport): Promise<CashReport> => {
     try {
-      console.log('[ATTENDANT-API] Submitting cash report:', report);
+      secureLog.debug('[ATTENDANT-API] Submitting cash report:', report);
       const response = await apiClient.post('attendant/cash-report', report);
       return extractData<CashReport>(response);
     } catch (error) {
-      console.error('[ATTENDANT-API] Error submitting cash report:', error);
+      secureLog.error('[ATTENDANT-API] Error submitting cash report:', error);
       throw error;
     }
   },
@@ -169,11 +179,11 @@ export const attendantService = {
    */
   getCashReports: async (): Promise<CashReport[]> => {
     try {
-      console.log('[ATTENDANT-API] Fetching cash reports');
+      secureLog.debug('[ATTENDANT-API] Fetching cash reports');
       const response = await apiClient.get('attendant/cash-reports');
       return extractArray<CashReport>(response, 'reports');
     } catch (error) {
-      console.error('[ATTENDANT-API] Error fetching cash reports:', error);
+      secureLog.error('[ATTENDANT-API] Error fetching cash reports:', error);
       return [];
     }
   },
@@ -183,10 +193,10 @@ export const attendantService = {
    */
   getAlerts: async (stationId?: string, unreadOnly?: boolean): Promise<AttendantAlert[]> => {
     try {
-      console.log('[ATTENDANT-API] Fetching alerts');
+      secureLog.debug('[ATTENDANT-API] Fetching alerts');
       let url = 'attendant/alerts';
       const params = new URLSearchParams();
-      if (stationId) params.append('stationId', stationId);
+      if (stationId) params.append('stationId', sanitizeUrlParam(stationId));
       if (unreadOnly) params.append('unreadOnly', 'true');
       
       if (params.toString()) url += `?${params.toString()}`;
@@ -194,7 +204,7 @@ export const attendantService = {
       const response = await apiClient.get(url);
       return extractArray<AttendantAlert>(response, 'alerts');
     } catch (error) {
-      console.error('[ATTENDANT-API] Error fetching alerts:', error);
+      secureLog.error('[ATTENDANT-API] Error fetching alerts:', error);
       return [];
     }
   },
@@ -204,11 +214,12 @@ export const attendantService = {
    */
   acknowledgeAlert: async (alertId: string): Promise<boolean> => {
     try {
-      console.log(`[ATTENDANT-API] Acknowledging alert: ${alertId}`);
-      const response = await apiClient.put(`attendant/alerts/${alertId}/acknowledge`, {});
+      const sanitizedAlertId = sanitizeUrlParam(alertId);
+      secureLog.debug('[ATTENDANT-API] Acknowledging alert', { alertId: sanitizedAlertId });
+      const response = await apiClient.put(`attendant/alerts/${sanitizedAlertId}/acknowledge`, {});
       return response.status === 200;
     } catch (error) {
-      console.error(`[ATTENDANT-API] Error acknowledging alert ${alertId}:`, error);
+      secureLog.error('[ATTENDANT-API] Error acknowledging alert', { alertId, error });
       return false;
     }
   }

@@ -19,7 +19,6 @@ import { Fuel, Eye, Settings, Droplets, Cog, Edit, Power, Wrench, Trash2 } from 
 import type { PumpModel } from '@/models/pump';
 import type { PumpCardActions } from '@/models/pump-actions';
 import { getPumpStatusConfig } from '@/utils/pump-config';
-import { getPumpStatusLabel } from '@/models/pump';
 
 interface RealisticPumpCardProps {
   pump: PumpModel;

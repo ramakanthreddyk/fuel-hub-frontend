@@ -1,0 +1,230 @@
+import React from 'react';
+
+/**
+ * @file CreateNozzlePage.tsx
+ * @description Create nozzle page component with improved error handling
+ * Updated layout for mobile-friendliness – 2025-07-03
+ */
+import { useState } from 'react';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { usePump, usePumps } from '@/hooks/api/usePumps';
+import { useCreateNozzle } from '@/hooks/api/useNozzles';
+import { useStations } from '@/hooks/api/useStations';
+
+export default function CreateNozzlePage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Get IDs from URL params or search params
+  const { pumpId: urlPumpId } = useParams();
+  const stationId = searchParams.get('stationId');
+  const pumpId = urlPumpId || searchParams.get('pumpId');
+  
+  const [nozzleName, setNozzleName] = useState('');
+  const [fuelType, setFuelType] = useState('');
+  const [selectedPumpId, setSelectedPumpId] = useState(pumpId || '');
+  const [selectedStationId, setSelectedStationId] = useState(stationId || '');
+  
+  // Fetch data
+  const { data: stations = [] } = useStations();
+  const { data: pump, isLoading: pumpLoading } = usePump(selectedPumpId || '');
+  const { data: allPumps = [] } = usePumps(selectedStationId);
+  
+  // Filter pumps by selected station
+  const stationPumps = selectedStationId ? allPumps.filter(p => p.stationId === selectedStationId) : allPumps;
+  
+  // Create nozzle mutation - toast handling is now in the hook
+  const createNozzleMutation = useCreateNozzle();
+  
+  // Handle form submission with proper error handling
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    
+    if (!selectedPumpId || !nozzleName || !fuelType) {
+      
+      return;
+    }
+
+    try {
+      await createNozzleMutation.mutateAsync({
+        pumpId: selectedPumpId,
+        name: nozzleName,
+        fuelType: fuelType as 'petrol' | 'diesel' | 'premium',
+        status: 'active'
+      });
+      
+      
+      // Navigate back to nozzles page
+      navigate('/dashboard/nozzles');
+    } catch (error) {
+      console.error('[CREATE-NOZZLE] Error creating nozzle:', error);
+      // Error toast is handled by the hook
+    }
+  };
+  
+  if (pumpLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+  
+  const backUrl = stationId && pumpId 
+    ? `/dashboard/nozzles?pumpId=${pumpId}&stationId=${stationId}`
+    : '/dashboard/nozzles';
+  
+  return (
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      {/* Header with back button - improved mobile layout */}
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="sm" asChild>
+          <Link to={backUrl}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Back</span>
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Add New Nozzle</h1>
+          <p className="text-muted-foreground text-sm">
+            {pump?.name ? `For pump: ${pump.name}` : ''}
+          </p>
+        </div>
+      </div>
+      
+      {/* Create Nozzle Form */}
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">Nozzle Details</CardTitle>
+          <CardDescription className="text-sm">
+            Enter the details for the new nozzle
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              {!stationId && (
+                <div className="space-y-2">
+                  <Label htmlFor="stationSelect" className="text-sm font-medium">
+                    Select Station
+                  </Label>
+                  <Select
+                    value={selectedStationId}
+                    onValueChange={(value) => {
+                      setSelectedStationId(value);
+                      setSelectedPumpId(''); // Reset pump selection
+                    }}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a station" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stations.map((station) => (
+                        <SelectItem key={station.id} value={station.id}>
+                          {station.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              {(selectedStationId || stationId) && !pumpId && (
+                <div className="space-y-2">
+                  <Label htmlFor="pumpSelect" className="text-sm font-medium">
+                    Select Pump
+                  </Label>
+                  <Select
+                    value={selectedPumpId}
+                    onValueChange={setSelectedPumpId}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a pump" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stationPumps.map((pump) => (
+                        <SelectItem key={pump.id} value={pump.id}>
+                          {pump.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nozzleName" className="text-sm font-medium">
+                    Nozzle Name
+                  </Label>
+                  <Input
+                    id="nozzleName"
+                    type="text"
+                    placeholder="Enter nozzle name"
+                    value={nozzleName}
+                    onChange={(e) => setNozzleName(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="fuelType" className="text-sm font-medium">
+                    Fuel Type
+                  </Label>
+                  <Select
+                    value={fuelType}
+                    onValueChange={setFuelType}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select fuel type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="petrol">Petrol</SelectItem>
+                      <SelectItem value="diesel">Diesel</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(backUrl)}
+                className="order-2 sm:order-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createNozzleMutation.isPending || !selectedPumpId || !nozzleName || !fuelType || (!stationId && !selectedStationId)}
+                className="order-1 sm:order-2"
+              >
+                {createNozzleMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Nozzle'
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

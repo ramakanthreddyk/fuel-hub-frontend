@@ -21,7 +21,7 @@ interface NozzleDisplayProps {
   onSettings?: (nozzleId: string) => void;
 }
 
-export function NozzleDisplay({ nozzle, onTakeReading, onSettings }: NozzleDisplayProps) {
+export function NozzleDisplay({ nozzle, onTakeReading, onSettings }: Readonly<NozzleDisplayProps>) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -80,7 +80,21 @@ export function NozzleDisplay({ nozzle, onTakeReading, onSettings }: NozzleDispl
             </div>
           </CardTitle>
           <Badge className={cn("border font-medium", getStatusColor(nozzle.status))}>
-            {nozzle.status}
+              {(() => {
+                let statusColor = '';
+                if (nozzle.status === 'active') {
+                  statusColor = 'text-green-600';
+                } else if (nozzle.status === 'maintenance') {
+                  statusColor = 'text-yellow-600';
+                } else {
+                  statusColor = 'text-red-600';
+                }
+                return (
+                  <div className={cn('text-xs font-bold', statusColor)}>
+                    {nozzle.name}
+                  </div>
+                );
+              })()}
           </Badge>
         </div>
       </CardHeader>
@@ -144,7 +158,7 @@ export function NozzleDisplay({ nozzle, onTakeReading, onSettings }: NozzleDispl
             </div>
           </div>
 
-          {nozzle.flowRate && (
+          {!!nozzle.flowRate && (
             <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl">
               <div className="flex items-center justify-center gap-2 mb-1">
                 <Zap className="h-4 w-4 text-purple-600" />

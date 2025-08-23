@@ -1,4 +1,3 @@
-
 import { apiClient, extractApiData, extractApiArray } from './client';
 import type { 
   AttendantStation, 
@@ -10,10 +9,11 @@ import type {
   SystemAlert,
   AlertSummary
 } from './api-contract';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 const devLog = (message: string, ...args: any[]) => {
   if (import.meta.env.DEV) {
-    console.log(`[ATTENDANT-API] ${message}`, ...args);
+    secureLog.debug(`[ATTENDANT-API] ${message}`, ...args);
   }
 };
 
@@ -30,7 +30,7 @@ export const attendantApi = {
   // Get assigned pumps for current attendant
   getAssignedPumps: async (stationId?: string): Promise<AttendantPump[]> => {
     devLog('Fetching assigned pumps for attendant', { stationId });
-    const params = stationId ? `?stationId=${stationId}` : '';
+    const params = stationId ? `?stationId=${sanitizeUrlParam(stationId)}` : '';
     const response = await apiClient.get(`/attendant/pumps${params}`);
     return extractApiArray<AttendantPump>(response, 'pumps');
   },
@@ -38,7 +38,7 @@ export const attendantApi = {
   // Get assigned nozzles for current attendant
   getAssignedNozzles: async (pumpId?: string): Promise<AttendantNozzle[]> => {
     devLog('Fetching assigned nozzles for attendant', { pumpId });
-    const params = pumpId ? `?pumpId=${pumpId}` : '';
+    const params = pumpId ? `?pumpId=${sanitizeUrlParam(pumpId)}` : '';
     const response = await apiClient.get(`/attendant/nozzles${params}`);
     return extractApiArray<AttendantNozzle>(response, 'nozzles');
   },
@@ -50,7 +50,7 @@ export const attendantApi = {
       // Ensure stationId is a string if provided
       let params = '';
       if (stationId && typeof stationId === 'string') {
-        params = `?stationId=${stationId}`;
+        params = `?stationId=${sanitizeUrlParam(stationId)}`;
       }
       
       // Use the creditors endpoint directly to avoid the 502 error
@@ -69,10 +69,10 @@ export const attendantApi = {
       devLog(`[ATTENDANT-API] Successfully fetched ${creditors.length} creditors for station ${stationId || 'all'}`);
       return creditors;
     } catch (error: any) {
-      console.error('[ATTENDANT-API] Error fetching creditors:', error);
+      secureLog.error('[ATTENDANT-API] Error fetching creditors:', error);
       // If API is unavailable, return empty array instead of throwing
       if (error.response?.status === 503 || error.response?.status === 502 || error.response?.status === 400) {
-        console.warn('[ATTENDANT-API] Creditors API unavailable or invalid parameters, returning empty array');
+        secureLog.warn('[ATTENDANT-API] Creditors API unavailable or invalid parameters, returning empty array');
         return [];
       }
       throw error;
@@ -126,7 +126,7 @@ export const attendantApi = {
   getCashReports: async (stationId?: string, dateFrom?: string, dateTo?: string): Promise<CashReport[]> => {
     devLog('Fetching cash reports', { stationId, dateFrom, dateTo });
     const params = new URLSearchParams();
-    if (stationId) params.append('stationId', stationId);
+    if (stationId) params.append('stationId', sanitizeUrlParam(stationId));
     if (dateFrom) params.append('dateFrom', dateFrom);
     if (dateTo) params.append('dateTo', dateTo);
     
@@ -145,7 +145,7 @@ export const attendantApi = {
   // Acknowledge alert
   acknowledgeAlert: async (alertId: string): Promise<void> => {
     devLog('Acknowledging alert', alertId);
-    await apiClient.put(`/attendant/alerts/${alertId}/acknowledge`);
+    await apiClient.put(`/attendant/alerts/${sanitizeUrlParam(alertId)}/acknowledge`);
   },
 
   // Get today's summary

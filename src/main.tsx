@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
+import { secureLog } from '@/utils/security';
 
 // Clear old localStorage data from when stores were persisted
 import './utils/clearOldStorage';
@@ -15,7 +16,7 @@ import './utils/clearOldStorage';
 // Check if we're on the custom domain
 if (window.location.hostname === 'aspirereach.com') {
   // Instead of redirecting to the backend, continue loading the frontend app
-  console.log('Running on custom domain: aspirereach.com');
+  secureLog.debug('Running on custom domain: aspirereach.com');
   
   // Set a flag to indicate we're on the custom domain
   window.localStorage.setItem('fuelsync_custom_domain', 'true');

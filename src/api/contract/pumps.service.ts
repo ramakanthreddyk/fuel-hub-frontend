@@ -7,6 +7,7 @@
 
 import { contractClient } from '../contract-client';
 import type { Pump, CreatePumpRequest } from '../api-contract';
+import { sanitizeUrlParam } from '@/utils/security';
 
 export const pumpsService = {
   /**
@@ -15,7 +16,7 @@ export const pumpsService = {
    */
   async getPumps(stationId?: string): Promise<Pump[]> {
     const endpoint = stationId && stationId !== 'all' 
-      ? `/pumps?stationId=${stationId}` 
+      ? `/pumps?stationId=${sanitizeUrlParam(stationId)}` 
       : '/pumps';
     
     return contractClient.getArray<Pump>(endpoint, 'pumps');
@@ -25,7 +26,7 @@ export const pumpsService = {
    * Get single pump by ID
    */
   async getPump(pumpId: string): Promise<Pump> {
-    return contractClient.get<Pump>(`/pumps/${pumpId}`);
+    return contractClient.get<Pump>(`/pumps/${sanitizeUrlParam(pumpId)}`);
   },
 
   /**
@@ -39,13 +40,13 @@ export const pumpsService = {
    * Update pump
    */
   async updatePump(pumpId: string, data: Partial<CreatePumpRequest>): Promise<Pump> {
-    return contractClient.put<Pump>(`/pumps/${pumpId}`, data);
+    return contractClient.put<Pump>(`/pumps/${sanitizeUrlParam(pumpId)}`, data);
   },
 
   /**
    * Delete pump
    */
   async deletePump(pumpId: string): Promise<void> {
-    await contractClient.delete(`/pumps/${pumpId}`);
+    await contractClient.delete(`/pumps/${sanitizeUrlParam(pumpId)}`);
   }
 };

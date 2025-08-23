@@ -8,6 +8,7 @@
 
 import { apiClient } from './client';
 
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 // Contract-compliant response wrapper
 export interface ContractResponse<T> {
   success: boolean;

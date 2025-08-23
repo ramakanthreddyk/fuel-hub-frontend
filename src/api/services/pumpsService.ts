@@ -3,15 +3,17 @@
  * @description Service for pumps API endpoints
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
-import API_CONFIG from '../core/config';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 // Types
+export type PumpStatus = 'active' | 'inactive' | 'maintenance';
+
 export interface Pump {
   id: string;
   stationId: string;
   name: string;
   serialNumber?: string;
-  status: 'active' | 'inactive' | 'maintenance';
+  status: PumpStatus;
   createdAt: string;
   updatedAt?: string;
   nozzleCount: number;
@@ -21,13 +23,13 @@ export interface CreatePumpRequest {
   stationId: string;
   name: string;
   serialNumber?: string;
-  status?: 'active' | 'inactive' | 'maintenance';
+  status?: PumpStatus;
 }
 
 export interface UpdatePumpRequest {
   name?: string;
   serialNumber?: string;
-  status?: 'active' | 'inactive' | 'maintenance';
+  status?: PumpStatus;
 }
 
 /**
@@ -39,15 +41,15 @@ export const pumpsService = {
    */
   getPumps: async (stationId?: string): Promise<Pump[]> => {
     try {
-      console.log(`[PUMPS-API] Fetching pumps${stationId ? ` for station: ${stationId}` : ''}`);
+      secureLog.debug('[PUMPS-API] Fetching pumps', stationId ? 'for station' : 'all', stationId);
       
-      const params = stationId ? { stationId } : {};
+      const params = stationId ? { stationId: sanitizeUrlParam(stationId) } : {};
       const response = await apiClient.get('/pumps', { params });
       const pumps = extractArray<Pump>(response, 'pumps');
-      console.log(`[PUMPS-API] Successfully fetched ${pumps.length} pumps`);
+      secureLog.debug('[PUMPS-API] Successfully fetched pumps', pumps.length);
       return pumps;
     } catch (error) {
-      console.error('[PUMPS-API] Error fetching pumps:', error);
+      secureLog.error('[PUMPS-API] Error fetching pumps:', error);
       throw error;
     }
   },
@@ -57,11 +59,11 @@ export const pumpsService = {
    */
   getPump: async (id: string): Promise<Pump> => {
     try {
-      console.log(`[PUMPS-API] Fetching pump details for ID: ${id}`);
-      const response = await apiClient.get(`/pumps/${id}`);
+      secureLog.debug('[PUMPS-API] Fetching pump details for ID:', id);
+      const response = await apiClient.get(`/pumps/${sanitizeUrlParam(id)}`);
       return extractData<Pump>(response);
     } catch (error) {
-      console.error(`[PUMPS-API] Error fetching pump ${id}:`, error);
+      secureLog.error('[PUMPS-API] Error fetching pump:', id, error);
       throw error;
     }
   },
@@ -71,11 +73,11 @@ export const pumpsService = {
    */
   createPump: async (data: CreatePumpRequest): Promise<Pump> => {
     try {
-      console.log('[PUMPS-API] Creating pump with data:', data);
+      secureLog.debug('[PUMPS-API] Creating pump with data:', data);
       const response = await apiClient.post('/pumps', data);
       return extractData<Pump>(response);
     } catch (error) {
-      console.error('[PUMPS-API] Error creating pump:', error);
+      secureLog.error('[PUMPS-API] Error creating pump:', error);
       throw error;
     }
   },
@@ -85,11 +87,11 @@ export const pumpsService = {
    */
   updatePump: async (id: string, data: UpdatePumpRequest): Promise<Pump> => {
     try {
-      console.log(`[PUMPS-API] Updating pump ${id} with data:`, data);
-      const response = await apiClient.put(`/pumps/${id}`, data);
+      secureLog.debug('[PUMPS-API] Updating pump with data:', id, data);
+      const response = await apiClient.put(`/pumps/${sanitizeUrlParam(id)}`, data);
       return extractData<Pump>(response);
     } catch (error) {
-      console.error(`[PUMPS-API] Error updating pump ${id}:`, error);
+      secureLog.error('[PUMPS-API] Error updating pump:', id, error);
       throw error;
     }
   },
@@ -99,11 +101,11 @@ export const pumpsService = {
    */
   deletePump: async (id: string): Promise<void> => {
     try {
-      console.log(`[PUMPS-API] Deleting pump ${id}`);
-      await apiClient.delete(`/pumps/${id}`);
-      console.log(`[PUMPS-API] Successfully deleted pump ${id}`);
+      secureLog.debug('[PUMPS-API] Deleting pump:', id);
+      await apiClient.delete(`/pumps/${sanitizeUrlParam(id)}`);
+      secureLog.debug('[PUMPS-API] Successfully deleted pump:', id);
     } catch (error) {
-      console.error(`[PUMPS-API] Error deleting pump ${id}:`, error);
+      secureLog.error('[PUMPS-API] Error deleting pump:', id, error);
       throw error;
     }
   }

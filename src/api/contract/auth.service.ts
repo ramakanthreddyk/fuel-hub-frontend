@@ -6,6 +6,7 @@
  */
 
 import { contractClient } from '../contract-client';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import type { 
   LoginRequest, 
   LoginResponse 
@@ -18,7 +19,7 @@ export class AuthService {
    * Requires x-tenant-id header
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    console.log('[AUTH-SERVICE] Regular user login');
+    secureLog.debug('[AUTH-SERVICE] Regular user login');
     return contractClient.post<LoginResponse>('/auth/login', credentials);
   }
 
@@ -28,7 +29,7 @@ export class AuthService {
    * No tenant header required
    */
   async adminLogin(credentials: LoginRequest): Promise<LoginResponse> {
-    console.log('[AUTH-SERVICE] SuperAdmin login');
+    secureLog.debug('[AUTH-SERVICE] SuperAdmin login');
     return contractClient.post<LoginResponse>('/admin/auth/login', credentials);
   }
 
@@ -37,7 +38,7 @@ export class AuthService {
    * POST /auth/logout
    */
   async logout(): Promise<void> {
-    console.log('[AUTH-SERVICE] User logout');
+    secureLog.debug('[AUTH-SERVICE] User logout');
     return contractClient.post<void>('/auth/logout');
   }
 
@@ -46,7 +47,7 @@ export class AuthService {
    * POST /auth/refresh
    */
   async refreshToken(): Promise<LoginResponse> {
-    console.log('[AUTH-SERVICE] Token refresh');
+    secureLog.debug('[AUTH-SERVICE] Token refresh');
     return contractClient.post<LoginResponse>('/auth/refresh');
   }
 }

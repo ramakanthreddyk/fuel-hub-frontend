@@ -1,4 +1,5 @@
 
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -116,7 +117,7 @@ export function OrganizationHierarchy() {
         ) : (
           <div className="space-y-4">
             {stations.map((station: StationWithMetrics) => (
-              <div key={station.id} className="border rounded-lg">
+              <div key={<SafeText text={station.id} />} className="border rounded-lg">
                 <Collapsible
                   open={expandedStations.has(station.id)}
                   onOpenChange={() => toggleStation(station.id)}
@@ -129,7 +130,7 @@ export function OrganizationHierarchy() {
                       <div className="flex items-center gap-3">
                         <Building2 className="h-4 w-4 text-green-600" />
                         <div className="text-left">
-                          <div className="font-medium">{station.name}</div>
+                          <div className="font-medium">{<SafeText text={station.name} />}</div>
                           <div className="text-sm text-muted-foreground">
                             {station.pumpCount || 0} pumps • {station.attendantCount || 0} attendants
                             {station.metrics && (
@@ -140,7 +141,7 @@ export function OrganizationHierarchy() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge className={getStatusColor(station.status)}>
-                          {station.status}
+                          {<SafeText text={station.status} />}
                         </Badge>
                         {expandedStations.has(station.id) ? (
                           <ChevronDown className="h-4 w-4" />

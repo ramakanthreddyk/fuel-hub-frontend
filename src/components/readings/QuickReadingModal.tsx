@@ -4,6 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { secureLog } from '@/utils/security';
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,21 +103,21 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
   const selectedNozzle = nozzles.find(n => n.id === nozzleId);
 
   // Debug logging
-  console.log('[QUICK-READING] State:', { stationId, pumpId, nozzleId, stations: stations.length, pumps: pumps.length, nozzles: nozzles.length });
-  console.log('[QUICK-READING] Last reading for nozzle', nozzleId, ':', lastReading);
+  secureLog.debug('[QUICK-READING] State:', { stationId, pumpId, nozzleId, stations: stations.length, pumps: pumps.length, nozzles: nozzles.length });
+  secureLog.debug('[QUICK-READING] Last reading for nozzle', nozzleId, ':', lastReading);
   // Handlers for selection changes
   const handleStationChange = (value: string) => {
-    console.log('[QUICK-READING] Station changed to:', value);
+    secureLog.debug('[QUICK-READING] Station changed to:', value);
     setStationId(value);
   };
 
   const handlePumpChange = (value: string) => {
-    console.log('[QUICK-READING] Pump changed to:', value);
+    secureLog.debug('[QUICK-READING] Pump changed to:', value);
     setPumpId(value);
   };
 
   const handleNozzleChange = (value: string) => {
-    console.log('[QUICK-READING] Nozzle changed to:', value);
+    secureLog.debug('[QUICK-READING] Nozzle changed to:', value);
     setNozzleId(value);
   };
 
@@ -158,7 +160,7 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
       // Toast notification is handled by the mutation hook to avoid duplicates
       onOpenChange(false);
     } catch (error) {
-      console.error('Error creating reading:', error);
+      secureLog.error('Error creating reading:', error);
       // Error toast is handled by the mutation hook to avoid duplicates
     }
   };
@@ -206,11 +208,11 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                     label: (
                       <div className="flex items-center gap-2">
                         <MapPin className="h-3 w-3" />
-                        <span className="truncate">{station.name}</span>
+                        <span className="truncate">{<SafeText text={station.name} />}</span>
                       </div>
                     )
                   }))}
-                  isLoading={stationsLoading}
+                  isLoading={<SafeText text={stationsLoading} />}
                   isError={!!stationsError}
                   noOptionsMessage="No stations available"
                 />
@@ -228,12 +230,12 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                     label: (
                       <div className="flex items-center gap-2">
                         <Fuel className="h-3 w-3" />
-                        <span className="truncate">{pump.name}</span>
+                        <span className="truncate">{<SafeText text={pump.name} />}</span>
                       </div>
                     )
                   }))}
-                  isLoading={pumpsLoading}
-                  isError={false}
+                  isLoading={<SafeText text={pumpsLoading} />}
+                  isError={<SafeText text={false} />}
                   noOptionsMessage="No pumps available for this station"
                   isDisabled={!stationId}
                 />
@@ -252,12 +254,12 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                   label: (
                     <div className="flex items-center gap-2">
                       <Gauge className="h-3 w-3" />
-                      <span className="truncate">Nozzle {nozzle.nozzleNumber} ({nozzle.fuelType})</span>
+                      <span className="truncate">Nozzle {<SafeText text={nozzle.nozzleNumber} />} ({<SafeText text={nozzle.fuelType} />})</span>
                     </div>
                   )
                 }))}
-                isLoading={nozzlesLoading}
-                isError={false}
+                isLoading={<SafeText text={nozzlesLoading} />}
+                isError={<SafeText text={false} />}
                 noOptionsMessage="No nozzles available for this pump"
                 isDisabled={!pumpId}
               />
@@ -271,10 +273,10 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                     <div>
                       <div className="text-xs font-medium text-blue-900">Recording for:</div>
                       <div className="text-sm font-semibold text-blue-700 truncate">
-                        {selectedStation.name} • {selectedPump.name} • N{selectedNozzle.nozzleNumber}
+                        {<SafeText text={selectedStation.name} />} • {<SafeText text={selectedPump.name} />} • N{<SafeText text={selectedNozzle.nozzleNumber} />}
                       </div>
                       <div className="text-xs text-blue-600">
-                        {selectedNozzle.fuelType}
+                        {<SafeText text={selectedNozzle.fuelType} />}
                       </div>
                     </div>
                     {lastReading && (
@@ -307,7 +309,7 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                   min={lastReading ? lastReading.reading : 0}
                   value={reading}
                   onChange={(e) => setReading(e.target.value)}
-                  placeholder={lastReading ? `Min: ${lastReading.reading}L` : "Enter reading"}
+                  placeholder={lastReading ? `Min: ${<SafeText text={lastReading.reading} />}L` : "Enter reading"}
                   className="text-base font-mono h-10"
                 />
 
@@ -325,7 +327,7 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                       <div className="text-red-600 flex items-center gap-1">
                         <span>⚠</span>
                         <span>
-                          Cannot be less than {lastReading.reading}L
+                          Cannot be less than {<SafeText text={lastReading.reading} />}L
                         </span>
                       </div>
                     )}

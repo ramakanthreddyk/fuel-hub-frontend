@@ -28,5 +28,6 @@
     // Keep these for compatibility
     "skipLibCheck": true,
     "allowJs": true
-  }
+  },
+  "include": ["src/**/*"]
 }

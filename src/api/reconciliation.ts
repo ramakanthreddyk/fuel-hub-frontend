@@ -1,4 +1,3 @@
-
 /**
  * @file api/reconciliation.ts
  * @description Reconciliation API functions
@@ -6,6 +5,7 @@
 import { contractClient } from './contract-client';
 import { apiClient } from './client';
 import { ReconciliationRecord } from './api-contract';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 
 /**
  * Get reconciliation records
@@ -17,7 +17,6 @@ export const getReconciliationRecords = async (params: {
 }): Promise<ReconciliationRecord[]> => {
   return contractClient.get<ReconciliationRecord[]>('/reconciliation/records', params);
 };
-
 
 /**
  * Get reconciliation summary
@@ -35,7 +34,6 @@ export const getReconciliationSummary = async (params: {
     date: formattedDate
   });
 };
-
 
 /**
  * Create reconciliation record
@@ -61,14 +59,14 @@ export const updateReconciliationRecord = async (
   id: string,
   data: Partial<ReconciliationRecord>
 ): Promise<ReconciliationRecord> => {
-  return contractClient.put<ReconciliationRecord>(`/reconciliation/records/${id}`, data);
+  return contractClient.put<ReconciliationRecord>(`/reconciliation/records/${sanitizeUrlParam(id)}`, data);
 };
 
 /**
  * Delete reconciliation record
  */
 export const deleteReconciliationRecord = async (id: string): Promise<void> => {
-  return contractClient.delete(`/reconciliation/records/${id}`);
+  return contractClient.delete(`/reconciliation/records/${sanitizeUrlParam(id)}`);
 };
 
 /**
@@ -132,48 +130,53 @@ export const getDailyReconciliationStatus = async (params: {
 export const reconciliationApi = {
   // Get reconciliation summary for a station and date
   getReconciliationSummary: async (stationId: string, date: string) => {
-    if (!stationId || !date) {
-      throw new Error('Station ID and date are required for reconciliation summary');
-    }
-    // Ensure the date is properly formatted (YYYY-MM-DD)
-    const formattedDate = new Date(date).toISOString().split('T')[0];
-    // Use API base URL from client.ts
-    // @ts-ignore
-    const baseUrl = apiClient.defaults.baseURL;
-    const url = `${baseUrl}/reconciliation/summary?stationId=${stationId}&date=${formattedDate}`;
-    // Get auth token
-    const token = localStorage.getItem('fuelsync_token');
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-    // Add tenant context
-    const storedUser = localStorage.getItem('fuelsync_user');
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        if (user.tenantId) {
-          headers['x-tenant-id'] = user.tenantId;
+    try {
+      if (!stationId || !date) {
+        throw new Error('Station ID and date are required for reconciliation summary');
+      }
+      // Ensure the date is properly formatted (YYYY-MM-DD)
+      const formattedDate = new Date(date).toISOString().split('T')[0];
+      // Use API base URL from client.ts
+      // @ts-ignore
+      const baseUrl = apiClient.defaults.baseURL;
+      const url = `${baseUrl}/reconciliation/summary?stationId=${sanitizeUrlParam(stationId)}&date=${formattedDate}`;
+      // Get auth token
+      const token = localStorage.getItem('fuelsync_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      // Add tenant context
+      const storedUser = localStorage.getItem('fuelsync_user');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          if (user.tenantId) {
+            headers['x-tenant-id'] = user.tenantId;
+          }
+        } catch (error) {
+          secureLog.error('Error parsing stored user:', error);
         }
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
       }
-    }
-    const response = await fetch(url, {
-      method: 'GET',
-      headers,
-    });
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      // Handle different response formats using optional chaining
+      return data?.data ?? (typeof data === 'object' ? data : null);
+    } catch (error) {
+      secureLog.error('Error in getReconciliationSummary:', error);
+      throw error;
     }
-    const data = await response.json();
-    // Handle different response formats using optional chaining
-    return data?.data ?? (typeof data === 'object' ? data : null);
   },
 
   // Create new reconciliation record
@@ -183,7 +186,7 @@ export const reconciliationApi = {
       try {
         const existingRec = await reconciliationApi.getReconciliationByStationAndDate(data.stationId, data.date);
         if (existingRec) {
-          console.log('Reconciliation already exists:', existingRec);
+          secureLog.debug('Reconciliation already exists:', existingRec);
           return existingRec; // Return the existing reconciliation instead of creating a new one
         }
       } catch (err) {
@@ -197,7 +200,7 @@ export const reconciliationApi = {
       const response = await apiClient.post('/reconciliation', data);
       return response.data.data;
     } catch (error: any) {
-      console.error('Error creating reconciliation:', error);
+      secureLog.error('Error creating reconciliation:', error);
       throw new Error(error.response?.data?.message || error.message || 'Failed to create reconciliation');
     }
   },
@@ -206,27 +209,32 @@ export const reconciliationApi = {
   getReconciliationHistory: async (stationId?: string): Promise<ReconciliationRecord[]> => {
     try {
       const params = new URLSearchParams();
-      if (stationId) params.append('stationId', stationId);
+      if (stationId) params.append('stationId', sanitizeUrlParam(stationId));
       
       const response = await apiClient.get(`/reconciliation?${params.toString()}`);
       return response.data.data || [];
     } catch (error) {
-      console.error('Error fetching reconciliation history:', error);
+      secureLog.error('Error fetching reconciliation history:', error);
       return [];
     }
   },
 
   // Get reconciliation by ID
   getReconciliationById: async (id: string): Promise<ReconciliationRecord> => {
-    const response = await apiClient.get(`/reconciliation/${id}`);
-    return response.data.data;
+    try {
+      const response = await apiClient.get(`/reconciliation/${sanitizeUrlParam(id)}`);
+      return response.data.data;
+    } catch (error) {
+      secureLog.error('Error fetching reconciliation by ID:', error);
+      throw error;
+    }
   },
 
   // Get reconciliation by station and date
   getReconciliationByStationAndDate: async (stationId: string, date: string): Promise<ReconciliationRecord | null> => {
     try {
       const params = new URLSearchParams();
-      params.append('stationId', stationId);
+      params.append('stationId', sanitizeUrlParam(stationId));
       params.append('date', date);
 
       const response = await apiClient.get(`/reconciliation/summary?${params.toString()}`);
@@ -234,18 +242,23 @@ export const reconciliationApi = {
     } catch (error: any) {
       // If it's a 404 error, return null instead of throwing
       if (error.response && error.response.status === 404) {
-        console.log('No existing reconciliation found');
+        secureLog.debug('No existing reconciliation found');
         return null;
       }
-      console.error('Error fetching reconciliation by station and date:', error);
+      secureLog.error('Error fetching reconciliation by station and date:', error);
       return null;
     }
   },
 
   // Approve reconciliation
   approveReconciliation: async (id: string): Promise<ReconciliationRecord> => {
-    const response = await apiClient.post(`/reconciliation/${id}/approve`);
-    return response.data.data;
+    try {
+      const response = await apiClient.post(`/reconciliation/${sanitizeUrlParam(id)}/approve`);
+      return response.data.data;
+    } catch (error) {
+      secureLog.error('Error approving reconciliation:', error);
+      throw error;
+    }
   },
   
   // Add the existing functions

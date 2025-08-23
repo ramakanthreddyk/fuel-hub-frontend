@@ -6,6 +6,7 @@
  */
 
 import { contractClient } from '../contract-client';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import type { 
   Station,
   CreateStationRequest 
@@ -26,7 +27,7 @@ export class StationsService {
    * GET /stations/{stationId}
    */
   async getStation(stationId: string): Promise<Station> {
-    return contractClient.get<Station>(`/stations/${stationId}`);
+    return contractClient.get<Station>(`/stations/${sanitizeUrlParam(stationId)}`);
   }
 
   /**
@@ -42,7 +43,7 @@ export class StationsService {
    * PUT /stations/{stationId}
    */
   async updateStation(stationId: string, data: Partial<CreateStationRequest>): Promise<Station> {
-    return contractClient.put<Station>(`/stations/${stationId}`, data);
+    return contractClient.put<Station>(`/stations/${sanitizeUrlParam(stationId)}`, data);
   }
 
   /**
@@ -50,7 +51,7 @@ export class StationsService {
    * DELETE /stations/{stationId}
    */
   async deleteStation(stationId: string): Promise<void> {
-    return contractClient.delete(`/stations/${stationId}`);
+    return contractClient.delete(`/stations/${sanitizeUrlParam(stationId)}`);
   }
 }
 

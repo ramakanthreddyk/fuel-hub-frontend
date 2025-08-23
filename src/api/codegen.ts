@@ -8,19 +8,20 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
+import { secureLog } from '@/utils/security';
 
 const OPENAPI_SPEC_PATH = path.resolve(__dirname, '../../docs/openapi-spec.yaml');
 const OUTPUT_DIR = path.resolve(__dirname, './generated');
 
 async function generateApiClient() {
   try {
-    console.log('🚀 Generating TypeScript API client from OpenAPI spec...');
-    console.log('📁 Spec file:', OPENAPI_SPEC_PATH);
-    console.log('📂 Output directory:', OUTPUT_DIR);
+    secureLog.info('🚀 Generating TypeScript API client from OpenAPI spec...');
+    secureLog.info('📁 Spec file:', OPENAPI_SPEC_PATH);
+    secureLog.info('📂 Output directory:', OUTPUT_DIR);
 
     // Check if spec file exists
     if (!fs.existsSync(OPENAPI_SPEC_PATH)) {
-      console.log('❌ OpenAPI spec file not found, creating a minimal one for demo purposes...');
+      secureLog.warn('❌ OpenAPI spec file not found, creating a minimal one for demo purposes...');
       
       // Create docs directory if it doesn't exist
       const docsDir = path.resolve(__dirname, '../../docs');
@@ -67,7 +68,7 @@ components:
 `;
       
       fs.writeFileSync(OPENAPI_SPEC_PATH, minimalSpec.trim());
-      console.log('✅ Created minimal OpenAPI spec for demo');
+      secureLog.info('✅ Created minimal OpenAPI spec for demo');
     }
 
     // Try to import and use the code generator
@@ -76,7 +77,7 @@ components:
       const codegen = await import('openapi-typescript-codegen');
       generate = codegen.generate;
     } catch (importError) {
-      console.log('⚠️ OpenAPI code generator not available, using fallback approach...');
+      secureLog.warn('⚠️ OpenAPI code generator not available, using fallback approach...');
       throw new Error('Code generator not available');
     }
 
@@ -101,20 +102,20 @@ components:
       postfixModels: '',
     });
 
-    console.log('✅ API client generated successfully!');
-    console.log('📋 Generated files:');
-    console.log('  - models/: TypeScript interfaces');
-    console.log('  - services/: API service classes');
-    console.log('  - core/: HTTP client and configuration');
+    secureLog.info('✅ API client generated successfully!');
+    secureLog.info('📋 Generated files:');
+    secureLog.info('  - models/: TypeScript interfaces');
+    secureLog.info('  - services/: API service classes');
+    secureLog.info('  - core/: HTTP client and configuration');
     
-    console.log('🔄 Next steps:');
-    console.log('  1. Update existing API files to use generated types');
-    console.log('  2. Migrate hooks to use generated services');
-    console.log('  3. Run type checking: npx tsc --noEmit');
+    secureLog.info('🔄 Next steps:');
+    secureLog.info('  1. Update existing API files to use generated types');
+    secureLog.info('  2. Migrate hooks to use generated services');
+    secureLog.info('  3. Run type checking: npx tsc --noEmit');
 
   } catch (error) {
-    console.error('❌ Error generating API client:', error);
-    console.log('💡 Creating basic generated types structure...');
+    secureLog.error('❌ Error generating API client:', error);
+    secureLog.info('💡 Creating basic generated types structure...');
     
     // Create basic structure if generation fails
     if (!fs.existsSync(OUTPUT_DIR)) {
@@ -173,7 +174,7 @@ export { managerService } from '../contract/manager.service';
 `;
     fs.writeFileSync(path.join(OUTPUT_DIR, 'index.ts'), indexContent);
     
-    console.log('✅ Basic generated structure created with contract services');
+    secureLog.info('✅ Basic generated structure created with contract services');
   }
 }
 

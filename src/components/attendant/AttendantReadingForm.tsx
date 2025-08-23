@@ -1,3 +1,5 @@
+import { SafeText, SafeHtml } from '@/components/ui/SafeHtml';
+import { secureLog } from '@/utils/security';
 import { useState, useEffect } from "react";
 import { 
   useAttendantStations, 
@@ -99,7 +101,7 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
       },
       onError: (error: any) => {
         // Error toast is handled by the mutation hook to avoid duplicates
-        console.error('Reading creation failed:', error);
+        secureLog.error('Reading creation failed:', error);
       }
     });
   };
@@ -120,8 +122,8 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
             </SelectTrigger>
             <SelectContent>
               {stations.map(station => (
-                <SelectItem key={station.id} value={station.id || "default-id"}>
-                  {station.name}
+                <SelectItem key={<SafeText text={station.id} />} value={station.id || "default-id"}>
+                  {<SafeText text={station.name} />}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -132,14 +134,14 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
         {selectedStationId && (
           <div className="space-y-2">
             <Label htmlFor="pump">Pump</Label>
-            <Select value={selectedPumpId || undefined} onValueChange={handlePumpChange} disabled={pumpsLoading || !pumps?.length}>
+            <Select value={selectedPumpId || undefined} onValueChange={<SafeText text={handlePumpChange} />} disabled={pumpsLoading || !pumps?.length}>
               <SelectTrigger id="pump">
                 <SelectValue placeholder={pumpsLoading ? "Loading..." : pumps?.length ? "Select a pump" : "No pumps available"} />
               </SelectTrigger>
               <SelectContent>
                 {pumps?.map(pump => (
-                  <SelectItem key={pump.id} value={pump.id || "default-pump-id"}>
-                    {pump.name}
+                  <SelectItem key={<SafeText text={pump.id} />} value={pump.id || "default-pump-id"}>
+                    {<SafeText text={pump.name} />}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -151,14 +153,14 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
         {selectedPumpId && (
           <div className="space-y-2">
             <Label htmlFor="nozzle">Nozzle</Label>
-            <Select value={selectedNozzleId || undefined} onValueChange={handleNozzleChange} disabled={nozzlesLoading || !nozzles?.length}>
+            <Select value={selectedNozzleId || undefined} onValueChange={<SafeText text={handleNozzleChange} />} disabled={nozzlesLoading || !nozzles?.length}>
               <SelectTrigger id="nozzle">
                 <SelectValue placeholder={nozzlesLoading ? "Loading..." : nozzles?.length ? "Select a nozzle" : "No nozzles available"} />
               </SelectTrigger>
               <SelectContent>
                 {nozzles?.map(nozzle => (
-                  <SelectItem key={nozzle.id} value={nozzle.id || "default-nozzle-id"}>
-                    Nozzle #{nozzle.nozzleNumber} - {nozzle.fuelType}
+                  <SelectItem key={<SafeText text={nozzle.id} />} value={nozzle.id || "default-nozzle-id"}>
+                    Nozzle #{<SafeText text={nozzle.nozzleNumber} />} - {<SafeText text={nozzle.fuelType} />}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -171,7 +173,7 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
           <>
             {latestReading && (
               <div className="text-sm bg-muted p-2 rounded">
-                Previous reading: <span className="font-semibold">{latestReading.reading}</span>
+                Previous reading: <span className="font-semibold">{<SafeText text={latestReading.reading} />}</span>
               </div>
             )}
             
@@ -179,7 +181,7 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Cannot create reading</AlertTitle>
-                <AlertDescription>{canCreateData.reason}</AlertDescription>
+                <AlertDescription>{<SafeText text={canCreateData.reason} />}</AlertDescription>
               </Alert>
             )}
             
@@ -213,13 +215,13 @@ export function AttendantReadingForm({ onSuccess }: AttendantReadingFormProps) {
             {paymentMethod === "credit" && (
               <div className="space-y-2">
                 <Label htmlFor="creditor">Creditor</Label>
-                <Select value={creditorId || undefined} onValueChange={setCreditorId} disabled={creditorsLoading || !creditors?.length}>
+                <Select value={creditorId || undefined} onValueChange={<SafeText text={setCreditorId} />} disabled={creditorsLoading || !creditors?.length}>
                   <SelectTrigger id="creditor">
                     <SelectValue placeholder={creditorsLoading ? "Loading..." : creditors?.length ? "Select a creditor" : "No creditors available"} />
                   </SelectTrigger>
                   <SelectContent>
                     {creditors?.map(creditor => (
-                      <SelectItem key={creditor.id} value={creditor.id || "default-creditor-id"}>
+                      <SelectItem key={<SafeText text={creditor.id} />} value={creditor.id || "default-creditor-id"}>
                         {creditor.name || creditor.partyName || "Unknown Creditor"}
                       </SelectItem>
                     ))}

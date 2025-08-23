@@ -1,6 +1,11 @@
-
+export interface ReadingsFilter {
+  stationId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
 import { apiClient, extractApiData, extractApiArray } from '../client';
-import type { NozzleReading, CashReport, ApiResponse } from '../api-contract';
+import type { NozzleReading, CashReport } from '../api-contract';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 
 export interface CreateAttendantReadingRequest {
   nozzleId: string;
@@ -21,54 +26,54 @@ export interface CreateCashReportRequest {
 }
 
 export const attendantReadingsService = {
-  getReadings: async (filters?: any): Promise<NozzleReading[]> => {
+  getReadings: async (filters?: ReadingsFilter): Promise<NozzleReading[]> => {
     try {
       const params = new URLSearchParams();
-      if (filters?.stationId) params.append('stationId', filters.stationId);
+      if (filters?.stationId) params.append('stationId', sanitizeUrlParam(filters.stationId));
       if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
       if (filters?.dateTo) params.append('dateTo', filters.dateTo);
       
       const response = await apiClient.get(`/nozzle-readings?${params.toString()}`);
       return extractApiArray<NozzleReading>(response, 'readings');
     } catch (error) {
-      console.error('[ATTENDANT-READINGS] Error fetching readings:', error);
+      secureLog.error('[ATTENDANT-READINGS] Error fetching readings:', error);
       return [];
     }
   },
 
   createReading: async (data: CreateAttendantReadingRequest): Promise<NozzleReading> => {
     try {
-      console.log('[ATTENDANT-READINGS] Creating reading:', data);
+      secureLog.debug('[ATTENDANT-READINGS] Creating reading:', data);
       const response = await apiClient.post('/nozzle-readings', data);
       return extractApiData<NozzleReading>(response);
     } catch (error) {
-      console.error('[ATTENDANT-READINGS] Error creating reading:', error);
+      secureLog.error('[ATTENDANT-READINGS] Error creating reading:', error);
       throw error;
     }
   },
 
-  getCashReports: async (filters?: any): Promise<CashReport[]> => {
+  getCashReports: async (filters?: ReadingsFilter): Promise<CashReport[]> => {
     try {
       const params = new URLSearchParams();
-      if (filters?.stationId) params.append('stationId', filters.stationId);
+      if (filters?.stationId) params.append('stationId', sanitizeUrlParam(filters.stationId));
       if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
       if (filters?.dateTo) params.append('dateTo', filters.dateTo);
       
       const response = await apiClient.get(`/cash-reports?${params.toString()}`);
       return extractApiArray<CashReport>(response, 'reports');
     } catch (error) {
-      console.error('[ATTENDANT-READINGS] Error fetching cash reports:', error);
+      secureLog.error('[ATTENDANT-READINGS] Error fetching cash reports:', error);
       return [];
     }
   },
 
   submitCashReport: async (data: CreateCashReportRequest): Promise<CashReport> => {
     try {
-      console.log('[ATTENDANT-READINGS] Submitting cash report:', data);
+      secureLog.debug('[ATTENDANT-READINGS] Submitting cash report:', data);
       const response = await apiClient.post('/attendant/cash-report', data);
       return extractApiData<CashReport>(response);
     } catch (error) {
-      console.error('[ATTENDANT-READINGS] Error submitting cash report:', error);
+      secureLog.error('[ATTENDANT-READINGS] Error submitting cash report:', error);
       throw error;
     }
   },

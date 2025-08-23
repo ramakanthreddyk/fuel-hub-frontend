@@ -1,5 +1,6 @@
 
 import { apiClient, extractApiData, extractApiArray } from './client';
+import { secureLog, sanitizeUrlParam } from '@/utils/security';
 import type { 
   SalesSummary, 
   PaymentMethodBreakdown, 
@@ -18,36 +19,52 @@ interface DashboardFilters {
 export const dashboardApi = {
   getSalesSummary: async (range: string = 'monthly', filters: DashboardFilters = {}): Promise<SalesSummary> => {
     try {
+      const sanitizedFilters = {
+        range: sanitizeUrlParam(range),
+        ...(filters.stationId && { stationId: sanitizeUrlParam(filters.stationId) }),
+        ...(filters.dateFrom && { dateFrom: sanitizeUrlParam(filters.dateFrom) }),
+        ...(filters.dateTo && { dateTo: sanitizeUrlParam(filters.dateTo) })
+      };
       const response = await apiClient.get('/dashboard/sales-summary', {
-        params: { range, ...filters }
+        params: sanitizedFilters
       });
       return extractApiData<SalesSummary>(response);
     } catch (error) {
-      console.error('Error fetching sales summary:', error);
+      secureLog.error('Error fetching sales summary:', error);
       throw error;
     }
   },
 
   getPaymentMethodBreakdown: async (filters: DashboardFilters = {}): Promise<PaymentMethodBreakdown[]> => {
     try {
+      const sanitizedFilters = {
+        ...(filters.stationId && { stationId: sanitizeUrlParam(filters.stationId) }),
+        ...(filters.dateFrom && { dateFrom: sanitizeUrlParam(filters.dateFrom) }),
+        ...(filters.dateTo && { dateTo: sanitizeUrlParam(filters.dateTo) })
+      };
       const response = await apiClient.get('/dashboard/payment-methods', {
-        params: filters
+        params: sanitizedFilters
       });
       return extractApiArray<PaymentMethodBreakdown>(response, 'paymentMethods');
     } catch (error) {
-      console.error('Error fetching payment method breakdown:', error);
+      secureLog.error('Error fetching payment method breakdown:', error);
       return [];
     }
   },
 
   getFuelTypeBreakdown: async (filters: DashboardFilters = {}): Promise<FuelTypeBreakdown[]> => {
     try {
+      const sanitizedFilters = {
+        ...(filters.stationId && { stationId: sanitizeUrlParam(filters.stationId) }),
+        ...(filters.dateFrom && { dateFrom: sanitizeUrlParam(filters.dateFrom) }),
+        ...(filters.dateTo && { dateTo: sanitizeUrlParam(filters.dateTo) })
+      };
       const response = await apiClient.get('/dashboard/fuel-breakdown', {
-        params: filters
+        params: sanitizedFilters
       });
       return extractApiArray<FuelTypeBreakdown>(response, 'fuelTypes');
     } catch (error) {
-      console.error('Error fetching fuel type breakdown:', error);
+      secureLog.error('Error fetching fuel type breakdown:', error);
       return [];
     }
   },
@@ -59,19 +76,25 @@ export const dashboardApi = {
       });
       return extractApiArray<TopCreditor>(response, 'creditors');
     } catch (error) {
-      console.error('Error fetching top creditors:', error);
+      secureLog.error('Error fetching top creditors:', error);
       return [];
     }
   },
 
   getDailySalesTrend: async (days: number = 7, filters: DashboardFilters = {}): Promise<DailySalesTrend[]> => {
     try {
+      const sanitizedParams = {
+        days,
+        ...(filters.stationId && { stationId: sanitizeUrlParam(filters.stationId) }),
+        ...(filters.dateFrom && { dateFrom: sanitizeUrlParam(filters.dateFrom) }),
+        ...(filters.dateTo && { dateTo: sanitizeUrlParam(filters.dateTo) })
+      };
       const response = await apiClient.get('/dashboard/sales-trend', {
-        params: { days, ...filters }
+        params: sanitizedParams
       });
       return extractApiArray<DailySalesTrend>(response, 'trends');
     } catch (error) {
-      console.error('Error fetching daily sales trend:', error);
+      secureLog.error('Error fetching daily sales trend:', error);
       return [];
     }
   },
@@ -87,7 +110,7 @@ export const dashboardApi = {
       }
       return extractApiArray<StationMetric>(response, 'stations');
     } catch (error) {
-      console.error('Error fetching station metrics:', error);
+      secureLog.error('Error fetching station metrics:', error);
       return [];
     }
   },

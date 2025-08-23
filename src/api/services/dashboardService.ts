@@ -4,6 +4,7 @@
  * @description Service for dashboard API endpoints
  */
 import apiClient, { extractData, extractArray } from '../core/apiClient';
+import { sanitizeUrlParam, secureLog } from '@/utils/security';
 import API_CONFIG from '../core/config';
 
 export interface SalesSummary {
@@ -108,7 +109,7 @@ export const dashboardService = {
           previousPeriodRevenue: data.previousPeriodRevenue || 0
         };
       } catch (innerError) {
-        console.error('[DASHBOARD-API] Inner error fetching sales summary:', innerError);
+        secureLog.error('[DASHBOARD-API] Inner error fetching sales summary:', innerError);
         // If that fails, try a direct axios call with the full URL
         const axios = (await import('axios')).default;
         const directResponse = await axios.get(`${API_CONFIG.BASE_URL}/dashboard/sales-summary?${params.toString()}`);
@@ -132,7 +133,7 @@ export const dashboardService = {
         };
       }
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching sales summary:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching sales summary:', error);
       throw error;
     }
   },
@@ -150,7 +151,7 @@ export const dashboardService = {
       const response = await apiClient.get(`/dashboard/payment-methods?${params.toString()}`);
       return extractArray<PaymentMethodBreakdown>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching payment methods:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching payment methods:', error);
       throw error;
     }
   },
@@ -168,7 +169,7 @@ export const dashboardService = {
       const response = await apiClient.get(`/dashboard/fuel-breakdown?${params.toString()}`);
       return extractArray<FuelTypeBreakdown>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching fuel breakdown:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching fuel breakdown:', error);
       throw error;
     }
   },
@@ -178,10 +179,10 @@ export const dashboardService = {
    */
   getTopCreditors: async (limit: number = 5): Promise<TopCreditor[]> => {
     try {
-      const response = await apiClient.get(`/dashboard/top-creditors?limit=${limit}`);
+      const response = await apiClient.get(`/dashboard/top-creditors?limit=${sanitizeUrlParam(limit)}`);
       return extractArray<TopCreditor>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching top creditors:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching top creditors:', error);
       throw error;
     }
   },
@@ -198,7 +199,7 @@ export const dashboardService = {
       const response = await apiClient.get(`/dashboard/sales-trend?${params.toString()}`);
       return extractArray<DailySalesTrend>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching sales trend:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching sales trend:', error);
       throw error;
     }
   },
@@ -223,7 +224,7 @@ export const dashboardService = {
         return Array.isArray(directResponse.data) ? directResponse.data : [];
       }
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching station metrics:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching station metrics:', error);
       // Return empty array instead of throwing to prevent dashboard from breaking
       return [];
     }
@@ -231,20 +232,20 @@ export const dashboardService = {
 
   getTopStations: async (limit: number = 10): Promise<any[]> => {
     try {
-      const response = await apiClient.get(`/dashboard/top-stations?limit=${limit}`);
+      const response = await apiClient.get(`/dashboard/top-stations?limit=${sanitizeUrlParam(limit)}`);
       return extractArray<any>(response, 'stations');
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching top stations:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching top stations:', error);
       throw error;
     }
   },
 
   getRecentActivities: async (limit: number = 20): Promise<any[]> => {
     try {
-      const response = await apiClient.get(`/dashboard/recent-activities?limit=${limit}`);
+      const response = await apiClient.get(`/dashboard/recent-activities?limit=${sanitizeUrlParam(limit)}`);
       return extractArray<any>(response, 'activities');
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching recent activities:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching recent activities:', error);
       throw error;
     }
   },
@@ -254,7 +255,7 @@ export const dashboardService = {
       const response = await apiClient.get('/dashboard/alerts-summary');
       return extractData<{ total: number; critical: number; unread: number }>(response);
     } catch (error) {
-      console.error('[DASHBOARD-API] Error fetching alerts summary:', error);
+      secureLog.error('[DASHBOARD-API] Error fetching alerts summary:', error);
       throw error;
     }
   }
