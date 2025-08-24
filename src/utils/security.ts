@@ -19,8 +19,8 @@ export function sanitizeForLogging(input: unknown): string {
     .replace(/\n/g, '\\n')
     .replace(/\r/g, '\\r')
     .replace(/\t/g, '\\t')
-    .replace(/\x00/g, '\\x00')
-    .replace(/\x1b/g, '\\x1b') // ANSI escape sequences
+    .replace(/\0/g, '') // Remove null characters
+    .replace(/[\u001b]/g, '') // Remove escape characters
     .slice(0, 1000); // Limit length to prevent log flooding
 }
 

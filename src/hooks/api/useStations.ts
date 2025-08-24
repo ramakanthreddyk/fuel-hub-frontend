@@ -4,10 +4,12 @@ import { stationsService } from '@/api/services/stationsService';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useDataStore } from '@/store/dataStore';
 import { useErrorHandler } from '../useErrorHandler';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useStations = (includeMetrics: boolean = false) => {
   const { stations: storedStations, setStations } = useDataStore();
   const { handleError } = useErrorHandler();
+  const { user } = useAuth();
   
   return useQuery({
     queryKey: ['stations', includeMetrics],
@@ -28,16 +30,15 @@ export const useStations = (includeMetrics: boolean = false) => {
 
       return stations;
     },
+    enabled: user?.role === 'owner' || user?.role === 'manager',
     staleTime: includeMetrics ? 60 * 1000 : 5 * 60 * 1000, // 1 min for metrics, 5 min for basic
     retry: 2,
-    onError: (error) => {
-      handleError(error, 'Failed to fetch stations.');
-    },
   });
 };
 
 export const useStation = (id: string) => {
   const { stations: storedStations } = useDataStore();
+  const { user } = useAuth();
   
   return useQuery({
     queryKey: ['station', id],
@@ -51,7 +52,7 @@ export const useStation = (id: string) => {
       
       return stationsService.getStation(id);
     },
-    enabled: !!id,
+    enabled: !!id && (user?.role === 'owner' || user?.role === 'manager'),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

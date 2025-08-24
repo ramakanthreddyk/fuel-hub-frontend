@@ -3,12 +3,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { reconciliationApi } from '@/api/reconciliation';
 import { CreateReconciliationRequest } from '@/api/api-contract';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useReconciliationSummary = (stationId: string, date: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['reconciliation', 'summary', stationId, date],
     queryFn: () => reconciliationApi.getReconciliationSummary(stationId, date),
-    enabled: !!stationId && !!date,
+    enabled: !!stationId && !!date && (user?.role === 'owner' || user?.role === 'manager'),
     staleTime: 60000, // 1 minute
   });
 };
@@ -44,9 +47,12 @@ export const useCreateReconciliation = () => {
 };
 
 export const useReconciliationHistory = (stationId?: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['reconciliation', 'history', stationId],
     queryFn: () => reconciliationApi.getReconciliationHistory(stationId),
+    enabled: user?.role === 'owner' || user?.role === 'manager',
     staleTime: 60000,
   });
 };
@@ -75,15 +81,19 @@ export const useApproveReconciliation = () => {
 };
 
 export const useReconciliationById = (id: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['reconciliation', 'detail', id],
     queryFn: () => reconciliationApi.getReconciliationById(id),
-    enabled: !!id,
+    enabled: !!id && (user?.role === 'owner' || user?.role === 'manager'),
     staleTime: 60000,
   });
 };
 
 export const useReconciliationByStationAndDate = (stationId: string, date: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['reconciliation', 'station-date', stationId, date],
     queryFn: async () => {
@@ -95,7 +105,7 @@ export const useReconciliationByStationAndDate = (stationId: string, date: strin
         return null; // Return null on error
       }
     },
-    enabled: !!stationId && !!date,
+    enabled: !!stationId && !!date && (user?.role === 'owner' || user?.role === 'manager'),
     staleTime: 60000,
   });
 };

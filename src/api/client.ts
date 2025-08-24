@@ -84,38 +84,62 @@ apiClient.interceptors.response.use(
     });
     
     // Handle authentication errors
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      secureLog.warn('[API-CLIENT] Authentication error detected:', {
+    if (error.response?.status === 401) {
+      secureLog.warn('[API-CLIENT] 401 Unauthorized detected:', {
         url: sanitizeForLogging(error.config?.url),
-        status: error.response?.status,
         message: sanitizeForLogging(error.response?.data?.message)
       });
-      
-      // Only clear auth data and redirect if this wasn't a login attempt
-      const isLoginRequest = error.config?.url?.includes('/auth/login');
-      const isCurrentUserLoggedIn = !!localStorage.getItem('fuelsync_token') && !!localStorage.getItem('fuelsync_user');
-      
-      if (!isLoginRequest && isCurrentUserLoggedIn) {
-        secureLog.error('[API-CLIENT] Authenticated request failed with auth error, this suggests token is invalid');
-        
-        // Clear stored auth data
-        localStorage.removeItem('fuelsync_token');
-        localStorage.removeItem('fuelsync_user');
-        
-        // Dispatch custom event for AuthContext to handle
-        window.dispatchEvent(new Event('auth-expired'));
-        
-        // Only redirect if not already on login page
-        if (!window.location.pathname.includes('/login')) {
-          secureLog.info('[API-CLIENT] Redirecting to login due to auth failure');
-          window.location.href = '/login';
-        }
-      } else if (isLoginRequest) {
-        secureLog.info('[API-CLIENT] Login request failed, not clearing session');
-      } else {
-        secureLog.info('[API-CLIENT] Auth error but no current session, ignoring');
+
+      // Check if this is an analytics or reports request
+      const isAnalyticsRequest = error.config?.url?.includes('/analytics/');
+      const isReportsRequest = error.config?.url?.includes('/reports');
+      const errorMessage = error.response?.data?.message || '';
+      const isPlanRestriction = errorMessage.includes('plan') || errorMessage.includes('upgrade') || errorMessage.includes('feature');
+
+      // For analytics or reports requests, never clear auth or redirect
+      if (isAnalyticsRequest || isReportsRequest) {
+        secureLog.info('[API-CLIENT] Analytics/Reports 401 detected, not clearing session or redirecting');
+        return Promise.reject(error);
       }
-  return Promise.reject(new Error(error));
+
+      // Only clear auth data if it's NOT a plan/feature restriction
+      if (!isPlanRestriction) {
+        const isLoginRequest = error.config?.url?.includes('/auth/login');
+        const isCurrentUserLoggedIn = !!localStorage.getItem('fuelsync_token') && !!localStorage.getItem('fuelsync_user');
+
+        if (!isLoginRequest && isCurrentUserLoggedIn) {
+          secureLog.error('[API-CLIENT] Authenticated request failed with auth error, clearing session');
+
+          // Clear stored auth data
+          localStorage.removeItem('fuelsync_token');
+          localStorage.removeItem('fuelsync_user');
+
+          // Dispatch custom event for AuthContext to handle
+          window.dispatchEvent(new Event('auth-expired'));
+
+          // Only redirect if not already on login page
+          if (!window.location.pathname.includes('/login')) {
+            secureLog.info('[API-CLIENT] Redirecting to login due to auth failure');
+            window.location.href = '/login';
+          }
+        }
+      } else {
+        secureLog.info('[API-CLIENT] Plan/feature restriction detected, not clearing session');
+      }
+    }
+    // Handle permission errors (403 Forbidden) - these should not trigger logout
+    else if (error.response?.status === 403) {
+      secureLog.warn('[API-CLIENT] 403 Forbidden - insufficient permissions:', {
+        url: sanitizeForLogging(error.config?.url),
+        message: sanitizeForLogging(error.response?.data?.message)
+      });
+      // For analytics requests, never clear auth or redirect
+      const isAnalyticsRequest = error.config?.url?.includes('/analytics/');
+      if (isAnalyticsRequest) {
+        secureLog.info('[API-CLIENT] Analytics 403 detected, not clearing session or redirecting');
+        return Promise.reject(error);
+      }
+      // Don't clear auth data for 403 errors - just insufficient permissions
     }
     
   return Promise.reject(new Error(error));

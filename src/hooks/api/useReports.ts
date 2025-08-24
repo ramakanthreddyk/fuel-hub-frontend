@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface ReportExportRequest {
   reportType: string;
@@ -61,6 +62,7 @@ export interface Report {
  */
 export const useReports = () => {
   const { handleApiError } = useToastNotifications();
+  const { user } = useAuth();
 
   return useQuery({
     queryKey: ['reports'],
@@ -74,6 +76,7 @@ export const useReports = () => {
         return [];
       }
     },
+    enabled: user?.role === 'owner' || user?.role === 'manager',
     staleTime: 30000, // 30 seconds
     retry: 2
   });

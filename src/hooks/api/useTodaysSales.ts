@@ -1,14 +1,15 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { handleApiResponse } from '@/api/responseHandler';
 import { TodaysSalesSummary } from '@/api/api-contract';
 import { useDashboardStore } from '@/store/dashboardStore';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useTodaysSales = (date?: string, stationId?: string) => {
   const { showSuccess, handleApiError, showLoader, hideLoader } = useToastNotifications();
   const { setTodaysSales, getTodaysSales, setLoading, setError, clearError } = useDashboardStore();
+  const { user } = useAuth();
   
   const queryDate = date || new Date().toISOString().split('T')[0];
   const cacheKey = `todays-sales-${queryDate}`;
@@ -20,7 +21,7 @@ export const useTodaysSales = (date?: string, stationId?: string) => {
         setLoading(cacheKey, true);
         clearError(cacheKey);
         showLoader(`Loading sales data${date ? ` for ${new Date(date).toLocaleDateString()}` : ''}...`);
-        
+
         const params = new URLSearchParams();
         if (date) {
           params.append('date', date);
@@ -28,14 +29,14 @@ export const useTodaysSales = (date?: string, stationId?: string) => {
         if (stationId) {
           params.append('stationId', stationId);
         }
-        
+
+        // Cast API response to TodaysSalesSummary
         const data = await handleApiResponse(() => 
           apiClient.get(`/todays-sales/summary${params.toString() ? '?' + params.toString() : ''}`)
-        );
-        
+        ) as TodaysSalesSummary;
+
         // Store in Zustand
         setTodaysSales(queryDate, data);
-        
         hideLoader();
 
         // Show appropriate message based on data availability
@@ -66,20 +67,18 @@ export const useTodaysSales = (date?: string, stationId?: string) => {
 
         // Return empty data instead of throwing
         return {
-          date: date || new Date().toISOString().split('T')[0],
           totalEntries: 0,
           totalVolume: 0,
           totalAmount: 0,
           paymentBreakdown: { cash: 0, card: 0, upi: 0, credit: 0 },
-          nozzleEntries: [],
           salesByFuel: [],
-          salesByStation: [],
-          creditSales: []
+          salesByStation: []
         };
       } finally {
         setLoading(cacheKey, false);
       }
     },
+  enabled: !!user && (user.role === 'owner' || user.role === 'manager'),
     staleTime: 30000, // 30 seconds - reduced for fresher data
     refetchOnMount: true,
     refetchOnWindowFocus: true,

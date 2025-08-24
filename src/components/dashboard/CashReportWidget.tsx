@@ -1,13 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { DollarSign, Plus, MapPin } from 'lucide-react';
 import { useStations } from '@/hooks/api/useStations';
+import { useCashReports } from '@/hooks/api/useCashReports';
+import { Station } from '@/shared/types/station';
 
 export function CashReportWidget() {
   const [selectedStationId, setSelectedStationId] = useState('');
-  const { data: stations = [] } = useStations();
+  const { data: stations = [], isLoading: stationsLoading } = useStations();
+  const { data: cashReports = [] } = useCashReports(selectedStationId);
+
+  // Check if there's already a cash report submitted today for the selected station
+  const isSubmitted = useMemo(() => {
+    if (!selectedStationId || !cashReports.length) return false;
+    
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    return cashReports.some(report => 
+      report.stationId === selectedStationId && 
+      report.date === today && 
+      report.status === 'submitted'
+    );
+  }, [selectedStationId, cashReports]);
 
   const handleSubmit = () => {
     if (!selectedStationId) return;
@@ -34,7 +50,7 @@ export function CashReportWidget() {
               <SelectValue placeholder={stationsLoading ? "Loading..." : "Select station"} />
             </SelectTrigger>
             <SelectContent>
-              {stations.map((station) => (
+              {(stations as Station[]).map((station) => (
                 <SelectItem key={station.id} value={station.id}>
                   {station.name}
                 </SelectItem>
@@ -43,78 +59,14 @@ export function CashReportWidget() {
           </Select>
         </div>
         
-        <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1">
-            <label className="text-xs font-medium flex items-center gap-1">
-              <DollarSign className="h-3 w-3" />
-              Cash (₹)
-            </label>
-            <Input
-              type="number"
-              placeholder="0"
-              value={amounts.cashAmount}
-              onChange={(e) => handleAmountChange('cashAmount', e.target.value)}
-              disabled={isSubmitted}
-              className="text-sm"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium flex items-center gap-1">
-              <CreditCard className="h-3 w-3" />
-              Card (₹)
-            </label>
-            <Input
-              type="number"
-              placeholder="0"
-              value={amounts.cardAmount}
-              onChange={(e) => handleAmountChange('cardAmount', e.target.value)}
-              disabled={isSubmitted}
-              className="text-sm"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium flex items-center gap-1">
-              <Smartphone className="h-3 w-3" />
-              UPI (₹)
-            </label>
-            <Input
-              type="number"
-              placeholder="0"
-              value={amounts.upiAmount}
-              onChange={(e) => handleAmountChange('upiAmount', e.target.value)}
-              disabled={isSubmitted}
-              className="text-sm"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              Credit (₹)
-            </label>
-            <Input
-              type="number"
-              placeholder="0"
-              value={amounts.creditAmount}
-              onChange={(e) => handleAmountChange('creditAmount', e.target.value)}
-              disabled={isSubmitted}
-              className="text-sm"
-            />
-          </div>
-        </div>
-        
-        {getTotalAmount() > 0 && (
-          <div className="bg-gray-50 p-2 rounded text-center">
-            <span className="text-sm font-medium">Total: ₹{getTotalAmount().toFixed(2)}</span>
-          </div>
-        )}
-        
         <Button 
-          onClick={handleSubmit}
+          onClick={handleSubmit} 
+          disabled={!selectedStationId || isSubmitted}
           className="w-full"
           size="sm"
         >
           <Plus className="h-3 w-3 mr-1" />
-          Create Cash Report
+          {isSubmitted ? 'Already Submitted' : 'Create Cash Report'}
         </Button>
         
         <p className="text-xs text-muted-foreground">

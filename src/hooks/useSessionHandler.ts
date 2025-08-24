@@ -60,16 +60,39 @@ export function useSessionHandler(options: SessionHandlerOptions = {}) {
   const checkError = (error: any) => {
     if (!error) return false;
     
+    // Log the error details for debugging
+    console.error('Session handler checking error:', {
+      status: error?.response?.status || error?.status,
+      url: error?.response?.config?.url || error?.config?.url,
+      method: error?.response?.config?.method || error?.config?.method,
+      message: error?.response?.data?.message || error?.message,
+      error: error
+    });
+    
     // Check for 401 Unauthorized (session expired)
     if (error?.response?.status === 401 || error?.status === 401) {
-      handleSessionExpired(error);
-      return true;
+      // Check if this is a plan restriction rather than auth failure
+      const errorMessage = error?.response?.data?.message || error?.message || '';
+      const isPlanRestriction = errorMessage.includes('plan') || 
+                              errorMessage.includes('upgrade') || 
+                              errorMessage.includes('feature') ||
+                              errorMessage.includes('subscription');
+      
+      if (!isPlanRestriction) {
+        console.error('401 Unauthorized detected - triggering session expiration');
+        handleSessionExpired(error);
+        return true;
+      } else {
+        console.warn('Plan restriction detected, not logging out user');
+        return false;
+      }
     }
     
-    // Check for 403 Forbidden (insufficient permissions)
+    // Check for 403 Forbidden (insufficient permissions) - don't logout for these
     if (error?.response?.status === 403 || error?.status === 403) {
-      handleUnauthorized(user?.role);
-      return true;
+      console.warn('403 Forbidden detected - insufficient permissions, but not logging out');
+      // Don't call handleUnauthorized as it may trigger logout for some roles
+      return false;
     }
     
     return false;

@@ -214,32 +214,26 @@ export default function AnalyticsPage() {
                 ) : todaysSales?.salesByStation?.length > 0 ? (
                   <div className="space-y-4">
                     {todaysSales.salesByStation.map((station: any, index) => (
-                      <div key={station.stationId || index} className={`flex items-center justify-between ${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
+                      <div key={station.station_id || index} className={`flex items-center justify-between ${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                           <Badge variant="outline" className={`${isMobile ? 'w-6 h-6 text-xs' : 'w-8 h-8'} rounded-full flex items-center justify-center flex-shrink-0`}>
                             {index + 1}
                           </Badge>
                           <div className="min-w-0 flex-1">
                             <h3 className={`${getResponsiveTextSize('sm')} font-medium text-gray-900 truncate`}>
-                              {station.stationName || `Station ${index + 1}`}
+                              {station.station_id}
                             </h3>
-                            <p className={`${getResponsiveTextSize('xs')} text-gray-500 truncate`}>
-                              {station.entriesCount || 0} {isMobile ? 'sales' : 'transactions'} • {station.nozzlesActive || 0} {isMobile ? 'active' : 'nozzles active'}
-                            </p>
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0 ml-2">
                           <p className={`${getResponsiveTextSize('sm')} font-bold text-gray-900`}>
                             {isMobile
-                              ? formatCurrencyMobile(station.totalAmount || 0)
-                              : formatCurrency(station.totalAmount || 0, { maximumFractionDigits: 0 })
+                              ? formatCurrencyMobile(station.total_amount || 0)
+                              : formatCurrency(station.total_amount || 0, { maximumFractionDigits: 0 })
                             }
                           </p>
                           <p className={`${getResponsiveTextSize('xs')} text-gray-500 truncate`}>
-                            {isMobile
-                              ? `${(station.fuelTypes || []).length} fuels`
-                              : `Fuels: ${(station.fuelTypes || []).join(', ')}`
-                            }
+                            {formatNumber(station.total_volume || 0)} L
                           </p>
                         </div>
                       </div>
@@ -279,27 +273,21 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {todaysSales.salesByFuel.map((fuel: any) => (
-                          <div key={fuel.fuelType} className={`${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
+                        {todaysSales.salesByFuel.map((fuel: any, index: number) => (
+                          <div key={fuel.fuel_type || index} className={`${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
                             <div className="flex items-center justify-between mb-2">
                               <h3 className={`${getResponsiveTextSize('sm')} font-medium text-gray-900 uppercase truncate`}>
-                                {fuel.fuelType}
+                                {fuel.fuel_type}
                               </h3>
-                              <Badge variant="secondary" className={`${isMobile ? 'text-xs' : 'text-sm'} flex-shrink-0 ml-2`}>
-                                {fuel.entriesCount} {isMobile ? 'sales' : 'sales'}
-                              </Badge>
                             </div>
                             <p className={`${getResponsiveTextSize('xl')} font-bold text-gray-900`}>
                               {isMobile
-                                ? formatCurrencyMobile(fuel.totalAmount || 0)
-                                : formatCurrency(fuel.totalAmount || 0, { maximumFractionDigits: 0 })
+                                ? formatCurrencyMobile(fuel.total_amount || 0)
+                                : formatCurrency(fuel.total_amount || 0, { maximumFractionDigits: 0 })
                               }
                             </p>
                             <p className={`${getResponsiveTextSize('xs')} text-gray-500 truncate`}>
-                              {isMobile
-                                ? `${fuel.stationsCount} stations • ₹${(fuel.averagePrice || 0).toFixed(1)}/L`
-                                : `${fuel.stationsCount} stations • Avg: ₹${(fuel.averagePrice || 0).toFixed(2)}/L`
-                              }
+                              {formatNumber(fuel.total_volume || 0)} L
                             </p>
                           </div>
                         ))}
@@ -337,7 +325,7 @@ export default function AnalyticsPage() {
                     ) : stationRanking?.length > 0 ? (
                       <div className="space-y-4">
                         {stationRanking.map((station, index) => (
-                          <div key={station.id || station.stationId} className={`flex items-center justify-between ${getResponsivePadding('base')} bg-gray-50 rounded-lg`}>
+                          <div key={station.stationId || index} className={`flex items-center justify-between ${getResponsivePadding('base')} bg-gray-50 rounded-lg`}>
                             <div className="flex items-center gap-3 min-w-0 flex-1">
                               <Badge
                                 variant={station.rank <= 3 ? "default" : "outline"}
@@ -347,22 +335,22 @@ export default function AnalyticsPage() {
                               </Badge>
                               <div className="min-w-0 flex-1">
                                 <h3 className={`${getResponsiveTextSize('sm')} font-medium text-gray-900 truncate`}>
-                                  {station.name || station.stationName}
+                                  {station.stationName}
                                 </h3>
                                 <p className={`${getResponsiveTextSize('xs')} text-gray-500`}>
-                                  {station.transactionCount || station.salesCount} {isMobile ? 'txns' : 'transactions'}
+                                  {station.sales} {isMobile ? 'txns' : 'transactions'}
                                 </p>
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0 ml-2">
                               <p className={`${getResponsiveTextSize('sm')} font-bold text-gray-900`}>
                                 {isMobile
-                                  ? formatCurrencyMobile(station.totalSales || station.revenue || 0)
-                                  : formatCurrency(station.totalSales || station.revenue || 0, { maximumFractionDigits: 0 })
+                                  ? formatCurrencyMobile(station.sales || 0)
+                                  : formatCurrency(station.sales || 0, { maximumFractionDigits: 0 })
                                 }
                               </p>
                               <p className={`${getResponsiveTextSize('xs')} text-gray-500`}>
-                                {formatNumber(station.totalVolume || station.volume || 0)} L
+                                {formatNumber(station.volume || 0)} L
                               </p>
                             </div>
                           </div>
@@ -420,7 +408,7 @@ export default function AnalyticsPage() {
                         <div className="max-h-96 overflow-y-auto">
                           <div className="space-y-2">
                             {fuelPerformance.map((fuelData: any) => (
-                              <div key={`${fuelData.stationId}-${fuelData.fuelType}` || Math.random()} className={`${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
+                              <div key={fuelData.stationId && fuelData.fuelType ? `${fuelData.stationId}-${fuelData.fuelType}` : Math.random().toString()} className={`${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
                                 <div className="flex justify-between items-start">
                                   <div className="min-w-0 flex-1">
                                     <h4 className={`${getResponsiveTextSize('sm')} font-medium text-gray-900 truncate`}>

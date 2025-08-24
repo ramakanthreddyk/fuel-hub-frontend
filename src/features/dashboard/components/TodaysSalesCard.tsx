@@ -1,4 +1,6 @@
+
 import React from 'react';
+// Removed import of TodaysSalesSummary and related types since API response uses snake_case
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,22 +10,17 @@ import { FuelLoader } from '@/components/ui/FuelLoader';
 import { formatCurrency, formatVolume } from '@/utils/formatters';
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
 
-interface TodaysSalesCardProps {
+export interface TodaysSalesCardProps {
   date?: string;
 }
 
-export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
-  const { data: todaysSales, isLoading, error } = useTodaysSales(date);
+export const TodaysSalesCard: React.FC<TodaysSalesCardProps> = ({ date }) => {
+  const { data: todaysSalesRaw, error, isLoading } = useTodaysSales(date);
+  const todaysSales = todaysSalesRaw as any;
 
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Today's Sales
-          </CardTitle>
-        </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-32">
             <FuelLoader size="md" text="Loading today's sales..." />
@@ -61,9 +58,7 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-gray-500">
-            No sales data available for today
-          </div>
+          <div className="text-center text-gray-500 py-4">No sales data available</div>
         </CardContent>
       </Card>
     );
@@ -74,7 +69,7 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Today's Sales - {todaysSales.date}
+          {`Today's Sales - ${todaysSales.date}`}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -131,10 +126,10 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
         {/* Detailed Tabs */}
         <Tabs defaultValue="nozzles" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="nozzles">Nozzles ({(todaysSales?.nozzleEntries || []).length})</TabsTrigger>
-            <TabsTrigger value="fuel">By Fuel ({(todaysSales?.salesByFuel || []).length})</TabsTrigger>
-            <TabsTrigger value="stations">By Station ({(todaysSales?.salesByStation || []).length})</TabsTrigger>
-            <TabsTrigger value="credits">Credits ({(todaysSales?.creditSales || []).length})</TabsTrigger>
+            <TabsTrigger value="nozzles">Nozzles ({todaysSales.nozzle_entries?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="fuel">By Fuel ({todaysSales.sales_by_fuel?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="stations">By Station ({todaysSales.sales_by_station?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="credits">Credits ({todaysSales.credit_sales?.length ?? 0})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="nozzles" className="mt-4">
@@ -143,7 +138,7 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
                 <Fuel className="h-4 w-4" />
                 Nozzle-wise Entries
               </h4>
-              {todaysSales.nozzleEntries?.length > 0 ? (
+              {todaysSales.nozzle_entries && todaysSales.nozzle_entries.length > 0 ? (
                 <div className="max-h-64 overflow-y-auto">
                   <Table>
                     <TableHeader>
@@ -157,16 +152,16 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {(todaysSales.nozzleEntries || []).map((entry, index) => (
-                        <TableRow key={entry.nozzleId || entry.nozzle_id || index}>
-                          <TableCell>#{entry.nozzleNumber || entry.nozzle_number}</TableCell>
-                          <TableCell className="text-sm">{entry.stationName || entry.station_name}</TableCell>
+                      {todaysSales.nozzle_entries.map((entry, index) => (
+                        <TableRow key={entry.nozzle_number || index}>
+                          <TableCell>#{entry.nozzle_number}</TableCell>
+                          <TableCell className="text-sm">{entry.station_name}</TableCell>
                           <TableCell>
-                            <Badge variant="outline">{entry.fuelType || entry.fuel_type}</Badge>
+                            <Badge variant="outline">{entry.fuel_type}</Badge>
                           </TableCell>
-                          <TableCell>{entry.entriesCount || entry.entries_count}</TableCell>
-                          <TableCell>{formatVolume(entry.totalVolume || entry.total_volume, 0)}</TableCell>
-                          <TableCell>{formatCurrency(entry.totalAmount || entry.total_amount, { maximumFractionDigits: 0 })}</TableCell>
+                          <TableCell>{entry.entries_count}</TableCell>
+                          <TableCell>{formatVolume(entry.total_volume, 0)}</TableCell>
+                          <TableCell>{formatCurrency(entry.total_amount, { maximumFractionDigits: 0 })}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -181,19 +176,19 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
           <TabsContent value="fuel" className="mt-4">
             <div className="space-y-2">
               <h4 className="font-semibold">Sales by Fuel Type</h4>
-              {todaysSales.salesByFuel?.length > 0 ? (
+              {todaysSales.sales_by_fuel && todaysSales.sales_by_fuel.length > 0 ? (
                 <div className="grid gap-3">
-                  {(todaysSales.salesByFuel || []).map((fuel, index) => (
-                    <div key={fuel.fuelType || fuel.fuel_type || index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  {(todaysSales.sales_by_fuel as any[]).map((fuel, index) => (
+                    <div key={fuel.fuel_type || index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                       <div>
-                        <div className="font-medium">{(fuel.fuelType || fuel.fuel_type || '').toUpperCase()}</div>
+                        <div className="font-medium">{fuel.fuel_type ? fuel.fuel_type.toUpperCase() : 'N/A'}</div>
                         <div className="text-sm text-gray-600">
-                          {fuel.entriesCount || fuel.entries_count} entries • {fuel.stationsCount || fuel.stations_count} stations
+                          {fuel.entries_count !== undefined ? fuel.entries_count : 'N/A'} entries • {fuel.stations_count !== undefined ? fuel.stations_count : 'N/A'} stations
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">{formatCurrency(fuel.totalAmount || fuel.total_amount, { maximumFractionDigits: 0, useLakhsCrores: true })}</div>
-                        <div className="text-sm text-gray-600">{formatVolume(fuel.totalVolume || fuel.total_volume, 0)}</div>
+                        <div className="font-medium">{formatCurrency(fuel.total_amount ?? 0, { maximumFractionDigits: 0, useLakhsCrores: true })}</div>
+                        <div className="text-sm text-gray-600">{formatVolume(fuel.total_volume ?? 0, 0)}</div>
                       </div>
                     </div>
                   ))}
@@ -210,20 +205,20 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
                 <Users className="h-4 w-4" />
                 Sales by Station
               </h4>
-              {todaysSales.salesByStation?.length > 0 ? (
+              {todaysSales.sales_by_station && todaysSales.sales_by_station.length > 0 ? (
                 <div className="grid gap-3">
-                  {(todaysSales.salesByStation || []).map((station, index) => (
-                    <div key={station.stationId || station.station_id || index} className="p-3 bg-gray-50 rounded-lg">
+                  {(todaysSales.sales_by_station as any[]).map((station, index) => (
+                    <div key={station.station_id || index} className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between items-start mb-2">
-                        <div className="font-medium">{station.stationName || station.station_name}</div>
+                        <div className="font-medium">{station.station_name ?? 'N/A'}</div>
                         <div className="text-right">
-                          <div className="font-medium">{formatCurrency(station.totalAmount || station.total_amount, { maximumFractionDigits: 0, useLakhsCrores: true })}</div>
-                          <div className="text-sm text-gray-600">{formatVolume(station.totalVolume || station.total_volume, 0)}</div>
+                          <div className="font-medium">{formatCurrency(station.total_amount ?? 0, { maximumFractionDigits: 0, useLakhsCrores: true })}</div>
+                          <div className="text-sm text-gray-600">{formatVolume(station.total_volume ?? 0, 0)}</div>
                         </div>
                       </div>
                       <div className="flex justify-between text-sm text-gray-600">
-                        <span>{station.entriesCount || station.entries_count} entries • {station.nozzlesActive || station.nozzles_active} nozzles active</span>
-                        <span>Fuels: {(station.fuelTypes || station.fuel_types || []).join(', ')}</span>
+                        <span>{station.entries_count !== undefined ? station.entries_count : 'N/A'} entries • {station.nozzles_active !== undefined ? station.nozzles_active : 'N/A'} nozzles active</span>
+                        <span>Fuels: {Array.isArray(station.fuel_types) ? station.fuel_types.join(', ') : 'N/A'}</span>
                       </div>
                     </div>
                   ))}
@@ -237,18 +232,18 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
           <TabsContent value="credits" className="mt-4">
             <div className="space-y-2">
               <h4 className="font-semibold">Credit Sales</h4>
-              {todaysSales.creditSales?.length > 0 ? (
+              {todaysSales.credit_sales && todaysSales.credit_sales.length > 0 ? (
                 <div className="grid gap-3">
-                  {(todaysSales.creditSales || []).map((credit, index) => (
-                    <div key={`${credit.creditorId}-${credit.stationId}` || index} className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                  {(todaysSales.credit_sales as any[]).map((credit, index) => (
+                    <div key={`${credit.creditor_id}-${credit.station_id}` || index} className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
                       <div>
-                        <div className="font-medium">{credit.creditorName || credit.creditor_name}</div>
+                        <div className="font-medium">{credit.creditor_name}</div>
                         <div className="text-sm text-gray-600">
-                          {credit.stationName || credit.station_name} • {credit.entriesCount || credit.entries_count} entries
+                          {credit.station_name} • {credit.entries_count} entries
                         </div>
                       </div>
                       <div className="font-medium text-red-600">
-                        {formatCurrency(credit.totalAmount || credit.total_amount, { maximumFractionDigits: 0, useLakhsCrores: true })}
+                        {formatCurrency(credit.total_amount, { maximumFractionDigits: 0, useLakhsCrores: true })}
                       </div>
                     </div>
                   ))}
@@ -262,4 +257,4 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
       </CardContent>
     </Card>
   );
-}
+};

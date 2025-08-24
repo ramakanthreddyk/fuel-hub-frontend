@@ -152,11 +152,13 @@ export function getDateRange(period: 'today' | 'yesterday' | 'this-week' | 'last
       };
       
     case 'yesterday':
-      const yesterday = subtractDays(startOfToday, 1);
-      return {
-        start: yesterday,
-        end: new Date(yesterday.getTime() + 24 * 60 * 60 * 1000 - 1)
-      };
+      {
+        const yesterday = subtractDays(startOfToday, 1);
+        return {
+          start: yesterday,
+          end: new Date(yesterday.getTime() + 24 * 60 * 60 * 1000 - 1)
+        };
+      }
       
     case 'this-week': {
       const startOfWeek = new Date(startOfToday.getFullYear(), startOfToday.getMonth(), startOfToday.getDate() - startOfToday.getDay());

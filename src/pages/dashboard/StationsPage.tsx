@@ -139,7 +139,7 @@ export default function StationsPage() {
                   ...station,
                   location: {
                     type: "Point", // Explicitly set to "Point"
-                    coordinates: station.location.coordinates as [number, number] // Ensure correct type
+                    coordinates: station.location?.coordinates as [number, number] || [0, 0] // Safe access with fallback
                   }
                 }}
                 onView={(id) => navigate(`/dashboard/stations/${id}`)}
@@ -185,8 +185,8 @@ function StationCardWithData({ station, onView, onDelete }: Readonly<{
       station={{
         ...station,
         location: {
-          ...station.location,
-          coordinates: Array.isArray(station.location.coordinates) && station.location.coordinates.length === 2
+          type: station.location?.type || "Point",
+          coordinates: station.location?.coordinates && Array.isArray(station.location.coordinates) && station.location.coordinates.length === 2
             ? [station.location.coordinates[0], station.location.coordinates[1]]
             : [0, 0], // fallback to [0, 0] if not valid
         },

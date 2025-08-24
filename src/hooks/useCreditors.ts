@@ -2,21 +2,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { creditorsService } from '@/api/services/creditorsService';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Creditor, Payment, CreateCreditorRequest, CreatePaymentRequest } from '@/api/api-contract';
 
 export const useCreditors = () => {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['creditors'],
     queryFn: creditorsService.getCreditors,
+    enabled: user?.role === 'owner' || user?.role === 'manager',
     staleTime: 300000, // 5 minutes
   });
 };
 
 export const useCreditor = (id: string) => {
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['creditor', id],
     queryFn: () => creditorsService.getCreditor(id),
-    enabled: !!id,
+    enabled: !!id && (user?.role === 'owner' || user?.role === 'manager'),
     staleTime: 300000,
   });
 };

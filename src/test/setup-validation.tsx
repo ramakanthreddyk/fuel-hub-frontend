@@ -2,6 +2,7 @@
  * @file test/setup-validation.ts
  * @description Comprehensive test infrastructure validation and fixes
  */
+import React from 'react';
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -396,7 +397,21 @@ describe('Test Infrastructure Validation', () => {
 });
 
 // Test utilities validation
-export const testUtils = {
+type TestUtils = {
+  createTestWrapper: () => ({ children }: { children: React.ReactNode }) => JSX.Element;
+  createMockServer: (handlers: any[]) => ReturnType<typeof setupServer>;
+  waitForElement: (testId: string, timeout?: number) => Promise<HTMLElement>;
+  renderWithProviders: (ui: React.ReactElement, options?: Record<string, any>) => ReturnType<typeof render>;
+  mockLocalStorage: () => {
+    getItem: (key: string) => string | null;
+    setItem: (key: string, value: string) => void;
+    removeItem: (key: string) => void;
+    clear: () => void;
+  };
+  mockFetch: (response: any, ok?: boolean) => ReturnType<typeof vi.fn>;
+};
+
+export const testUtils: TestUtils = {
   // Create a test wrapper with all providers
   createTestWrapper: () => {
     const queryClient = new QueryClient({

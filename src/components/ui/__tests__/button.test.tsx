@@ -282,11 +282,10 @@ describe('Button Component', () => {
     it('handles boolean children', () => {
       render(
         <Button data-testid="boolean-children">
-          {true && 'Visible'}
-          {false && 'Hidden'}
+          {true ? 'Visible' : null}
+          {false ? 'Hidden' : null}
         </Button>
       );
-      
       expect(screen.getByText('Visible')).toBeInTheDocument();
       expect(screen.queryByText('Hidden')).not.toBeInTheDocument();
     });

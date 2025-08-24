@@ -43,7 +43,8 @@ const NozzlesPage: React.FC = () => {
   }, [pumpId]);
 
   const handleTakeReading = (nozzleId: string) => {
-    alert(`Taking reading for nozzle ${nozzleId}`);
+    // Navigate to new reading page with the nozzle preselected
+    navigate(`/dashboard/readings/new?nozzleId=${nozzleId}`);
   };
 
   const activeNozzles = nozzles.filter(n => n.status === 'active').length;

@@ -74,7 +74,7 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          Today's Sales - {todaysSales.date}
+          Today's Sales
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -129,54 +129,11 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
         )}
 
         {/* Detailed Tabs */}
-        <Tabs defaultValue="nozzles" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="nozzles">Nozzles ({(todaysSales?.nozzleEntries || []).length})</TabsTrigger>
+        <Tabs defaultValue="fuel" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="fuel">By Fuel ({(todaysSales?.salesByFuel || []).length})</TabsTrigger>
             <TabsTrigger value="stations">By Station ({(todaysSales?.salesByStation || []).length})</TabsTrigger>
-            <TabsTrigger value="credits">Credits ({(todaysSales?.creditSales || []).length})</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="nozzles" className="mt-4">
-            <div className="space-y-2">
-              <h4 className="font-semibold flex items-center gap-2">
-                <Fuel className="h-4 w-4" />
-                Nozzle-wise Entries
-              </h4>
-              {todaysSales.nozzleEntries?.length > 0 ? (
-                <div className="max-h-64 overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nozzle</TableHead>
-                        <TableHead>Station</TableHead>
-                        <TableHead>Fuel</TableHead>
-                        <TableHead>Entries</TableHead>
-                        <TableHead>Volume</TableHead>
-                        <TableHead>Amount</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {(todaysSales.nozzleEntries || []).map((entry, index) => (
-                        <TableRow key={entry.nozzleId || entry.nozzle_id || index}>
-                          <TableCell>#{entry.nozzleNumber || entry.nozzle_number}</TableCell>
-                          <TableCell className="text-sm">{entry.stationName || entry.station_name}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{entry.fuelType || entry.fuel_type}</Badge>
-                          </TableCell>
-                          <TableCell>{entry.entriesCount || entry.entries_count}</TableCell>
-                          <TableCell>{formatVolume(entry.totalVolume || entry.total_volume, 0)}</TableCell>
-                          <TableCell>{formatCurrency(entry.totalAmount || entry.total_amount, { maximumFractionDigits: 0 })}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <div className="text-center text-gray-500 py-4">No nozzle entries today</div>
-              )}
-            </div>
-          </TabsContent>
 
           <TabsContent value="fuel" className="mt-4">
             <div className="space-y-2">
@@ -184,16 +141,13 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
               {todaysSales.salesByFuel?.length > 0 ? (
                 <div className="grid gap-3">
                   {(todaysSales.salesByFuel || []).map((fuel, index) => (
-                    <div key={fuel.fuelType || fuel.fuel_type || index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div key={fuel.fuel_type || index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                       <div>
-                        <div className="font-medium">{(fuel.fuelType || fuel.fuel_type || '').toUpperCase()}</div>
-                        <div className="text-sm text-gray-600">
-                          {fuel.entriesCount || fuel.entries_count} entries • {fuel.stationsCount || fuel.stations_count} stations
-                        </div>
+                        <div className="font-medium">{fuel.fuel_type.toUpperCase()}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">{formatCurrency(fuel.totalAmount || fuel.total_amount, { maximumFractionDigits: 0, useLakhsCrores: true })}</div>
-                        <div className="text-sm text-gray-600">{formatVolume(fuel.totalVolume || fuel.total_volume, 0)}</div>
+                        <div className="font-medium">{formatCurrency(fuel.total_amount, { maximumFractionDigits: 0, useLakhsCrores: true })}</div>
+                        <div className="text-sm text-gray-600">{formatVolume(fuel.total_volume, 0)}</div>
                       </div>
                     </div>
                   ))}
@@ -213,48 +167,19 @@ export function TodaysSalesCard({ date }: TodaysSalesCardProps) {
               {todaysSales.salesByStation?.length > 0 ? (
                 <div className="grid gap-3">
                   {(todaysSales.salesByStation || []).map((station, index) => (
-                    <div key={station.stationId || station.station_id || index} className="p-3 bg-gray-50 rounded-lg">
+                    <div key={station.station_id || index} className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between items-start mb-2">
-                        <div className="font-medium">{station.stationName || station.station_name}</div>
+                        <div className="font-medium">Station {station.station_id}</div>
                         <div className="text-right">
-                          <div className="font-medium">{formatCurrency(station.totalAmount || station.total_amount, { maximumFractionDigits: 0, useLakhsCrores: true })}</div>
-                          <div className="text-sm text-gray-600">{formatVolume(station.totalVolume || station.total_volume, 0)}</div>
+                          <div className="font-medium">{formatCurrency(station.total_amount, { maximumFractionDigits: 0, useLakhsCrores: true })}</div>
+                          <div className="text-sm text-gray-600">{formatVolume(station.total_volume, 0)}</div>
                         </div>
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <span>{station.entriesCount || station.entries_count} entries • {station.nozzlesActive || station.nozzles_active} nozzles active</span>
-                        <span>Fuels: {(station.fuelTypes || station.fuel_types || []).join(', ')}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center text-gray-500 py-4">No station sales today</div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="credits" className="mt-4">
-            <div className="space-y-2">
-              <h4 className="font-semibold">Credit Sales</h4>
-              {todaysSales.creditSales?.length > 0 ? (
-                <div className="grid gap-3">
-                  {(todaysSales.creditSales || []).map((credit, index) => (
-                    <div key={`${credit.creditorId}-${credit.stationId}` || index} className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                      <div>
-                        <div className="font-medium">{credit.creditorName || credit.creditor_name}</div>
-                        <div className="text-sm text-gray-600">
-                          {credit.stationName || credit.station_name} • {credit.entriesCount || credit.entries_count} entries
-                        </div>
-                      </div>
-                      <div className="font-medium text-red-600">
-                        {formatCurrency(credit.totalAmount || credit.total_amount, { maximumFractionDigits: 0, useLakhsCrores: true })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center text-gray-500 py-4">No credit sales today</div>
               )}
             </div>
           </TabsContent>

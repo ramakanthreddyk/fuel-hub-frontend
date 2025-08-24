@@ -37,7 +37,9 @@ export function parseComplexNumber(value: any): number {
   }
 
   // If it's not an object with the expected structure, return 0
-  if (typeof value !== 'object' || !value.hasOwnProperty('d') || !Array.isArray(value.d)) {
+  // Use a safe utility to check for own property to avoid no-prototype-builtins warning
+  const hasOwn = (obj: any, prop: string) => Object.getOwnPropertyDescriptor(obj, prop) !== undefined;
+  if (typeof value !== 'object' || !hasOwn(value, 'd') || !Array.isArray(value.d)) {
     return 0;
   }
 
@@ -52,18 +54,19 @@ export function parseComplexNumber(value: any): number {
 
     // Handle complex case: multiple digits (decimal numbers)
     if (complexNum.d.length > 1) {
-      // Convert digits array to string and parse
-      // Join all digits as strings for better performance and readability
-      const numStr = complexNum.d.map(d => d.toString()).join('');
-      // Use a new variable for decimal manipulation
-      let decimalStr = numStr;
-      // Apply decimal point based on exponent
-      const exponent = complexNum.e || 0;
-      if (exponent > 0 && exponent < numStr.length) {
-        decimalStr = numStr.slice(0, exponent) + '.' + numStr.slice(exponent);
-      }
-      const result = parseFloat(decimalStr) * (complexNum.s || 1);
-      return isNaN(result) ? 0 : result;
+        // Join all digits as strings for performance/readability
+        const numStr = complexNum.d.map(d => d.toString()).join('');
+        let decimalStr = numStr;
+        const exponent = complexNum.e || 0;
+        // Place decimal point correctly
+        if (exponent > 0 && exponent < numStr.length) {
+          decimalStr = numStr.slice(0, exponent) + '.' + numStr.slice(exponent);
+        } else if (exponent >= numStr.length) {
+          // Pad with zeros if exponent is greater than length
+          decimalStr = numStr + '0'.repeat(exponent - numStr.length);
+        }
+        const result = parseFloat(decimalStr) * (complexNum.s || 1);
+        return isNaN(result) ? 0 : result;
     }
 
     return 0;

@@ -1,3 +1,7 @@
+// Named exports for test compatibility
+// ...existing code...
+// Named exports for test compatibility
+// ...existing code...
 
 /**
  * @file useDashboard.ts
@@ -5,6 +9,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { useErrorHandler } from '../useErrorHandler';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Types for dashboard data
 export interface SalesSummary {
@@ -51,21 +56,23 @@ export interface DashboardFilters {
 
 export const useSalesSummary = (period: string = 'today', filters: DashboardFilters = {}) => {
   const { handleError } = useErrorHandler();
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['sales-summary', period, filters],
     queryFn: async (): Promise<SalesSummary> => {
       const { dashboardApi } = await import('@/api/dashboard');
       return dashboardApi.getSalesSummary(period, filters);
     },
+    enabled: user?.role === 'owner' || user?.role === 'manager',
     staleTime: 300000, // 5 minutes
-    onError: (error) => {
-      handleError(error, 'Failed to fetch sales summary.');
-    },
   });
 };
 
 export const usePaymentMethodBreakdown = (filters: DashboardFilters = {}) => {
   const { handleError } = useErrorHandler();
+  const { user } = useAuth();
+  
   return useQuery({
     queryKey: ['payment-method-breakdown', filters],
     queryFn: async (): Promise<PaymentMethodBreakdown[]> => {
@@ -73,9 +80,6 @@ export const usePaymentMethodBreakdown = (filters: DashboardFilters = {}) => {
       return dashboardApi.getPaymentMethodBreakdown(filters);
     },
     staleTime: 300000, // 5 minutes
-    onError: (error) => {
-      handleError(error, 'Failed to fetch payment method breakdown.');
-    },
   });
 };
 
@@ -88,9 +92,6 @@ export const useFuelTypeBreakdown = (filters: DashboardFilters = {}) => {
       return dashboardApi.getFuelTypeBreakdown(filters);
     },
     staleTime: 300000, // 5 minutes
-    onError: (error) => {
-      handleError(error, 'Failed to fetch fuel type breakdown.');
-    },
   });
 };
 
@@ -103,9 +104,6 @@ export const useDailySalesTrend = (days: number = 7, filters: DashboardFilters =
       return dashboardApi.getDailySalesTrend(days, filters);
     },
     staleTime: 300000, // 5 minutes
-    onError: (error) => {
-      handleError(error, 'Failed to fetch daily sales trend.');
-    },
   });
 };
 
@@ -151,9 +149,5 @@ export const useStationMetrics = () => {
     retry: 3,
     staleTime: 300000, // 5 minutes
     refetchOnWindowFocus: false,
-    onError: (error) => {
-      console.error('Station metrics onError:', error); // Debug log
-      handleError(error, 'Failed to fetch station metrics.');
-    },
   });
 };

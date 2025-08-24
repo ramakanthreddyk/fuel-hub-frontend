@@ -7,7 +7,6 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as msw from 'msw';
 import { setupServer } from 'msw/node';
-// setupServer already imported above
 import { 
   useSalesSummary, 
   usePaymentMethodBreakdown, 
@@ -183,11 +182,13 @@ const createWrapper = () => {
     },
   });
 
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+  return ({ children }: { children: React.ReactNode }) => {
+    return (
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    );
+  };
 };
 
 describe('Dashboard Hooks', () => {

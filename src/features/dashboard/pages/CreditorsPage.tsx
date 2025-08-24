@@ -128,12 +128,7 @@ function CreditorsPage() {
           icon="users"
           title={searchTerm ? "No creditors found" : "No creditors yet"}
           description={searchTerm ? "Try adjusting your search terms" : "Get started by adding your first creditor"}
-          onAction={!searchTerm ? {
-            label: "Retry",
-            onClick: () => {
-              // Define retry logic here
-            }
-          } : undefined}
+          onAction={!searchTerm ? () => navigate('/dashboard/creditors/new') : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

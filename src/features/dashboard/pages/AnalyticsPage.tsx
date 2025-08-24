@@ -16,6 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAutoLoader } from "@/hooks/useAutoLoader";
 import { SmartAnalyticsDashboard } from "@/components/analytics/SmartAnalyticsDashboard";
 import { useMobileFormatters, getResponsiveTextSize, getResponsivePadding } from "@/utils/mobileFormatters";
+import { Station } from "@/shared/types/station";
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AnalyticsPage() {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -23,12 +25,28 @@ export default function AnalyticsPage() {
 
   const [viewMode, setViewMode] = useState<'smart' | 'detailed'>('smart');
   
-  const { data: todaysSales, isLoading, refetch } = useTodaysSales(selectedDate);
-  const { data: stationRanking, isLoading: rankingLoading } = useStationRanking(selectedPeriod);
-  const { data: stations = [] } = useStations();
-  const { data: fuelPerformance, isLoading: fuelLoading } = useFuelPerformance(
-    stations.length > 0 ? stations[0].id : ''
-  );
+  const { data: stations = [], isLoading: stationsLoading } = useStations();
+  const { user } = useAuth();
+
+  // Only load analytics hooks after user and stations are loaded
+  const canLoadAnalytics = !!user && (user.role === 'owner' || user.role === 'manager') && !stationsLoading && stations.length > 0;
+
+  // Only call analytics hooks when canLoadAnalytics is true
+  const {
+    data: todaysSales,
+    isLoading,
+    refetch
+  } = canLoadAnalytics ? useTodaysSales(selectedDate) : { data: undefined, isLoading: false, refetch: async () => {} };
+
+  const {
+    data: stationRanking,
+    isLoading: rankingLoading
+  } = canLoadAnalytics ? useStationRanking(selectedPeriod) : { data: undefined, isLoading: false };
+
+  const {
+    data: fuelPerformance,
+    isLoading: fuelLoading
+  } = canLoadAnalytics ? useFuelPerformance((stations as Station[])[0].id) : { data: undefined, isLoading: false };
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { isMobile, formatCurrency: formatCurrencyMobile } = useMobileFormatters();
@@ -42,6 +60,17 @@ export default function AnalyticsPage() {
     await refetch();
     setIsRefreshing(false);
   };
+
+  if (!canLoadAnalytics) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading user and stations...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen bg-gray-50/50 ${getResponsivePadding('base')} overflow-x-hidden`}>
@@ -337,7 +366,7 @@ export default function AnalyticsPage() {
                     ) : stationRanking?.length > 0 ? (
                       <div className="space-y-4">
                         {stationRanking.map((station, index) => (
-                          <div key={station.id || station.stationId} className={`flex items-center justify-between ${getResponsivePadding('base')} bg-gray-50 rounded-lg`}>
+                          <div key={station.stationId} className={`flex items-center justify-between ${getResponsivePadding('base')} bg-gray-50 rounded-lg`}>
                             <div className="flex items-center gap-3 min-w-0 flex-1">
                               <Badge
                                 variant={station.rank <= 3 ? "default" : "outline"}
@@ -347,22 +376,22 @@ export default function AnalyticsPage() {
                               </Badge>
                               <div className="min-w-0 flex-1">
                                 <h3 className={`${getResponsiveTextSize('sm')} font-medium text-gray-900 truncate`}>
-                                  {station.name || station.stationName}
+                                  {station.stationName}
                                 </h3>
                                 <p className={`${getResponsiveTextSize('xs')} text-gray-500`}>
-                                  {station.transactionCount || station.salesCount} {isMobile ? 'txns' : 'transactions'}
+                                  Rank #{station.rank} {isMobile ? 'station' : 'in rankings'}
                                 </p>
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0 ml-2">
                               <p className={`${getResponsiveTextSize('sm')} font-bold text-gray-900`}>
                                 {isMobile
-                                  ? formatCurrencyMobile(station.totalSales || station.revenue || 0)
-                                  : formatCurrency(station.totalSales || station.revenue || 0, { maximumFractionDigits: 0 })
+                                  ? formatCurrencyMobile(station.sales || 0)
+                                  : formatCurrency(station.sales || 0, { maximumFractionDigits: 0 })
                                 }
                               </p>
                               <p className={`${getResponsiveTextSize('xs')} text-gray-500`}>
-                                {formatNumber(station.totalVolume || station.volume || 0)} L
+                                {formatNumber(station.volume || 0)} L
                               </p>
                             </div>
                           </div>
@@ -420,7 +449,7 @@ export default function AnalyticsPage() {
                         <div className="max-h-96 overflow-y-auto">
                           <div className="space-y-2">
                             {fuelPerformance.map((fuelData: any) => (
-                              <div key={`${fuelData.stationId}-${fuelData.fuelType}` || Math.random()} className={`${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
+                              <div key={fuelData.stationId && fuelData.fuelType ? `${fuelData.stationId}-${fuelData.fuelType}` : Math.random().toString()} className={`${getResponsivePadding('sm')} bg-gray-50 rounded-lg`}>
                                 <div className="flex justify-between items-start">
                                   <div className="min-w-0 flex-1">
                                     <h4 className={`${getResponsiveTextSize('sm')} font-medium text-gray-900 truncate`}>

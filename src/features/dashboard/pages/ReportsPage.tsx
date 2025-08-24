@@ -3,6 +3,8 @@
  * @description Page for managing reports
  */
 import { useState } from 'react';
+import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -33,16 +35,60 @@ export default function ReportsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
   
-  // Fetch reports
-  const {
-    data: reports = [],
-    isLoading: reportsLoading,
-    refetch: refetchReports
-  } = useReports();
-  
-  // Fetch stations for filtering
-  const { data: stations = [] } = useStations();
-  
+  // Use AuthContext for user
+  const { user, isLoading: userLoading, isAuthenticated } = useAuth();
+  // Only load reports if user is loaded and has correct role
+  const canLoadReports = !!user && isAuthenticated && (user.role === 'owner' || user.role === 'manager');
+
+  // Only call hooks if user context is loaded and authenticated
+  const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(true);
+  const [stations, setStations] = useState([]);
+
+  useEffect(() => {
+    if (userLoading || !canLoadReports) return;
+    let isMounted = true;
+    setReportsLoading(true);
+    import('@/hooks/api/useReports').then(({ useReports }) => {
+      const { data, isLoading } = useReports();
+      if (isMounted) {
+        setReports(data || []);
+        setReportsLoading(isLoading);
+      }
+    });
+    import('@/hooks/api/useStations').then(({ useStations }) => {
+      const { data } = useStations();
+      if (isMounted) setStations(data || []);
+    });
+    return () => { isMounted = false; };
+  }, [userLoading, canLoadReports]);
+
+  // If user context is loading, show loader
+  if (userLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <FuelLoader size="md" text="Loading user context..." />
+      </div>
+    );
+  }
+
+  // If user is not present or not authorized, show error
+  if (!canLoadReports) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <XCircle className="h-12 w-12 text-red-500 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              You do not have permission to view reports. Please contact your administrator.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Report mutations
   const generateReport = useGenerateReport();
   const downloadReport = useDownloadReport();
@@ -60,9 +106,10 @@ export default function ReportsPage() {
   });
 
   const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await refetchReports();
-    setIsRefreshing(false);
+  setIsRefreshing(true);
+  // Re-trigger useEffect by toggling canLoadReports (or reload page)
+  window.location.reload();
+  setIsRefreshing(false);
   };
 
   const handleDownload = (reportId: string) => {
@@ -85,7 +132,7 @@ export default function ReportsPage() {
       onSuccess: () => {
         setIsDialogOpen(false);
         form.reset();
-        refetchReports(); // Refresh the reports list
+        window.location.reload(); // Reload to refresh reports
         toast({
           title: "Report Generated",
           description: "Your report has been generated successfully.",

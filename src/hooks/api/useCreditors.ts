@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { creditorsService } from '@/api/services/creditors.service';
 import { useToastNotifications } from '@/hooks/useToastNotifications';
 import { useAutoLoader } from '@/hooks/useAutoLoader';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Hook to fetch creditors for a station
@@ -14,13 +15,13 @@ import { useAutoLoader } from '@/hooks/useAutoLoader';
  */
 export const useCreditors = (stationId?: string) => {
   const { handleApiError } = useToastNotifications();
+  const { user } = useAuth();
+  
   const query = useQuery({
     queryKey: ['creditors', stationId],
     queryFn: () => creditorsService.getCreditors(stationId),
+    enabled: user?.role === 'owner' || user?.role === 'manager',
     staleTime: 60000,
-    onError: (error: any) => {
-      handleApiError(error, 'Fetch Creditors');
-    },
   });
   
   useAutoLoader(query.isLoading, 'Loading creditors...');
@@ -34,15 +35,13 @@ export const useCreditors = (stationId?: string) => {
  */
 export const useCreditor = (id?: string) => {
   const { handleApiError } = useToastNotifications();
+  const { user } = useAuth();
+  
   const query = useQuery({
     queryKey: ['creditor', id],
     queryFn: () => creditorsService.getCreditor(id || ''),
-    enabled: !!id,
+    enabled: !!id && (user?.role === 'owner' || user?.role === 'manager'),
     staleTime: 0, // Force fresh data
-    cacheTime: 0, // Don't cache
-    onError: (error: any) => {
-      handleApiError(error, 'Fetch Creditor');
-    },
   });
   
   useAutoLoader(query.isLoading, 'Loading creditor details...');
