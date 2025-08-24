@@ -21,7 +21,7 @@ import { DailyReminderToast } from './components/notifications/DailyReminderToas
 const ModernLandingPage = React.lazy(() => import('./pages/ModernLandingPage'));
 
 // Layout Components
-const SmartLayout = React.lazy(() => import('./components/layout/ModernLayout').then(module => ({ default: module.SmartLayout })));
+import { SmartLayout } from './components/layout/ModernLayout';
 const SuperAdminLayout = React.lazy(() => import('./components/layout/SuperAdminLayout'));
 const AttendantLayout = React.lazy(() => import('./components/layout/AttendantLayout'));
 

@@ -19,7 +19,7 @@ export const useStations = (includeMetrics: boolean = false) => {
         console.log('[STATIONS-HOOK] Using cached stations');
         return storedStations;
       }
-      
+
       const response = await stationsService.getStations({ includeMetrics });
       const stations = response.data || [];
 
@@ -30,7 +30,7 @@ export const useStations = (includeMetrics: boolean = false) => {
 
       return stations;
     },
-    enabled: user?.role === 'owner' || user?.role === 'manager',
+    enabled: true,
     staleTime: includeMetrics ? 60 * 1000 : 5 * 60 * 1000, // 1 min for metrics, 5 min for basic
     retry: 2,
   });

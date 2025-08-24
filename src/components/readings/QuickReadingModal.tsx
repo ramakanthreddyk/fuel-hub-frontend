@@ -36,6 +36,23 @@ interface QuickReadingModalProps {
 }
 
 export function QuickReadingModal({ open, onOpenChange, preselected }: QuickReadingModalProps) {
+  // Define type for lastReading
+  interface LastReadingType {
+    reading: number;
+    recordedAt: string;
+    [key: string]: any;
+  }
+  // ...existing code...
+  const { data: stations = [], isLoading: stationsLoading, error: stationsError } = useStations();
+  // Debug: log stations and mapped options on every render
+  useEffect(() => {
+    console.log('[DEBUG][QuickReadingModal] raw stations:', stations);
+    const mappedOptions = stations.map(station => ({
+      id: station.id,
+      name: station.name
+    }));
+    console.log('[DEBUG][QuickReadingModal] mapped station options:', mappedOptions);
+  }, [stations]);
   const [stationId, setStationId] = useState(preselected?.stationId || '');
   const [pumpId, setPumpId] = useState(preselected?.pumpId || '');
   const [nozzleId, setNozzleId] = useState(preselected?.nozzleId || '');
@@ -44,13 +61,12 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
   const { formatCurrency: formatCurrencyMobile, isMobile } = useMobileFormatters();
 
   // Fetch data
-  const { data: stations = [], isLoading: stationsLoading, error: stationsError } = useStations();
   const { data: pumps = [], isLoading: pumpsLoading } = usePumps(stationId || undefined);
   const { data: nozzles = [], isLoading: nozzlesLoading } = useNozzles(pumpId || undefined);
   const createReadingMutation = useCreateReading();
 
   // Fetch last reading for the selected nozzle
-  const { data: lastReading, isLoading: lastReadingLoading } = useLatestReading(nozzleId || '');
+  const { data: lastReading, isLoading: lastReadingLoading } = useLatestReading(nozzleId || '') as { data: LastReadingType | null, isLoading: boolean };
 
   // Update preselected values when they change
   useEffect(() => {
@@ -150,11 +166,18 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
     }
 
     try {
+      let recordedAt: string;
+      // Defensive: if notes accidentally contains a date object, fix it
+      if (typeof notes === 'object' && notes !== null && 'toISOString' in notes) {
+        recordedAt = (notes as any).toISOString();
+      } else {
+        recordedAt = new Date().toISOString();
+      }
       await createReadingMutation.mutateAsync({
         nozzleId,
         reading: readingValue,
         notes: notes.trim() || undefined,
-        recordedAt: new Date().toISOString()
+        recordedAt
       });
 
       // Toast notification is handled by the mutation hook to avoid duplicates
@@ -201,20 +224,12 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                 <Label htmlFor="station" className="text-xs font-medium text-gray-700">Station *</Label>
                 <ReusableSelect
                   value={stationId}
-                  onValueChange={handleStationChange}
+                  onChange={handleStationChange}
                   placeholder="Select station"
                   options={stations.map(station => ({
-                    value: station.id,
-                    label: (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-3 w-3" />
-                        <span className="truncate">{<SafeText text={station.name} />}</span>
-                      </div>
-                    )
+                    id: station.id,
+                    name: station.name
                   }))}
-                  isLoading={<SafeText text={stationsLoading} />}
-                  isError={!!stationsError}
-                  noOptionsMessage="No stations available"
                 />
               </div>
 
@@ -223,21 +238,13 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                 <Label htmlFor="pump" className="text-xs font-medium text-gray-700">Pump *</Label>
                 <ReusableSelect
                   value={pumpId}
-                  onValueChange={handlePumpChange}
+                  onChange={handlePumpChange}
                   placeholder={!stationId ? "Select station first" : "Select pump"}
                   options={pumps.map(pump => ({
-                    value: pump.id,
-                    label: (
-                      <div className="flex items-center gap-2">
-                        <Fuel className="h-3 w-3" />
-                        <span className="truncate">{<SafeText text={pump.name} />}</span>
-                      </div>
-                    )
+                    id: pump.id,
+                    name: pump.name
                   }))}
-                  isLoading={<SafeText text={pumpsLoading} />}
-                  isError={<SafeText text={false} />}
-                  noOptionsMessage="No pumps available for this station"
-                  isDisabled={!stationId}
+                  disabled={!stationId}
                 />
               </div>
             </div>
@@ -247,21 +254,13 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
               <Label htmlFor="nozzle" className="text-xs font-medium text-gray-700">Nozzle *</Label>
               <ReusableSelect
                 value={nozzleId}
-                onValueChange={handleNozzleChange}
+                onChange={handleNozzleChange}
                 placeholder={!pumpId ? "Select pump first" : "Select nozzle"}
                 options={nozzles.map(nozzle => ({
-                  value: nozzle.id,
-                  label: (
-                    <div className="flex items-center gap-2">
-                      <Gauge className="h-3 w-3" />
-                      <span className="truncate">Nozzle {<SafeText text={nozzle.nozzleNumber} />} ({<SafeText text={nozzle.fuelType} />})</span>
-                    </div>
-                  )
+                  id: nozzle.id,
+                  name: `Nozzle ${nozzle.nozzleNumber} (${nozzle.fuelType})`
                 }))}
-                isLoading={<SafeText text={nozzlesLoading} />}
-                isError={<SafeText text={false} />}
-                noOptionsMessage="No nozzles available for this pump"
-                isDisabled={!pumpId}
+                disabled={!pumpId}
               />
             </div>
 
@@ -286,7 +285,12 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                           {isMobile ? formatCurrencyMobile(lastReading.reading) : lastReading.reading.toLocaleString()}L
                         </div>
                         <div className="text-xs text-blue-600">
-                          {new Date(lastReading.recordedAt).toLocaleDateString()}
+                          {(() => {
+                            const date = new Date(lastReading.recordedAt);
+                            return isNaN(date.getTime())
+                              ? 'Unknown date'
+                              : date.toLocaleDateString();
+                          })()}
                         </div>
                       </div>
                     )}
@@ -309,7 +313,7 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                   min={lastReading ? lastReading.reading : 0}
                   value={reading}
                   onChange={(e) => setReading(e.target.value)}
-                  placeholder={lastReading ? `Min: ${<SafeText text={lastReading.reading} />}L` : "Enter reading"}
+                  placeholder={lastReading ? `Min: ${String(lastReading.reading)}L` : "Enter reading"}
                   className="text-base font-mono h-10"
                 />
 
@@ -327,7 +331,7 @@ export function QuickReadingModal({ open, onOpenChange, preselected }: QuickRead
                       <div className="text-red-600 flex items-center gap-1">
                         <span>⚠</span>
                         <span>
-                          Cannot be less than {<SafeText text={lastReading.reading} />}L
+                          Cannot be less than {<SafeText text={String(lastReading.reading)} />}L
                         </span>
                       </div>
                     )}

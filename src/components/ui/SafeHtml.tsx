@@ -70,14 +70,16 @@ export const SafeText: React.FC<SafeTextProps> = ({
   ...props
 }) => {
   const sanitizedText = React.useMemo(() => {
-    if (!text) return '';
-    
+    if (typeof text !== 'string') {
+      // If text is a number, convert to string; if object, use JSON.stringify or empty string
+      if (typeof text === 'number') return String(text);
+      if (typeof text === 'object' && text !== null) return JSON.stringify(text);
+      return '';
+    }
     let sanitized = sanitizeHtml(text);
-    
     if (maxLength && sanitized.length > maxLength) {
       sanitized = sanitized.slice(0, maxLength) + '...';
     }
-    
     return sanitized;
   }, [text, maxLength]);
 

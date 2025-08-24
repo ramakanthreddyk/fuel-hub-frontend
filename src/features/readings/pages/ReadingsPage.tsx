@@ -38,7 +38,10 @@ export default function ReadingsPage() {
 
   const stats = {
     totalReadings: typedReadings.length,
-    todayReadings: typedReadings.filter(r => new Date(r.createdAt).toDateString() === new Date().toDateString()).length,
+    todayReadings: typedReadings.filter(r => {
+      const recordedDate = r.recordedAt || r.createdAt;
+      return recordedDate && new Date(recordedDate).toDateString() === new Date().toDateString();
+    }).length,
     totalVolume: typedReadings.reduce((sum, r) => sum + (r.reading || 0), 0),
     revenue: typedReadings.reduce((sum, r) => sum + (r.totalAmount || 0), 0),
   };
@@ -165,7 +168,7 @@ export default function ReadingsPage() {
                       <div className="text-right">
                         <p className="font-medium">{formatCurrency(reading.totalAmount || 0)}</p>
                         <p className="text-sm text-muted-foreground">
-                          {formatDateTime(reading.createdAt)}
+                          {formatDateTime(reading.recordedAt || reading.createdAt)}
                         </p>
                       </div>
                       <Badge variant="default">

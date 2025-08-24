@@ -15,7 +15,9 @@ interface FuelBreakdownChartProps {
 }
 
 export function FuelBreakdownChart({ filters = {} }: FuelBreakdownChartProps) {
-  const { data: breakdown = [], isLoading } = useFuelTypeBreakdown(filters);
+  // Always request yearly data to show all available sales
+  const filtersWithPeriod = { ...filters, period: 'yearly' };
+  const { data: breakdown = [], isLoading } = useFuelTypeBreakdown(filtersWithPeriod);
 
   if (isLoading) {
     return (

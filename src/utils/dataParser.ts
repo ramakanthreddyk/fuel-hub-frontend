@@ -128,7 +128,8 @@ export function parseReading(reading: any): any {
     previousReading: parseComplexNumber(reading.previousReading),
     pricePerLitre: parseComplexNumber(reading.pricePerLitre),
     volume: parseComplexNumber(reading.volume),
-    amount: parseComplexNumber(reading.amount),
+  amount: parseComplexNumber(reading.amount),
+  totalAmount: parseComplexNumber(reading.amount),
     
     // Parse date fields - don't default to current date for invalid dates
     recordedAt: parseDate(reading.recordedAt),

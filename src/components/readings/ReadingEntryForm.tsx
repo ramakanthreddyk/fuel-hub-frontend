@@ -81,8 +81,8 @@ export function ReusableSelect({
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
-          <SelectItem key={<SafeText text={option.id} />} value={<SafeText text={option.id} />}>
-            {<SafeText text={option.name} />}
+          <SelectItem key={option.id} value={option.id}>
+            {option.name}
           </SelectItem>
         ))}
       </SelectContent>
@@ -137,6 +137,12 @@ const PaymentMethodSelect = ({ value, onChange }: any) => (
 );
 
 export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
+  // Debug: log stations and mappedStations array on every render
+  React.useEffect(() => {
+    console.log('[DEBUG] raw stations:', stations);
+    const mappedStations = Array.isArray(stations) ? stations.map(s => ({ id: String(s.id), name: String(s.name) })) : [];
+    console.log('[DEBUG] mappedStations:', mappedStations);
+  }, [stations]);
   const navigate = useNavigate();
   const location = useLocation();
   useToastNotifications();
@@ -172,6 +178,10 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
   
   // Fetch data directly without store caching to avoid circular dependencies
   const { data: stations = [] } = useStations();
+  // Debug: log stations array on every render
+  React.useEffect(() => {
+    console.log('[DEBUG] stations:', stations);
+  }, [stations]);
   const { data: pumps = [] } = usePumps(selectedStation);
   const { data: nozzles = [] } = useNozzles(selectedPump);
   const { data: latestReading, isLoading: loadingLatestReading, refetch: refetchLatestReading } = useLatestReading(selectedNozzle);
@@ -340,18 +350,18 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <div className="text-green-800">
-                    <strong>Total Liters:</strong> {<SafeText text={saleSummary.totalLiters} />} L
+                    <strong>Total Liters:</strong> {saleSummary.totalLiters} L
                   </div>
                   <div className="text-green-800">
-                    <strong>Total Amount:</strong> ₹{<SafeText text={saleSummary.totalAmount} />}
+                    <strong>Total Amount:</strong> ₹{saleSummary.totalAmount}
                   </div>
                 </div>
                 <div>
                   <strong className="text-green-900">By Payment Method:</strong>
                   <ul className="list-disc ml-6 mt-2">
                     {Object.entries(saleSummary.byPayment).map(([method, stats]) => (
-                      <li key={<SafeText text={method} />} className="text-green-700">
-                        {<SafeText text={method} />}: {stats.liters} L, ₹{stats.amount}
+                      <li key={method} className="text-green-700">
+                        {method}: {stats.liters} L, ₹{stats.amount}
                       </li>
                     ))}
                   </ul>
@@ -388,6 +398,22 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Debug: log stations and mappedStations */}
+                    {(() => {
+                      console.log('[DEBUG] raw stations:', stations);
+                      const mappedStations = Array.isArray(stations) ? stations.map(s => ({ id: String(s.id), name: String(s.name) })) : [];
+                      console.log('[DEBUG] mappedStations:', mappedStations);
+                      return null;
+                    })()}
+                    {console.log('[DEBUG] stations --------->:', stations)}
+                    {/* DEBUG: Show pumps array */}
+                    <div style={{ fontSize: '12px', color: 'blue', marginBottom: '8px' }}>
+                      <strong>Pumps:</strong> {JSON.stringify(pumps)}
+                    </div>
+                    {/* DEBUG: Show stations array */}
+                    <div style={{ fontSize: '12px', color: 'red', marginBottom: '8px' }}>
+                      <strong>Stations:</strong> {JSON.stringify(stations)}
+                    </div>
                     <FormField
                       control={form.control}
                       name="stationId"
@@ -396,13 +422,12 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                         <FormItem>
                           <FormLabel className="text-sm font-medium">Station</FormLabel>
                           <StationSelect 
-                            value={field.value} 
+                            value={field.value ? String(field.value) : ''}
                             onChange={(value) => {
                               field.onChange(value);
                               setSelectedStation(value);
                             }}
-                            stations={<SafeText text={stations} />}
-                            disabled={!!initialValues.current.stationId}
+                            stations={Array.isArray(stations) ? stations.map(s => ({ id: String(s.id), name: String(s.name) })) : []}
                           />
                           <FormMessage />
                         </FormItem>
@@ -422,7 +447,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                               field.onChange(value);
                               setSelectedPump(value);
                             }}
-                            pumps={<SafeText text={pumps} />}
+                            pumps={pumps}
                             disabled={!selectedStation || !!initialValues.current.pumpId}
                           />
                           <FormMessage />
@@ -461,7 +486,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                                 }, 100); // Small delay to ensure state is updated
                               }
                             }}
-                            nozzles={<SafeText text={nozzles} />}
+                            nozzles={nozzles}
                             disabled={!selectedPump || !!initialValues.current.nozzleId}
                           />
                           <FormMessage />
@@ -512,7 +537,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                           {latestReading && (
                             <div className="flex items-center gap-2 text-xs text-orange-700 bg-orange-50 p-3 rounded-lg border border-orange-200">
                               <AlertTriangle className="h-4 w-4" />
-                              New reading must be greater than {<SafeText text={latestReading.reading} />} L
+                              New reading must be greater than {(latestReading as ReadingFormData).reading} L
                             </div>
                           )}
                         </div>
@@ -611,7 +636,7 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
 
                     {form.watch('paymentMethod') === 'credit' && (
                       <FormField
-                        control={<SafeText text={form.control} />}
+                        control={form.control}
                         name="creditorId"
                         rules={{ required: 'Creditor is required for credit payments' }}
                         render={({ field }) => (
@@ -626,8 +651,8 @@ export function ReadingEntryForm({ preselected }: ReadingEntryFormProps) {
                               </SelectTrigger>
                               <SelectContent>
                                 {creditors.map(creditor => (
-                                  <SelectItem key={<SafeText text={creditor.id} />} value={<SafeText text={creditor.id} />}>
-                                    {<SafeText text={creditor.name} />}
+                                  <SelectItem key={creditor.id} value={creditor.id}>
+                                    {creditor.name}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
