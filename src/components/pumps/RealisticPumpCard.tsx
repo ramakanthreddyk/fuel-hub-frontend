@@ -132,7 +132,7 @@ export function RealisticPumpCard({ pump, actions }: Readonly<RealisticPumpCardP
         {/* Action Buttons */}
         <div className="flex gap-3">
           <Button
-            onClick={() => actions.onViewNozzles?.(pump.id)}
+            onClick={() => actions?.onViewNozzles?.(pump.id)}
             className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
             <Eye className="mr-2 h-5 w-5" />

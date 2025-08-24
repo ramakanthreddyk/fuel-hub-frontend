@@ -181,13 +181,14 @@ export default function StationDetailPage() {
                   // Count nozzles for this pump
                   const pumpNozzles = allNozzles.filter(n => n.pumpId === pump.id);
                   const pumpWithNozzleCount = { ...pump, nozzleCount: pumpNozzles.length };
-                  
                   return (
                     <RealisticPumpCard
                       key={pump.id}
                       pump={pumpWithNozzleCount}
-                      onViewNozzles={(id) => navigate(`/dashboard/pumps/${id}/nozzles`)}
-                      onSettings={(id) => navigate(`/dashboard/stations/${stationId}/pumps/${id}/settings`)}
+                      actions={{
+                        onViewNozzles: (id) => navigate(`/dashboard/pumps/${id}/nozzles`),
+                        onSettings: (id) => navigate(`/dashboard/stations/${stationId}/pumps/${id}/settings`)
+                      }}
                     />
                   );
                 })}

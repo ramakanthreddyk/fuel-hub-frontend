@@ -118,7 +118,22 @@ export function AttendantLayout({ children, className }: ModernLayoutProps) {
 // Smart layout that chooses based on user role
 export function SmartLayout({ children, className }: ModernLayoutProps) {
   try {
-    const { user, isLoading } = useAuth();
+    const authContext = useAuth();
+    
+    // Additional safety check
+    if (!authContext) {
+      console.warn('SmartLayout: Auth context is null');
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-sm text-gray-600">Initializing authentication...</p>
+          </div>
+        </div>
+      );
+    }
+
+    const { user, isLoading } = authContext;
 
     // Show loading state while auth is initializing
     if (isLoading) {

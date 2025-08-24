@@ -237,7 +237,7 @@ const SuperAdminDashboard: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              Quick Actions
+              Quick Actions xx
             </h2>
             <div className="space-y-3">
               <button 

@@ -114,7 +114,7 @@ export function ModernStationCard({
 
           <div className="text-center p-2 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
             <Fuel className="h-3 w-3 text-purple-600 mx-auto mb-1" />
-            <div className="text-sm sm:text-lg font-bold text-purple-900">{activePumps}/{pumps.length || station.pumps.length}</div>
+            <div className="text-sm sm:text-lg font-bold text-purple-900">{activePumps}/{pumps?.length || station.pumps?.length || 0}</div>
             <div className="text-[10px] text-purple-700 font-medium">Active Pumps</div>
           </div>
         </div>

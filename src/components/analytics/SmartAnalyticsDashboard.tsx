@@ -102,43 +102,44 @@ export const SmartAnalyticsDashboard: React.FC = () => {
   const { formatCurrency: formatCurrencyMobile, isMobile } = useMobileFormatters();
   const navigate = useNavigate();
 
-  // API Hooks
-  const { data: todaysSales } = useTodaysSales();
+  // API Hooks - Pass selectedPeriod to hooks that support filtering
   const { data: salesSummary } = useSalesSummary(selectedPeriod);
   const { data: paymentBreakdown = [] } = usePaymentMethodBreakdown();
   const { data: fuelBreakdown = [] } = useFuelTypeBreakdown();
-  const { data: salesTrend = [] } = useDailySalesTrend(30); // Last 30 days
+  // Calculate days for trend based on selected period
+  const trendDays = selectedPeriod === 'today' ? 1 : 
+                   selectedPeriod === 'week' ? 7 : 
+                   selectedPeriod === 'month' ? 30 : 
+                   selectedPeriod === 'quarter' ? 90 : 
+                   selectedPeriod === 'year' ? 365 : 30;
+  const { data: salesTrend = [] } = useDailySalesTrend(trendDays);
   const { data: stations = [] } = useStations();
 
-  // Calculate metrics
+  // Calculate metrics based on selected period
   const metrics = useMemo(() => {
-    const today = todaysSales;
     const summary = salesSummary;
 
-    // Calculate lifetime totals from available data
-    const lifetimeRevenue = summary?.totalRevenue || 0;
-    const lifetimeVolume = summary?.totalVolume || 0;
-    const lifetimeTransactions = summary?.salesCount || 0;
+    // Use summary data for the selected period
+    const periodRevenue = summary?.totalRevenue || 0;
+    const periodVolume = summary?.totalVolume || 0;
+    const periodTransactions = summary?.salesCount || 0;
 
-    // Calculate trends from growth percentage or mock data
-    const revenueChange = summary?.growthPercentage || 12.5;
-    const volumeChange = 8.3; // Mock data - would come from API
-    const transactionChange = 15.2; // Mock data - would come from API
+    // Calculate trends from growth percentage
+    const revenueChange = summary?.growthPercentage || 0;
+    const volumeChange = summary?.growthPercentage || 0; // Use same growth for volume
+    const transactionChange = summary?.growthPercentage || 0; // Use same growth for transactions
 
     return {
-      todayRevenue: today?.totalAmount || 0,
-      todayVolume: today?.totalVolume || 0,
-      todayTransactions: today?.totalEntries || 0,
-      lifetimeRevenue,
-      lifetimeVolume,
-      lifetimeTransactions,
+      periodRevenue,
+      periodVolume,
+      periodTransactions,
       activeStations: stations.length,
       revenueChange,
       volumeChange,
       transactionChange,
-      averageTicketSize: lifetimeTransactions > 0 ? lifetimeRevenue / lifetimeTransactions : 0
+      averageTicketSize: periodTransactions > 0 ? periodRevenue / periodTransactions : 0
     };
-  }, [todaysSales, salesSummary, stations]);
+  }, [salesSummary, stations, selectedPeriod]);
 
   const periodLabels = {
     today: 'Today',
@@ -185,10 +186,10 @@ export const SmartAnalyticsDashboard: React.FC = () => {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricCard
-          title={selectedPeriod === 'lifetime' ? 'Total Revenue' : `${periodLabels[selectedPeriod]} Revenue`}
+          title={`${periodLabels[selectedPeriod]} Revenue`}
           value={isMobile 
-            ? formatCurrencyMobile(selectedPeriod === 'lifetime' ? metrics.lifetimeRevenue : metrics.todayRevenue)
-            : formatCurrency(selectedPeriod === 'lifetime' ? metrics.lifetimeRevenue : metrics.todayRevenue)
+            ? formatCurrencyMobile(metrics.periodRevenue)
+            : formatCurrency(metrics.periodRevenue)
           }
           change={metrics.revenueChange}
           changeType="increase"
@@ -199,12 +200,12 @@ export const SmartAnalyticsDashboard: React.FC = () => {
         />
         
         <MetricCard
-          title={selectedPeriod === 'lifetime' ? 'Total Volume' : `${periodLabels[selectedPeriod]} Volume`}
+          title={`${periodLabels[selectedPeriod]} Volume`}
           value={isMobile 
-            ? `${(selectedPeriod === 'lifetime' ? metrics.lifetimeVolume : metrics.todayVolume) >= 1000 
-                ? `${((selectedPeriod === 'lifetime' ? metrics.lifetimeVolume : metrics.todayVolume) / 1000).toFixed(1)}KL` 
-                : `${Math.round(selectedPeriod === 'lifetime' ? metrics.lifetimeVolume : metrics.todayVolume)}L`}`
-            : formatVolume(selectedPeriod === 'lifetime' ? metrics.lifetimeVolume : metrics.todayVolume)
+            ? `${metrics.periodVolume >= 1000 
+                ? `${(metrics.periodVolume / 1000).toFixed(1)}KL` 
+                : `${Math.round(metrics.periodVolume)}L`}`
+            : formatVolume(metrics.periodVolume)
           }
           change={metrics.volumeChange}
           changeType="increase"
@@ -215,8 +216,8 @@ export const SmartAnalyticsDashboard: React.FC = () => {
         />
         
         <MetricCard
-          title={selectedPeriod === 'lifetime' ? 'Total Sales' : `${periodLabels[selectedPeriod]} Sales`}
-          value={(selectedPeriod === 'lifetime' ? metrics.lifetimeTransactions : metrics.todayTransactions).toLocaleString()}
+          title={`${periodLabels[selectedPeriod]} Sales`}
+          value={metrics.periodTransactions.toLocaleString()}
           change={metrics.transactionChange}
           changeType="increase"
           icon={Activity}
@@ -277,8 +278,8 @@ export const SmartAnalyticsDashboard: React.FC = () => {
                     <span className={`${getResponsiveTextSize('sm')} text-gray-600`}>Revenue/Station</span>
                     <span className={`${getResponsiveTextSize('sm')} font-semibold`}>
                       {isMobile 
-                        ? formatCurrencyMobile(metrics.lifetimeRevenue / Math.max(metrics.activeStations, 1))
-                        : formatCurrency(metrics.lifetimeRevenue / Math.max(metrics.activeStations, 1))
+                        ? formatCurrencyMobile(metrics.periodRevenue / Math.max(metrics.activeStations, 1))
+                        : formatCurrency(metrics.periodRevenue / Math.max(metrics.activeStations, 1))
                       }
                     </span>
                   </div>
@@ -298,13 +299,13 @@ export const SmartAnalyticsDashboard: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className={`${getResponsiveTextSize('sm')} text-gray-600`}>Revenue</span>
                     <Badge variant="outline" className="text-green-600">
-                      {isMobile ? formatCurrencyMobile(metrics.todayRevenue) : formatCurrency(metrics.todayRevenue)}
+                      {isMobile ? formatCurrencyMobile(metrics.periodRevenue) : formatCurrency(metrics.periodRevenue)}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className={`${getResponsiveTextSize('sm')} text-gray-600`}>Transactions</span>
                     <Badge variant="outline" className="text-blue-600">
-                      {metrics.todayTransactions}
+                      {metrics.periodTransactions}
                     </Badge>
                   </div>
                 </div>
@@ -337,9 +338,9 @@ export const SmartAnalyticsDashboard: React.FC = () => {
                       // Export functionality - could be enhanced with actual export
                       const data = {
                         period: selectedPeriod,
-                        revenue: metrics.lifetimeRevenue,
-                        volume: metrics.lifetimeVolume,
-                        transactions: metrics.lifetimeTransactions,
+                        revenue: metrics.periodRevenue,
+                        volume: metrics.periodVolume,
+                        transactions: metrics.periodTransactions,
                         stations: metrics.activeStations
                       };
                       console.log('Exporting data:', data);
@@ -424,19 +425,19 @@ export const SmartAnalyticsDashboard: React.FC = () => {
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <h4 className="font-semibold text-green-800 mb-2">Revenue Growth</h4>
                       <p className="text-sm text-green-700">
-                        Revenue has increased by {metrics.revenueChange}% compared to the previous period.
+                        {periodLabels[selectedPeriod]} revenue has increased by {metrics.revenueChange}% compared to the previous period.
                       </p>
                     </div>
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <h4 className="font-semibold text-blue-800 mb-2">Volume Performance</h4>
                       <p className="text-sm text-blue-700">
-                        Fuel volume dispensed has grown by {metrics.volumeChange}% this period.
+                        {periodLabels[selectedPeriod]} fuel volume dispensed has grown by {metrics.volumeChange}% compared to the previous period.
                       </p>
                     </div>
                     <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                       <h4 className="font-semibold text-purple-800 mb-2">Transaction Activity</h4>
                       <p className="text-sm text-purple-700">
-                        Transaction count has increased by {metrics.transactionChange}% indicating higher customer activity.
+                        {periodLabels[selectedPeriod]} transaction count has increased by {metrics.transactionChange}% indicating higher customer activity.
                       </p>
                     </div>
                   </div>

@@ -125,7 +125,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('[AUTH-CONTEXT] Login successful:', authUser);
       // Debug: Show token and user after login
       console.log('[AUTH-CONTEXT] Token after login:', token);
-      console.log('[AUTH-CONTEXT] Token length:', token.length);
+      console.log('[AUTH-CONTEXT] Token length:', token?.length || 0);
       console.log('[AUTH-CONTEXT] User after login:', JSON.stringify(authUser, null, 2));  // Let App.tsx handle navigation based on user role
   console.log('[AUTH-CONTEXT] User authenticated, letting App.tsx handle navigation');
     } catch (error: any) {
@@ -211,7 +211,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
+    console.error('useAuth called outside of AuthProvider context');
+    // Log additional debugging info
+    console.trace('useAuth call stack');
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
+
+// Safe version of useAuth that returns null if context is not available
+export function useSafeAuth() {
+  const context = useContext(AuthContext);
+  return context || null;
 }

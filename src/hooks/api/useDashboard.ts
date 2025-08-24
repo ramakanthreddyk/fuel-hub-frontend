@@ -58,11 +58,24 @@ export const useSalesSummary = (period: string = 'today', filters: DashboardFilt
   const { handleError } = useErrorHandler();
   const { user } = useAuth();
   
+  // Map frontend period to backend range
+  const mapPeriodToRange = (period: string): string => {
+    switch (period) {
+      case 'today': return 'daily';
+      case 'week': return 'weekly';
+      case 'month': return 'monthly';
+      case 'quarter': return 'quarterly';
+      case 'year': return 'yearly';
+      case 'lifetime': return 'all';
+      default: return 'monthly';
+    }
+  };
+  
   return useQuery({
     queryKey: ['sales-summary', period, filters],
     queryFn: async (): Promise<SalesSummary> => {
       const { dashboardApi } = await import('@/api/dashboard');
-      return dashboardApi.getSalesSummary(period, filters);
+      return dashboardApi.getSalesSummary(mapPeriodToRange(period), filters);
     },
     enabled: user?.role === 'owner' || user?.role === 'manager',
     staleTime: 300000, // 5 minutes

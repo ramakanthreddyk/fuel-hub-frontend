@@ -37,6 +37,7 @@ import {
   RefreshCw,
   Calculator
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // Hooks
 import { useTodaysSales } from '@/hooks/api/useTodaysSales';
@@ -52,6 +53,8 @@ import { PlanUsageWidget } from '@/components/plan/PlanUsageWidget';
 
 // Onboarding Component
 import { OnboardingDashboard } from '../onboarding/OnboardingDashboard';
+import { NotificationCenter, Notification } from '@/components/common/NotificationCenter';
+import { alertsService } from '@/api/services/alertsService';
 
 interface QuickActionProps {
   icon: React.ElementType;
@@ -63,6 +66,14 @@ interface QuickActionProps {
 }
 
 function QuickAction({ icon: Icon, title, description, onClick, variant = 'secondary', badge }: QuickActionProps) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (typeof onClick === 'function') {
+      onClick();
+    }
+  };
+
   const variants = {
     primary: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700',
     secondary: 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-900',
@@ -70,7 +81,13 @@ function QuickAction({ icon: Icon, title, description, onClick, variant = 'secon
   };
 
   return (
-    <Card className={`cursor-pointer transition-all duration-200 hover:shadow-md ${variants[variant]}`} onClick={onClick}>
+    <Card className={`cursor-pointer transition-all duration-200 hover:shadow-md ${variants[variant]}`}
+      tabIndex={0}
+      role="button"
+      onClick={handleClick}
+      onKeyDown={e => (e.key === 'Enter' || e.key === ' ') ? handleClick(e as any) : undefined}
+      aria-label={title}
+    >
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
@@ -134,10 +151,35 @@ function MetricCard({ title, value, change, changeType, icon: Icon, color }: Met
   );
 }
 
+function useSystemNotifications() {
+  const [notifications, setNotifications] = React.useState<Notification[]>([]);
+  React.useEffect(() => {
+    alertsService.getAlerts().then(alerts => {
+      setNotifications(
+        (Array.isArray(alerts) ? alerts : []).map(alert => ({
+          id: alert.id,
+          title: alert.title,
+          message: alert.message,
+          type: alert.type === 'success' ? 'success' : alert.type === 'error' ? 'error' : alert.type === 'warning' ? 'warning' : 'info',
+          createdAt: new Date(alert.createdAt),
+          read: alert.isRead,
+        }))
+      );
+    });
+  }, []);
+  // Dummy handlers for now
+  const markAsRead = (id: string) => setNotifications(n => n.map(x => x.id === id ? { ...x, read: true } : x));
+  const markAllAsRead = () => setNotifications(n => n.map(x => ({ ...x, read: true })));
+  const removeNotification = (id: string) => setNotifications(n => n.filter(x => x.id !== id));
+  const clearAll = () => setNotifications([]);
+  return { notifications, markAsRead, markAllAsRead, removeNotification, clearAll };
+}
+
 export function ImprovedDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   // Data hooks
   const today = new Date().toISOString().split('T')[0];
@@ -218,6 +260,8 @@ export function ImprovedDashboard() {
   };
 
   const quickActions = getQuickActions();
+
+  const systemNotifications = useSystemNotifications();
 
   if (salesLoading || stationsLoading) {
     return (
@@ -309,16 +353,14 @@ export function ImprovedDashboard() {
           {quickActions.map((action, index) => (
             <QuickAction key={`action-${index}`} {...action} />
           ))}
-          {urgentReminders > 0 && (
-            <QuickAction
-              icon={AlertTriangle}
-              title="View Alerts"
-              description="Check urgent notifications"
-              onClick={() => window.location.href = '/dashboard/alerts'}
-              variant="urgent"
-              badge={urgentReminders.toString()}
-            />
-          )}
+          <QuickAction
+            icon={AlertTriangle}
+            title="View Alerts"
+            description="Check urgent notifications"
+            onClick={() => navigate('/dashboard/alerts')}
+            variant="urgent"
+            badge={urgentReminders > 0 ? urgentReminders.toString() : undefined}
+          />
         </div>
       </div>
 
@@ -616,3 +658,5 @@ export function ImprovedDashboard() {
     </div>
   );
 }
+
+export default ImprovedDashboard;

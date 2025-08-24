@@ -211,6 +211,11 @@ const AppRouter = () => {
   if (isAuthenticated && user) {
     return (
       <Routes>
+                <Route path="alerts" element={
+                  <SafeComponent>
+                    {React.createElement(require('./pages/SystemAlertsPage').default)}
+                  </SafeComponent>
+                } />
         {/* SuperAdmin Routes */}
         <Route path="/superadmin" element={
           <SafeComponent>

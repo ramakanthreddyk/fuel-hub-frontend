@@ -251,8 +251,20 @@ export default function NozzlesPage() {
               <span className="text-gray-900 font-medium">Nozzles</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
-              {selectedPump !== 'all' && pumps.length > 0 ? 
-                `Nozzles for ${pumps.find(p => p.id === selectedPump)?.name || 'Pump'}` : 
+              {selectedPump !== 'all' ?
+                (() => {
+                  const pumpObj = pumps.find(p => p.id === selectedPump);
+                  if (pumpObj && pumpObj.name) {
+                    return `Nozzles for ${pumpObj.name}`;
+                  }
+                  if (displayNozzles.length > 0 && displayNozzles[0].pumpName) {
+                    return `Nozzles for ${displayNozzles[0].pumpName}`;
+                  }
+                  if (pumpObj && pumpObj.id) {
+                    return `Nozzles for Pump ${pumpObj.id}`;
+                  }
+                  return 'Nozzles for Pump';
+                })() :
                 '🛢️ Fuel Nozzle Control'}
             </h1>
             <p className="text-gray-600 text-sm truncate">Precision fuel dispensing at your fingertips</p>

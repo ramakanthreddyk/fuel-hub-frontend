@@ -47,7 +47,7 @@ export interface Notification {
 
 export interface NotificationCenterProps {
   /** List of notifications */
-  notifications: Notification[];
+  notifications?: Notification[];
   /** Mark notification as read handler */
   onMarkAsRead: (id: string) => void;
   /** Mark all notifications as read handler */
@@ -80,7 +80,8 @@ export function NotificationCenter({
   className
 }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  const unreadCount = safeNotifications.filter(n => !n.read).length;
 
   const getIcon = (type: Notification['type']) => {
     switch (type) {
@@ -159,14 +160,14 @@ export function NotificationCenter({
         </div>
 
         <ScrollArea className="max-h-96">
-          {notifications.length === 0 ? (
+          {safeNotifications.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
               <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No notifications</p>
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notification) => (
+              {safeNotifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={cn(
@@ -249,7 +250,7 @@ export function NotificationCenter({
           )}
         </ScrollArea>
 
-        {notifications.length > 0 && (
+  {safeNotifications.length > 0 && (
           <div className="p-3 border-t bg-muted/50">
             <Button
               variant="ghost"
